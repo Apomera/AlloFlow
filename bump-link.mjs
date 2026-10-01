@@ -395,11 +395,13 @@ async function main() {
   // Step 5: rewrite launch.html FIRST so that a regex failure aborts before
   // any JSON files are touched.
   await rewriteLaunchHtml(newUrl, newVersion);
-  await rewriteMiscModals(newUrl);
 
   // Step 6: JSON writes.
   await writeReleaseJson(releasePointer);
   await prependReleasesJson(newEntry);
+  // The delegate reads the active version from release.json. Publish the new
+  // entry first so it preserves older links and mirrors the new version.
+  await rewriteMiscModals(newUrl);
 
   // Step 7: best-effort index.html navbar bump.
   await rewriteIndexHtml(newVersion);
@@ -414,7 +416,7 @@ async function main() {
   info(`  release id  : ${id}`);
   info(`  notes       : ${notes.length > 80 ? notes.slice(0, 77) + "..." : notes}`);
   info("");
-  info("Next: cd desktop/web-app && ./deploy.sh");
+  info("Next: commit and push the release files and rebuilt Canvas-link module.");
 }
 
 main().catch((e) => {
