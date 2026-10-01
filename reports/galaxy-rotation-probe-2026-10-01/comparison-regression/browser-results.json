@@ -1,0 +1,30 @@
+{
+  "passed": true,
+  "checks": [
+    "The release table updates during launch editing and highlights exactly the changed inputs while retaining the saved release.",
+    "The dashed reference and cursor sample the same elapsed model time as the current run; keyboard scrubbing announces both centers.",
+    "Captured and escaped reference curves end at the exact modeled endpoint, hide their later cursor, and recover when scrubbing backward.",
+    "Keeping and clearing a reference recomputes the shared graph scale while preserving playback time, selected debris, and camera view.",
+    "Comparison inputs survive an optical view change and a complete JSON remount; reopening rebuilds the same graph after release.",
+    "1440, 390, 320 px and RTL layouts keep readable release columns, a dashed reference legend, and valid graph geometry without horizontal overflow."
+  ],
+  "layouts": [
+    {
+      "width": 1440,
+      "noOverflow": true,
+      "sharedAxes": true
+    },
+    {
+      "width": 390,
+      "noOverflow": true,
+      "sharedAxes": true
+    },
+    {
+      "width": 320,
+      "noOverflow": true,
+      "sharedAxes": true
+    }
+  ],
+  "cleanup": true,
+  "errors": []
+}

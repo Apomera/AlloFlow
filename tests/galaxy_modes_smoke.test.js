@@ -33,9 +33,9 @@ describe('galaxy explorer mode/state smoke', () => {
 
   it('each rotation mode renders its own explanation', () => {
     for (const [mode, signal] of [
-      ['flat', 'Vera Rubin'],
-      ['keplerian', 'outer stars should crawl'],
-      ['rigid', 'painted DVD'],
+      ['flat', 'outer stars keep the same linear speed'],
+      ['keplerian', 'enclosed mass stays constant'],
+      ['rigid', 'radius cubed'],
     ]) {
       const html = renderTool('galaxy', { galaxy: { rotMode: mode, galaxyControlPanel: 'motion' } });
       expect(html, 'rotMode=' + mode).toContain(signal);
