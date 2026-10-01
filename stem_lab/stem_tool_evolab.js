@@ -456,6 +456,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
   // Observation tools read recorded organisms; they never change genes, order,
   // survival probabilities, or the biological random stream.
   var IslandObservation = {
+    cohorts: function(data, trait) {
+      var phases = ['parents', 'survivors', 'offspring'];
+      if (!data || IslandModel.traits.indexOf(trait) < 0 || phases.some(function(phase) { return !Array.isArray(data[phase]); })) return null;
+      var rows = phases.map(function(phase) {
+        var members = data[phase].slice().sort(function(a, b) { return IslandModel.value(a, trait) - IslandModel.value(b, trait) || a.id - b.id; });
+        return { phase: phase, members: members, mean: IslandModel.stats(members).means[trait] };
+      });
+      function difference(a, b) { return a.mean === null || b.mean === null ? null : (b.mean - a.mean) * 100; }
+      return { trait: trait, rows: rows, survival: difference(rows[0], rows[1]), birth: difference(rows[1], rows[2]), total: difference(rows[0], rows[2]) };
+    },
+    populations: function(world, from, to, trait) {
+      if (!world || !Array.isArray(world.history) || !Number.isInteger(from) || !Number.isInteger(to) || from < 0 || to < 0 || IslandModel.traits.indexOf(trait) < 0) return null;
+      var frames = [world.history[from], world.history[to]];
+      if (frames.some(function(frame) { return !frame || !Array.isArray(frame.population); })) return null;
+      var rows = frames.map(function(frame, index) {
+        return { generation: index ? to : from, habitat: frame.habitat, selection: frame.selection,
+          distribution: IslandObservation.distribution(frame.population, trait),
+          range: IslandObservation.range(frame.population, trait, frame.habitat, frame.selection) };
+      });
+      var a = rows[0].distribution.mean, b = rows[1].distribution.mean;
+      return { seed: world.seed, trait: trait, rows: rows, difference: a === null || b === null ? null : (b - a) * 100 };
+    },
     lens: function(value) { return value === 'survival' || IslandModel.traits.indexOf(value) >= 0 ? value : 'natural'; },
     measure: function(organism, lens, habitat, selection) {
       if (IslandModel.traits.indexOf(lens) >= 0) return IslandModel.value(organism, lens);
@@ -519,6 +541,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
     }
   };
   window.StemLab.evoIslandObservation = IslandObservation;
+
+  // Count probabilities under independent survival draws. This calculation reads
+  // modeled chances only; it never samples or advances the expedition's RNG.
+  var IslandCountOdds = {
+    distribution: function(probabilities) {
+      if (!Array.isArray(probabilities) || probabilities.length > 60 || Array.from(probabilities).some(function(p) { return typeof p !== 'number' || !Number.isFinite(p) || p < 0 || p > 1; })) return null;
+      var mass = [1], expected = 0, variance = 0;
+      probabilities.forEach(function(p) {
+        var next = Array(mass.length + 1).fill(0);
+        mass.forEach(function(value, k) { next[k] += value * (1 - p); next[k + 1] += value * p; });
+        mass = next; expected += p; variance += p * (1 - p);
+      });
+      return { count: probabilities.length, mass: mass, expected: expected, variance: variance };
+    },
+    forecast: function(world) {
+      if (!world || !Number.isInteger(world.generation) || !Array.isArray(world.history) || !world.history[world.generation] || !Array.isArray(world.history[world.generation].population)) return null;
+      var plan = IslandObservation.forecast(world);
+      if (!plan) return null;
+      var probabilities = world.history[world.generation].population.map(function(o) { return IslandModel.chance(o, IslandModel.habitats[plan.habitat], plan.selection); });
+      var data = IslandCountOdds.distribution(probabilities);
+      return data ? Object.assign({}, data, { generation: plan.generation, habitat: plan.habitat, selection: plan.selection }) : null;
+    },
+    band: function(data, low, high) {
+      if (!data || !Array.isArray(data.mass) || !Number.isInteger(low) || !Number.isInteger(high) || low < 0 || high > data.count || low > high) return null;
+      return Math.max(0, Math.min(1, data.mass.slice(low, high + 1).reduce(function(sum, p) { return sum + p; }, 0)));
+    },
+    central: function(data) {
+      if (!data || !Array.isArray(data.mass) || !data.mass.length) return null;
+      function quantile(p) { var sum = 0; for (var k = 0; k < data.mass.length; k++) { sum += data.mass[k]; if (sum >= p) return k; } return data.count; }
+      return { low: quantile(0.1), high: quantile(0.9) };
+    }
+  };
+  window.StemLab.evoIslandCountOdds = IslandCountOdds;
+
 
   // Separate chance streams repeat survival only. They never advance the expedition,
   // resample its climate, reproduce, or consume any of its saved RNG state.
@@ -1287,6 +1343,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
 
     .ei-highlights{grid-template-columns:minmax(0,1fr);background:linear-gradient(140deg,#fffdf4,#edf2e7);border-color:#b9cbbb}.ei-highlights:focus{outline:3px solid #ae591d;outline-offset:3px}.ei-highlights .ei-kicker{color:#45654f;letter-spacing:1.2px}.ei-highlights .ei-row>div{min-width:0}.ei-highlight-navigation{display:flex;justify-content:space-between;align-items:center;font-size:12px}.ei-highlight-navigation button{min-width:44px}.ei-highlight-moment{display:grid;gap:12px;border:1px solid #c3d2bb;background:#fffef8;border-radius:13px;padding:13px;min-width:0}.ei-highlight-banner{display:flex;gap:12px;align-items:center;background:#e7edd9;padding:12px;border-radius:9px;color:#294a39}.ei-highlight-banner strong,.ei-highlight-banner small{display:block}.ei-highlight-banner strong{font-size:24px;line-height:1.5}.ei-highlight-banner .ei-portrait{width:54px;height:64px}.ei-highlight-icon{font-size:35px;width:52px;text-align:center;flex-shrink:0}.ei-highlight-moment h3{font-size:18px}.ei-highlight-fact{font-weight:750;font-size:15px;overflow-wrap:anywhere}.ei-highlight-delta{font-size:22px;font-weight:750;color:#3b6042}.ei-highlight-cohorts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.ei-highlight-cohorts>div{border:1px solid #d6dfcc;padding:9px 6px;border-radius:8px;text-align:center;background:#f2f4e8}.ei-highlight-cohorts strong{display:block;font-size:22px}.ei-highlight-cohorts small{display:block;font-size:10px}.ei-highlight-collection{border-top:1px solid #c6d3bc;padding-top:14px}.ei-highlight-chips{display:grid;gap:7px}.ei-highlight-chips button{text-align:left;font-size:11px}.ei-highlight-chips button[aria-pressed=true]{border-color:#45694c;background:#e0eacf}.ei-highlights select{font-size:12px;min-width:0}.ei-highlights details{min-width:0}.ei-highlights summary{font-size:12px}
 
+    .ei-count-odds{min-width:0;padding:14px;background:#fffdf5;border:1px solid #bccfb9;border-radius:12px}.ei-count-odds h3{font-size:18px;margin:3px 0 7px}.ei-odds-chart{min-width:0}.ei-odds-chart svg{display:block;width:100%;height:auto}.ei-odds-legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:11px;color:#3d5548}.ei-odds-legend span{display:flex;align-items:center;gap:5px}.ei-odds-legend i{display:inline-block;width:16px;height:9px;flex:none;background:#326951}.ei-odds-legend .ei-odds-mean-key{height:0;border-top:2px dashed #246385;background:none}.ei-odds-legend .ei-odds-trials-key{background:#a2601e}.ei-count-odds>label,.ei-odds-range label{font-size:12px;font-weight:650;display:block}.ei-count-odds input[type=range]{width:100%;min-height:40px;accent-color:#326951}.ei-odds-inspected{display:grid;gap:4px}.ei-odds-range{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.ei-odds-range input{width:100%;font-size:18px;margin-top:5px}.ei-odds-result{border-left:4px solid #326951;background:#eaf1e5;border-radius:5px;padding:10px 12px}.ei-odds-result strong{font-size:15px}.ei-odds-result p{margin-top:6px}.ei-odds-disclosure>summary{font-weight:700;cursor:pointer;margin-bottom:10px}.ei-count-odds .ei-row button{font-size:12px;flex:1 1 120px;min-height:44px}.ei-count-odds button{min-height:44px}@media(max-width:600px){.ei-count-odds{padding:10px}.ei-count-odds h3{font-size:17px}.ei-odds-range{gap:9px}.ei-odds-range label{font-size:11px}.ei-odds-result{padding:9px}.ei-odds-result strong{font-size:14px}}@media(forced-colors:active){.ei-count-odds,.ei-odds-result{border:1px solid CanvasText}.ei-odds-chart svg{forced-color-adjust:none}}
+
     .ei-app .ei-forecast-launch{margin-left:auto;padding:5px 10px;min-height:30px;font-size:11px;white-space:nowrap;background:#fffdf4;border-color:#b6c6a1}.ei-round-forecast{min-width:0;padding:17px;background:#f4f5e9;border:1px solid #b7cdb8;border-radius:15px;scroll-margin-top:calc(var(--ei-command-height,140px) + 14px)}.ei-round-forecast h2{font-size:21px;margin:4px 0}.ei-round-forecast>small{font-size:11px;line-height:1.5;color:#415c4d}.ei-forecast-entry{display:grid;grid-template-columns:minmax(0,1fr) 90px;gap:18px;align-items:end}.ei-forecast-entry label{display:block;font-size:12px;margin-bottom:7px}.ei-forecast-entry input[type=range]{width:100%;min-height:40px}.ei-forecast-entry input[type=number]{width:100%;font-weight:700;font-size:20px}.ei-forecast-preview{padding:10px 12px;border-radius:10px;background:#e7eef0;border:1px solid #bdced1}.ei-forecast-preview strong{font-size:14px}.ei-forecast-dots{display:block;width:100%;max-width:400px;margin:7px 0 0}.ei-forecast-clue summary{font-size:12px;font-weight:700;cursor:pointer}.ei-forecast-clue p{margin-top:8px}.ei-forecast-result{padding:12px;margin:12px 0;border:1px solid #b8cebd;border-radius:11px;background:#f1f6eb}.ei-forecast-result>strong{font-size:14px;color:#2f573d}.ei-forecast-comparison{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.ei-forecast-comparison small{display:block;font-size:11px}.ei-forecast-comparison b{font-size:25px;line-height:1.4}.ei-forecast-result button{justify-self:start}.ei-round-forecast:focus{outline:3px solid #ae591d;outline-offset:2px}@media(max-width:600px){.ei-round-forecast{padding:12px}.ei-forecast-entry{grid-template-columns:minmax(0,1fr) 80px;gap:10px}.ei-forecast-comparison{grid-template-columns:minmax(0,1fr);gap:12px}.ei-app .ei-forecast-launch{margin-left:0}.ei-forecast-result{padding:10px}.ei-round-forecast h2{font-size:19px}}
     .ei-draw-details{min-width:0;border:1px solid #b8cccb;border-radius:11px;background:#edf4f2;padding:12px;scroll-margin-top:calc(var(--ei-command-height,140px) + 14px)}.ei-draw-details>summary{cursor:pointer;font-size:13px;font-weight:750;padding:3px 0}.ei-draw-microscope{margin-top:14px;min-width:0;grid-template-columns:minmax(0,1fr)}.ei-draw-microscope h3{font-size:19px;margin:6px 0}.ei-draw-microscope h4{font-size:15px;margin:0}.ei-draw-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:#365548}.ei-draw-legend>span{display:flex;align-items:center;gap:6px}.ei-draw-legend i{width:13px;height:13px;border-radius:3px;border:1px solid #617a70;display:inline-block}.ei-draw-zone{background:#b5d1b5}.ei-draw-outside{background:#eadfd4}.ei-draw-panels{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}.ei-draw-panel{min-width:0;background:#fffef7;border:1px solid #c4d6ce;border-radius:10px;padding:12px}.ei-draw-panel>.ei-row{gap:5px;flex-wrap:wrap}.ei-draw-panel small{overflow-wrap:anywhere}.ei-draw-chart{width:100%;height:auto;display:block;margin:12px 0 3px}.ei-draw-chart[data-draw-chart=practice]{touch-action:none;cursor:grab}.ei-draw-chart[data-draw-chart=practice]:active{cursor:grabbing}.ei-draw-result{border-left:3px solid #58796b;padding:9px 10px;background:#f0f4e9;margin:8px 0;min-width:0}.ei-draw-result strong{font-size:14px}.ei-draw-result p{overflow-wrap:anywhere;font-variant-numeric:tabular-nums}.ei-draw-result small{display:block;font-size:11px;line-height:1.5}.ei-draw-practice input{display:block;width:100%;min-height:40px;margin:4px 0;accent-color:#236783}.ei-draw-practice>label{font-size:12px}.ei-draw-practice>.ei-small{display:block;margin-top:10px}.ei-draw-panel button{width:100%;font-size:12px}.ei-draw-precision{font-size:11px;margin-top:10px}.ei-draw-precision summary{cursor:pointer}.ei-draw-precision dl{display:grid;grid-template-columns:minmax(0,1fr);gap:3px;font-variant-numeric:tabular-nums}.ei-draw-precision dd{margin:0 0 7px;overflow-wrap:anywhere}.ei-draw-details :focus-visible{outline:3px solid #346bd1;outline-offset:3px}@media(max-width:650px){.ei-draw-panels{grid-template-columns:minmax(0,1fr)}}@media(forced-colors:active){.ei-draw-details,.ei-draw-panel,.ei-draw-result{border:1px solid CanvasText}.ei-draw-chart{forced-color-adjust:none}}
     .ei-chance-residents{min-width:0;padding:12px;border:1px solid #b9ccbd;border-radius:12px;background:#fffdf4;scroll-margin-top:calc(var(--ei-command-height,140px) + 14px)}.ei-chance-residents>summary{font-size:13px;font-weight:750;cursor:pointer;padding:4px 0}.ei-chance-residents>.ei-stack{grid-template-columns:minmax(0,1fr);margin-top:12px;min-width:0}.ei-chance-residents select{width:100%;min-width:0;font-size:12px}.ei-chance-groups{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.ei-chance-groups>div{padding:9px;border-radius:9px;background:#eef2e7;border:1px solid #d0dac9}.ei-chance-groups b{display:block;font-size:22px}.ei-chance-groups small{display:block;font-size:11px}.ei-chance-identity{padding:10px;border-left:3px solid #6f8a51;background:#f0f3e4}.ei-chance-resident-nav{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ei-app .ei-chance-resident-nav button{justify-self:stretch}.ei-chance-resident-card{min-width:0;border:1px solid #c4d0c0;border-radius:11px;background:#f2f6ed;padding:13px}.ei-chance-resident-head{display:flex;align-items:center;gap:14px}.ei-chance-resident-head>div{min-width:0}.ei-chance-resident-head strong{display:block;overflow-wrap:anywhere;font-size:17px}.ei-chance-resident-head small{display:block;font-size:11px}.ei-chance-resident-head b{display:block;font-size:26px;margin-top:6px}.ei-chance-resident-head .ei-portrait{width:78px;height:86px;flex-shrink:0}.ei-chance-resident-traits{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px;padding-top:10px;border-top:1px solid #cbd6c6}.ei-chance-resident-traits small{display:block;font-size:11px}.ei-chance-resident-traits b{display:block;font-size:17px}.ei-chance-resident-scale{display:block;font-size:10px;margin-top:7px}.ei-chance-outcomes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.ei-chance-outcomes>div{background:#ecebe2;border:1px solid #c9cabc;padding:10px;border-radius:8px}.ei-chance-outcomes>div[data-survived=true]{background:#e1efdf;border-color:#98b395}.ei-chance-outcomes small{display:block;font-size:11px}.ei-chance-outcomes strong{display:block;font-size:14px;margin-top:3px}.ei-chance-trail-label{font-size:13px;margin:0}.ei-chance-trail{display:grid;grid-template-columns:repeat(auto-fit,minmax(42px,1fr));gap:6px}.ei-app .ei-chance-trail button{min-height:48px;justify-self:stretch;display:grid;place-items:center;gap:2px;padding:5px;font-size:12px;background:#eeeee6;border-color:#bac8b7}.ei-app .ei-chance-trail button[data-survived=true]{background:#e1efdf}.ei-app .ei-chance-trail button[aria-pressed=true]{border:2px solid #315942;box-shadow:inset 0 0 0 1px #315942}.ei-chance-trail button span{font-size:15px;line-height:1}.ei-chance-trail button b{font-size:11px}@media(max-width:600px){.ei-chance-residents{padding:10px}.ei-chance-groups{grid-template-columns:1fr 1fr;gap:6px}.ei-chance-resident-head{gap:9px}.ei-chance-resident-head .ei-portrait{width:58px;height:68px}.ei-chance-resident-head strong{font-size:15px}.ei-chance-resident-head b{font-size:23px}.ei-chance-outcomes{grid-template-columns:minmax(0,1fr)}.ei-chance-resident-card{padding:10px}.ei-chance-resident-traits small{font-size:10px}}@media(forced-colors:active){.ei-app .ei-chance-trail button[aria-pressed=true]{outline:2px solid Highlight;outline-offset:2px}}
@@ -1302,6 +1360,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
     .ei-siblings{border-top:1px solid #c7d7c5;padding-top:10px}.ei-siblings>summary{font-size:12px;font-weight:700;cursor:pointer;line-height:1.5}.ei-siblings>.ei-stack{margin-top:10px}.ei-sibling-groups,.ei-sibling-comparison{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.ei-app .ei-sibling-groups button{display:flex;align-items:center;justify-content:space-between;gap:5px;padding:9px 8px;font-size:11px}.ei-app .ei-sibling-groups button[aria-pressed=true]{background:#255c47;color:#fffef7;border-color:#255c47}.ei-sibling-groups span{font-variant-numeric:tabular-nums}.ei-sibling-browse{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:5px;text-align:center}.ei-app .ei-sibling-browse button{font-size:10px;padding:7px 4px;min-height:36px}.ei-sibling-browse small{font-variant-numeric:tabular-nums}.ei-sibling-parents{overflow-wrap:anywhere}.ei-siblings{min-width:0}.ei-siblings select{max-width:100%;min-width:0}
     .ei-app .ei-birth-shortcut{display:grid;gap:3px;text-align:left;background:#f0eee1;border-color:#c4bb96}.ei-birth-shortcut small{font-size:11px;font-weight:400}.ei-birth-resemblance>summary{scroll-margin-top:12px}.ei-birth-intro{margin:10px 0!important}.ei-parent-visits{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.ei-app .ei-parent-visits button{display:grid;gap:4px;padding:8px 5px;min-width:0;font-size:11px}.ei-parent-visits small{font-size:10px;overflow-wrap:anywhere;font-weight:400}.ei-parent-return{display:grid;gap:7px;padding:12px;border:1px solid #b9ccbf;border-radius:10px;background:#edf2e6}.ei-parent-return>small{font-size:11px}.ei-parent-return>strong{font-size:13px;overflow-wrap:anywhere}
 `;
+
+  islandCSS += `
+    .ei-app .ei-replay,.ei-app .ei-populations{scroll-margin-top:calc(var(--ei-command-height,140px) + 14px)}@media(max-width:900px){.ei-app .ei-replay,.ei-app .ei-populations{scroll-margin-top:calc(var(--ei-command-height,140px) + var(--ei-desk-tabs-height,56px) + 28px)}}.ei-replay:focus{outline:3px solid #a65f1f;outline-offset:3px}
+    .ei-cohort-shifts{display:grid;grid-template-columns:1fr 1fr;gap:9px}.ei-app .ei-cohort-shifts button{display:grid;gap:4px;text-align:left;padding:12px;background:#edf2e6;min-width:0}.ei-cohort-shifts strong{font-size:27px;line-height:1.2;font-variant-numeric:tabular-nums}.ei-cohort-shifts small{font-size:11px;color:inherit}.ei-cohort-shifts button[aria-pressed=true]{border:2px solid #386b57;padding:11px;background:#e1ecde}.ei-cohort-plots{display:grid;gap:9px}.ei-cohort-plot{border:1px solid #c5d3c4;border-radius:11px;padding:9px 10px;background:#fffef8;min-width:0}.ei-cohort-plot[data-active=true]{border-color:#638575;background:#f0f5e9}.ei-cohort-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}.ei-app .ei-cohort-heading button{display:flex;align-items:center;gap:8px;padding:5px 8px;font-size:12px;min-height:36px;background:transparent;border-color:transparent}.ei-cohort-heading button span{font-size:11px;font-weight:500}.ei-cohort-mean{text-align:right;font-variant-numeric:tabular-nums}.ei-cohort-mean strong{font-size:20px;display:block;line-height:1.2}.ei-cohort-mean small{font-size:10px}.ei-cohort-plot svg{display:block;width:100%;height:auto;overflow:visible}.ei-cohort-dot{cursor:pointer;outline:none}.ei-cohort-dot:focus-visible .ei-cohort-mark{stroke:#245dcc;stroke-width:3}.ei-cohort-plot svg text{font-size:10px;fill:#415b4b}.ei-cohort-picker{min-width:0;display:grid;gap:8px}.ei-cohort-picker select{min-width:0;font-size:12px}.ei-cohort-browse{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ei-app .ei-cohort-browse button{padding:8px;font-size:12px;min-width:0}.ei-cohort-specimen{padding:13px;border:1px solid #bfcbb5;border-radius:12px;background:#f2f0e2;min-width:0}.ei-cohort-specimen-head{display:flex;gap:12px;align-items:center}.ei-cohort-specimen-head>div{flex:1;min-width:0}.ei-cohort-specimen-head .ei-portrait{width:62px;height:72px;flex-shrink:0}.ei-cohort-specimen h3{font-size:16px;overflow-wrap:anywhere}.ei-cohort-specimen-head b{font-size:27px;line-height:1.2;display:block;font-variant-numeric:tabular-nums}.ei-cohort-specimen-head small{font-size:11px;display:block}.ei-cohort-specimen .ei-stack{gap:9px}.ei-cohort-specimen p{font-size:12px;line-height:1.5}.ei-app .ei-cohort-specimen button{font-size:12px;padding:8px 10px}.ei-cohort-empty{padding:12px 4px;font-size:12px;color:#455b4d}.ei-cohort-scale{font-size:11px;line-height:1.5}.ei-replay [data-cohort-record]{font-size:12px}
+    @media(max-width:480px){.ei-cohort-plot{padding:8px}.ei-cohort-shifts{gap:7px}.ei-app .ei-cohort-shifts button{padding:10px}.ei-cohort-shifts button[aria-pressed=true]{padding:9px}.ei-cohort-shifts strong{font-size:24px}.ei-cohort-specimen{padding:11px}}
+    @media(forced-colors:active){.ei-cohort-plot{border-color:CanvasText}.ei-cohort-plot[data-active=true],.ei-cohort-shifts button[aria-pressed=true]{border:2px solid Highlight}.ei-cohort-mark{fill:CanvasText}.ei-cohort-dot[aria-pressed=true] .ei-cohort-mark{stroke:Highlight;stroke-width:3}.ei-cohort-dot:focus-visible .ei-cohort-mark{stroke:Highlight}.ei-cohort-mean-line{stroke:CanvasText}}
+  `;
+
+  islandCSS += `
+    .ei-populations{border:1px solid #bccbb5;border-radius:11px;background:#f5f5e9;padding:11px}.ei-populations>summary{font-size:13px;font-weight:700}.ei-populations:focus{outline:3px solid #a65f1f;outline-offset:3px}.ei-pop-content{margin-top:14px;min-width:0}.ei-pop-content h3{font-size:17px}.ei-pop-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.ei-pop-snapshot{display:grid;gap:5px;min-width:0;padding:10px;border:1px solid #c8d4c5;border-radius:10px;background:#fffef8}.ei-pop-snapshot label{font-size:11px}.ei-pop-snapshot select{font-size:11px;min-width:0;width:100%;padding:6px}.ei-pop-snapshot>strong{font-size:26px;line-height:1.1;font-variant-numeric:tabular-nums}.ei-pop-snapshot>small{font-size:10px;overflow-wrap:anywhere}.ei-pop-content select{min-width:0;max-width:100%}.ei-pop-table{table-layout:fixed;width:100%;font-size:11px}.ei-pop-table caption{text-align:left;font-weight:700;margin-bottom:9px}.ei-pop-table th:first-child{width:58px}.ei-pop-table thead small{display:block;font-size:10px;font-weight:400;margin-top:4px}.ei-pop-table :is(th,td){padding:5px 3px!important;overflow-wrap:anywhere}.ei-pop-table tbody th{font-size:10px}.ei-app .ei-pop-bin{display:grid;gap:4px;width:100%;padding:8px 5px;font-size:12px;min-width:0;background:#fffef8;border:1px solid #bdcdbb}.ei-app .ei-pop-bin[aria-pressed=true]{outline:2px solid #315f50;outline-offset:-2px;background:#e6efdf}.ei-pop-bin small{font-size:10px}.ei-pop-bar{display:block;height:9px;border-radius:4px;background:#e0e6dc;overflow:hidden}.ei-pop-bar i{display:block;height:100%;background:#506e75}.ei-pop-bar i[data-population-color="1"]{background:#946321}.ei-pop-difference{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:11px;border-radius:9px;background:#e9edde}.ei-pop-difference strong{font-size:24px;font-variant-numeric:tabular-nums}.ei-pop-difference :is(span,small){font-size:11px}.ei-pop-inspector{display:grid;gap:9px;border:1px solid #c3cfb8;border-radius:10px;padding:11px;background:#fffdf4;min-width:0}.ei-pop-inspector .ei-stack{gap:9px}.ei-app .ei-pop-inspector button{font-size:12px;padding:8px}.ei-pop-resident{display:flex;gap:12px;align-items:center}.ei-pop-resident .ei-portrait{width:58px;height:68px;flex-shrink:0}.ei-pop-resident>div{display:grid;gap:5px;min-width:0}.ei-pop-resident strong{overflow-wrap:anywhere}.ei-pop-resident small{font-size:11px}.ei-pop-resident b{font-size:21px;font-variant-numeric:tabular-nums}
+    @media(max-width:480px){.ei-populations{padding:9px}.ei-pop-snapshot{padding:8px}.ei-pop-table th:first-child{width:50px}.ei-pop-choices{gap:6px}}
+    @media(forced-colors:active){.ei-pop-bar{border:1px solid CanvasText}.ei-pop-bar i{background:CanvasText}.ei-pop-bin[aria-pressed=true]{outline-color:Highlight}}
+  `;
 
   function IslandPortrait(props) {
     var h = props.React.createElement, o = props.organism, shade = IslandModel.value(o, 'shade'), fur = IslandModel.value(o, 'fur'), legs = IslandModel.value(o, 'legs');
@@ -1551,30 +1622,170 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
     }));
   }
 
+  function IslandPopulationComparison(props) {
+    var R = props.React, h = R.createElement, tx = props.tx, end = props.world.history.length - 1;
+    var openState = R.useState(false), open = openState[0], setOpen = openState[1];
+    var choiceState = R.useState({ from: 0, to: props.generation, pick: null, id: null }), choice = choiceState[0], setChoice = choiceState[1];
+    var request = R.useRef(props.request), started = R.useRef(false), previousEnd = R.useRef(end);
+    function start() { started.current = true; setChoice({ from: 0, to: props.generation || end, pick: null, id: null }); }
+    R.useEffect(function() {
+      if (request.current === props.request) return;
+      request.current = props.request; start(); setOpen(true);
+    }, [props.request]);
+    R.useEffect(function() {
+      if (end < previousEnd.current) {
+        started.current = false; setOpen(false); setChoice({ from: 0, to: end, pick: null, id: null });
+      }
+      previousEnd.current = end;
+    }, [end]);
+    var from = Math.min(choice.from, end), to = Math.min(choice.to, end);
+    var evidence = IslandObservation.populations(props.world, from, to, props.trait), rows = evidence.rows;
+    var picked = choice.pick && choice.pick.trait === props.trait ? choice.pick : null, row = picked && rows[picked.side], bin = row && row.distribution.bins[picked.index];
+    var individual = bin && bin.members.find(function(o) { return o.id === choice.id; }) || null;
+    var position = individual ? bin.members.indexOf(individual) : -1;
+    var viewing = !!(picked && props.generation === row.generation && props.phase === 'offspring' && props.lens === props.trait && props.spotlightBin === picked.index);
+    var roundedDifference = evidence.difference == null ? null : Math.round(evidence.difference * 10) / 10;
+    function value(n) { return n == null ? '—' : (n * 100).toFixed(1); }
+    function share(n) { return n == null ? '—' : (n * 100).toFixed(1) + '%'; }
+    function bounds(index) { return index * 20 + '–' + (index === 4 ? '100' : '<' + (index + 1) * 20); }
+    function chooseRange(side, index) {
+      var members = rows[side].distribution.bins[index].members, id = members.length ? members[0].id : null;
+      setChoice({ from: from, to: to, pick: { side: side, index: index, trait: props.trait }, id: id });
+      props.onVisit(rows[side].generation, index, id);
+    }
+    function chooseIndividual(id) {
+      if (!bin || !bin.members.some(function(o) { return o.id === id; })) return;
+      setChoice({ from: from, to: to, pick: picked, id: id }); props.onVisit(row.generation, picked.index, id);
+    }
+    function chooseGeneration(side, generation) {
+      props.onPause(); setChoice({ from: side ? from : generation, to: side ? generation : to, pick: null, id: null });
+    }
+    return h('details', { className: 'ei-populations', ref: props.sectionRef, tabIndex: -1, open: open, 'data-population-comparison': true,
+      onToggle: function(e) { var next = e.currentTarget.open; if (next) { props.onPause(); if (!started.current) start(); } setOpen(next); } },
+      h('summary', null, tx('populations_open', 'Explore variation through time')),
+      open && h('div', { className: 'ei-stack ei-pop-content' },
+        h('h3', null, tx('populations_title', 'Compare two recorded populations')),
+        h('p', { className: 'ei-small' }, tx('populations_intro', 'An average hides the individuals behind it. Compare the whole spread, then choose a range to meet its actual spriglets on the island.')),
+        h('div', { className: 'ei-pop-choices' }, rows.map(function(record, side) {
+          return h('div', { key: side, className: 'ei-pop-snapshot', 'data-population-side': side, 'data-population-generation': record.generation },
+            h('label', { htmlFor: 'ei-pop-generation-' + side }, side ? tx('populations_comparison', 'Comparison generation') : tx('populations_reference', 'Reference generation')),
+            h('select', { id: 'ei-pop-generation-' + side, value: record.generation, onChange: function(e) { chooseGeneration(side, Number(e.target.value)); } },
+              props.world.history.map(function(frame) { return h('option', { key: frame.generation, value: frame.generation }, 'G' + frame.generation + ' · ' + frame.population.length + ' ' + tx('cohort_individuals', 'individuals')); })),
+            h('small', null, tx('habitat_' + record.habitat, IslandModel.habitats[record.habitat].name)),
+            h('small', null, record.selection ? tx('populations_selection', 'Trait advantages were on.') : tx('populations_neutral', 'Trait advantages were off.')),
+            h('strong', { 'data-population-mean': record.distribution.mean }, value(record.distribution.mean)),
+            h('small', null, tx('mean', 'Mean') + ' · ' + props.labels[props.trait] + ' / 100'),
+            h('small', { 'data-population-extent': true }, tx('populations_extent', 'Range') + ': ' + (record.range ? value(record.range.minimum) + '–' + value(record.range.maximum) : '—')));
+        })),
+        h('div', { className: 'ei-row ei-between' }, h('label', { htmlFor: 'ei-pop-trait' }, tx('populations_trait', 'Compare this inherited trait')),
+          h('select', { id: 'ei-pop-trait', value: props.trait, onChange: function(e) { setChoice({ from: from, to: to, pick: null, id: null }); props.onTrait(e.target.value); } },
+            IslandModel.traits.map(function(trait) { return h('option', { key: trait, value: trait }, props.labels[trait]); }))),
+        from === to && h('p', { className: 'ei-callout ei-small' }, end ? tx('populations_same', 'Both panels show the same recorded generation. Choose two different generations to look for change.') : tx('populations_first', 'These are your founders. Record another generation to compare their population with its offspring.')),
+        h('p', { className: 'ei-small' }, tx('populations_scale', 'Trait ranges use the 0–100 teaching scale. Higher is not always better. Bars show shares of each generation’s own population. Empty populations have no defined mean or share.')),
+        h('table', { className: 'ei-pop-table' },
+          h('caption', null, tx('populations_distribution', 'Where the inherited variation is')),
+          h('thead', null, h('tr', null, h('th', { scope: 'col' }, tx('populations_range', 'Trait range')), rows.map(function(record, side) { return h('th', { key: side, scope: 'col' }, 'G' + record.generation, h('small', null, record.distribution.total + ' ' + tx('cohort_individuals', 'individuals'))); }))),
+          h('tbody', null, [0, 1, 2, 3, 4].map(function(index) { return h('tr', { key: index }, h('th', { scope: 'row' }, bounds(index)),
+            rows.map(function(record, side) {
+              var group = record.distribution.bins[index], active = picked && picked.side === side && picked.index === index;
+              return h('td', { key: side }, h('button', { type: 'button', className: 'ei-pop-bin', 'aria-pressed': !!active, 'data-population-bin': side + ':' + index,
+                'data-population-count': group.count, 'data-population-share': group.share,
+                'aria-label': tx('populations_highlight', 'Highlight this range') + ' · ' + tx('generation', 'Generation') + ' ' + record.generation + ' · ' + props.labels[props.trait] + ' ' + bounds(index) + ' · ' + group.count + ' / ' + record.distribution.total,
+                onClick: function() { chooseRange(side, index); } },
+                h('span', { className: 'ei-pop-bar', 'aria-hidden': true }, h('i', { style: { width: (group.share || 0) * 100 + '%' }, 'data-population-color': side })),
+                h('b', null, share(group.share)), h('small', null, group.count + ' / ' + record.distribution.total)));
+            })); }))),
+        h('div', { className: 'ei-pop-difference' }, h('span', null, tx('populations_difference', 'Mean difference')), h('strong', { 'data-population-difference': evidence.difference }, roundedDifference == null ? '—' : (roundedDifference > 0 ? '+' : '') + (roundedDifference || 0).toFixed(1)), h('small', null, tx('cohort_points', 'trait points'))),
+        picked && h('div', { className: 'ei-pop-inspector', 'data-population-picked': picked.side + ':' + picked.index },
+          h('p', { className: 'ei-small', role: props.visible ? 'status' : undefined }, 'G' + row.generation + ' · ' + bounds(picked.index) + ' · ' + bin.count + ' / ' + row.distribution.total + ' ' + tx('cohort_individuals', 'individuals') + (viewing ? ' · ' + tx('populations_viewing', 'Highlighted on the island') : '')),
+          h('button', { type: 'button', onClick: function() { props.onVisit(row.generation, picked.index, individual ? individual.id : null); props.onFind(); } }, tx('populations_find', 'Show this range on the island')),
+          !bin.count ? h('p', { className: 'ei-small' }, row.distribution.total ? tx('populations_empty_range', 'No individuals occupy this range in this recorded population. The other ranges still contain the island’s residents.') : tx('populations_empty_population', 'This population has no individuals. Its mean and shares are undefined. Earlier recorded populations remain available to explore.')) :
+            h('div', { className: 'ei-stack' }, h('label', { htmlFor: 'ei-pop-individual' }, tx('populations_member', 'Meet an individual in this range')),
+              h('select', { id: 'ei-pop-individual', value: individual ? individual.id : '', onChange: function(e) { chooseIndividual(Number(e.target.value)); } },
+                bin.members.map(function(o) { return h('option', { key: o.id, value: o.id }, props.nameOf(o.id) + ' · #' + o.id + ' · ' + value(IslandModel.value(o, props.trait))); })),
+              h('div', { className: 'ei-cohort-browse' }, h('button', { type: 'button', disabled: position <= 0, onClick: function() { chooseIndividual(bin.members[position - 1].id); } }, tx('cohort_previous', 'Previous individual')),
+                h('button', { type: 'button', disabled: position < 0 || position >= bin.members.length - 1, onClick: function() { chooseIndividual(bin.members[position + 1].id); } }, tx('cohort_next', 'Next individual'))),
+              individual && h('div', { className: 'ei-pop-resident', 'data-population-individual': individual.id }, h(IslandPortrait, { React: R, organism: individual }),
+                h('div', null, h('strong', null, props.nameOf(individual.id)), h('small', null, '#' + individual.id + ' · G' + individual.born), h('b', null, value(IslandModel.value(individual, props.trait)) + ' / 100'))),
+              individual && h('button', { type: 'button', onClick: function() { props.onVisit(row.generation, picked.index, individual.id); props.onLife(individual.id); } }, tx('populations_life', 'Follow this individual’s story')))),
+        h('p', { className: 'ei-small' }, tx('populations_limits', 'Individuals keep their original genes. One expedition does not isolate the effects of selection, chance, inheritance or mutation. Your two comparison generations stay fixed while you visit their organisms.')),
+        h('button', { type: 'button', onClick: function() { props.onRecord(evidence, picked, individual); } }, tx('populations_save', 'Save this population comparison'))));
+  }
   function IslandReplay(props) {
     var h = props.React.createElement, tx = props.tx, data = props.data;
     if (!data) return h('div', { className: 'ei-callout' }, h('strong', null, tx('replay_wait_title', 'Watch the next generation unfold. ')), tx('replay_wait', 'Advance once to reveal which parents survived and what their offspring inherited. You can replay the same evidence as often as you like.'));
+    var evidence = IslandObservation.cohorts(data, props.trait), rows = evidence.rows;
     var labels = { parents: tx('replay_parents', 'Parents'), survivors: tx('replay_survivors', 'Survivors'), offspring: tx('replay_offspring', 'Offspring') };
     var hints = {
       parents: tx('replay_parent_hint', 'These are the parents before survival was sampled. Their genes stay the same throughout their lives.'),
       survivors: tx('replay_survivor_hint', 'These are the actual survivors, still in their original places. Everyone else left no offspring in this round.'),
       offspring: tx('replay_child_hint', 'These are new individuals. Each inherited one allele per trait from each of two surviving parents.')
     };
-    function fmt(v) { return v == null ? '—' : Math.round(v * 100) + '%'; }
-    return h('section', { className: 'ei-card ei-stack ei-replay', 'aria-label': tx('replay_title', 'Inside this generation') },
+    function fmt(v) { return v == null ? '—' : (v * 100).toFixed(1); }
+    function delta(v) { var rounded = Math.round(v * 10) / 10; return v == null ? '—' : (rounded > 0 ? '+' : '') + (rounded === 0 ? 0 : rounded).toFixed(1); }
+    var currentRow = rows.find(function(row) { return row.phase === props.phase; }) || rows[2];
+    var individual = currentRow.members.find(function(o) { return o.id === props.selected; }) || null;
+    var position = individual ? currentRow.members.indexOf(individual) : -1;
+    function choose(cohort, id) { props.onSelect(cohort, id); }
+    function chooseCohort(row) {
+      var member = row.members.find(function(o) { return o.id === props.selected; }) || row.members[0];
+      if (member) choose(row.phase, member.id); else props.onPhase(row.phase);
+    }
+    function dotKey(e, row, index) {
+      var next = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? Math.min(row.members.length - 1, index + 1) : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? Math.max(0, index - 1) : e.key === 'Home' ? 0 : e.key === 'End' ? row.members.length - 1 : -1;
+      if (next >= 0) {
+        e.preventDefault(); choose(row.phase, row.members[next].id);
+        var target = e.currentTarget.ownerSVGElement.querySelector('[data-cohort-dot="' + row.phase + ':' + row.members[next].id + '"]');
+        if (target) target.focus({ preventScroll: true });
+      } else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(row.phase, row.members[index].id); }
+    }
+    var survived = individual && data.survivors.some(function(o) { return o.id === individual.id; });
+    return h('section', { className: 'ei-card ei-stack ei-replay', ref: props.sectionRef, tabIndex: -1, 'aria-label': tx('replay_title', 'Inside this generation'), 'data-cohort-generation': props.generation, 'data-cohort-trait': props.trait },
       h('div', { className: 'ei-row ei-between' }, h('div', null, h('div', { className: 'ei-kicker' }, tx('replay_kicker', 'See the mechanism')), h('h2', null, tx('replay_title', 'Inside this generation'))), h('span', { className: 'ei-tag' }, 'G' + (props.generation - 1) + ' → G' + props.generation)),
       h('p', { className: 'ei-small', role: props.suppressLive ? undefined : 'status' }, hints[props.phase]),
       h('div', { className: 'ei-row ei-between' }, h('label', { htmlFor: 'ei-replay-trait' }, tx('replay_compare', 'Compare inherited variation')), h('select', { id: 'ei-replay-trait', className: 'ei-trait-select', value: props.trait, onChange: function(e) { props.onTrait(e.target.value); } }, IslandModel.traits.map(function(k) { return h('option', { key: k, value: k }, props.labels[k]); }))),
-      h('div', { className: 'ei-distributions', 'aria-hidden': true }, ['parents', 'survivors', 'offspring'].map(function(phase) {
-        var mean = data.means[phase][props.trait];
-        return h('div', { className: 'ei-distribution', key: phase }, h('span', null, labels[phase]),
-          h('svg', { viewBox: '0 0 320 42', focusable: 'false' }, h('line', { x1: 8, x2: 312, y1: 31, y2: 31, stroke: '#bdcbb9' }),
-            data[phase].map(function(o, i) { return h('circle', { key: o.id, cx: 8 + IslandModel.value(o, props.trait) * 304, cy: 12 + i % 3 * 6, r: 3.4, fill: phase === 'survivors' ? '#95641e' : props.colors[props.trait], opacity: 0.72 }); }),
-            mean != null && h('path', { d: 'M' + (8 + mean * 304) + ' 2v30', stroke: '#203d36', strokeWidth: 2 }),
-            h('text', { x: 8, y: 41 }, '0'), h('text', { x: 312, y: 41, textAnchor: 'end' }, '100%')),
-          h('strong', null, fmt(mean)));
+      h('div', { className: 'ei-cohort-shifts', role: 'group', 'aria-label': tx('cohort_shifts', 'Mean change at each step') },
+        [{ row: 1, value: evidence.survival, title: tx('cohort_survival_step', 'Survival step') }, { row: 2, value: evidence.birth, title: tx('cohort_birth_step', 'Birth step') }].map(function(step) {
+          return h('button', { key: step.row, type: 'button', 'data-cohort-shift': rows[step.row].phase, 'aria-pressed': props.phase === rows[step.row].phase, onClick: function() { chooseCohort(rows[step.row]); } },
+            h('small', null, step.title), h('strong', { 'data-cohort-delta': step.value }, delta(step.value)), h('small', null, tx('cohort_points', 'trait points')), h('small', null, fmt(rows[step.row - 1].mean) + ' → ' + fmt(rows[step.row].mean)));
+        })),
+      h('p', { id: 'ei-cohort-help', className: 'ei-small' }, tx('cohort_help', 'Select a dot to meet an individual. Use arrow keys to move through a row, or use the picker below. Gold rings link the same individual across rows.')),
+      h('div', { className: 'ei-cohort-plots' }, rows.map(function(row) {
+        var index = row.members.findIndex(function(o) { return o.id === props.selected; });
+        return h('div', { key: row.phase, className: 'ei-cohort-plot', 'data-cohort': row.phase, 'data-active': props.phase === row.phase },
+          h('div', { className: 'ei-cohort-heading' }, h('button', { type: 'button', 'aria-pressed': props.phase === row.phase, onClick: function() { chooseCohort(row); } }, labels[row.phase], h('span', null, row.members.length + ' · ' + tx('cohort_individuals', 'individuals'))), h('div', { className: 'ei-cohort-mean' }, h('strong', { 'data-cohort-mean': row.mean }, fmt(row.mean)), h('small', null, tx('mean', 'Mean')))),
+          !row.members.length ? h('p', { className: 'ei-cohort-empty' }, tx('cohort_empty', 'No individuals in this cohort. Its mean is undefined.')) :
+            h('svg', { viewBox: '0 0 320 76', role: 'group', 'aria-label': labels[row.phase] + ' · ' + props.labels[props.trait], 'aria-describedby': 'ei-cohort-help' },
+              h('line', { x1: 12, x2: 308, y1: 62, y2: 62, stroke: '#bccbb7', 'aria-hidden': true }),
+              row.mean != null && h('path', { className: 'ei-cohort-mean-line', d: 'M' + (12 + row.mean * 296) + ' 7v55', stroke: '#203d36', strokeWidth: 2, pointerEvents: 'none', 'aria-hidden': true }),
+              row.members.map(function(o, i) {
+                var value = IslandModel.value(o, props.trait), marked = o.id === props.selected;
+                return h('g', { key: o.id, className: 'ei-cohort-dot', role: 'button', tabIndex: i === (index < 0 ? 0 : index) ? 0 : -1,
+                  'data-cohort-dot': row.phase + ':' + o.id, 'data-cohort-value': value, 'aria-pressed': marked && props.phase === row.phase,
+                  'aria-label': props.nameOf(o.id) + ' · #' + o.id + ' · ' + labels[row.phase] + ' · ' + props.labels[props.trait] + ' ' + fmt(value) + ' / 100',
+                  onClick: function(e) { choose(row.phase, o.id); e.currentTarget.focus({ preventScroll: true }); }, onKeyDown: function(e) { dotKey(e, row, i); } },
+                  h('circle', { cx: 12 + value * 296, cy: 15 + i % 4 * 11, r: 8, fill: 'transparent' }),
+                  h('circle', { className: 'ei-cohort-mark', cx: 12 + value * 296, cy: 15 + i % 4 * 11, r: marked ? 5 : 4, fill: marked ? '#fffef8' : row.phase === 'survivors' ? '#95641e' : props.colors[props.trait], stroke: marked ? '#8a651e' : '#fffef8', strokeWidth: marked ? 3 : 0.8 }));
+              }),
+              index >= 0 && h('circle', { cx: 12 + IslandModel.value(row.members[index], props.trait) * 296, cy: 15 + index % 4 * 11, r: 8, fill: 'none', stroke: '#8a651e', strokeWidth: 2, pointerEvents: 'none', 'aria-hidden': true, 'data-cohort-linked': row.members[index].id }),
+              h('text', { x: 12, y: 74, 'aria-hidden': true }, '0'), h('text', { x: 308, y: 74, textAnchor: 'end', 'aria-hidden': true }, '100')));
       })),
+      h('div', { className: 'ei-cohort-picker' }, h('label', { htmlFor: 'ei-cohort-individual' }, tx('cohort_picker', 'Meet an individual in this cohort')),
+        h('select', { id: 'ei-cohort-individual', value: individual ? individual.id : '', disabled: !currentRow.members.length, onChange: function(e) { choose(currentRow.phase, Number(e.target.value)); } },
+          h('option', { value: '', disabled: true }, currentRow.members.length ? tx('cohort_choose', 'Choose a dot to investigate…') : tx('cohort_none', 'No individuals recorded')),
+          currentRow.members.map(function(o) { return h('option', { key: o.id, value: o.id }, props.nameOf(o.id) + ' · #' + o.id + ' · ' + fmt(IslandModel.value(o, props.trait))); })),
+        h('div', { className: 'ei-cohort-browse' }, h('button', { type: 'button', disabled: position <= 0, onClick: function() { choose(currentRow.phase, currentRow.members[position - 1].id); } }, tx('cohort_previous', 'Previous individual')),
+          h('button', { type: 'button', disabled: !currentRow.members.length || position === currentRow.members.length - 1, onClick: function() { choose(currentRow.phase, currentRow.members[position + 1].id); } }, tx('cohort_next', 'Next individual')))),
+      individual && h('div', { className: 'ei-cohort-specimen', 'data-cohort-specimen': individual.id },
+        h('div', { className: 'ei-cohort-specimen-head' }, h(IslandPortrait, { React: props.React, organism: individual }), h('div', null, h('small', null, labels[currentRow.phase] + ' · #' + individual.id + ' · G' + individual.born), h('h3', null, props.nameOf(individual.id)), h('b', null, fmt(IslandModel.value(individual, props.trait))), h('small', null, props.labels[props.trait] + ' / 100'))),
+        h('div', { className: 'ei-stack' }, h('p', { className: 'ei-small', role: props.visible && !props.suppressLive ? 'status' : undefined }, currentRow.phase === 'offspring' ? tx('cohort_newborn', 'A new individual with its own inherited combination. Its genes stay fixed throughout its lifetime.') : survived ? tx('cohort_survived', 'This individual survived the recorded round. Compare its two dots: the trait value stayed the same.') : tx('cohort_died', 'This individual did not survive the recorded round. It has no dot in the survivor row.')),
+          currentRow.phase !== 'offspring' && survived && h('button', { type: 'button', onClick: function() { choose(currentRow.phase === 'parents' ? 'survivors' : 'parents', individual.id); } }, currentRow.phase === 'parents' ? tx('cohort_same_survivor', 'Find this same survivor') : tx('cohort_same_parent', 'Compare with its earlier self')),
+          currentRow.phase === 'offspring' && h('div', { className: 'ei-row' }, individual.parents.map(function(id) { return h('button', { key: id, type: 'button', onClick: function() { choose('parents', id); } }, tx('cohort_find_parent', 'Find parent in this round') + ' · #' + id); })),
+          h('button', { type: 'button', onClick: function() { props.onLife(individual.id); } }, tx('cohort_life', 'Read this individual’s life story')))),
+      h('p', { className: 'ei-cohort-scale' }, tx('cohort_scale', 'Values use a 0–100 teaching scale. Higher is not always better. Dots can overlap; every individual is available in the picker.')),
       h('p', { className: 'ei-small' }, tx('replay_dots', 'Each dot is one organism; the dark line marks the mean. '), data.selection ? tx('replay_selection', 'Traits and chance both affected survival. The offspring mean can shift again through inheritance and random sampling.') : tx('replay_neutral', 'Trait advantages were off. Differences here arise from random survival, inheritance, and any mutations—not a survival advantage for a trait.')),
+      h('p', { className: 'ei-small' }, tx('cohort_limits', 'These numbers locate a change; they do not isolate its cause. The survival step includes chance. The birth step includes parent choice, inherited allele sampling, and any mutations.')),
+      h('button', { type: 'button', 'data-cohort-record': true, onClick: function() { props.onRecord(evidence, individual); } }, tx('cohort_save', 'Save this generation comparison')),
       h('details', null, h('summary', { className: 'ei-small' }, tx('replay_values', 'Read exact cohort means')), h('div', { className: 'ei-table-wrap' }, h('table', null,
         h('caption', { className: 'ei-small' }, props.labels[props.trait] + ' · ' + tx('replay_values_scale', 'mean on a 0–1 teaching scale')),
         h('thead', null, h('tr', null, h('th', { scope: 'col' }, tx('cohort', 'Cohort')), h('th', { scope: 'col' }, tx('population', 'Population')), h('th', { scope: 'col' }, tx('mean', 'Mean')))),
@@ -1743,6 +1954,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         h('b', { className: 'ei-report-delta' }, delta(shift.delta), h('small', null, tx('report_points', 'points'))),
         h('button', { type: 'button', onClick: function() { props.onReplay(shift.trait); } }, tx('report_replay', 'Investigate this shift'))) :
         h('div', { className: 'ei-callout' }, h('p', null, tx('report_no_offspring', 'There is no offspring cohort, so no new trait mean to compare. Revisit the actual survivors to investigate why the population ended.')), h('button', { type: 'button', onClick: function() { props.onReplay('fur'); } }, tx('report_review_survival', 'Investigate survival'))),
+      props.onCompare && h('button', { type: 'button', onClick: props.onCompare }, tx('populations_report', 'Compare across generations')),
       h('p', { className: 'ei-small' }, report.selection ? tx('report_selection', 'A mean can shift through survival differences, inheritance and chance. One generation alone does not establish adaptation.') : tx('report_neutral', 'Trait advantages were off in this round. Any mean shift comes from chance survival and inheritance, with mutation only when recorded.')),
       report.variant && h('div', { className: 'ei-report-variant' },
         h(IslandPortrait, { React: props.React, organism: report.variant }),
@@ -1768,6 +1980,64 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
     }));
   }
 
+  function IslandCountProbability(props) {
+    var R = props.React, h = R.createElement, tx = props.tx;
+    var data = R.useMemo(function() { return IslandCountOdds.forecast(props.world); }, [props.world]);
+    var initial = data ? IslandCountOdds.central(data) : { low: 0, high: 0 };
+    var rangeState = R.useState(initial), range = rangeState[0], setRange = rangeState[1];
+    var selectedState = R.useState(data ? Math.round(data.expected) : 0), selected = selectedState[0];
+    if (!data) return null;
+    var trials = props.trials || [], probability = IslandCountOdds.band(data, range.low, range.high), valid = probability !== null;
+    var observed = Array(data.count + 1).fill(0);
+    trials.forEach(function(row) { if (Number.isInteger(row.count) && row.count >= 0 && row.count <= data.count) observed[row.count]++; });
+    var within = valid ? trials.filter(function(row) { return row.count >= range.low && row.count <= range.high; }).length : null;
+    var peak = Math.max.apply(null, data.mass.concat(trials.length ? observed.map(function(n) { return n / trials.length; }) : []));
+    var slot = 500 / (data.count + 1), prefix = 'ei-count-odds-' + props.id;
+    function pct(p) { return p === 0 ? '0%' : p < 0.0005 ? '<0.05%' : (p * 100).toFixed(1) + '%'; }
+    function x(k) { return 80 + (k + 0.5) * slot; }
+    function height(p) { return peak ? p / peak * 140 : 0; }
+    function inspect(k) { selectedState[1](Math.max(0, Math.min(data.count, k))); }
+    function choose(k) { inspect(k); setRange({ low: k, high: k }); }
+    function changeBound(key, raw) { var next = Object.assign({}, range); next[key] = raw === '' ? '' : Number(raw); setRange(next); }
+    function label(k) { return __alloFill(k === 1 ? tx('odds_count_one', '1 survivor · modeled chance {chance}') : tx('odds_count_label', '{count} survivors · modeled chance {chance}'), { count: k, chance: pct(data.mass[k]) }); }
+    return h('section', { className: 'ei-count-odds ei-stack', 'data-count-odds': props.id, 'aria-label': tx('odds_title', 'How likely is a survivor count?') },
+      h('div', null, h('div', { className: 'ei-kicker' }, tx('odds_kicker', 'An average leaves room for surprises')), h('h3', null, tx('odds_title', 'How likely is a survivor count?')),
+        h('p', { className: 'ei-small' }, tx('odds_intro', 'Choose a range of survivor counts. The green bars show their modeled chances with these same residents and conditions. Tap a bar to choose one exact count.'))),
+      h('div', { className: 'ei-odds-chart' },
+        h('svg', { viewBox: '0 0 630 245', 'aria-hidden': true, focusable: false },
+          [0, 0.5, 1].map(function(fraction) { var y = 180 - fraction * 140; return h('g', { key: fraction }, h('line', { x1: 80, x2: 580, y1: y, y2: y, stroke: '#d4dfd3' }), h('text', { x: 70, y: y + 6, textAnchor: 'end', fill: '#3d5548', fontSize: 20 }, pct(peak * fraction))); }),
+          data.mass.map(function(p, k) { return h('g', { key: k, 'data-count-bar': k, 'data-count-probability': p, onClick: function() { choose(k); } },
+            h('rect', { x: 80 + k * slot, y: 34, width: slot, height: 147, fill: 'transparent', style: { cursor: 'pointer' } }),
+            h('rect', { x: 80 + k * slot + 1, y: 180 - height(p), width: Math.max(1, slot - 2), height: height(p), rx: 1, fill: valid && k >= range.low && k <= range.high ? '#326951' : '#a4b7a5', stroke: selected === k ? '#173f33' : 'none', strokeWidth: selected === k ? 2 : 0, style: { pointerEvents: 'none' } }),
+            trials.length > 0 && h('rect', { x: x(k) - Math.max(1, slot * 0.15), y: 180 - height(observed[k] / trials.length), width: Math.max(2, slot * 0.3), height: height(observed[k] / trials.length), fill: '#a2601e', style: { pointerEvents: 'none' } })); }),
+          h('line', { x1: x(data.expected), x2: x(data.expected), y1: 25, y2: 182, stroke: '#246385', strokeWidth: 2, strokeDasharray: '5 4' }),
+          Number.isInteger(props.recorded) && h('path', { d: 'M' + x(props.recorded) + ' 191l-5 8h10Z', fill: '#74522b', 'data-odds-recorded-marker': props.recorded }),
+          [0, Math.floor(data.count / 2), data.count].filter(function(k, i, values) { return values.indexOf(k) === i; }).map(function(k) { return h('text', { key: k, x: x(k), y: 215, textAnchor: 'middle', fill: '#3d5548', fontSize: 22 }, k); }),
+          h('text', { x: 330, y: 239, textAnchor: 'middle', fill: '#3d5548', fontSize: 20 }, tx('odds_axis', 'Number of survivors'))),
+        h('div', { className: 'ei-odds-legend' }, h('span', null, h('i', { className: 'ei-odds-model-key', 'aria-hidden': true }), tx('odds_modeled', 'Modeled count probability')),
+          h('span', null, h('i', { className: 'ei-odds-mean-key', 'aria-hidden': true }), tx('chance_expected', 'Expected count') + ' · ' + data.expected.toFixed(1)),
+          trials.length > 0 && h('span', null, h('i', { className: 'ei-odds-trials-key', 'aria-hidden': true }), tx('odds_trial_share', 'Share of explored trials')))),
+      h('label', { htmlFor: prefix + '-count' }, tx('odds_inspect', 'Inspect a survivor count')),
+      h('input', { id: prefix + '-count', type: 'range', min: 0, max: data.count, step: 1, value: selected, 'aria-valuetext': label(selected), onChange: function(e) { inspect(Number(e.target.value)); } }),
+      h('p', { className: 'ei-small ei-odds-inspected', role: 'status', 'aria-live': 'polite', 'data-odds-selected': selected }, h('strong', null, label(selected)),
+        trials.length > 0 && h('span', null, __alloFill(tx('odds_count_trials', 'Seen in {matches} of {total} explored trials.'), { matches: observed[selected], total: trials.length }))),
+      h('div', { className: 'ei-odds-range' }, ['low', 'high'].map(function(key) { return h('div', { key: key },
+        h('label', { htmlFor: prefix + '-' + key }, key === 'low' ? tx('odds_from', 'From this many survivors') : tx('odds_to', 'Through this many survivors')),
+        h('input', { id: prefix + '-' + key, type: 'number', inputMode: 'numeric', min: 0, max: data.count, step: 1, value: range[key], 'aria-invalid': !valid, 'aria-describedby': prefix + '-range-result', onChange: function(e) { changeBound(key, e.target.value); } })); })),
+      h('div', { className: 'ei-row' }, h('button', { type: 'button', onClick: function() { choose(selected); } }, tx('odds_single', 'Use just this count')),
+        h('button', { type: 'button', onClick: function() { setRange(IslandCountOdds.central(data)); } }, tx('odds_central', 'Find a central 80% range')),
+        h('button', { type: 'button', onClick: function() { setRange({ low: 0, high: data.count }); } }, tx('odds_all', 'Include all counts'))),
+      h('div', { id: prefix + '-range-result', className: 'ei-odds-result', role: 'status', 'aria-live': 'polite', 'aria-atomic': true },
+        valid ? h(R.Fragment, null, h('strong', { 'data-odds-band': range.low + ':' + range.high, 'data-odds-band-probability': probability },
+          __alloFill(tx('odds_range_result', '{low}–{high} survivors · modeled chance {chance}'), { low: range.low, high: range.high, chance: pct(probability) })),
+          h('p', { className: 'ei-small' }, trials.length ? __alloFill(tx('odds_range_trials', '{matches} of {total} explored trials fall inside this range ({share}).'), { matches: within, total: trials.length, share: pct(within / trials.length) }) : tx('odds_no_trials', 'No chance trials have been explored yet. This is a calculation from the modeled probabilities.')),
+          Number.isInteger(props.recorded) && h('p', { className: 'ei-small', 'data-odds-recorded': props.recorded }, __alloFill(tx('odds_recorded', 'Recorded round: {count} survivors · {position} this range.'), { count: props.recorded, position: props.recorded >= range.low && props.recorded <= range.high ? tx('odds_inside', 'inside') : tx('odds_outside', 'outside') }))) :
+          h('p', null, tx('odds_invalid', 'Enter two whole counts from 0 to the population size, with the first no larger than the second.'))),
+      h('p', { className: 'ei-small' }, tx('odds_limits', 'This calculation assumes independent survival draws with each resident’s original probability. A central range contains at least 80% because counts are whole numbers; it is not a guarantee. Trial shares can differ from the model. A small chance for one exact count does not prove that anything went wrong.')),
+      h('button', { type: 'button', disabled: !valid, onClick: function() { props.onRecord(range.low, range.high, trials.length); } }, tx('odds_save', 'Save count probability evidence')));
+  }
+
+
   function IslandRoundForecast(props) {
     var R = props.React, h = R.createElement, tx = props.tx, plan = props.plan;
     var guessState = R.useState(Math.round(plan.count / 2)), guess = guessState[0];
@@ -1779,7 +2049,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       h('div', { className: 'ei-forecast-entry' }, h('div', null, h('label', { htmlFor: 'ei-forecast-range' }, tx('forecast_adjust', 'Adjust your forecast')), h('input', { id: 'ei-forecast-range', type: 'range', min: 0, max: plan.count, step: 1, value: display, onChange: function(e) { guessState[1](Number(e.target.value)); } })),
         h('div', null, h('label', { htmlFor: 'ei-forecast-number' }, tx('forecast_count', 'Survivors')), h('input', { id: 'ei-forecast-number', type: 'number', inputMode: 'numeric', min: 0, max: plan.count, step: 1, value: guess, 'aria-invalid': !valid, onChange: function(e) { guessState[1](e.target.value === '' ? '' : Number(e.target.value)); } }))),
       h('div', { className: 'ei-forecast-preview' }, h('strong', null, valid ? guess + ' / ' + plan.count + ' · ' + tx('forecast_yours', 'your forecast') : tx('forecast_invalid', 'Choose a whole number from 0 to the population size.') + ' ' + plan.count), h(IslandForecastDots, { React: R, total: plan.count, count: valid ? guess : 0, color: '#357184' })),
-      h('details', { className: 'ei-forecast-clue' }, h('summary', null, tx('forecast_clue', 'Reveal a probability clue')), h('p', { className: 'ei-small' }, tx('forecast_average', 'Adding every resident’s survival probability gives an expected survivor count of') + ' ' + plan.expected.toFixed(1) + '. ' + tx('forecast_average_help', 'That is an average over many repetitions with these same residents and conditions, not a promise for this round. The actual count must be a whole number.'))),
+      h('details', { className: 'ei-forecast-clue' }, h('summary', null, tx('forecast_clue', 'Reveal a probability clue')), h('p', { className: 'ei-small' }, tx('forecast_average', 'Adding every resident’s survival probability gives an expected survivor count of') + ' ' + plan.expected.toFixed(1) + '. ' + tx('forecast_average_help', 'That is an average over many repetitions with these same residents and conditions, not a promise for this round. The actual count must be a whole number.')), h(IslandCountProbability, { React: R, tx: tx, world: props.world, id: 'forecast', onRecord: props.onRecordOdds })),
       h('div', { className: 'ei-row' }, h('button', { type: 'button', className: 'ei-primary', disabled: !valid, onClick: function() { props.onRun(guess); } }, tx('forecast_run', 'Lock forecast & watch')), h('button', { type: 'button', className: 'ei-quiet', onClick: props.onCancel }, tx('forecast_cancel', 'Cancel forecast'))),
       h('small', null, tx('forecast_once', 'Locking runs one real generation with the coming habitat. Exploring the clue does not run the simulation.')));
   }
@@ -1921,6 +2191,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           h('p', { className: 'ei-small' }, tx('chance_lesson', 'Same traits and conditions can give different outcomes. A small set of trials need not average to the expected count; it does not tell us which outcome must happen next.')),
           h('details', { className: 'ei-chance-data' }, h('summary', null, tx('chance_data', 'Read trial counts and seeds')), h('table', null, h('caption', null, tx('chance_table', 'Repeated survival trials')), h('thead', null, h('tr', null, h('th', { scope: 'col' }, tx('chance_trial', 'Trial')), h('th', { scope: 'col' }, tx('forecast_count', 'Survivors')), h('th', { scope: 'col' }, tx('chance_seed', 'Chance seed')))), h('tbody', null, rows.map(function(row) { return h('tr', { key: row.index }, h('th', { scope: 'row' }, row.index), h('td', null, row.count + ' / ' + plan.count), h('td', null, row.seed)); })))),
           h('button', { type: 'button', onClick: function() { props.onRecord(count); } }, tx('chance_save', 'Save chance trials to journal'))),
+        h('details', { className: 'ei-odds-disclosure' }, h('summary', null, tx('odds_compare', 'Compare trial counts with probability')), h(IslandCountProbability, { React: R, tx: tx, world: forecast.world, id: 'trials', trials: rows, recorded: forecast.result.actual, onRecord: props.onRecordOdds })),
         h('small', { className: 'ei-chance-boundary' }, tx('chance_boundary', 'These trials repeat survival only. No offspring are produced, and your island history stays unchanged.'))));
   }
 
@@ -1935,7 +2206,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         h('p', { className: 'ei-small' }, forecast.guess === result.actual ? tx('forecast_match', 'Your forecast matched this round. A match does not make the next outcome certain.') : tx('forecast_difference', 'The recorded count differed from your forecast. Each organism faced its own random draw, so even a well-reasoned estimate can differ from the result.')),
         h('p', { className: 'ei-small' }, tx('forecast_expected', 'Probability-based expected count') + ': ' + plan.expected.toFixed(1) + '. ' + tx('forecast_result_help', 'An expected count is a long-run average, not a target the simulation tries to reach. Surviving also does not guarantee offspring.')),
         h('button', { type: 'button', onClick: props.onRecord }, tx('forecast_save', 'Save forecast to journal')),
-        h(IslandChanceLab, { React: R, tx: tx, forecast: forecast, onRecord: props.onRecordChance, nameOf: props.nameOf })));
+        h(IslandChanceLab, { React: R, tx: tx, forecast: forecast, onRecord: props.onRecordChance, onRecordOdds: props.onRecordOdds, nameOf: props.nameOf })));
   }
 
   function IslandRoundWalkthrough(props) {
@@ -1945,7 +2216,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       h('div', { className: 'ei-row ei-between' }, h('strong', null, tx('watch_title', 'A generation, step by step')), h('span', { className: 'ei-tag' }, 'G' + (chapter.generation - 1) + ' → G' + chapter.generation + ' · ' + props.habitat)),
       h('ol', { className: 'ei-watch-steps', 'aria-label': tx('watch_stages', 'Generation stages') }, phases.map(function(phase, i) { return h('li', { key: phase, 'aria-current': chapter.phase === phase ? 'step' : undefined }, h('span', { 'aria-hidden': true }, i + 1), labels[i]); })),
       h('div', { className: 'ei-watch-explanation', role: 'status', 'aria-atomic': true }, h('b', { className: 'ei-watch-count' }, chapter.count, h('small', null, labels[copy.number - 1])), h('div', null, h('h2', null, copy.title), h('p', null, copy.body))),
-      props.forecast && h(IslandForecastResult, { React: props.React, tx: tx, forecast: props.forecast, onRecord: props.onRecordForecast, onRecordChance: props.onRecordChance, nameOf: props.nameOf }),
+      props.forecast && h(IslandForecastResult, { React: props.React, tx: tx, forecast: props.forecast, onRecord: props.onRecordForecast, onRecordChance: props.onRecordChance, onRecordOdds: props.onRecordOdds, nameOf: props.nameOf }),
       h('div', { className: 'ei-row ei-between' }, h('div', { className: 'ei-row' },
         h('button', { type: 'button', disabled: copy.number === 1, onClick: function() { props.onPhase(phases[copy.number - 2]); } }, tx('watch_back', 'Previous stage')),
         h('button', { type: 'button', className: 'ei-primary', onClick: function() { if (copy.number === 3) props.onFinish(); else props.onPhase(phases[copy.number]); } }, copy.number === 1 ? tx('watch_survivors', 'Reveal survivors →') : copy.number === 2 ? tx('watch_offspring', 'Meet the offspring →') : tx('watch_finish', 'Finish walkthrough'))),
@@ -2388,8 +2659,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
     var compassRef = R.useRef(null), compassButton = R.useRef(null);
     function openCompass() { stopReel(); setPlaying(false); setCompassOpen(true); setTimeout(function() { reveal(compassRef); }, 0); }
     function closeCompass() { setCompassOpen(false); setTimeout(function() { reveal(compassButton); }, 0); }
-    var introRef = R.useRef(null), introButton = R.useRef(null), questionsRef = R.useRef(null), futuresRef = R.useRef(null), journeyRef = R.useRef(null), stageRef = R.useRef(null), residentRef = R.useRef(null), inheritanceRef = R.useRef(null), highlightsRef = R.useRef(null), lifeRef = R.useRef(null), birthCompareRef = R.useRef(null);
+    var introRef = R.useRef(null), introButton = R.useRef(null), questionsRef = R.useRef(null), futuresRef = R.useRef(null), journeyRef = R.useRef(null), stageRef = R.useRef(null), residentRef = R.useRef(null), inheritanceRef = R.useRef(null), highlightsRef = R.useRef(null), lifeRef = R.useRef(null), birthCompareRef = R.useRef(null), replayRef = R.useRef(null), deskTabsRef = R.useRef(null), populationRef = R.useRef(null);
     function reveal(ref) { if (ref.current) { ref.current.scrollIntoView({ block: 'start' }); ref.current.focus({ preventScroll: true }); } }
+    function revealIslandScene() { if (stageRef.current) { var scene = stageRef.current.querySelector('[data-island-scene]'); if (scene) scene.scrollIntoView({ block: 'nearest' }); } }
     function dismissIntro() { setIntroDismissed(true); if (introButton.current) introButton.current.focus(); }
     function reopenIntro() { setIntroDismissed(false); setTimeout(function() { reveal(introRef); }, 0); }
     var highlightsState = R.useState(function() { return IslandHighlights.restore(study.highlights, world); }), highlights = highlightsState[0], setHighlights = highlightsState[1];
@@ -2426,10 +2698,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
     var compareState = R.useState(false), comparing = compareState[0], setComparing = compareState[1];
     R.useEffect(function() {
       if (!commandRef.current || !islandRoot.current) return;
-      function measure() { if (commandRef.current && islandRoot.current) islandRoot.current.style.setProperty('--ei-command-height', Math.ceil(commandRef.current.getBoundingClientRect().height) + 'px'); }
+      function measure() { if (!islandRoot.current) return; if (commandRef.current) islandRoot.current.style.setProperty('--ei-command-height', Math.ceil(commandRef.current.getBoundingClientRect().height) + 'px'); if (deskTabsRef.current) islandRoot.current.style.setProperty('--ei-desk-tabs-height', Math.ceil(deskTabsRef.current.getBoundingClientRect().height) + 'px'); }
       measure();
       var observer = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(measure) : null;
-      if (observer) observer.observe(commandRef.current);
+      if (observer) { observer.observe(commandRef.current); if (deskTabsRef.current) observer.observe(deskTabsRef.current); }
       window.addEventListener('resize', measure);
       return function() { if (observer) observer.disconnect(); window.removeEventListener('resize', measure); };
     }, [comparing]);
@@ -2471,6 +2743,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
     var notesState = R.useState(function() { var out = {}; ['cold', 'family', 'drift'].forEach(function(k) { if (study.notes && typeof study.notes[k] === 'string' && study.notes[k].length <= 6000) out[k] = study.notes[k]; }); return out; }), notes = notesState[0], setNotes = notesState[1];
     var phaseState = R.useState('offspring'), replayPhase = phaseState[0], setReplayPhase = phaseState[1];
     var traitState = R.useState('fur'), replayTrait = traitState[0], setReplayTrait = traitState[1];
+    var populationRequestState = R.useState(0), populationRequest = populationRequestState[0], setPopulationRequest = populationRequestState[1];
     var missionRef = R.useRef(mission); missionRef.current = mission;
     var current = R.useRef(world); current.current = world;
     var callbacks = R.useRef(props); callbacks.current = props;
@@ -2563,6 +2836,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       callbacks.current.onFinding(text, 'forecast');
       setStatus(tx('forecast_saved', 'Forecast evidence saved to its own Learning Journal entry. Your written field note is preserved.'));
     }
+    function recordCountOdds(low, high, trialCount) {
+      var f = forecastDraft.current;
+      if (!f || !Number.isInteger(trialCount) || trialCount < 0 || trialCount > IslandChanceTrials.limit || (trialCount && (!f.result || !f.revealed))) return;
+      var data = IslandCountOdds.forecast(f.world), probability = IslandCountOdds.band(data, low, high);
+      if (probability === null) return;
+      var trials = Array.from({ length: trialCount }, function(_, i) { return IslandChanceTrials.run(f.world, i + 1); });
+      var matches = trials.filter(function(row) { return row.count >= low && row.count <= high; }).length;
+      var text = 'Living Island · survivor-count probabilities · expedition seed ' + f.world.seed + ' · G' + (data.generation - 1) + ' → G' + data.generation + '\nOriginal residents: ' + data.count + '. Habitat: ' + data.habitat + '. Trait selection: ' + data.selection + '.\nSelected inclusive range: ' + low + '–' + high + ' survivors. Modeled probability: ' + probability.toFixed(8) + '. Expected count: ' + data.expected.toFixed(6) + '.\n';
+      if (f.result && f.revealed) text += 'Recorded survivors: ' + f.result.actual + '; ' + (f.result.actual >= low && f.result.actual <= high ? 'inside' : 'outside') + ' the selected range.\n';
+      else text += 'This evidence was explored before the recorded outcome was revealed; it does not lock a survival forecast.\n';
+      text += trialCount ? matches + ' of ' + trialCount + ' explored survival-only trials inside the range. Observed share: ' + (matches / trialCount).toFixed(6) + '. Trial counts: ' + trials.map(function(row) { return row.count; }).join(', ') + '.\n' : 'No survival-only trials explored; observed share is undefined.\n';
+      text += 'Count probabilities combine the original residents’ modeled chances assuming independent survival draws. Counts are whole numbers; a central 80% range can contain more than 80% probability. This is not a guarantee, confidence interval or causal test. A low probability for one exact count does not establish an unusual overall outcome. Trial shares can differ from calculated probabilities. Exploration produces no offspring, consumes no expedition random draws and does not change recorded history.';
+      callbacks.current.onFinding(text, 'countOdds'); setStatus(tx('odds_saved', 'Count probability evidence saved to its own Learning Journal entry. Your forecasts and explanations are preserved.'));
+    }
+
+
     function recordChanceTrials(count, focus) {
       var f = forecastDraft.current;
       if (!f || !f.result || !f.revealed || !Number.isInteger(count) || count < 1 || count > IslandChanceTrials.limit) return;
@@ -2641,6 +2930,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
     }
     function findFamilyTrait(id) {
       visitFamily(cursor); changeLens(familyTrait); inspect(id); reveal(stageRef);
+    }
+    function openPopulationComparison() {
+      stopReel(); setPlaying(false); setLifeView(null); setReplayPhase('offspring'); setReelOpen(true); changeLens(replayTrait); setPopulationRequest(function(value) { return value + 1; }); revealIslandScene(); revealDesk('evidence', populationRef);
+    }
+    function visitPopulationRange(generation, index, id) {
+      if (!Number.isInteger(generation) || generation < 0 || !world.history[generation] || !Number.isInteger(index) || index < 0 || index > 4) return;
+      var distribution = IslandObservation.distribution(world.history[generation].population, replayTrait), members = distribution.bins[index].members;
+      if (id !== null && !members.some(function(o) { return o.id === id; })) return;
+      setPlaying(false); if (generation !== cursor) setCursor(generation); setLifeView(null); setReplayPhase('offspring'); setReelOpen(true); changeLens(replayTrait); chooseSpotlight(index);
+      if (id !== null) inspect(id); else { setSelected(null); setParentVisit(null); }
+    }
+    function recordPopulations(evidence, pick, individual) {
+      if (!evidence || evidence.seed !== world.seed) return;
+      stopReel(); setPlaying(false);
+      function exact(value) { return value == null ? 'undefined (empty population)' : value.toFixed(5); }
+      var text = 'Population comparison · seed ' + world.seed + '.\nTrait: ' + labels[evidence.trait] + '. Reference G' + evidence.rows[0].generation + ' compared with G' + evidence.rows[1].generation + '.\n';
+      evidence.rows.forEach(function(row) {
+        text += 'G' + row.generation + ' · habitat ' + row.habitat + ' · trait advantages ' + row.selection + '. Population: ' + row.distribution.total + '. Mean: ' + exact(row.distribution.mean) + ' on the 0–1 scale. Range: ' + (row.range ? exact(row.range.minimum) + '–' + exact(row.range.maximum) : 'undefined') + '.\n';
+        row.distribution.bins.forEach(function(bin) { text += (bin.index * 20) + '–' + (bin.index === 4 ? '100' : '<' + (bin.index + 1) * 20) + ': ' + bin.count + ' individuals; share ' + (bin.share === null ? 'undefined' : (bin.share * 100).toFixed(3) + '%') + '. '; }); text += '\n';
+      });
+      text += 'Comparison minus reference mean: ' + (evidence.difference === null ? 'undefined' : evidence.difference.toFixed(4) + ' trait points') + '.\n';
+      if (pick) text += 'Inspected range: G' + evidence.rows[pick.side].generation + ', bin ' + (pick.index + 1) + ' of 5.\n';
+      if (individual) text += 'Inspected individual: ' + nameOf(individual.id) + ' · #' + individual.id + ', born G' + individual.born + ', trait ' + IslandModel.value(individual, evidence.trait).toFixed(5) + '.\n';
+      text += 'These are recorded population differences, not changes to individuals during life. Counts and shares use each population’s own size; empty populations have undefined means and shares. One expedition does not isolate selection, chance, inheritance or mutation. Exploration did not reroll the world.';
+      callbacks.current.onFinding(text, 'populations'); setStatus(tx('populations_saved', 'Population comparison saved to its own Learning Journal entry.'));
+    }
+
+    function recordCohorts(evidence, individual) {
+      if (!transition || !evidence) return;
+      stopReel(); setPlaying(false);
+      function mean(value) { return value == null ? 'undefined (empty cohort)' : value.toFixed(5) + ' on the 0–1 scale'; }
+      function shift(value) { return value == null ? 'undefined' : value.toFixed(4) + ' trait points'; }
+      var text = 'Generation comparison · seed ' + world.seed + ' · G' + (cursor - 1) + ' → G' + cursor + '.\nTrait: ' + labels[evidence.trait] + '. Recorded habitat: ' + transition.habitat + '. Trait selection: ' + transition.selection + '.\n';
+      evidence.rows.forEach(function(row) { text += row.phase + ': ' + row.members.length + ' individuals; mean ' + mean(row.mean) + '.\n'; });
+      text += 'Survival-step mean change: ' + shift(evidence.survival) + '. Birth-step mean change: ' + shift(evidence.birth) + '. Total mean change: ' + shift(evidence.total) + '.\n';
+      if (individual) text += 'Inspected individual: ' + nameOf(individual.id) + ' · #' + individual.id + ', born G' + individual.born + ', trait ' + IslandModel.value(individual, evidence.trait).toFixed(5) + ' on the 0–1 scale. Recorded parents: ' + (individual.parents.length ? individual.parents.join(', ') : 'founder') + '.\n';
+      text += 'These differences describe recorded cohort means, not changes to an individual during life. Survival includes chance and any modeled trait advantage. Birth includes parent choice, inherited allele sampling and any mutations. This single round does not isolate a cause; empty cohorts have no defined mean. Exploring this evidence did not reroll the expedition.';
+      callbacks.current.onFinding(text, 'cohorts'); setStatus(tx('cohort_saved', 'Generation comparison saved to its own Learning Journal entry.'));
     }
     function recordFamilyTrait() {
       var frame = chronicle && chronicle.frames[cursor - chronicle.founder.born];
@@ -2897,7 +3224,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 h('p', { className: 'ei-report-announcement', role: playing || watching ? undefined : 'status', 'aria-live': playing || watching ? 'off' : 'polite' }, story),
                 ended && h('div', { className: 'ei-callout ei-warning' }, extinct ? tx('extinction', 'Your population went extinct. This is evidence to investigate, not a failed score. Rewind the timeline and inspect the last breeding generation.') : tx('finished', '60 generations recorded. Your expedition is complete: explore the timeline, export your data, and explain what changed.')))),
         !comparing && h('div', { className: 'ei-board ei-workspace' },
-          h('main', { className: 'ei-main', tabIndex: 0, 'aria-label': tx('desk_island_pane', 'Island and generation report') }, forecasting && h(IslandRoundForecast, { React: R, tx: tx, plan: forecast.plan, sectionRef: forecastRef, onRun: runForecast, onCancel: cancelForecast }), watching && h(IslandRoundWalkthrough, { React: R, tx: tx, sectionRef: watchGuideRef, chapter: IslandObservation.chapter(world, cursor, phase, IslandModel.traits.indexOf(lens) < 0 ? replayTrait : lens), habitat: tx('habitat_' + shownHabitat, env.name), onPhase: showPhase, onFinish: finishWatch, forecast: forecast && forecast.result && forecast.result.generation === cursor ? forecast : null, onRecordForecast: recordForecast, onRecordChance: recordChanceTrials, nameOf: nameOf }), h('section', { className: 'ei-stage', ref: stageRef, tabIndex: -1, 'aria-label': tx('habitat_view', 'Habitat and generation controls') },
+          h('main', { className: 'ei-main', tabIndex: 0, 'aria-label': tx('desk_island_pane', 'Island and generation report') }, forecasting && h(IslandRoundForecast, { React: R, tx: tx, plan: forecast.plan, world: forecast.world, sectionRef: forecastRef, onRun: runForecast, onCancel: cancelForecast, onRecordOdds: recordCountOdds }), watching && h(IslandRoundWalkthrough, { React: R, tx: tx, sectionRef: watchGuideRef, chapter: IslandObservation.chapter(world, cursor, phase, IslandModel.traits.indexOf(lens) < 0 ? replayTrait : lens), habitat: tx('habitat_' + shownHabitat, env.name), onPhase: showPhase, onFinish: finishWatch, forecast: forecast && forecast.result && forecast.result.generation === cursor ? forecast : null, onRecordForecast: recordForecast, onRecordChance: recordChanceTrials, onRecordOdds: recordCountOdds, nameOf: nameOf }), h('section', { className: 'ei-stage', ref: stageRef, tabIndex: -1, 'aria-label': tx('habitat_view', 'Habitat and generation controls') },
               h('div', { className: 'ei-stage-top' }, h('div', { className: 'ei-stage-label' }, h('strong', null, env.icon + ' ' + tx('habitat_' + shownHabitat, env.name)), h('small', null, tx('seed', 'World seed') + ' ' + world.seed)),
                 h('div', { className: 'ei-stage-label' }, h('strong', { 'data-island-generation': cursor }, h('span', { className: 'ei-live-dot' }), tx('generation', 'Generation') + ' ' + cursor), h('small', { 'data-island-phase': phase }, phase === 'parents' ? tx('viewing_parents', 'Replay · parent population') : phase === 'survivors' ? tx('viewing_survivors', 'Replay · actual survivors') : reelOpen ? tx('viewing_recorded_offspring', 'Replay · recorded offspring') : live ? tx('present', 'Present day') : tx('past', 'Looking into the past')))),
               h(IslandScene, { React: R, tx: tx, frame: sceneFrame, layoutPopulation: phase === 'survivors' ? transition.parents : null, habitat: shownHabitat, selection: shownSelection, seed: world.seed, selected: selectedId, selectedName: selected ? nameOf(selected.id) : null, family: family, lens: lens, spotlight: spotlight, rangeView: rangeView, moving: !reelOpen && phase === 'offspring' && (moving || playing), reduced: reduced, onSelect: function(id) { inspect(id); setDesk('explore'); setTimeout(function() { reveal(residentRef); }, 0); } }),
@@ -2905,13 +3232,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h(IslandLenses, { React: R, tx: tx, habitat: shownHabitat, selection: shownSelection, recorded: recordedView, nextRound: nextRound, transition: transition, lens: lens, onLens: changeLens, population: sceneFrame.population, selected: selectedId, onInspect: inspect, nameOf: nameOf, labels: labels, variation: variation, comparison: variationComparison, phase: phase, spotlightBin: spotlightBin, onSpotlight: chooseSpotlight, onMeetSpotlight: meetSpotlight, onFindSpotlight: function() { stopReel(); setPlaying(false); setRangeView(function(n) { return n + 1; }); reveal(stageRef); }, onPhase: showPhase }),
               transition && h(IslandPhaseControls, { React: R, tx: tx, data: transition, phase: phase, onPhase: function(value) { showPhase(value); } }),
               transition && !watching && h(IslandGenerationStory, { React: R, tx: tx, chapter: IslandObservation.chapter(world, cursor, phase, IslandModel.traits.indexOf(lens) < 0 ? replayTrait : lens), label: labels[IslandModel.traits.indexOf(lens) < 0 ? replayTrait : lens], open: reelOpen, playing: reelPlaying, onPlay: startReel, onPause: stopReel, onClose: closeReel })), briefing ? h(IslandFieldReport, { React: R, tx: tx, report: briefing, labels: labels, nameOf: nameOf,
-              onReplay: function(trait) { changeLens(trait); showPhase('survivors'); reveal(stageRef); },
+              onCompare: openPopulationComparison,
+              onReplay: function(trait) { changeLens(trait); setReplayTrait(trait); showPhase('survivors'); revealIslandScene(); revealDesk('evidence', replayRef); },
               onInspect: function(id) { setDesk('explore'); visitOrganism(id); reveal(stageRef); } }) :
             h('div', { className: 'ei-loop', 'aria-label': tx('generation_summary', 'Generation summary') },
               [[frame.population.length, phase === 'offspring' ? tx('residents', 'Spriglets now') : tx('replay_offspring', 'Offspring') + ' · G' + cursor], [cursor ? frame.survivors.length : '—', tx('breeders', 'Breeding survivors')], [frame.mutations, tx('mutations', 'New allele mutations')], [fmt(frame.stats.diversity), tx('diversity', 'Trait diversity (mean SD)')]].map(function(s, i) { return h('div', { key: i }, h('strong', null, s[0]), h('small', null, s[1])); }))),
           h('aside', { className: 'ei-desk', 'aria-label': tx('desk_title', 'Expedition field desk') },
             h('div', { className: 'ei-desk-heading' }, h('div', { className: 'ei-kicker' }, tx('desk_title', 'Expedition field desk')), h('small', null, tx('desk_hint', 'Choose one thing to explore'))),
-            h('div', { className: 'ei-desk-tabs', role: 'tablist', 'aria-label': tx('desk_tabs', 'Field desk views') }, deskTabs.map(function(tab, index) {
+            h('div', { className: 'ei-desk-tabs', ref: deskTabsRef, role: 'tablist', 'aria-label': tx('desk_tabs', 'Field desk views') }, deskTabs.map(function(tab, index) {
               return h('button', { key: tab[0], id: 'ei-tab-' + tab[0], type: 'button', role: 'tab', 'aria-selected': desk === tab[0], 'aria-controls': 'ei-panel-' + tab[0], tabIndex: desk === tab[0] ? 0 : -1,
                 onClick: function() { chooseDesk(tab[0]); }, onKeyDown: function(e) {
                   var i = e.key === 'ArrowRight' ? (index + 1) % 4 : e.key === 'ArrowLeft' ? (index + 3) % 4 : e.key === 'Home' ? 0 : e.key === 'End' ? 3 : -1;
@@ -2969,7 +3297,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('label', { className: 'ei-switch' }, h('input', { type: 'checkbox', checked: world.selection, disabled: !live || ended, onChange: function(e) { setting('selection', e.target.checked); } }), h('span', null, tx('selection_on', 'Traits affect survival'), h('small', null, tx('selection_off_help', 'Turn off for trait-neutral survival. Random survival, inheritance, and drift still occur.')))),
               h('label', { htmlFor: 'ei-mutation' }, tx('mutation_chance', 'Mutation chance per inherited allele') + ': ' + Math.round(world.mutation * 100) + '%'), h('input', { id: 'ei-mutation', type: 'range', min: 0, max: 20, step: 1, value: Math.round(world.mutation * 100), disabled: !live || ended, onChange: function(e) { setting('mutation', Number(e.target.value) / 100); } }), h('p', { className: 'ei-small' }, tx('mutation_help', 'Mutation rates are deliberately exaggerated for a short lesson. New changes are random with respect to what the environment rewards.')))),
             h('details', { className: 'ei-reset', open: resetOpen, onToggle: function(e) { setResetOpen(e.currentTarget.open); } }, h('summary', null, tx('new_expedition', 'Start a new expedition')), h('div', { className: 'ei-stack' }, h('p', { className: 'ei-small' }, tx('reset_help', 'Starting over replaces this island and timeline. Export your data or save a finding first. The same seed and the same actions reproduce the same result.')), h('label', { htmlFor: 'ei-seed' }, tx('seed', 'World seed')), h('input', { type: 'text', inputMode: 'numeric', id: 'ei-seed', value: seedText, maxLength: 10, onChange: function(e) { setSeedText(e.target.value); } }), h('button', { type: 'button', disabled: !/^\d{1,10}$/.test(seedText) || Number(seedText) > 4294967295, onClick: function() { restart(Number(seedText)); } }, tx('restart', 'Restart with this seed')), h('button', { type: 'button', onClick: function() { var a = new Uint32Array(1); if (window.crypto && window.crypto.getRandomValues) window.crypto.getRandomValues(a); else a[0] = Date.now() >>> 0; restart(a[0]); } }, tx('fresh_world', 'Generate a fresh world')))))),
-              h('div', { id: 'ei-panel-evidence', role: 'tabpanel', 'aria-labelledby': 'ei-tab-evidence', hidden: desk !== 'evidence', tabIndex: 0, className: 'ei-stack' }, h(IslandHighlightGuide, { React: R, tx: tx, sectionRef: highlightsRef, suggestions: highlightSuggestions, kept: keptHighlights, labels: labels, nameOf: nameOf, onPause: function() { stopReel(); setPlaying(false); }, onVisit: visitHighlight, onBirth: function(record) { visitHighlight(record, true); }, onKeep: keepHighlight, onRecord: recordHighlights }), h(IslandReplay, { React: R, tx: tx, data: transition, phase: phase, generation: cursor, trait: replayTrait, labels: labels, colors: colors, suppressLive: reelOpen, onTrait: setReplayTrait, onPhase: function(value) { showPhase(value); } }), h('div', { className: 'ei-evidence' },
+              h('div', { id: 'ei-panel-evidence', role: 'tabpanel', 'aria-labelledby': 'ei-tab-evidence', hidden: desk !== 'evidence', tabIndex: 0, className: 'ei-stack' }, h(IslandHighlightGuide, { React: R, tx: tx, sectionRef: highlightsRef, suggestions: highlightSuggestions, kept: keptHighlights, labels: labels, nameOf: nameOf, onPause: function() { stopReel(); setPlaying(false); }, onVisit: visitHighlight, onBirth: function(record) { visitHighlight(record, true); }, onKeep: keepHighlight, onRecord: recordHighlights }), h(IslandReplay, { React: R, tx: tx, data: transition, phase: phase, generation: cursor, trait: replayTrait, labels: labels, colors: colors, selected: selectedId, nameOf: nameOf, visible: desk === 'evidence' && !playing, suppressLive: reelOpen,
+                onTrait: function(value) { setReplayTrait(value); changeLens(value); }, onPhase: function(value) { showPhase(value); },
+                onSelect: function(value, id) { if (!transition[value] || !transition[value].some(function(o) { return o.id === id; })) return; changeLens(replayTrait); showPhase(value); inspect(id); },
+                onLife: function(id) { inspect(id); revealDesk('families', lifeRef); }, onRecord: recordCohorts, sectionRef: replayRef }), h('div', { className: 'ei-evidence' },
           h('section', { className: 'ei-card ei-stack' },
             h('div', { className: 'ei-row ei-between' }, h('div', null, h('div', { className: 'ei-kicker' }, tx('evidence_kicker', 'The story in your data')), h('h2', null, tx('chart_title', 'What changed across generations?'))), h('button', { type: 'button', onClick: download }, tx('export', 'Export CSV'))),
             h('div', { className: 'ei-chart-legend' }, IslandModel.traits.map(function(k) { return h('span', { key: k, style: { '--trait-color': colors[k] } }, labels[k]); })),
@@ -2979,6 +3310,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               IslandModel.traits.map(function(k, i) { var points = world.history.filter(function(f) { return f.stats.means[k] != null; }).map(function(f) { return (40 + f.generation / Math.max(10, world.generation) * 535) + ',' + (160 - f.stats.means[k] * 140); }).join(' '); return h('g', { key: k }, h('polyline', { points: points, fill: 'none', stroke: colors[k], strokeWidth: 3, strokeDasharray: i === 1 ? '7 3' : i === 2 ? '2 3' : undefined, strokeLinecap: 'round' }), frame.stats.means[k] != null && h('circle', { cx: 40 + cursor / Math.max(10, world.generation) * 535, cy: 160 - frame.stats.means[k] * 140, r: 4, fill: colors[k] })); }),
               h('line', { x1: 40 + cursor / Math.max(10, world.generation) * 535, x2: 40 + cursor / Math.max(10, world.generation) * 535, y1: 14, y2: 162, stroke: '#2d463d', strokeWidth: 1 }),
               h('text', { x: 40, y: 183 }, tx('generation', 'Generation') + ' 0'), h('text', { x: 580, y: 183, textAnchor: 'end' }, Math.max(10, world.generation))),
+            h(IslandPopulationComparison, { key: world.seed, React: R, tx: tx, world: world, generation: cursor, phase: phase, lens: lens, spotlightBin: spotlightBin, trait: replayTrait, request: populationRequest, sectionRef: populationRef, labels: labels, nameOf: nameOf, visible: desk === 'evidence' && !playing && !reelPlaying,
+              onPause: function() { stopReel(); setPlaying(false); }, onTrait: changeLens, onVisit: visitPopulationRange, onFind: function() { setRangeView(function(value) { return value + 1; }); setTimeout(function() { reveal(stageRef); }, 0); },
+              onLife: function(id) { inspect(id); revealDesk('families', lifeRef); }, onRecord: recordPopulations }),
             h('div', { className: 'ei-table-wrap' }, h('table', null, h('caption', { className: 'ei-small', style: { textAlign: 'left' } }, tx('comparison', 'Founders compared with the generation you are viewing')), h('thead', null, h('tr', null, h('th', { scope: 'col' }, tx('trait', 'Trait')), h('th', { scope: 'col' }, tx('founders', 'Founders')), h('th', { scope: 'col' }, tx('viewed', 'Viewed')))), h('tbody', null, IslandModel.traits.map(function(k) { return h('tr', { key: k }, h('th', { scope: 'row' }, labels[k]), h('td', null, fmt(world.history[0].stats.means[k])), h('td', null, fmt(frame.stats.means[k]))); })))),
             h('details', null, h('summary', null, tx('all_data', 'Generation table')), h('div', { className: 'ei-table-wrap', style: { maxHeight: 250 } }, h('table', null, h('thead', null, h('tr', null, ['Generation', 'Habitat', 'Population', 'Insulation', 'Coat', 'Legs'].map(function(v, i) { return h('th', { key: i, scope: 'col' }, tx('col_' + i, v)); }))), h('tbody', null, world.history.map(function(f) { return h('tr', { key: f.generation }, h('th', { scope: 'row' }, f.generation), h('td', null, tx('habitat_' + f.habitat, IslandModel.habitats[f.habitat].name)), h('td', null, f.population.length), h('td', null, fmt(f.stats.means.fur)), h('td', null, fmt(f.stats.means.shade)), h('td', null, fmt(f.stats.means.legs))); }))))),
             h('p', { className: 'ei-small' }, tx('chart_help', 'Dashed vertical markers show habitat changes. These are population averages, not upgrades to individual creatures. A single run mixes selection and chance; repeat with fresh seeds to look for a pattern.')),
@@ -3333,6 +3667,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         livingIslandForecast: t('stem.evolab.island_note_forecast', 'Living Island · round forecast'),
         livingIslandChanceTrials: t('stem.evolab.island_note_chance_trials', 'Living Island · chance trials'),
         livingIslandChanceResident: t('stem.evolab.island_note_chance_resident', 'Living Island · individual chance evidence'),
+        livingIslandPopulations: t('stem.evolab.island_note_populations', 'Living Island · variation through time'),
+        livingIslandCountOdds: t('stem.evolab.island_note_count_odds', 'Living Island · count probabilities'),
+        livingIslandCohorts: t('stem.evolab.island_note_cohorts', 'Living Island · generation comparison'),
         livingIslandComparison: t('stem.evolab.island_note_comparison', 'Living Island · two futures'),
         livingIslandCold: t('stem.evolab.island_note_cold', 'Living Island — Cold snap'),
         livingIslandFamily: t('stem.evolab.island_note_family', 'Living Island — Family detective'),
@@ -16842,7 +17179,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         onStudy: function(study) { upd('islandStudy', study); },
         onMenu: function() { goto('menu'); },
         onJournal: function() { goto('journal'); },
-        onFinding: function(text, investigation) { var noteKeys = { cold: 'livingIslandCold', family: 'livingIslandFamily', drift: 'livingIslandDrift', comparison: 'livingIslandComparison', detective: 'livingIslandDetective', traitTrail: 'livingIslandTraitTrail', highlights: 'livingIslandHighlights', forecast: 'livingIslandForecast', chanceTrials: 'livingIslandChanceTrials', chanceResident: 'livingIslandChanceResident' }; saveNote(Object.prototype.hasOwnProperty.call(noteKeys, investigation) ? noteKeys[investigation] : 'livingIslandData', text); },
+        onFinding: function(text, investigation) { var noteKeys = { cold: 'livingIslandCold', family: 'livingIslandFamily', drift: 'livingIslandDrift', comparison: 'livingIslandComparison', detective: 'livingIslandDetective', traitTrail: 'livingIslandTraitTrail', highlights: 'livingIslandHighlights', forecast: 'livingIslandForecast', chanceTrials: 'livingIslandChanceTrials', chanceResident: 'livingIslandChanceResident', cohorts: 'livingIslandCohorts', populations: 'livingIslandPopulations', countOdds: 'livingIslandCountOdds' }; saveNote(Object.prototype.hasOwnProperty.call(noteKeys, investigation) ? noteKeys[investigation] : 'livingIslandData', text); },
         fieldNote: h(FieldNote, { moduleId: 'livingIsland', prompt: t('stem.evolab.island_note_prompt', 'What changed in your population? Use a before-and-after number, explain inheritance and survival, and name one limit of this model.') })
       });
       if (view === 'predatorVision') return h(stableType('PredatorVisionLab', PredatorVisionLab));

@@ -595,7 +595,9 @@ test('generation field reports reveal actual shifts and mutated offspring withou
   await page.getByRole('button', { name: 'Investigate this shift', exact: true }).click();
   await expect(page.locator('#ei-lens')).toHaveValue(data.strongest.trait);
   await expect(page.locator('[data-island-phase]')).toHaveAttribute('data-island-phase', 'survivors');
-  await expect(page.locator('.ei-stage')).toBeFocused();
+  await expect(page.getByRole('tab', { name: 'Evidence', exact: true })).toHaveAttribute('aria-selected', 'true');
+  await expect(page.locator('.ei-replay')).toBeFocused();
+  await expect(page.locator('#ei-replay-trait')).toHaveValue(data.strongest.trait);
   await expect(page.locator('.ei-stage-top')).toContainText('Sunlit meadow');
   await page.getByRole('button', { name: 'Meet this offspring', exact: true }).click();
   await expect(page.locator('#ei-organism')).toHaveValue(String(data.variant.id));

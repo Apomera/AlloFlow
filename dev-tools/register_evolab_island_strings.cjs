@@ -35,7 +35,9 @@ if (!check && !process.argv.includes('--apply')) {
   const delta = Object.fromEntries(Object.entries(entries).map(([key, value]) => ['stem.evolab.' + key, value]));
   const output = path.join(root, 'reports/evolab-living-island/ui-strings.delta.json');
   fs.mkdirSync(path.dirname(output), { recursive: true });
-  fs.writeFileSync(output, JSON.stringify(delta, null, 2) + '\n');
+  const temporary = output + '.tmp-' + process.pid;
+  fs.writeFileSync(temporary, JSON.stringify(delta, null, 2) + '\n');
+  fs.renameSync(temporary, output);
   console.log(Object.keys(delta).length + ' translation keys prepared for the shared catalog owner. Use --apply only with catalog ownership.');
   process.exit(0);
 }

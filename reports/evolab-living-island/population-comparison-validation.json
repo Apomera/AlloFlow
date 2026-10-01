@@ -1,0 +1,54 @@
+{
+  "checkedAt": "2026-10-01T19:13:57.430Z",
+  "feature": "Explore variation through time: two recorded population comparison",
+  "sourceSha256": "95af453a81c8026e4c04d32dcc5bca3e0dca379590a5fe68117e612c046949b7",
+  "localCopiesIdentical": true,
+  "commitPerformed": false,
+  "deploymentPerformed": false,
+  "localPreview": "http://127.0.0.1:51582/?preview=variation",
+  "behavior": [
+    "Choose any two actual recorded generations and compare inherited trait distributions, means, ranges and recorded habitats.",
+    "Normalize each range share by its own population count and retain actual organism identities.",
+    "Visit real members and empty ranges on the island without changing the recorded expedition; keep the comparison pair fixed during visits.",
+    "Follow the selected organism to its recorded life story.",
+    "Save evidence to livingIslandPopulations without replacing student explanations, data notes or generation-cohort notes.",
+    "Preserve unfinished survival predictions when opening the comparison or visiting a range in the same generation; historical time travel retains the existing cancellation behavior.",
+    "Keep the optional comparison collapsed until opened and reveal it below sticky controls with the recorded island visible."
+  ],
+  "validation": {
+    "evolutionUnitTestsPassed": 211,
+    "evolutionRenderChecksPassed": 2,
+    "uniqueBrowserJourneysPassed": 6,
+    "affectedDesktopJourneyRerunPassed": true,
+    "unitCoverage": [
+      "Actual frame identities, metadata, trait means and extrema; reversed and same-generation comparisons.",
+      "Unequal population denominators and half-open range boundaries, including 0 and 1.",
+      "Identical means with different trait variation.",
+      "Valid zero traits and absent ranges versus undefined means and shares for empty populations.",
+      "Invalid frame and trait guards; unchanged world, genes and biological random stream."
+    ],
+    "populationComparisonJourneys": [
+      "Real 3D desktop: recorded habitats despite queued future changes, fixed comparison pair, actual range members, keyboard selection, life story, separate journal entry, one renderer, unchanged host world and local cache.",
+      "Phone with reduced motion: empty ranges, real member navigation, visible entry below sticky tabs, no horizontal overflow, zero WCAG A/AA/2.1 AA violations in the component and focused island visits.",
+      "WebGL fallback extinction: valid zero-valued founder, undefined empty population mean and shares, real founder visits and truthful saved evidence."
+    ],
+    "existingCohortExplorerJourneysPassed": 3,
+    "finalSafeguard": "The desktop population-comparison journey was rerun after adding explicit assertions for retention of a drafted prediction.",
+    "reviewedRenderSnapshotScope": "Only the two evoLab digest entries were updated.",
+    "syntaxAndScopedWhitespaceChecksPassed": true,
+    "recoveredTestFixtureIssue": "Preloaded expeditions need not be written to the local world cache; tests now verify the host world and separately preserve the nullable local cache."
+  },
+  "screenshots": [
+    "population-comparison-desktop-entry.png",
+    "population-comparison-desktop.png",
+    "population-comparison-phone-entry.png",
+    "population-comparison-phone.png",
+    "population-comparison-extinction.png"
+  ],
+  "evidenceLimits": "Two recorded distributions describe change without isolating a causal effect. Selection, chance, parent choice, inheritance and mutation can contribute. Individuals retain their genes throughout their lifetime. Higher trait values are not always better.",
+  "translationHandoff": {
+    "file": "ui-strings.delta.json",
+    "fallbackAwareKeys": 909,
+    "sharedCatalogsMassRewritten": false
+  }
+}

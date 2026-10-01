@@ -1,0 +1,52 @@
+{
+  "checkedAt": "2026-10-01T20:31:36.386Z",
+  "feature": "Interactive survivor-count probabilities and comparison with chance-trial frequencies",
+  "sourceSha256": "97db38e0c3fb0b0552c85fa02a399fc2ce1ca59f4e0b9145740702b581f8b497",
+  "localCopiesIdentical": true,
+  "commitAuthorized": true,
+  "deploymentPerformed": false,
+  "behavior": [
+    "Explore a count or inclusive count range before locking a forecast; model probabilities use the original residents and upcoming conditions.",
+    "Choose chart bars or use the native keyboard slider; validate range endpoints and find a central range covering at least 80 percent.",
+    "Compare the revealed recorded count and empirical trial-count shares against the original probability distribution.",
+    "Save evidence to livingIslandCountOdds without replacing forecasts, trial summaries or personal explanations.",
+    "Retain drafted predictions; calculations never sample survivors, produce offspring, consume expedition random draws or rewrite history."
+  ],
+  "validation": {
+    "evolutionUnitTestsPassed": 217,
+    "evolutionRenderChecksPassed": 2,
+    "uniqueBrowserJourneysPassed": 13,
+    "countProbabilityJourneysPassed": 3,
+    "cohortAndPopulationExplorerRegressionsPassed": 6,
+    "existingForecastAndMicroscopeRegressionsPassed": 4,
+    "finalTypographyJourneysPassed": 3,
+    "mathematics": [
+      "Exhaustive enumeration for heterogeneous individual probabilities matches the dynamic calculation.",
+      "Deterministic zero and one probabilities, normalized full populations, expected values and variances.",
+      "Discrete central coverage, valid zero probabilities, invalid ranges, sparse or malformed inputs.",
+      "Upcoming climate changes, neutral survival, extinction and expedition limits; unchanged biological replay."
+    ],
+    "browserEvidence": [
+      "Real 3D desktop: drafted prediction preserved, one actual generation on locking, no outcome shown before reveal, normalized modeled mass, correct trial frequencies, separate journal entries and one renderer.",
+      "Phone with reduced motion and WebGL fallback: native keyboard slider, range validation, no horizontal overflow, zero WCAG A/AA/2.1 AA violations in the explorer and valid zero recorded survivors.",
+      "Coming climate change: chart taps select actual count probabilities and the post-round distribution keeps the original residents and conditions."
+    ],
+    "renderSnapshotScope": "Only the two Evolution Lab digest entries changed; the optional explorer leaves the default button and input counts unchanged.",
+    "recoveredRunnerIssues": [
+      "Fresh worlds are not immediately stored on the host; the new desktop fixture now explicitly preloads its known world.",
+      "OneDrive rejected overwrites of open snapshot and translation-delta files; atomic file replacement preserved their contents."
+    ],
+    "syntaxAndScopedWhitespaceChecksPassed": true
+  },
+  "screenshots": [
+    "count-probability-desktop-clue.png",
+    "count-probability-desktop-trials.png",
+    "count-probability-phone.png"
+  ],
+  "evidenceLimits": "Count probabilities assume independent draws with fixed individual modeled chances. The central range has at least 80 percent mass because counts are discrete; it is not a guarantee, confidence interval or causal test. Empirical shares can differ, and a small probability for one exact count does not by itself establish an unusual overall result.",
+  "translationHandoff": {
+    "file": "ui-strings.delta.json",
+    "fallbackAwareKeys": 936,
+    "sharedCatalogsMassRewritten": false
+  }
+}
