@@ -293,11 +293,15 @@
     d.seismicEnergyFlow = d.seismicEnergyFlow === true;
     d.seismicSceneRecording = d.seismicSceneRecording === true;
     d.seismicReadoutCollapsed = d.seismicReadoutCollapsed === true;
+    d.seismicSceneFocus = d.seismicSceneFocus === true;
+    d.seismicForceLens = d.seismicForceLens === true;
+    d.seismicEnergyOrbit = d.seismicEnergyOrbit === true;
     d.seismicMotionGuide = d.seismicMotionGuide === true;
     d.seismicGuideOpen = d.seismicGuideOpen === true;
     d.seismicSceneCompare = d.seismicSceneCompare === true;
+    d.seismicSceneOverlay = d.seismicSceneOverlay === true;
     if (d.seismicSceneTrial !== 'reference') d.seismicSceneTrial = 'current';
-    if (d.seismicSceneSource !== 'guide') d.seismicSceneSource = 'saved';
+    if (['guide', 'capture'].indexOf(d.seismicSceneSource) < 0) d.seismicSceneSource = 'saved';
     bounded('flutterStep', 0, 0, 3, true);
     bounded('pedestrianStep', 0, 0, 3, true);
     if (['relative', 'acceleration'].indexOf(d.seismicScanMeasure) < 0) d.seismicScanMeasure = 'relative';
@@ -706,6 +710,8 @@
   // can render the same verdict without either one re-deriving it. They used to, and
   // they disagreed — see the note at the top of this change.
   var BRIDGE_MODEL_VERSION = 'bridge-crossing-v2';
+  var BRIDGE_DESIGN_KEYS = ['span', 'height', 'nBays', 'materialId', 'crossSectionMm2',
+    'trussStyle', 'loadMode', 'loadPerJoint', 'vehicleLoad', 'vehiclePos', 'lateralBraceEvery'];
 
   function bridgeGoverningAnalysis(d, mat) {
     d = bridgeNormalizeSettings(d);
@@ -1099,6 +1105,34 @@
     return valid ? pose : null;
   }
 
+  function bridgeSeismicSceneDesign(value) {
+    if (!value || value.version !== 'bridge-scene-design-v1' || !value.inputs) return null;
+    var normalized = bridgeNormalizeSettings(value.inputs), inputs = {};
+    if (!BRIDGE_DESIGN_KEYS.every(function(key) {
+      if (value.inputs[key] !== normalized[key]) return false;
+      inputs[key] = normalized[key];
+      return true;
+    })) return null;
+    return { version: value.version, inputs: inputs, name: bridgeSeismicText(value.name, 80), notes: bridgeSeismicText(value.notes) };
+  }
+  function bridgeSeismicSceneComparison(value) {
+    if (!value || value.version !== 'bridge-scene-comparison-v1') return null;
+    var inputs = [value.referenceInputs, value.currentInputs];
+    if (bridgeSeismicTrials(inputs.map(function(p) { return { version: 'bridge-seismic-v1', inputs: p, timeS: 0 }; })).length !== 2) return null;
+    function copy(p) { return { archetype: p.archetype, groundFrequencyHz: p.groundFrequencyHz, intensityG: p.intensityG, dampingRatio: p.dampingRatio }; }
+    return { version: value.version, referenceInputs: copy(inputs[0]), currentInputs: copy(inputs[1]) };
+  }
+  function bridgeSeismicSceneDisplay(value) {
+    var keys = ['motionGuide', 'energyInFrame', 'energyFlow', 'overlay'];
+    if (!value || value.version !== 'bridge-scene-display-v1' || !keys.every(function(key) { return typeof value[key] === 'boolean'; })) return null;
+    var display = {}; keys.forEach(function(key) { display[key] = value[key]; });
+    // Optional for older observations; malformed focus flags never enable the layout.
+    display.focusMode = value.focusMode === true;
+    display.forceLens = value.forceLens === true;
+    display.energyOrbit = value.energyOrbit === true;
+    return display;
+  }
+
   function bridgeSeismicText(value, limit) {
     return typeof value === 'string' ? value.slice(0, limit || 2000) : '';
   }
@@ -1122,6 +1156,110 @@
     var omega = 2 * Math.PI * response.naturalFrequencyHz;
     return { springNPerKg: -omega * omega * point.relativeM,
       dampingNPerKg: -2 * response.settings.dampingRatio * omega * point.velocityMps };
+  }
+
+  // Conservative force bounds use event peaks, never the inspected frame.
+  // A shared bound lets students compare arrow lengths without rescaling A/B.
+  function bridgeSeismicForceLimit(response) {
+    var omega = 2 * Math.PI * response.naturalFrequencyHz;
+    return Math.max(0.001, omega * omega * response.peaks.relativeM,
+      2 * response.settings.dampingRatio * omega * response.peaks.velocityMps,
+      response.peaks.absoluteAccelerationMps2) * 1.04;
+  }
+  function bridgeSeismicForceFrame(response, point, other) {
+    var forces = bridgeSeismicForces(response, point);
+    return { springNPerKg: forces.springNPerKg, dampingNPerKg: forces.dampingNPerKg,
+      netNPerKg: forces.springNPerKg + forces.dampingNPerKg,
+      limitNPerKg: Math.max(bridgeSeismicForceLimit(response), other ? bridgeSeismicForceLimit(other) : 0),
+      displacementM: point.relativeM, velocityMps: point.velocityMps,
+      dampingPowerWPerKg: -forces.dampingNPerKg * point.velocityMps };
+  }
+
+  // Scaling displacement by omega gives both phase coordinates units of m/s.
+  // Half the squared radius is stored relative modal energy per kg. At display
+  // times derive these energies from the interpolated motion, not cached energy.
+  function bridgeSeismicOrbitFrame(response, point) {
+    var elasticCoordinate = 2 * Math.PI * response.naturalFrequencyHz * point.relativeM;
+    var kinetic = point.velocityMps * point.velocityMps / 2, elastic = elasticCoordinate * elasticCoordinate / 2;
+    return { elasticMps: elasticCoordinate, velocityMps: point.velocityMps,
+      kineticJPerKg: kinetic, elasticJPerKg: elastic, storedJPerKg: kinetic + elastic,
+      kineticFraction: kinetic + elastic > 0 ? kinetic / (kinetic + elastic) : 0,
+      elasticFraction: kinetic + elastic > 0 ? elastic / (kinetic + elastic) : 0,
+      radiusMps: Math.sqrt(2 * (kinetic + elastic)) };
+  }
+  function bridgeSeismicOrbitLimit(response, other) {
+    return Math.max(0.01, Math.sqrt(2 * Math.max(response.peaks.storedJPerKg, other ? other.peaks.storedJPerKg : 0))) * 1.04;
+  }
+  function bridgeSeismicOrbitChart(response, limit) {
+    var omega = 2 * Math.PI * response.naturalFrequencyHz;
+    function x(value) { return 130 + value / limit * 87; }
+    function y(value) { return 112 - value / limit * 87; }
+    function path(points) { return points.map(function(p) { return x(omega * p.relativeM).toFixed(3) + ',' + y(p.velocityMps).toFixed(3); }).join(' '); }
+    var turning = [], crossing = [];
+    // These are zero crossings of the same 60 Hz interpolated motion used by
+    // the replay. They are sampled estimates of free-vibration cycle moments.
+    function roots(field, target) {
+      if (!(response.peaks.storedJPerKg > 0)) return;
+      for (var i = 1; i < response.samples.length; i++) {
+        var a = response.samples[i - 1], b = response.samples[i];
+        if (a.timeS < response.shakingDurationS - 1e-9) continue;
+        var first = a[field], second = b[field], time;
+        if (first === 0 && second !== 0) time = a.timeS;
+        else if (first * second < 0 || second === 0 && first !== 0) time = a.timeS + (b.timeS - a.timeS) * (-first) / (second - first);
+        else continue;
+        if (!target.length || time - target[target.length - 1] > 1e-7) target.push(time);
+      }
+    }
+    roots('velocityMps', turning); roots('relativeM', crossing);
+    return { limitMps: limit, x: x, y: y, turning: turning, crossing: crossing,
+      shaking: path(response.samples.filter(function(p) { return p.timeS <= response.shakingDurationS + 1e-9; })),
+      free: path(response.samples.filter(function(p) { return p.timeS >= response.shakingDurationS - 1e-9; })) };
+  }
+
+  // The bright trail contains only past motion, up to one natural period.
+  // Keep the recorded vertices and interpolate the two ends to share the exact
+  // replay clock. At most 95 vertices are needed for the available mode presets.
+  function bridgeSeismicOrbitTrail(response, timeS, limit) {
+    var current = bridgeSeismicSample(response, timeS);
+    var startTimeS = Math.max(0, current.timeS - 1 / response.naturalFrequencyHz);
+    var result = { startTimeS: startTimeS, timeS: current.timeS, points: [], segments: [], direction: null };
+    if (current.timeS === startTimeS || !(response.peaks.storedJPerKg > 0)) return result;
+    var omega = 2 * Math.PI * response.naturalFrequencyHz;
+    function point(sample) {
+      return { timeS: sample.timeS, x: 130 + omega * sample.relativeM / limit * 87,
+        y: 112 - sample.velocityMps / limit * 87 };
+    }
+    var samples = response.samples, lower = 0, upper = samples.length;
+    while (lower < upper) {
+      var middle = Math.floor((lower + upper) / 2);
+      if (samples[middle].timeS <= startTimeS) lower = middle + 1;
+      else upper = middle;
+    }
+    result.points.push(point(bridgeSeismicSample(response, startTimeS)));
+    for (var index = lower; index < samples.length && samples[index].timeS < current.timeS; index++) {
+      result.points.push(point(samples[index]));
+    }
+    result.points.push(point(current));
+    var intervals = result.points.length - 1;
+    for (var part = 0; part < 4; part++) {
+      var first = Math.floor(intervals * part / 4), last = Math.floor(intervals * (part + 1) / 4);
+      if (last > first) result.segments.push({ opacity: 0.15 + (part + 1) * 0.1875,
+        path: result.points.slice(first, last + 1).map(function(p) { return p.x.toFixed(3) + ',' + p.y.toFixed(3); }).join(' ') });
+    }
+    // Put the direction cue on the recent path before the current marker.
+    // It uses two past frames; it never extrapolates motion beyond the clock.
+    var cueTimeS = startTimeS + (current.timeS - startTimeS) * 0.875;
+    var tip = point(bridgeSeismicSample(response, cueTimeS));
+    var tail = point(bridgeSeismicSample(response, Math.max(startTimeS, cueTimeS - 1 / 60)));
+    var dx = tip.x - tail.x, dy = tip.y - tail.y, distance = Math.sqrt(dx * dx + dy * dy);
+    if (distance > 0.25 && Math.hypot(tip.x - 130, tip.y - 112) > 8) {
+      var ux = dx / distance, uy = dy / distance;
+      var vertices = [tip, { x: tip.x - 7 * ux + 3 * uy, y: tip.y - 7 * uy - 3 * ux },
+        { x: tip.x - 7 * ux - 3 * uy, y: tip.y - 7 * uy + 3 * ux }];
+      result.direction = { timeS: cueTimeS, x: tip.x, y: tip.y, angleRad: Math.atan2(dy, dx),
+        path: vertices.map(function(p) { return p.x.toFixed(3) + ',' + p.y.toFixed(3); }).join(' ') };
+    }
+    return result;
   }
 
   function bridgeSeismicEnergyLimit(response) {
@@ -1305,6 +1443,16 @@
         motionScale: 10,
         motionReferenceVisible: !!(S.motionReference && S.motionReference.visible),
         motionReferencePosition: S.motionReference ? S.motionReference.position.toArray() : null,
+        comparisonOverlayVisible: !!(S.comparisonOutline && S.comparisonOutline.visible),
+        comparisonOutlineTrial: S.comparisonOutlineTrial || null,
+        comparisonOutlinePosition: S.comparisonOutline ? S.comparisonOutline.position.toArray() : null,
+        comparisonReferenceM: S.comparisonReferenceM == null ? null : S.comparisonReferenceM,
+        comparisonCurrentM: S.comparisonCurrentM == null ? null : S.comparisonCurrentM,
+        comparisonTrailSamples: S.comparisonTrailSamples || 0,
+        forceLensVisible: !!(S.forceLens && S.forceLens.visible),
+        forceVectors: S.forceVectors || [],
+        forceLimitNPerKg: S.forceLimitNPerKg == null ? null : S.forceLimitNPerKg,
+        forceTrial: S.forceTrial || null,
         supportEndpoints: S.supportEndpoints || [],
         sceneBuilds: S.bridgeBuilds || 0
       };
@@ -1721,6 +1869,53 @@
       restingRails.visible = false;
       S.model.add(restingRails);
       S.motionReference = restingRails;
+      // One outline and two fixed buffers compare poses on this bridge shape.
+      // Read the existing member paths so illustrative buckling stays aligned.
+      var outlinePoints = restPoints.slice();
+      structure.traverse(function(object) {
+        if (!object.userData.bridgeMemberId || !object.geometry) return;
+        object.updateMatrix();
+        var parameters = object.geometry.parameters, points;
+        if (parameters.path) points = parameters.path.getPoints(24);
+        else points = [new THREE.Vector3(0, 0, -parameters.depth / 2), new THREE.Vector3(0, 0, parameters.depth / 2)];
+        points.forEach(function(point) { point.applyMatrix4(object.matrix); });
+        for (var segment = 1; segment < points.length; segment++) outlinePoints.push(points[segment - 1], points[segment]);
+      });
+      var comparisonOutline = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(outlinePoints),
+        new THREE.LineDashedMaterial({ color: 0xe879f9, dashSize: 0.45, gapSize: 0.28,
+          transparent: true, opacity: 0.95, depthTest: false, depthWrite: false, fog: false }));
+      comparisonOutline.computeLineDistances(); comparisonOutline.renderOrder = 11; comparisonOutline.visible = false;
+      S.model.add(comparisonOutline); S.comparisonOutline = comparisonOutline;
+      var markerGeometry = new THREE.SphereGeometry(0.13 * Math.max(1, span / 30), 8, 6);
+      var comparisonTrails = [0xe879f9, 0x22d3ee].map(function(color) {
+        var geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(31 * 3), 3).setUsage(THREE.DynamicDrawUsage));
+        var colors = [];
+        var baseColor = new THREE.Color(color);
+        for (var index = 0; index < 31; index++) { var fade = 0.25 + 0.75 * index / 30; colors.push(baseColor.r * fade, baseColor.g * fade, baseColor.b * fade); }
+        geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+        var trail = new THREE.Line(geometry, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true,
+          opacity: 0.9, depthTest: false, depthWrite: false, fog: false }));
+        trail.frustumCulled = false; trail.renderOrder = 12; trail.visible = false; S.model.add(trail);
+        var marker = new THREE.Mesh(markerGeometry, new THREE.MeshBasicMaterial({ color: color, depthTest: false, depthWrite: false, fog: false }));
+        marker.renderOrder = 13; marker.visible = false; S.model.add(marker);
+        return { line: trail, marker: marker };
+      });
+      S.comparisonTrails = comparisonTrails;
+      // A teaching overlay for one modal deck mass. All geometry is allocated
+      // once; replay only changes buffer values, positions and scale.
+      var forceLens = new THREE.Group(); forceLens.visible = false;
+      var forceHeadGeometry = new THREE.ConeGeometry(0.10, 1, 10);
+      var forceShaftGeometry = new THREE.CylinderGeometry(0.022, 0.022, 1, 8);
+      var forceDotGeometry = new THREE.SphereGeometry(0.065, 8, 6);
+      var forceGlyphs = [0xfbbf24, 0xc4b5fd, 0xe2e8f0].map(function(color) {
+        var material = new THREE.MeshBasicMaterial({color:color, depthTest:false, depthWrite:false, fog:false});
+        var line = new THREE.Mesh(forceShaftGeometry, material);
+        var head = new THREE.Mesh(forceHeadGeometry, material), dot = new THREE.Mesh(forceDotGeometry, material);
+        [line, head, dot].forEach(function(object) { object.frustumCulled = false; object.renderOrder = 15; forceLens.add(object); });
+        return {line:line, head:head, dot:dot};
+      });
+      S.model.add(forceLens); S.forceLens = forceLens;
       // Keep the shadow light under the model so its render targets are disposed
       // with the scene on a rebuild, unmount, or WebGL context recovery.
       var sunlight = new THREE.DirectionalLight(0xffefd3, 0.90);
@@ -1769,6 +1964,81 @@
         S.groundOffsetVisualM = groundZ;
         S.deckOffsetVisualM = deckZ;
         restingRails.visible = !!(quake.enabled && current.motionGuide === true);
+        var comparison = current.comparison || {};
+        function trailValid(points) { return Array.isArray(points) && points.length === 31 && points.every(function(value) { return typeof value === 'number' && isFinite(value); }); }
+        var comparisonVisible = !!(quake.enabled === true && typeof quake.groundM === 'number' && isFinite(quake.groundM)
+          && typeof quake.deckM === 'number' && isFinite(quake.deckM) && comparison.enabled === true
+          && ['reference', 'current'].indexOf(comparison.outlineTrial) >= 0
+          && typeof comparison.referenceM === 'number' && isFinite(comparison.referenceM)
+          && typeof comparison.currentM === 'number' && isFinite(comparison.currentM)
+          && trailValid(comparison.referenceTrailM) && trailValid(comparison.currentTrailM));
+        comparisonOutline.visible = comparisonVisible;
+        S.comparisonOutlineTrial = comparisonVisible ? comparison.outlineTrial : null;
+        S.comparisonReferenceM = comparisonVisible ? comparison.referenceM : null;
+        S.comparisonCurrentM = comparisonVisible ? comparison.currentM : null;
+        S.comparisonTrailSamples = comparisonVisible ? 31 : 0;
+        comparisonTrails.forEach(function(trail, trialIndex) {
+          trail.line.visible = trail.marker.visible = comparisonVisible;
+          if (!comparisonVisible) return;
+          var points = trialIndex === 0 ? comparison.referenceTrailM : comparison.currentTrailM;
+          var offset = trialIndex === 0 ? comparison.referenceM : comparison.currentM;
+          var position = trail.line.geometry.attributes.position;
+          for (var index = 0; index < 31; index++) position.setXYZ(index, 0, deckSurface + 1.08, halfW - 0.12 + points[index] * 10);
+          position.needsUpdate = true;
+          trail.marker.position.set(0, deckSurface + 1.08, halfW - 0.12 + offset * 10);
+        });
+        if (comparisonVisible) {
+          var outlineReference = comparison.outlineTrial === 'reference';
+          comparisonOutline.position.z = (outlineReference ? comparison.referenceM : comparison.currentM) * 10;
+          comparisonOutline.material.color.setHex(outlineReference ? 0xe879f9 : 0x22d3ee);
+        }
+        var force = current.forceLens || {};
+        var forceValues = [force.springNPerKg, force.dampingNPerKg, force.netNPerKg];
+        var forceVisible = quake.enabled === true && current.forceLens && force.enabled === true
+          && typeof quake.deckM === 'number' && isFinite(quake.deckM)
+          && typeof force.limitNPerKg === 'number' && isFinite(force.limitNPerKg) && force.limitNPerKg > 0
+          && ['reference', 'current'].indexOf(force.trial) >= 0
+          && forceValues.every(function(value) { return typeof value === 'number' && isFinite(value) && Math.abs(value) <= force.limitNPerKg * (1 + 1e-9); })
+          && Math.abs(forceValues[0] + forceValues[1] - forceValues[2]) <= 1e-9 * Math.max(1, force.limitNPerKg);
+        forceLens.visible = !!forceVisible;
+        S.forceTrial = forceVisible ? force.trial : null;
+        S.forceLimitNPerKg = forceVisible ? force.limitNPerKg : null;
+        S.forceVectors = [];
+        if (forceVisible) {
+          var onDeck = current.cameraMode === 'deck';
+          var forceX = 0, forceZ = deckZ, forceY = deckSurface + 1.3;
+          var forceLength = onDeck ? 2 : Math.max(2, Math.min(5, span / 12));
+          if (onDeck) {
+            // Keep the schematic in front of the observer while retaining the
+            // physical transverse axis, including when the observer turns.
+            var forceYaw = valid(current.deckYaw) * Math.PI / 180;
+            var forcePitch = Math.max(-60, Math.min(60, valid(current.deckPitch))) * Math.PI / 180;
+            var forceReach = 4 * Math.cos(forcePitch);
+            forceY = deckSurface + 1.65 + 4 * Math.sin(forcePitch) + 0.30;
+            var forcePosition = Math.max(0.03, Math.min(0.97, typeof current.deckPosition === 'number' && isFinite(current.deckPosition) ? current.deckPosition : 0.12));
+            forceX = -span / 2 + span * forcePosition + forceReach * Math.cos(forceYaw);
+            forceZ = halfW - 0.72 + deckZ + forceReach * Math.sin(forceYaw);
+          }
+          forceGlyphs.forEach(function(glyph, index) {
+            var value = forceValues[index], signedLength = value / force.limitNPerKg * forceLength;
+            var y = forceY + (2 - index) * 0.55;
+            var length = Math.abs(signedLength), direction = value < 0 ? -1 : 1;
+            var headLength = Math.min(0.28, length * 0.4);
+            glyph.line.rotation.x = direction * Math.PI / 2;
+            glyph.line.scale.y = Math.max(0, length - headLength);
+            glyph.line.position.set(forceX, y, forceZ + direction * (length - headLength) / 2);
+            glyph.line.visible = glyph.head.visible = length > 1e-7;
+            glyph.head.rotation.x = direction * Math.PI / 2;
+            glyph.head.scale.set(Math.min(1, length / 0.4), headLength, Math.min(1, length / 0.4));
+            glyph.head.position.set(forceX, y, forceZ + signedLength - direction * headLength / 2);
+            glyph.dot.position.set(forceX, y, forceZ);
+            // Small forces must extend beyond the origin marker to remain legible.
+            glyph.dot.scale.setScalar(length > 1e-7 ? Math.min(1, length / 0.2) : 1);
+            S.forceVectors.push({kind:['spring','damping','net'][index], valueNPerKg:value,
+              direction:length > 1e-7 ? direction : 0, signedLengthM:signedLength,
+              origin:[forceX,y,forceZ], tip:[forceX,y,forceZ+signedLength]});
+          });
+        }
         S.half.z = halfW * 1.7 + (quake.enabled ? Math.max(0, valid(quake.maxOffsetM)) * 10 : 0);
         S.supportEndpoints = supports.map(function(pier) {
           var base = pier.base.clone(); base.z += groundZ;
@@ -1831,7 +2101,9 @@
       var bridgeMomentChoice = React.useRef('');
       var bridgeSceneSaved = React.useRef(null);
       var bridgeRevisitFocus = React.useRef(false);
+      var bridgeToolsReturnFocus = React.useRef(false);
       var bridgeSeismicTrialCache = React.useRef(new Map());
+      var bridgeOrbitCache = React.useRef(new WeakMap());
       var bridgeScanState = React.useState({ status: 'idle', key: '', rows: [], selected: 0, completed: 0 });
       var bridgeScanJob = React.useRef({ token: 0, timer: null, running: false, key: '' });
 
@@ -1910,7 +2182,14 @@
           if (typeof target.scrollIntoView === 'function') target.scrollIntoView({ block: 'center' });
         }
       });
+      React.useEffect(function() {
+        if (!bridgeToolsReturnFocus.current || !bridgeViewerRoot.current) return;
+        bridgeToolsReturnFocus.current = false;
+        var summary = bridgeViewerRoot.current.querySelector('[data-bridge-scene-readout] > summary');
+        if (summary) summary.focus({ preventScroll: true });
+      });
       var bridgeFallbackFocus = React.useRef(false);
+      var bridgeFallbackAfterFullscreen = React.useRef(false);
       var bridgeHadViewFailure = React.useRef(BridgeGL.status() === 'failed');
       var bridgeViewerState = React.useState(BridgeGL.status());
       React.useEffect(function() {
@@ -1919,6 +2198,7 @@
           if (next === 'failed') {
             var stage = bridgeViewerRoot.current && bridgeViewerRoot.current.querySelector('[data-allo-fs-stage]');
             bridgeFallbackFocus.current = !!(stage && stage.contains(document.activeElement));
+            bridgeFallbackAfterFullscreen.current = !!(stage && (stage.__alloFsOn || document.fullscreenElement === stage || document.webkitFullscreenElement === stage));
             if (stage && (stage.__alloFsOn || document.fullscreenElement === stage || document.webkitFullscreenElement === stage)
               && typeof window.__alloStemFS === 'function') window.__alloStemFS(stage);
             bridgeHadViewFailure.current = true;
@@ -1938,11 +2218,21 @@
       }, [d.tab, setLabToolData]);
       React.useEffect(function() {
         if (d.tab !== 'build' || !bridgeFallbackFocus.current || !bridgeViewerRoot.current) return;
+        var fallbackFrame = null;
         function focusFallback() {
           var wrapper = bridgeViewerRoot.current;
           if (!wrapper || !bridgeFallbackFocus.current) return;
           var stage = wrapper.querySelector('[data-allo-fs-stage]');
-          if (document.fullscreenElement === stage || document.webkitFullscreenElement === stage) return;
+          if (stage && (document.fullscreenElement === stage || document.webkitFullscreenElement === stage)) return;
+          // Native fullscreen exit can restore focus after fullscreenchange.
+          // Finish that browser transition before handing focus to the elevation.
+          if (bridgeFallbackAfterFullscreen.current && typeof window.requestAnimationFrame === 'function') {
+            if (fallbackFrame !== null) window.cancelAnimationFrame(fallbackFrame);
+            fallbackFrame = window.requestAnimationFrame(function() {
+              fallbackFrame = null; bridgeFallbackAfterFullscreen.current = false; focusFallback();
+            });
+            return;
+          }
           var elevation = wrapper.querySelector('[data-bridge-elevation]');
           if (elevation) { bridgeFallbackFocus.current = false; elevation.focus(); }
         }
@@ -1952,6 +2242,7 @@
         return function() {
           document.removeEventListener('fullscreenchange', focusFallback);
           document.removeEventListener('webkitfullscreenchange', focusFallback);
+          if (fallbackFrame !== null) window.cancelAnimationFrame(fallbackFrame);
         };
       }, [d.tab, d.bridgeView, bridgeViewerState[0]]);
       React.useEffect(function() {
@@ -2056,11 +2347,15 @@
       }
       var guideBaseline = bridgeGuideBaseline(d.seismicGuideBaseline);
       var guideResponse = guideBaseline ? seismicTrialResponse(guideBaseline) : null;
-      var sceneReference = d.seismicSceneSource === 'guide' ? guideResponse : seismicReference().response;
+      var sceneCapture = bridgeSeismicSceneComparison(d.seismicSceneCapture);
+      var sceneReference = d.seismicSceneSource === 'guide' ? guideResponse : d.seismicSceneSource === 'capture'
+        ? (sceneCapture ? seismicTrialResponse({ inputs: sceneCapture.referenceInputs }) : null) : seismicReference().response;
       var sceneComparing = !!(d.seismicSceneCompare && seismicResponse && sceneReference);
       var sceneShowsReference = sceneComparing && d.seismicSceneTrial === 'reference';
       var sceneResponse = sceneShowsReference ? sceneReference : seismicResponse;
       var sceneSample = sceneResponse ? bridgeSeismicSample(sceneResponse, d.seismicTime) : null;
+      var sceneReferenceSample = sceneComparing ? bridgeSeismicSample(sceneReference, d.seismicTime) : null;
+      var sceneOverlayActive = !!(sceneComparing && d.seismicSceneOverlay && seismicSameShaking(sceneReference.settings, seismicResponse.settings));
 
       // ── Web Audio API Sound Effects Engine ──
       // (_bridgeACRef is declared above the loading gate — Rules of Hooks.)
@@ -2239,8 +2534,7 @@
 
       // Trials recalculate the current-position verdict from their editable inputs.
       // A completed crossing is retained separately as versioned test evidence.
-      var bridgeDesignKeys = ['span', 'height', 'nBays', 'materialId', 'crossSectionMm2',
-        'trussStyle', 'loadMode', 'loadPerJoint', 'vehicleLoad', 'vehiclePos', 'lateralBraceEvery'];
+      var bridgeDesignKeys = BRIDGE_DESIGN_KEYS;
       function bridgeDesignInputs(settings) {
         var result = {};
         bridgeDesignKeys.forEach(function(key) { result[key] = settings[key]; });
@@ -2789,6 +3083,66 @@
               __alloT('stem.bridgelab.flow_scope', 'Arrows show direction; numbers show the rate per kg of modal mass. This uses relative motion. Negative input power reduces net input work.'))
           ) : null);
       }
+      function bridgeSceneComparisonMotion() {
+        if (!sceneOverlayActive) return { enabled: false };
+        var referenceTrail = [], currentTrail = [], start = Math.max(0, d.seismicTime - 1);
+        for (var index = 0; index <= 30; index++) {
+          var time = start + (d.seismicTime - start) * index / 30;
+          referenceTrail.push(bridgeSeismicSample(sceneReference, time).absoluteM);
+          currentTrail.push(bridgeSeismicSample(seismicResponse, time).absoluteM);
+        }
+        return { enabled: true, outlineTrial: sceneShowsReference ? 'current' : 'reference',
+          referenceM: sceneReferenceSample.absoluteM, currentM: seismicSample.absoluteM,
+          referenceTrailM: referenceTrail, currentTrailM: currentTrail };
+      }
+      function renderBridgeSceneOverlay() {
+        var same = seismicSameShaking(sceneReference.settings, seismicResponse.settings);
+        var a = __alloT('stem.bridgelab.scene_a', 'A · reference'), b = __alloT('stem.bridgelab.scene_b', 'B · current');
+        function reading(label, point, color) {
+          return h('div', { 'data-overlay-reading': label === a ? 'reference' : 'current', 'data-relative-m': point.relativeM,
+            style: { display: 'flex', justifyContent: 'space-between', gap: 6, color: color } },
+            h('span', null, label), h('strong', { style: { fontVariantNumeric: 'tabular-nums' } }, (point.relativeM * 100).toFixed(2) + ' cm'));
+        }
+        return h('div', { style: { margin: '5px 0' } },
+          h('button', { type: 'button', 'aria-pressed': d.seismicSceneOverlay, disabled: !same,
+            style: Object.assign({}, bridgeActionStyle, { width: '100%', fontSize: 11, padding: '6px 4px' }),
+            onClick: function() { upd({ seismicSceneOverlay: !d.seismicSceneOverlay }); } },
+            __alloT('stem.bridgelab.scene_overlay_toggle', 'Show both responses')),
+          sceneOverlayActive ? h('div', { 'data-bridge-overlay-readings': d.seismicTime, role: 'group', 'aria-live': 'off',
+            'aria-label': __alloT('stem.bridgelab.scene_overlay_readings', 'Both earthquake responses'), style: { marginTop: 5 } },
+            reading(a, sceneReferenceSample, '#f0abfc'), reading(b, seismicSample, '#67e8f9'),
+            h('div', { style: { color: '#cbd5e1', fontSize: 10, marginTop: 3 } },
+              __alloT('stem.bridgelab.scene_overlay_relative', 'Deck relative to ground · same time')),
+            h('div', { 'data-overlay-legend': sceneShowsReference ? 'current' : 'reference', style: { marginTop: 3 } },
+              __alloT('stem.bridgelab.scene_overlay_solid', 'Solid bridge: ') + (sceneShowsReference ? a : b)),
+            h('div', { style: { color: sceneShowsReference ? '#67e8f9' : '#f0abfc' } },
+              __alloT('stem.bridgelab.scene_overlay_outline', 'Dashed outline: ') + (sceneShowsReference ? b : a)),
+            h('div', { style: { color: '#cbd5e1', fontSize: 10 } },
+              __alloT('stem.bridgelab.scene_overlay_scope', 'Both use the displayed bridge shape. Trails mark the deck edge over the previous 1 s; motion is shown at 10×.'))
+          ) : null);
+      }
+      function renderBridgeCompactComparison() {
+        if (!d.seismicReadoutCollapsed || !sceneOverlayActive) return null;
+        return h('span', { id: 'bridge-scene-compact-comparison', 'data-bridge-compact-comparison': d.seismicTime,
+          style: { display: 'block', marginTop: 5, fontSize: 11, fontWeight: 400 } },
+          ['reference', 'current'].map(function(id) {
+            var reference = id === 'reference', point = reference ? sceneReferenceSample : seismicSample;
+            var outlined = reference !== sceneShowsReference;
+            return h('span', { key: id, 'data-compact-response': id, 'data-relative-m': point.relativeM,
+              style: { display: 'flex', justifyContent: 'space-between', gap: 5, color: reference ? '#f0abfc' : '#67e8f9' } },
+              h('span', null, (reference ? __alloT('stem.bridgelab.scene_a', 'A · reference') : __alloT('stem.bridgelab.scene_b', 'B · current')) + ' · '
+                + (outlined ? __alloT('stem.bridgelab.scene_overlay_outline_short', 'outline') : __alloT('stem.bridgelab.scene_overlay_solid_short', 'solid'))),
+              h('strong', { style: { fontVariantNumeric: 'tabular-nums' } }, (point.relativeM * 100).toFixed(2) + ' cm'));
+          }));
+      }
+      function bridgeSceneDesignText(design) {
+        var p = design.inputs, material = MATERIALS.find(function(item) { return item.id === p.materialId; });
+        return ({ warren: 'Warren', pratt: 'Pratt', howe: 'Howe', ktruss: 'K-truss' }[p.trussStyle]) + ' · ' + p.span + ' m × ' + p.height + ' m · '
+          + p.nBays + ' ' + __alloT('stem.bridgelab.scene_design_panels', 'panels') + ' · ' + material.name + ' · ' + p.crossSectionMm2 + ' mm² · '
+          + (p.loadMode === 'vehicle' ? p.vehicleLoad + ' kN @ ' + (p.vehiclePos * 100).toFixed(1) + '%'
+            : p.loadPerJoint + ' ' + __alloT('stem.bridgelab.scene_design_uniform', 'kN per loaded joint')) + ' · '
+          + __alloT('stem.bridgelab.scene_design_bracing', 'Bracing interval: ') + p.lateralBraceEvery;
+      }
       function bridgeSceneViewText(pose) {
         return pose.view === '3d' ? __alloT('stem.bridgelab.scene_record_orbit', '3D structure')
           : pose.observer === 'bank' ? __alloT('stem.bridgelab.scene_record_bank', 'Riverbank viewpoint')
@@ -2811,7 +3165,7 @@
               (sceneShowsReference ? __alloT('stem.bridgelab.scene_a', 'A · reference') : __alloT('stem.bridgelab.scene_b', 'B · current'))
                 + ' · ' + d.seismicTime.toFixed(3) + ' s'),
             h('p', { style: { margin: '4px 0', color: '#cbd5e1' } },
-              __alloT('stem.bridgelab.scene_record_help', 'Describe what moved and where energy went. Save this moment and viewpoint in the earthquake notebook.')),
+              __alloT('stem.bridgelab.scene_record_help', 'Describe what moved and where energy went. Save this moment, bridge setup, and viewpoint in the earthquake notebook.')),
             h('label', { style: { display: 'block' } }, noteLabel,
               h('textarea', { 'aria-label': noteLabel, rows: 3, maxLength: 2000, value: bridgeSeismicText(d.seismicSceneNote),
                 style: { display: 'block', boxSizing: 'border-box', width: '100%', margin: '4px 0 8px', padding: 7,
@@ -2825,7 +3179,12 @@
                   inputs: Object.assign({}, sceneResponse.settings), timeS: d.seismicTime, prediction: '', observation: bridgeSeismicText(d.seismicSceneNote),
                   scene: { version: 'bridge-scene-v1', source: sceneShowsReference ? 'reference' : 'current', view: d.bridgeView,
                     observer: d.bridgeObserver, walkPos: d.bridgeWalkPos, yaw: d.bridgeLookYaw, pitch: d.bridgeLookPitch,
-                    bankYaw: d.bridgeBankYaw, bankPitch: d.bridgeBankPitch, rotY: d.rot3d.rotY, rotX: d.rot3d.rotX, zoom: d.zoom3d } };
+                    bankYaw: d.bridgeBankYaw, bankPitch: d.bridgeBankPitch, rotY: d.rot3d.rotY, rotX: d.rot3d.rotX, zoom: d.zoom3d,
+                    design: { version: 'bridge-scene-design-v1', inputs: bridgeDesignInputs(d), name: bridgeSeismicText(d.designName, 80), notes: bridgeSeismicText(d.designNotes) },
+                    display: { version: 'bridge-scene-display-v1', motionGuide: d.seismicMotionGuide, energyInFrame: d.seismicSceneEnergy,
+                      energyFlow: d.seismicEnergyFlow, overlay: d.seismicSceneOverlay, focusMode: d.seismicSceneFocus, forceLens: d.seismicForceLens, energyOrbit: d.seismicEnergyOrbit },
+                    comparison: sceneComparing ? { version: 'bridge-scene-comparison-v1',
+                      referenceInputs: Object.assign({}, sceneReference.settings), currentInputs: Object.assign({}, seismicResponse.settings) } : null } };
                 bridgeSceneSaved.current = record;
                 upd({ seismicTrials: (Array.isArray(d.seismicTrials) ? d.seismicTrials : []).concat([record]),
                   seismicSceneNote: '', seismicPlaying: false, autoDriving: false });
@@ -2835,6 +3194,173 @@
               __alloT('stem.bridgelab.scene_record_saved', 'Scene observation saved in the earthquake notebook. Playback is paused.')) : null,
             trials.length >= 4 ? h('p', null, __alloT('stem.bridgelab.seismic_trial_limit', 'Four trials are saved. Remove a trial to make room for another.')) : null
           ) : null);
+      }
+      function bridgeOrbitChart(response, limit) {
+        var cached = bridgeOrbitCache.current.get(response);
+        if (!cached || cached.limitMps !== limit) {
+          cached = bridgeSeismicOrbitChart(response, limit); bridgeOrbitCache.current.set(response, cached);
+        }
+        return cached;
+      }
+      function renderBridgeEnergyOrbit(inScene) {
+        var response = inScene ? sceneResponse : seismicResponse, point = inScene ? sceneSample : seismicSample;
+        if (!response || !point) return null;
+        var paired = inScene && sceneComparing, reference = paired ? sceneReference : null;
+        var limit = bridgeSeismicOrbitLimit(response, paired ? (sceneShowsReference ? seismicResponse : reference) : null);
+        var chart = d.seismicEnergyOrbit ? bridgeOrbitChart(response, limit) : null;
+        var frame = bridgeSeismicOrbitFrame(response, point);
+        var selected = inScene && sceneShowsReference ? 'reference' : 'current';
+        var scope = paired ? (sceneShowsReference ? __alloT('stem.bridgelab.scene_a', 'A · reference') : __alloT('stem.bridgelab.scene_b', 'B · current'))
+          : __alloT('stem.bridgelab.flow_current', 'Current experiment');
+        var turning = chart && chart.turning.find(function(time) { return time > point.timeS + 1e-7; });
+        var crossing = chart && chart.crossing.find(function(time) { return time > point.timeS + 1e-7; });
+        var moment = chart && chart.turning.some(function(time) { return Math.abs(time - point.timeS) < 1e-7; }) ? 'turning'
+          : chart && chart.crossing.some(function(time) { return Math.abs(time - point.timeS) < 1e-7; }) ? 'crossing' : '';
+        var rows = paired ? [
+          {id:'reference', response:reference, label:__alloT('stem.bridgelab.scene_a', 'A · reference'), color:'#f0abfc'},
+          {id:'current', response:seismicResponse, label:__alloT('stem.bridgelab.scene_b', 'B · current'), color:'#67e8f9'}
+        ] : [{id:'current',response:response,label:scope,color:'#67e8f9'}];
+        var selectedColor = selected === 'reference' ? '#f0abfc' : '#67e8f9';
+        var kineticPercent=Math.round(frame.kineticFraction*100);
+        var elasticPercent=frame.storedJPerKg > 0 ? 100-kineticPercent : 0;
+        var recent=d.seismicEnergyOrbit ? bridgeSeismicOrbitTrail(response,point.timeS,limit) : null;
+        var explanation = response.settings.intensityG === 0 ? __alloT('stem.bridgelab.orbit_zero', 'No shaking was applied. The point stays at the center; there is no motion cycle to inspect.')
+          : moment === 'turning' ? __alloT('stem.bridgelab.orbit_turn_hint', 'Turning point: relative velocity is zero, so kinetic energy and viscous damping force are zero. The spring is still displaced.')
+          : moment === 'crossing' ? __alloT('stem.bridgelab.orbit_cross_hint', 'Center crossing: relative displacement is zero, so elastic energy and spring force are zero. The deck still moves. If damping is present, it removes energy.')
+          : point.timeS < 16 ? __alloT('stem.bridgelab.orbit_shaking_hint', 'While the ground shakes, input work can add or remove stored energy. Compare the dashed shaking path with the solid free-vibration path after 16 s.')
+          : response.settings.dampingRatio === 0 ? __alloT('stem.bridgelab.orbit_undamped_hint', 'After shaking ends, the undamped mode exchanges elastic and kinetic energy while keeping its stored energy.')
+          : __alloT('stem.bridgelab.orbit_damped_hint', 'After shaking ends, damping contracts the orbit toward rest. Energy leaving the orbit accumulates as dissipated energy.');
+        return h('details', {open:d.seismicEnergyOrbit,'data-bridge-energy-orbit':inScene ? 'scene' : 'fallback',
+          onToggle:function(event) { if (event.currentTarget.open !== d.seismicEnergyOrbit) upd({seismicEnergyOrbit:event.currentTarget.open,seismicPlaying:false,autoDriving:false}); },
+          style:{marginTop:6,padding:inScene ? undefined : 12,borderRadius:8,background:inScene ? undefined : '#0f172a'}},
+          h('summary',{style:{cursor:'pointer',minHeight:32,paddingTop:6,fontSize:12,fontWeight:700}},__alloT('stem.bridgelab.orbit_title', 'Energy orbit')),
+          d.seismicEnergyOrbit ? h('div',{'data-orbit-frame':point.timeS,'data-orbit-trial':selected,'data-orbit-limit':limit,'aria-live':'off',style:{fontSize:11,lineHeight:1.5}},
+            h('div',{style:{margin:'4px 0',color:'#cbd5e1'}},scope+' · '+point.timeS.toFixed(3)+' s'),
+            h('svg',{viewBox:'0 0 260 244',role:'img','aria-label':__alloT('stem.bridgelab.orbit_alt', 'Energy orbit: scaled relative displacement horizontally and relative velocity vertically. Circles show equal stored energy. Numeric values and cycle controls follow.'),
+              'data-orbit-plot':true,style:{display:'block',width:'100%',maxWidth:440,maxHeight:inScene ? (d.seismicSceneFocus ? 'max(120px, calc(100dvh - 226px - env(safe-area-inset-bottom, 0px)))' : 'max(120px, calc(100dvh - 260px))') : undefined,scrollMarginTop:40,background:'#0b1729',borderRadius:8,margin:'6px auto'}},
+              h('text',{x:130,y:14,textAnchor:'middle',fill:'#e2e8f0',fontSize:14},__alloT('stem.bridgelab.orbit_velocity_axis', 'Relative velocity v (m/s)')),
+              [0.5,1].map(function(fraction) { return h('g',{key:fraction},h('circle',{cx:130,cy:112,r:87*fraction,fill:'none',stroke:'#475569',strokeWidth:0.8}),
+                h('text',{x:134,y:112-87*fraction+10,fill:'#94a3b8',fontSize:10},bridgeEnergyText(limit*limit*fraction*fraction/2)+' J/kg')); }),
+              h('line',{x1:28,x2:232,y1:112,y2:112,stroke:'#64748b'}),h('line',{x1:130,x2:130,y1:25,y2:199,stroke:'#64748b'}),
+              h('text',{x:23,y:116,textAnchor:'end',fill:'#94a3b8',fontSize:10},'−'),h('text',{x:237,y:116,fill:'#94a3b8',fontSize:10},'+'),
+              rows.map(function(row) { var history=bridgeOrbitChart(row.response,limit);return h('g',{key:row.id,'data-orbit-history':row.id},
+                h('polyline',{points:history.shaking,fill:'none',stroke:row.color,strokeWidth:1,strokeDasharray:'3 3',opacity:0.35,'data-orbit-shaking':row.id}),
+                h('polyline',{points:history.free,fill:'none',stroke:row.color,strokeWidth:1.8,opacity:row.id===selected ? 0.35 : 0.25,'data-orbit-free':row.id})); }),
+              recent.segments.map(function(segment,index) { return h('polyline',{key:'recent-'+index,points:segment.path,
+                fill:'none',stroke:selectedColor,strokeWidth:3.2,strokeLinecap:'round',strokeLinejoin:'round',opacity:segment.opacity,
+                'data-orbit-recent':selected,'data-orbit-recent-start':recent.startTimeS,'data-orbit-recent-end':recent.timeS}); }),
+              recent.direction ? h('polygon',{points:recent.direction.path,fill:selectedColor,stroke:'#0b1729',strokeWidth:0.8,
+                'data-orbit-direction':selected,'data-orbit-direction-time':recent.direction.timeS}) : null,
+              h('circle',{cx:130,cy:112,r:frame.radiusMps/limit*87,fill:'none',stroke:selectedColor,strokeDasharray:'2 3',opacity:0.7,'data-orbit-radius':frame.radiusMps}),
+              h('path',{d:'M130 112 H'+chart.x(frame.elasticMps)+' V'+chart.y(frame.velocityMps),fill:'none',stroke:'#fbbf24',strokeWidth:1.5,opacity:0.75}),
+              rows.map(function(row) {var p=bridgeSeismicSample(row.response,point.timeS),f=bridgeSeismicOrbitFrame(row.response,p);return h('g',{key:row.id,'data-orbit-marker':row.id,'data-orbit-x-mps':f.elasticMps,'data-orbit-v-mps':f.velocityMps,'data-orbit-stored':f.storedJPerKg},
+                h('circle',{cx:chart.x(f.elasticMps),cy:chart.y(f.velocityMps),r:row.id===selected ? 4.5 : 3.5,fill:row.color,stroke:'#0b1729',strokeWidth:1.5}),
+                paired ? h('text',{x:chart.x(f.elasticMps)+7,y:chart.y(f.velocityMps)-6,fill:row.color,fontSize:12,fontWeight:700},row.id==='reference'?'A':'B') : null);}),
+              h('circle',{cx:130,cy:112,r:2,fill:'#e2e8f0'}),
+              h('text',{x:130,y:222,textAnchor:'middle',fill:'#e2e8f0',fontSize:14},__alloT('stem.bridgelab.orbit_displacement_axis', 'Scaled displacement ωu (m/s)')),
+              h('text',{x:130,y:236,textAnchor:'middle',fill:'#94a3b8',fontSize:10},__alloT('stem.bridgelab.orbit_range', 'Axis range: ±')+bridgeEnergyText(limit)+' m/s')),
+            paired ? h('div',{style:{display:'flex',gap:10,flexWrap:'wrap'}},rows.map(function(row){return h('span',{key:row.id,style:{color:row.color}},row.label+(row.id===selected?' •':''));})) : null,
+            h('div',{'data-orbit-recent-caption':selected,style:{color:'#cbd5e1',fontSize:10,marginTop:4}},
+              recent.segments.length ? __alloT('stem.bridgelab.orbit_recent', 'Bright trail: recent motion · ')
+                + recent.startTimeS.toFixed(3) + '–' + recent.timeS.toFixed(3) + ' s'
+                : __alloT('stem.bridgelab.orbit_no_recent', 'No recent motion')),
+            h('div',{'data-orbit-split':selected,style:{marginTop:6}},
+              h('div',{style:{display:'flex',justifyContent:'space-between',gap:6,fontSize:10}},
+                h('strong',null,__alloT('stem.bridgelab.orbit_split', 'Stored energy split')),
+                h('span',null,frame.storedJPerKg > 0 ? kineticPercent+'% / '+elasticPercent+'%'
+                  : __alloT('stem.bridgelab.orbit_no_energy', 'No stored energy'))),
+              h('div',{role:'img','aria-label':__alloT('stem.bridgelab.orbit_split', 'Stored energy split')+': '
+                + __alloT('stem.bridgelab.seismic_scene_kinetic', 'Kinetic')+' '+kineticPercent+'%, '
+                + __alloT('stem.bridgelab.seismic_scene_elastic', 'Elastic')+' '+elasticPercent+'%',
+                style:{display:'flex',height:9,marginTop:3,border:'1px solid #64748b',borderRadius:5,overflow:'hidden',background:'#0b1729'}},
+                [{id:'kinetic',fraction:frame.kineticFraction,color:'#fbbf24'},{id:'elastic',fraction:frame.elasticFraction,color:'#7dd3fc'}]
+                  .map(function(part) {return h('span',{key:part.id,'data-orbit-part':part.id,'data-orbit-fraction':part.fraction,
+                    style:{width:(part.fraction*100)+'%',background:part.color}});}))
+            ),
+            h('div',{style:{display:'grid',gridTemplateColumns:'repeat(3,minmax(0,1fr))',gap:4,marginTop:6,fontVariantNumeric:'tabular-nums'}},[
+              {id:'kinetic',label:__alloT('stem.bridgelab.seismic_scene_kinetic', 'Kinetic'),value:frame.kineticJPerKg,color:'#fbbf24'},
+              {id:'elastic',label:__alloT('stem.bridgelab.seismic_scene_elastic', 'Elastic'),value:frame.elasticJPerKg,color:'#7dd3fc'},
+              {id:'stored',label:__alloT('stem.bridgelab.flow_stored', 'Stored'),value:frame.storedJPerKg,color:'#e2e8f0'}
+            ].map(function(row){return h('div',{key:row.id,'data-orbit-energy':row.id,'data-orbit-value':row.value},h('span',{style:{color:row.color,display:'block'}},row.label),h('strong',null,bridgeEnergyText(row.value)));})),
+            h('p',{style:{margin:'5px 0',color:'#cbd5e1',fontSize:10}},__alloT('stem.bridgelab.orbit_energy_scope', 'J/kg · computed from the displayed motion. The bar splits the energy stored now; orbit radius shows its amount. Horizontal displacement is scaled by ω = 2π × natural frequency.')),
+            h('div',{'data-orbit-insight':moment||'response',style:{borderLeft:'3px solid '+selectedColor,padding:'5px 7px',margin:'7px 0',background:'#1e293b'}},explanation),
+            h('div',{role:'group','aria-label':__alloT('stem.bridgelab.orbit_controls', 'Inspect free-vibration cycle'),style:{display:'flex',gap:6,flexWrap:'wrap'}},[
+              {id:'turning',time:turning,label:__alloT('stem.bridgelab.orbit_next_turn', 'Next turning point')},
+              {id:'crossing',time:crossing,label:__alloT('stem.bridgelab.orbit_next_cross', 'Next center crossing')}
+            ].map(function(moment){return h('button',{key:moment.id,type:'button',disabled:typeof moment.time!=='number','data-orbit-next':moment.id,'data-orbit-next-time':moment.time,
+              style:Object.assign({},bridgeActionStyle,{flex:'1 1 105px',minHeight:44,fontSize:11,padding:'6px 5px'}),onClick:function(){if(typeof moment.time==='number')bridgeInspectSeismic(moment.time);}},moment.label);})),
+            h('p',{style:{margin:'6px 0',color:'#cbd5e1',fontSize:10}},__alloT('stem.bridgelab.orbit_history_scope', 'Faint paths show the complete 24 s experiment: dashed shaking, solid free vibration. The bright trail shows up to one natural period of past motion; its arrow follows time. Cycle controls inspect the selected trial after 16 s using estimated sample crossings. The axis scale stays fixed for the event and for A/B.'))
+          ) : null);
+      }
+      function renderBridgeCompactOrbit() {
+        if (!d.seismicReadoutCollapsed || !d.seismicEnergyOrbit || !sceneResponse || !sceneSample) return null;
+        var frame=bridgeSeismicOrbitFrame(sceneResponse,sceneSample);
+        return h('span',{'data-bridge-compact-orbit':d.seismicTime,style:{display:'block',fontSize:10,fontWeight:400,color:'#cbd5e1',marginTop:4}},
+          __alloT('stem.bridgelab.orbit_compact', 'Orbit stored energy: ')+bridgeEnergyText(frame.storedJPerKg)+' J/kg');
+      }
+      function bridgeSceneForceFrame() {
+        return sceneResponse && sceneSample ? bridgeSeismicForceFrame(sceneResponse, sceneSample,
+          sceneComparing ? (sceneShowsReference ? seismicResponse : sceneReference) : null) : null;
+      }
+      function renderBridgeForceLens(inScene) {
+        var response = inScene ? sceneResponse : seismicResponse, point = inScene ? sceneSample : seismicSample;
+        if (!response || !point) return null;
+        var frame = inScene ? bridgeSceneForceFrame() : bridgeSeismicForceFrame(response, point);
+        var rows = [
+          {id:'spring', label:__alloT('stem.bridgelab.force_lens_spring', 'Spring'), value:frame.springNPerKg, color:'#fbbf24'},
+          {id:'damping', label:__alloT('stem.bridgelab.force_lens_damping', 'Damping'), value:frame.dampingNPerKg, color:'#c4b5fd'},
+          {id:'net', label:__alloT('stem.bridgelab.force_lens_net', 'Net force'), value:frame.netNPerKg, color:'#e2e8f0'}
+        ];
+        var scope = inScene && sceneComparing ? (sceneShowsReference ? __alloT('stem.bridgelab.scene_a', 'A · reference') : __alloT('stem.bridgelab.scene_b', 'B · current'))
+          : __alloT('stem.bridgelab.flow_current', 'Current experiment');
+        function signed(value) { return (value > 0 ? '+' : '') + (Math.abs(value) < 0.0005 ? '0.000' : value.toFixed(3)); }
+        return h('details', {open:d.seismicForceLens, 'data-bridge-force-lens':inScene ? 'scene' : 'fallback',
+          onToggle:function(event) { if (event.currentTarget.open !== d.seismicForceLens) upd({seismicForceLens:event.currentTarget.open, seismicPlaying:false, autoDriving:false}); },
+          style:{marginTop:6, padding:inScene ? undefined : 12, borderRadius:8, background:inScene ? undefined : '#0f172a'}},
+          h('summary', {style:{cursor:'pointer', minHeight:32, paddingTop:6, fontSize:12, fontWeight:700}}, __alloT('stem.bridgelab.force_lens_title', 'Force lens')),
+          d.seismicForceLens ? h('div', {'data-force-frame':point.timeS, 'data-force-trial':inScene && sceneShowsReference ? 'reference' : 'current',
+            'data-force-limit':frame.limitNPerKg, 'aria-live':'off', style:{fontSize:11, lineHeight:1.5}},
+            h('div', {style:{color:'#cbd5e1', margin:'4px 0'}}, scope + ' · ' + point.timeS.toFixed(2) + ' s'),
+            h('svg', {viewBox:'0 0 240 105', 'aria-hidden':true, focusable:'false', style:{display:'block', width:'100%', maxWidth:360}},
+              h('line', {x1:120,x2:120,y1:4,y2:96,stroke:'#64748b',strokeDasharray:'3 3'}),
+              rows.map(function(row,index) {
+                var y = 18 + index * 29, end = 120 + row.value / frame.limitNPerKg * 100, direction = row.value < 0 ? -1 : 1;
+                return h('g', {key:row.id}, h('line', {x1:20,x2:220,y1:y,y2:y,stroke:'#334155'}),
+                  h('circle', {cx:120,cy:y,r:3,fill:row.color}),
+                  Math.abs(row.value) > 1e-9 ? h('g', null, h('line', {x1:120,x2:end,y1:y,y2:y,stroke:row.color,strokeWidth:3}),
+                    h('path', {d:'M'+(end-direction*5)+' '+(y-4)+' L'+end+' '+y+' L'+(end-direction*5)+' '+(y+4),fill:'none',stroke:row.color,strokeWidth:2})) : null);
+              }),
+              h('text',{x:20,y:103,textAnchor:'middle',fill:'#cbd5e1',fontSize:10},'−'),
+              h('text',{x:120,y:103,textAnchor:'middle',fill:'#cbd5e1',fontSize:10},'0'),
+              h('text',{x:220,y:103,textAnchor:'middle',fill:'#cbd5e1',fontSize:10},'+')),
+            rows.map(function(row) { return h('div', {key:row.id, 'data-force-reading':row.id, 'data-force-value':row.value,
+              style:{display:'flex',justifyContent:'space-between',gap:8,color:row.color,fontVariantNumeric:'tabular-nums'}},
+              h('span',null,row.label),h('strong',null,signed(row.value)+' N/kg')); }),
+            h('p',{style:{margin:'6px 0'}},__alloT('stem.bridgelab.force_lens_balance', 'Spring + damping = net force per kg = deck acceleration in a stationary frame.')),
+            h('div',{'data-force-relative-speed':frame.velocityMps},__alloT('stem.bridgelab.seismic_relative_speed', 'Relative deck velocity: ')+signed(frame.velocityMps)+' m/s'),
+            h('div',{'data-force-damping-power':frame.dampingPowerWPerKg},__alloT('stem.bridgelab.seismic_damping_power', 'Damping power / modal mass: ')+bridgeEnergyText(Math.max(0,frame.dampingPowerWPerKg))+' W/kg'),
+            h('p',{style:{margin:'6px 0',color:'#cbd5e1'}},__alloT('stem.bridgelab.force_lens_energy', 'The spring pushes toward zero relative displacement and exchanges elastic and kinetic energy. Damping opposes relative velocity and dissipates energy.')),
+            h('div',{style:{color:'#cbd5e1',fontSize:10}},__alloT('stem.bridgelab.force_lens_range', 'Arrow range: ±')+frame.limitNPerKg.toFixed(3)+' N/kg · '
+              +(inScene && sceneComparing ? __alloT('stem.bridgelab.motion_ab_range', 'fixed for A and B') : __alloT('stem.bridgelab.motion_event_range', 'fixed for this experiment'))),
+            h('p',{style:{margin:'4px 0',color:'#cbd5e1',fontSize:10}},inScene
+              ? __alloT('stem.bridgelab.force_lens_scope', '3D arrows show forces on one modal deck mass across the bridge: gold spring, violet damping, white net. A dot marks each origin; arrows disappear at zero force. Arrow length uses its own force scale. The direction stays fixed across the bridge when you turn.')
+              : __alloT('stem.bridgelab.force_lens_fallback', 'Right is positive across the deck in this diagram. Forces are for one teaching mode, per unit modal mass.')),
+            h('p',{style:{margin:'4px 0',color:'#cbd5e1',fontSize:10}},__alloT('stem.bridgelab.force_lens_static', 'These modal forces are separate from the static member colors and safety factors.'))
+          ) : null);
+      }
+      function renderBridgeCompactForces() {
+        var frame = bridgeSceneForceFrame();
+        if (!d.seismicReadoutCollapsed || !d.seismicForceLens || !frame) return null;
+        return h('span', {'data-bridge-compact-forces':d.seismicTime,
+          style:{display:'block',fontWeight:400,fontSize:10,color:'#e2e8f0',marginTop:4}},
+          h('span', {style:{display:'block',color:'#cbd5e1'}}, __alloT('stem.bridgelab.force_lens_compact_units', 'Modal forces · N/kg')),
+          [
+            {id:'spring',label:__alloT('stem.bridgelab.force_lens_spring', 'Spring'),value:frame.springNPerKg,color:'#fbbf24'},
+            {id:'damping',label:__alloT('stem.bridgelab.force_lens_damping', 'Damping'),value:frame.dampingNPerKg,color:'#c4b5fd'},
+            {id:'net',label:__alloT('stem.bridgelab.force_lens_net', 'Net force'),value:frame.netNPerKg,color:'#e2e8f0'}
+          ].map(function(row) { return h('span',{key:row.id,'data-compact-force':row.id,
+            style:{display:'flex',justifyContent:'space-between',gap:6,color:row.color,fontVariantNumeric:'tabular-nums'}},
+            h('span',null,row.label),h('strong',null,(row.value>0?'+':'')+row.value.toFixed(3))); }));
       }
       function renderBridgeSceneReadout() {
         if (!seismicResponse || !seismicSample) return null;
@@ -2846,18 +3372,45 @@
           { key: 'dissipated', label: __alloT('stem.bridgelab.seismic_scene_dissipated', 'Dissipated'), value: sample.dissipatedJPerKg, color: '#c4b5fd' }
         ];
         return h('details', { open: !d.seismicReadoutCollapsed,
-          onToggle: function(event) { if (!event.currentTarget.open !== d.seismicReadoutCollapsed) upd({ seismicReadoutCollapsed: !event.currentTarget.open }); },
-          'data-bridge-scene-readout': true, 'data-scene-trial': sceneShowsReference ? 'reference' : 'current', role: 'group', 'aria-live': 'off',
+          onToggle: function(event) {
+            if (!event.currentTarget.open !== d.seismicReadoutCollapsed) {
+              var patch = { seismicReadoutCollapsed: !event.currentTarget.open };
+              if (d.seismicSceneFocus && event.currentTarget.open) { patch.seismicPlaying = false; patch.autoDriving = false; }
+              upd(patch);
+            }
+          },
+          onKeyDown: function(event) {
+            if (d.seismicSceneFocus && !d.seismicReadoutCollapsed && event.key === 'Escape') {
+              event.preventDefault(); event.stopPropagation(); bridgeToolsReturnFocus.current = true;
+              upd({ seismicReadoutCollapsed: true });
+            }
+          },
+          'data-bridge-scene-readout': true, 'data-bridge-scene-drawer': d.seismicSceneFocus ? 'true' : undefined,
+          'data-scene-trial': sceneShowsReference ? 'reference' : 'current', role: 'group', 'aria-live': 'off',
           'aria-label': __alloT('stem.bridgelab.seismic_scene_readout', 'Earthquake scene readout'),
-          style: { position: 'absolute', left: 10, top: 10, width: 292, maxWidth: 'calc(100% - 64px)', maxHeight: 'calc(100% - 216px)', overflowY: 'auto', overscrollBehavior: 'contain', padding: '8px 10px', borderRadius: 9,
+          style: { position: 'absolute', left: 10, top: d.seismicSceneFocus ? undefined : 10,
+            bottom: d.seismicSceneFocus ? 'calc(150px + env(safe-area-inset-bottom, 0px))' : undefined,
+            width: d.seismicSceneFocus ? 'calc(100% - 70px)' : 292,
+            maxWidth: d.seismicSceneFocus ? 320 : 'calc(100% - 70px)',
+            boxSizing: 'border-box',
+            maxHeight: d.seismicSceneFocus ? 'calc(100% - 174px - env(safe-area-inset-bottom, 0px))' : 'calc(100% - 216px)',
+            overflowY: 'auto', overscrollBehavior: 'contain', padding: '8px 10px', borderRadius: 9,
             border: '1px solid #475569', background: 'rgba(10,14,26,.94)', color: '#e2e8f0', fontSize: 11, lineHeight: 1.5 } },
-          h('summary', { 'aria-label': __alloT('stem.bridgelab.seismic_panel_toggle', 'Scene measurements'),
-            style: { cursor: 'pointer', fontSize: 12, fontWeight: 700, minHeight: 28, paddingTop: 3 } },
-            __alloT('stem.bridgelab.seismic_panel_title', 'Measurements · motion 10×'),
+          h('summary', { 'aria-label': d.seismicSceneFocus ? __alloT('stem.bridgelab.scene_focus_tools', 'Scene tools') : __alloT('stem.bridgelab.seismic_panel_toggle', 'Scene measurements'),
+            'aria-describedby': d.seismicReadoutCollapsed && sceneOverlayActive ? 'bridge-scene-compact-comparison' : undefined,
+            style: { cursor: 'pointer', fontSize: 12, fontWeight: 700, minHeight: 28, paddingTop: 3,
+              position: d.seismicSceneFocus ? 'sticky' : undefined, top: d.seismicSceneFocus ? 0 : undefined,
+              zIndex: d.seismicSceneFocus ? 2 : undefined, background: d.seismicSceneFocus ? '#0b1220' : undefined } },
+            d.seismicSceneFocus ? __alloT('stem.bridgelab.scene_focus_tools_title', 'Scene tools · motion 10×') : __alloT('stem.bridgelab.seismic_panel_title', 'Measurements · motion 10×'),
             d.seismicReadoutCollapsed ? h('span', { 'aria-hidden': true, style: { display: 'block', fontSize: 10, fontWeight: 400, marginTop: 3 } },
               (sceneComparing ? (sceneShowsReference ? __alloT('stem.bridgelab.scene_a', 'A · reference') : __alloT('stem.bridgelab.scene_b', 'B · current')) + ' · ' : '')
-                + d.seismicTime.toFixed(2) + ' s') : null),
+                + d.seismicTime.toFixed(2) + ' s') : null,
+            renderBridgeCompactComparison(), renderBridgeCompactForces(), renderBridgeCompactOrbit()),
           !d.seismicReadoutCollapsed ? h('div', null,
+          d.seismicSceneFocus ? h('div', { style: { margin: '8px 0' } },
+            h('p', { style: { margin: '0 0 6px', color: '#cbd5e1', fontSize: 11 } },
+              __alloT('stem.bridgelab.scene_focus_tools_hint', 'Opening tools pauses replay. Choose a moment, inspect energy, or record what you see. Close this drawer to watch the bridge.')),
+            renderBridgeSceneMoments()) : null,
           sceneComparing ? h('div', null,
             h('div', { role: 'group', 'aria-label': __alloT('stem.bridgelab.scene_ab', 'Choose earthquake scene trial'), style: { display: 'flex', gap: 6, margin: '6px 0' } },
               ['reference', 'current'].map(function(choice) {
@@ -2867,6 +3420,7 @@
                   onClick: function() { upd({ seismicSceneTrial: choice, seismicPlaying: false, autoDriving: false }); }
                 }, choice === 'reference' ? __alloT('stem.bridgelab.scene_a', 'A · reference') : __alloT('stem.bridgelab.scene_b', 'B · current'));
               })),
+            renderBridgeSceneOverlay(),
             h('div', { 'data-scene-inputs': true }, seismicInputText(sceneResponse.settings)),
             !seismicSameShaking(sceneReference.settings, seismicResponse.settings) ? h('div', null, __alloT('stem.bridgelab.scene_input_differs', 'A and B use different ground motion.')) : null,
             h('button', { type: 'button', style: { marginTop: 4, padding: '4px 0', minHeight: 28, background: 'transparent', color: '#bae6fd', border: 0, textDecoration: 'underline', cursor: 'pointer' },
@@ -2879,6 +3433,8 @@
               sample.timeS < 16 ? __alloT('stem.bridgelab.seismic_shaking', 'Shaking phase') : __alloT('stem.bridgelab.seismic_decay', 'Free vibration'))),
           !d.seismicMotionGuide ? h('div', null, __alloT('stem.bridgelab.seismic_hud_relative', 'Deck relative to ground: ') + (sample.relativeM * 100).toFixed(2) + ' cm') : null,
           renderBridgeMotionGuide(true),
+          renderBridgeForceLens(true),
+          renderBridgeEnergyOrbit(true),
           h('details', { open: d.seismicSceneEnergy, 'data-bridge-scene-energy': true,
             onToggle: function(event) { if (event.currentTarget.open !== d.seismicSceneEnergy) upd({ seismicSceneEnergy: event.currentTarget.open }); },
             style: { marginTop: 4 } },
@@ -2904,16 +3460,10 @@
           ) : null
         );
       }
-      function renderBridgeSceneReplay() {
+      function renderBridgeSceneMoments() {
         var moments = bridgeSceneMoments(), active = bridgeActiveSceneMoment(moments);
         var scope = sceneComparing ? (sceneShowsReference ? __alloT('stem.bridgelab.scene_a', 'A · reference') : __alloT('stem.bridgelab.scene_b', 'B · current')) : '';
-        return h('div', { 'data-bridge-scene-replay': true, role: 'group', 'aria-label': __alloT('stem.bridgelab.seismic_scene_controls', 'Earthquake scene replay'),
-          style: { position: 'absolute', bottom: 38, left: 10, right: 10, maxWidth: 460, padding: '8px 10px', borderRadius: 8, background: 'rgba(10,14,26,.92)', color: '#e2e8f0' } },
-          h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 6 } },
-            h('button', { type: 'button', style: Object.assign({}, bridgeActionStyle, { minWidth: 0, fontSize: 12, padding: '6px 8px' }), 'aria-pressed': d.seismicPlaying, disabled: bridgeReducedMotion,
-              onClick: bridgeToggleSeismic }, d.seismicPlaying ? __alloT('stem.bridgelab.seismic_scene_pause', 'Pause scene replay') : __alloT('stem.bridgelab.seismic_scene_run', 'Replay scene')),
-            bridgeReplaySpeed(true)),
-          h('select', { 'aria-label': __alloT('stem.bridgelab.scene_key_moments', 'Scene key moments'),
+        return h('select', { 'aria-label': __alloT('stem.bridgelab.scene_key_moments', 'Scene key moments'),
             'data-bridge-scene-moments': sceneShowsReference ? 'reference' : 'current',
             'aria-describedby': active && !d.seismicReadoutCollapsed && !d.seismicPlaying ? 'bridge-scene-moment-insight' : undefined,
             value: active ? active.id : '',
@@ -2927,7 +3477,42 @@
               return h('option', { key: moment.id, value: moment.id, disabled: moment.disabled, 'data-moment-time': moment.time },
                 moment.label + ' · ' + (moment.disabled ? __alloT('stem.bridgelab.moment_no_shaking', 'no shaking') : moment.time.toFixed(2) + ' s')
                   + (scope ? ' · ' + (sceneShowsReference ? 'A' : 'B') : ''));
-            })),
+            }));
+      }
+      function renderBridgeFocusReplay() {
+        var stepStyle = Object.assign({}, bridgeActionStyle, { width: 44, height: 44, minWidth: 44, minHeight: 44, padding: 0, fontSize: 19 });
+        return h('div', { 'data-bridge-scene-replay': true, 'data-bridge-focus-replay': true, role: 'group',
+          'aria-label': __alloT('stem.bridgelab.seismic_scene_controls', 'Earthquake scene replay'),
+          style: { position: 'absolute', bottom: 'calc(38px + env(safe-area-inset-bottom, 0px))', left: 10, right: 10,
+            maxWidth: 320, padding: '8px 10px', borderRadius: 8, background: 'rgba(10,14,26,.94)', color: '#e2e8f0' } },
+          h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 4 } },
+            h('button', { type: 'button', style: Object.assign({}, bridgeActionStyle, { minWidth: 0, fontSize: 12, padding: '6px 8px' }),
+              'aria-pressed': d.seismicPlaying, disabled: bridgeReducedMotion, onClick: bridgeToggleSeismic },
+              d.seismicPlaying ? __alloT('stem.bridgelab.seismic_scene_pause', 'Pause scene replay') : __alloT('stem.bridgelab.seismic_scene_run', 'Replay scene')),
+            bridgeReplaySpeed(true)),
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: 7 } },
+            h('button', { type: 'button', 'aria-label': __alloT('stem.bridgelab.scene_step_back', 'Step scene backward 0.5 s'),
+              disabled: d.seismicTime <= 0, style: stepStyle,
+              onClick: function() { bridgeInspectSeismic(Math.max(0, d.seismicTime - 0.5)); } }, h('span', { 'aria-hidden': true }, '−')),
+            h('label', { htmlFor: 'bridge-scene-time', style: { flex: 1, minWidth: 0, fontSize: 10, lineHeight: 1.3, fontVariantNumeric: 'tabular-nums' } },
+              d.seismicTime.toFixed(2) + ' s / 24 s',
+              h('input', { id: 'bridge-scene-time', type: 'range', min: 0, max: 24, step: 0.05, value: d.seismicTime,
+                'aria-label': __alloT('stem.bridgelab.seismic_scene_time', 'Scene replay time (s)'), 'aria-valuetext': d.seismicTime.toFixed(2) + ' s / 24 s',
+                onChange: function(event) { bridgeInspectSeismic(Number(event.target.value)); },
+                style: { display: 'block', width: '100%', height: 26, margin: 0, accentColor: AMBER } })),
+            h('button', { type: 'button', 'aria-label': __alloT('stem.bridgelab.scene_step_forward', 'Step scene forward 0.5 s'),
+              disabled: d.seismicTime >= 24, style: stepStyle,
+              onClick: function() { bridgeInspectSeismic(Math.min(24, d.seismicTime + 0.5)); } }, h('span', { 'aria-hidden': true }, '+'))));
+      }
+      function renderBridgeSceneReplay() {
+        if (d.seismicSceneFocus) return renderBridgeFocusReplay();
+        return h('div', { 'data-bridge-scene-replay': true, role: 'group', 'aria-label': __alloT('stem.bridgelab.seismic_scene_controls', 'Earthquake scene replay'),
+          style: { position: 'absolute', bottom: 38, left: 10, right: 10, maxWidth: 460, padding: '8px 10px', borderRadius: 8, background: 'rgba(10,14,26,.92)', color: '#e2e8f0' } },
+          h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 6 } },
+            h('button', { type: 'button', style: Object.assign({}, bridgeActionStyle, { minWidth: 0, fontSize: 12, padding: '6px 8px' }), 'aria-pressed': d.seismicPlaying, disabled: bridgeReducedMotion,
+              onClick: bridgeToggleSeismic }, d.seismicPlaying ? __alloT('stem.bridgelab.seismic_scene_pause', 'Pause scene replay') : __alloT('stem.bridgelab.seismic_scene_run', 'Replay scene')),
+            bridgeReplaySpeed(true)),
+          renderBridgeSceneMoments(),
           bridgeViewSlider('bridge-scene-time', __alloT('stem.bridgelab.seismic_scene_time', 'Scene replay time (s)'), d.seismicTime, 0, 24, 0.05,
             bridgeInspectSeismic, d.seismicTime.toFixed(2) + ' s / 24 s')
         );
@@ -3075,7 +3660,7 @@
         return a.intensityG === b.intensityG && (a.intensityG === 0 || a.groundFrequencyHz === b.groundFrequencyHz);
       }
       function bridgeCompareScene(source) {
-        upd({ seismicSceneCompare: true, seismicSceneSource: source, seismicSceneTrial: 'current',
+        upd({ seismicSceneCompare: true, seismicSceneOverlay: true, seismicSceneSource: source, seismicSceneTrial: 'current',
           seismicPlaying: false, autoDriving: false, bridgeView: d.bridgeView === '2d' ? '3d' : d.bridgeView });
         var view = bridgeViewerRoot.current && bridgeViewerRoot.current.querySelector('[aria-describedby="bridge-gl-description"]');
         if (view) { view.focus({ preventScroll: true }); if (view.scrollIntoView) view.scrollIntoView({ block: 'center' }); }
@@ -3130,7 +3715,7 @@
             h('button', { type: 'button', style: bridgeActionStyle, onClick: function() {
               upd({ seismicGuideBaseline: { version: 'bridge-damping-v1', inputs: Object.assign({}, current.settings, { dampingRatio: 0.05 }) },
                 seismicEnabled: true, seismicDampingRatio: 0.2, seismicTime: 0, seismicPlaying: false, autoDriving: false,
-                seismicSceneCompare: true, seismicSceneSource: 'guide', seismicSceneTrial: 'current' });
+                seismicSceneCompare: true, seismicSceneOverlay: true, seismicSceneSource: 'guide', seismicSceneTrial: 'current' });
               announceStatus(__alloT('stem.bridgelab.guide_prepared', 'A uses 5% damping. B uses 20%. Both trials are paused at 0 seconds.'));
             } }, __alloT('stem.bridgelab.guide_prepare', 'Prepare 5% / 20% comparison')),
             h('p', { 'data-guide-feedback': true }, feedback),
@@ -3286,6 +3871,12 @@
             var result = seismicTrialResponse(trial), point = bridgeSeismicSample(result, trial.timeS);
             var name = bridgeSeismicText(trial.name, 80) || 'Trial ' + (index + 1);
             var pose = bridgeSeismicScenePose(trial.scene);
+            var sceneDesign = bridgeSeismicSceneDesign(trial.scene && trial.scene.design);
+            var sceneDisplay = bridgeSeismicSceneDisplay(trial.scene && trial.scene.display);
+            var scenePair = pose && bridgeSeismicSceneComparison(trial.scene.comparison);
+            if (scenePair && !bridgeSeismicInputsEqual(trial.inputs, pose.source === 'reference' ? scenePair.referenceInputs : scenePair.currentInputs)) scenePair = null;
+            var pairA = scenePair && seismicTrialResponse({ inputs: scenePair.referenceInputs });
+            var pairB = scenePair && seismicTrialResponse({ inputs: scenePair.currentInputs });
             return h('article', { key: index, 'data-seismic-trial': index, style: { margin: '12px 0', padding: 12, border: '1px solid #64748b', borderRadius: 8, breakInside: 'avoid' } },
               h('h4', { style: { margin: '0 0 8px' } }, name),
               h('p', null, seismicInputText(result.settings)),
@@ -3300,6 +3891,26 @@
               pose ? h('p', { 'data-seismic-scene-power': true },
                 __alloT('stem.bridgelab.scene_record_power', 'Power at the inspected time (W/kg): input / damping loss / change in stored energy = ')
                   + [point.inputPowerWPerKg, point.dampingPowerWPerKg, point.storedPowerWPerKg].map(function(value) { return value.toFixed(3); }).join(' / ')) : null,
+              pose && sceneDisplay && sceneDisplay.forceLens ? h('p', {'data-seismic-scene-forces':true},
+                __alloT('stem.bridgelab.force_lens_saved', 'Modal forces at the inspected time (N/kg): spring / damping / net = ')
+                  + (function() { var frame = bridgeSeismicForceFrame(result, point);
+                    return [frame.springNPerKg, frame.dampingNPerKg, frame.netNPerKg].map(function(value) { return value.toFixed(3); }).join(' / '); })()) : null,
+              pose && sceneDisplay && sceneDisplay.energyOrbit ? h('p',{'data-seismic-scene-orbit':true},
+                __alloT('stem.bridgelab.orbit_saved', 'Orbit energy at the inspected time (J/kg): kinetic / elastic / stored = ')
+                  + (function(){var frame=bridgeSeismicOrbitFrame(result,point);return [frame.kineticJPerKg,frame.elasticJPerKg,frame.storedJPerKg].map(function(value){return bridgeEnergyText(value);}).join(' / ');})()) : null,
+              sceneDesign ? h('div', { 'data-seismic-scene-design': true },
+                h('p', null, __alloT('stem.bridgelab.scene_design_saved', 'Saved bridge setup: ') + bridgeSceneDesignText(sceneDesign)),
+                sceneDesign.name ? writing(__alloT('stem.bridgelab.scene_design_name', 'Design name'), sceneDesign.name) : null,
+                sceneDesign.notes ? writing(__alloT('stem.bridgelab.scene_design_notes', 'Design notes'), sceneDesign.notes) : null)
+                : pose ? h('p', null, __alloT('stem.bridgelab.scene_design_missing', 'Bridge setup is unavailable for this observation. Revisiting uses your current bridge.')) : null,
+              scenePair ? h('div', { 'data-seismic-scene-pair': true },
+                h('p', null, __alloT('stem.bridgelab.scene_pair_saved', 'Saved scene comparison · same inspected time')),
+                h('p', null, __alloT('stem.bridgelab.scene_a', 'A · reference') + ': ' + seismicInputText(scenePair.referenceInputs)),
+                h('p', null, __alloT('stem.bridgelab.scene_b', 'B · current') + ': ' + seismicInputText(scenePair.currentInputs)),
+                h('p', { 'data-seismic-scene-pair-motion': true },
+                  __alloT('stem.bridgelab.scene_pair_motion', 'Relative deck motion at the inspected time (A / B): ')
+                    + (bridgeSeismicSample(pairA, trial.timeS).relativeM * 100).toFixed(2) + ' / '
+                    + (bridgeSeismicSample(pairB, trial.timeS).relativeM * 100).toFixed(2) + ' cm')) : null,
               writing(predictionLabel, bridgeSeismicText(trial.prediction)), writing(observationLabel, bridgeSeismicText(trial.observation)),
               !printing ? h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
                 h('button', { type: 'button', style: bridgeActionStyle,
@@ -3308,15 +3919,21 @@
                     if (pose) {
                       bridgeRevisitFocus.current = true;
                       bridgeSceneSaved.current = null;
-                      upd({ seismicEnabled: true, seismicPlaying: false, autoDriving: false, seismicArchetype: trial.inputs.archetype,
-                        seismicFrequencyHz: trial.inputs.groundFrequencyHz, seismicIntensityG: trial.inputs.intensityG,
-                        seismicDampingRatio: trial.inputs.dampingRatio, seismicTime: trial.timeS,
-                        seismicSceneCompare: false, seismicSceneTrial: 'current', seismicReadoutCollapsed: false,
+                      var restoredInputs = scenePair ? scenePair.currentInputs : trial.inputs;
+                      var restored = { seismicEnabled: true, seismicPlaying: false, autoDriving: false, seismicArchetype: restoredInputs.archetype,
+                        seismicFrequencyHz: restoredInputs.groundFrequencyHz, seismicIntensityG: restoredInputs.intensityG,
+                        seismicDampingRatio: restoredInputs.dampingRatio, seismicTime: trial.timeS,
+                        seismicSceneCompare: !!scenePair, seismicSceneTrial: scenePair ? pose.source : 'current',
+                        seismicSceneSource: scenePair ? 'capture' : 'saved', seismicSceneCapture: scenePair, seismicReadoutCollapsed: false,
                         seismicSceneRecording: true, seismicSceneNote: bridgeSeismicText(trial.observation),
                         bridgeView: BridgeGL.status() === 'failed' ? '2d' : pose.view, bridgeObserver: pose.observer,
                         bridgeWalkPos: pose.walkPos, bridgeLookYaw: pose.yaw, bridgeLookPitch: pose.pitch,
                         bridgeBankYaw: pose.bankYaw, bridgeBankPitch: pose.bankPitch,
-                        rot3d: { rotY: pose.rotY, rotX: pose.rotX }, zoom3d: pose.zoom });
+                        rot3d: { rotY: pose.rotY, rotX: pose.rotX }, zoom3d: pose.zoom };
+                      if (sceneDesign) Object.assign(restored, sceneDesign.inputs, { designName: sceneDesign.name, designNotes: sceneDesign.notes });
+                      if (sceneDisplay) Object.assign(restored, { seismicMotionGuide: sceneDisplay.motionGuide, seismicSceneEnergy: sceneDisplay.energyInFrame,
+                        seismicEnergyFlow: sceneDisplay.energyFlow, seismicSceneOverlay: sceneDisplay.overlay, seismicSceneFocus: sceneDisplay.focusMode, seismicForceLens: sceneDisplay.forceLens, seismicEnergyOrbit: sceneDisplay.energyOrbit });
+                      upd(restored);
                       announceStatus(__alloT('stem.bridgelab.scene_record_revisited', 'Saved earthquake moment, viewpoint, and scene note restored. Playback is paused.'));
                       return;
                     }
@@ -3985,7 +4602,11 @@
             else if (immersive) bridgeGlAlt += ' Standing on the bridge at ' + (d.bridgeWalkPos * 100).toFixed(0) + ' percent of its length. Arrow keys move or look; Page Up and Page Down tilt the view; Home resets your viewpoint.';
             if (d.seismicEnabled) bridgeGlAlt += (d.seismicPlaying ? ' Earthquake teaching experiment playing;' : ' Earthquake teaching experiment at ' + d.seismicTime.toFixed(2) + ' seconds;')
               + ' transverse motion is magnified ten times. Member force colors still describe the separate static load case.';
+            if (d.seismicEnabled && d.seismicForceLens) bridgeGlAlt += ' ' + __alloT('stem.bridgelab.force_lens_alt', 'Force lens active: gold spring, violet damping, and white net force arrows act across the bridge for the selected teaching mode. Scene tools contain the numeric readings.');
             if (sceneComparing) bridgeGlAlt += sceneShowsReference ? ' Scene A: reference trial.' : ' Scene B: current experiment.';
+            if (sceneOverlayActive) bridgeGlAlt += ' Both earthquake responses are shown at the same time. A dashed outline shows '
+              + (sceneShowsReference ? 'B, the current experiment' : 'A, the reference')
+              + '. Colored trails mark the deck edge over the previous second. Both use the displayed bridge shape.';
             BridgeGL.push({
               // Explicit pushes update poses. The viewer sleeps between updates;
               // camera and earthquake frames never rebuild the member geometry.
@@ -4007,6 +4628,8 @@
               bankYaw: d.bridgeBankYaw, bankPitch: d.bridgeBankPitch,
               deckYaw: d.bridgeLookYaw, deckPitch: d.bridgeLookPitch,
               motionGuide: d.seismicMotionGuide,
+              comparison: bridgeSceneComparisonMotion(),
+              forceLens: Object.assign({enabled:d.seismicForceLens, trial:sceneShowsReference ? 'reference' : 'current'}, bridgeSceneForceFrame() || {}),
               quake: sceneSample ? { enabled: true, groundM: sceneSample.groundM, deckM: sceneSample.absoluteM,
                 visualScale: 10, maxOffsetM: Math.max(seismicResponse.peaks.groundM, seismicResponse.peaks.absoluteM,
                   sceneComparing ? sceneReference.peaks.groundM : 0, sceneComparing ? sceneReference.peaks.absoluteM : 0) } : { enabled: false },
@@ -4053,6 +4676,7 @@
                 : __alloT('stem.bridgelab.gl_fallback_v2', '3D is unavailable. The labelled 2D view and all analysis controls remain available.')) : null,
               h('div', {
                 'data-allo-fs-stage': 'true',
+                'data-bridge-scene-focus': d.seismicSceneFocus ? 'true' : 'false',
                 'aria-hidden': !show3d,
                 style: {
                   position: 'relative', height: show3d ? (immersive || seismicSample ? 480 : 340) : 0, visibility: show3d ? 'visible' : 'hidden', borderRadius: 12, overflow: 'hidden',
@@ -4155,7 +4779,7 @@
                   : __alloT('stem.bridgelab.gl_loading', 'Loading 3D view…')) : null,
                 glLive ? h('div', {
                   style: {
-                    position: 'absolute', left: 10, bottom: 8, fontSize: 10,
+                    position: 'absolute', left: 10, bottom: d.seismicSceneFocus ? 'calc(8px + env(safe-area-inset-bottom, 0px))' : 8, fontSize: 10,
                     maxWidth: 'calc(100% - 20px)', lineHeight: 1.2,
                     color: 'var(--allo-stem-text-soft, #94a3b8)', pointerEvents: 'none',
                     background: 'rgba(10,14,26,.66)', padding: '3px 8px', borderRadius: 999
@@ -4167,6 +4791,31 @@
                     padding: '5px 3px', fontSize: 10, lineHeight: 1.3, background: 'rgba(15,23,42,.94)' }),
                   onClick: function() { bridgeChooseObserver(onBank ? 'deck' : 'bank', true); }
                 }, onBank ? __alloT('stem.bridgelab.deck_view_short', 'Deck view') : __alloT('stem.bridgelab.bank_view_short', 'Bank view')) : null,
+                glLive ? h('button', { type: 'button', 'data-bridge-focus-toggle': true, 'aria-pressed': d.seismicSceneFocus,
+                  'aria-label': d.seismicSceneFocus ? __alloT('stem.bridgelab.scene_focus_leave', 'Leave scene focus') : __alloT('stem.bridgelab.scene_focus_enter', 'Focus scene'),
+                  title: d.seismicSceneFocus ? __alloT('stem.bridgelab.scene_focus_leave', 'Leave scene focus') : __alloT('stem.bridgelab.scene_focus_enter', 'Focus scene'),
+                  style: Object.assign({}, bridgeActionStyle, { position: 'absolute', top: immersive ? 108 : 54, right: 10, width: 44, minWidth: 0, minHeight: 44, zIndex: 20,
+                    padding: '5px 4px', fontSize: 10, lineHeight: 1.3, background: 'rgba(15,23,42,.94)', borderColor: d.seismicSceneFocus ? '#67e8f9' : '#64748b' }),
+                  onClick: function() { upd({ seismicSceneFocus: !d.seismicSceneFocus, seismicReadoutCollapsed: !d.seismicSceneFocus }); }
+                }, __alloT('stem.bridgelab.scene_focus_short', 'Focus')) : null,
+                glLive && immersive && !onBank && d.seismicSceneFocus && (!seismicSample || d.seismicReadoutCollapsed) ? h('div', { 'data-bridge-walk-controls': true,
+                  role: 'group', 'aria-label': __alloT('stem.bridgelab.scene_walk_controls', 'Walk on the bridge'),
+                  style: { position: 'absolute', left: 10, top: 10, display: 'flex', gap: 4, alignItems: 'center', padding: 4,
+                    borderRadius: 8, background: 'rgba(10,14,26,.9)', color: '#e2e8f0' } },
+                  [-0.05, 0.05].map(function(step, index) {
+                    var label = step < 0 ? __alloT('stem.bridgelab.scene_walk_back', 'Walk toward entrance') : __alloT('stem.bridgelab.scene_walk_forward', 'Walk toward far end');
+                    return h(React.Fragment, { key: step },
+                      index === 1 ? h('span', { 'data-bridge-walk-position': true, style: { minWidth: 34, textAlign: 'center', fontSize: 11, fontVariantNumeric: 'tabular-nums' } },
+                        (d.bridgeWalkPos * 100).toFixed(0) + '%') : null,
+                      h('button', { type: 'button', 'aria-label': label, title: label,
+                        disabled: step < 0 ? d.bridgeWalkPos <= 0.03 : d.bridgeWalkPos >= 0.97,
+                        style: Object.assign({}, bridgeActionStyle, { minWidth: 44, minHeight: 44, width: 44, height: 44, padding: 0, fontSize: 20 }),
+                        onClick: function() {
+                          bridgeSeismicArmed.current = false;
+                          upd({ bridgeWalkPos: Math.max(0.03, Math.min(0.97, Math.round((d.bridgeWalkPos + step) * 1000) / 1000)),
+                            seismicPlaying: false, autoDriving: false });
+                        } }, h('span', { 'aria-hidden': true }, step < 0 ? '↓' : '↑')));
+                  })) : null,
                 glLive && seismicSample ? renderBridgeSceneReadout() : null,
                 glLive && seismicSample ? renderBridgeSceneReplay() : null,
                 h('p', {
@@ -4194,6 +4843,8 @@
                 }
               }, trussSvg()),
               !glLive ? renderBridgeMotionGuide(false) : null,
+              !glLive ? renderBridgeForceLens(false) : null,
+              !glLive ? renderBridgeEnergyOrbit(false) : null,
               !glLive ? renderBridgeEnergyFlow(false) : null,
               bowedId ? h('p', { style: { fontSize: 11, lineHeight: 1.6, color: '#cbd5e1', margin: '8px 0' } },
                 __alloT('stem.bridgelab.buckling_visual_scope', 'Buckling deformation is exaggerated to show the mode; it is not a displacement prediction.')) : null

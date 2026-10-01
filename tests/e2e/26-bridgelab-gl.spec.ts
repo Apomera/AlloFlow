@@ -1162,6 +1162,11 @@ test.describe('Bridge Lab — real WebGL', () => {
       await page.getByRole('button', { name: 'View the 3D bridge fullscreen', exact: true }).click();
       await checkBridgeCanvasFillsStage(page);
       await page.evaluate(() => (window as any).__set({ seismicTime: 8 }));
+      // The outline, two trails and shared marker first upload when comparison is visible.
+      // Measure that initial allocation separately from repeated replay and toggles.
+      await expect.poll(() => page.evaluate(() => (window as any).__gl().resources.geometries)).toBe(before.resources.geometries + 4);
+      const comparisonResources = await page.evaluate(() => (window as any).__gl().resources);
+      expect(comparisonResources.textures).toBe(before.resources.textures);
       const range = await frame.getAttribute('data-motion-range-m');
       await checkReadings();
       const b = await frame.locator('[data-motion-reading="deck"]').getAttribute('data-motion-value-m');
@@ -1185,7 +1190,7 @@ test.describe('Bridge Lab — real WebGL', () => {
       await summary.press('Enter');
       await expect.poll(() => page.evaluate(() => (window as any).__gl().motionReferenceVisible)).toBe(true);
       expect(await page.evaluate(() => (window as any).__gl().sceneBuilds)).toBe(before.sceneBuilds);
-      expect(await page.evaluate(() => (window as any).__gl().resources)).toEqual(before.resources);
+      expect(await page.evaluate(() => (window as any).__gl().resources)).toEqual(comparisonResources);
       await page.getByRole('button', { name: 'Exit fullscreen 3D bridge (Escape)', exact: true }).click();
       await page.getByRole('button', { name: '3D structure', exact: true }).click();
       await page.evaluate(() => (window as any).__set({ seismicSceneCompare: false, seismicTime: 7.2 }));
@@ -1290,6 +1295,508 @@ test.describe('Bridge Lab — real WebGL', () => {
     await checkWorkflowHealth(page);
   });
 
+
+  async function inspectWholeOrbit(page: Page) {
+    const plot=page.locator('[data-bridge-energy-orbit="scene"] [data-orbit-plot]');
+    await plot.evaluate(node=>node.scrollIntoView({block:'start',behavior:'instant'}));
+    const bounds=await plot.evaluate(node=>{
+      const drawer=node.closest('[data-bridge-scene-drawer]')!;
+      const summary=drawer.querySelector('summary')!;
+      const p=node.getBoundingClientRect(),d=drawer.getBoundingClientRect(),s=summary.getBoundingClientRect();
+      return {top:p.top,headerBottom:s.bottom,bottom:p.bottom,drawerBottom:d.bottom,height:p.height,width:p.width};
+    });
+    expect(bounds.top).toBeGreaterThanOrEqual(bounds.headerBottom);
+    expect(bounds.bottom).toBeLessThanOrEqual(bounds.drawerBottom-6);
+    expect(bounds.height).toBeGreaterThanOrEqual(160);
+  }
+
+  for (const size of [{width:1000,height:800},{width:320,height:568}]) {
+    test('orbit replay: recent motion, time direction and energy split at '+size.width+'px', async ({page}) => {
+      await mountWorkflow(page,size.width,{bridgeView:'immersive',bridgeObserver:size.width===320?'deck':'bank',
+        seismicEnabled:true,seismicEnergyOrbit:true,seismicForceLens:true,seismicGuideOpen:true,crossSectionMm2:30000,lateralBraceEvery:1});
+      await page.setViewportSize(size);
+      await page.getByRole('button',{name:'Prepare 5% / 20% comparison',exact:true}).click();
+      await page.evaluate(()=>(window as any).__set({seismicTime:7.217}));
+      const stage=page.locator('[data-allo-fs-stage]');await stage.scrollIntoViewIfNeeded();
+      await page.getByRole('button',{name:'Focus scene',exact:true}).click();
+      await page.getByRole('button',{name:'View the 3D bridge fullscreen',exact:true}).click();
+      await checkBridgeCanvasFillsStage(page);
+      const drawer=page.locator('[data-bridge-scene-drawer]');await drawer.locator('summary').first().press('Enter');
+      const orbit=page.locator('[data-bridge-energy-orbit="scene"]');
+      const histories=await orbit.locator('[data-orbit-free]').evaluateAll(nodes=>nodes.map(node=>node.getAttribute('points')));
+      const limit=await orbit.locator('[data-orbit-frame]').getAttribute('data-orbit-limit');
+      const paths=await orbit.locator('[data-orbit-recent]').evaluateAll(nodes=>nodes.map(node=>node.getAttribute('points')));
+      await expect(orbit.locator('[data-orbit-recent]')).toHaveCount(4);
+      await expect(orbit.locator('[data-orbit-direction]')).toHaveAttribute('data-orbit-direction','current');
+      await expect(orbit.locator('[data-orbit-split] [role="img"]')).toHaveAccessibleName(/Kinetic .*%, Elastic .*%/);
+      const before=await page.evaluate(()=>(window as any).__gl());
+      await page.getByRole('button',{name:'Replay scene',exact:true}).click();
+      await expect.poll(()=>page.evaluate(()=>(window as any).__bucket().seismicTime)).toBeGreaterThan(7.217);
+      await page.getByRole('button',{name:'Pause scene replay',exact:true}).click();
+      const paused=await page.evaluate(()=>(window as any).__bucket().seismicTime);
+      expect(Number(await orbit.locator('[data-orbit-recent]').first().getAttribute('data-orbit-recent-end'))).toBeCloseTo(paused,10);
+      expect(await orbit.locator('[data-orbit-recent]').evaluateAll(nodes=>nodes.map(node=>node.getAttribute('points')))).not.toEqual(paths);
+      expect(await orbit.locator('[data-orbit-free]').evaluateAll(nodes=>nodes.map(node=>node.getAttribute('points')))).toEqual(histories);
+      await page.getByRole('button',{name:'A · reference',exact:true}).click();
+      expect(await page.evaluate(()=>(window as any).__bucket().seismicTime)).toBe(paused);
+      await expect(orbit.locator('[data-orbit-recent]').first()).toHaveAttribute('data-orbit-recent','reference');
+      await expect(orbit.locator('[data-orbit-split]')).toHaveAttribute('data-orbit-split','reference');
+      await expect(orbit.locator('[data-orbit-frame]')).toHaveAttribute('data-orbit-limit',limit!);
+      await inspectWholeOrbit(page);
+      await stage.screenshot({path:join(ENHANCEMENT_REPORT,'bridge-'+size.width+'-recent-orbit.png')});
+      await page.getByRole('button',{name:'Next turning point',exact:true}).click();
+      expect(Number(await orbit.locator('[data-orbit-part="kinetic"]').getAttribute('data-orbit-fraction'))).toBeCloseTo(0,10);
+      expect(Number(await orbit.locator('[data-orbit-part="elastic"]').getAttribute('data-orbit-fraction'))).toBeCloseTo(1,10);
+      await page.getByRole('button',{name:'Next center crossing',exact:true}).click();
+      expect(Number(await orbit.locator('[data-orbit-part="kinetic"]').getAttribute('data-orbit-fraction'))).toBeCloseTo(1,10);
+      expect(Number(await orbit.locator('[data-orbit-part="elastic"]').getAttribute('data-orbit-fraction'))).toBeCloseTo(0,10);
+      expect((await page.evaluate(()=>(window as any).__gl())).sceneBuilds).toBe(before.sceneBuilds);
+      expect(await drawer.evaluate(node=>node.scrollWidth-node.clientWidth)).toBeLessThanOrEqual(1);
+      await checkWorkflowHealth(page);
+    });
+  }
+
+  for(const size of [{width:1000,height:800},{width:320,height:568}]){
+    test('energy orbit: paired cycles, fixed curves, saved evidence and fullscreen at '+size.width+'px',async ({page})=>{
+      await mountWorkflow(page,size.width,{bridgeView:'immersive',bridgeObserver:'bank',seismicEnabled:true,seismicGuideOpen:true,seismicEnergyOrbit:true,crossSectionMm2:30000,lateralBraceEvery:1});
+      await page.setViewportSize(size);await page.getByRole('button',{name:'Prepare 5% / 20% comparison',exact:true}).click();
+      await page.evaluate(()=>(window as any).__set({seismicTime:7.217}));
+      const stage=page.locator('[data-allo-fs-stage]');await stage.scrollIntoViewIfNeeded();
+      const before=await page.evaluate(()=>(window as any).__gl());
+      await page.getByRole('button',{name:'Focus scene',exact:true}).click();await page.getByRole('button',{name:'View the 3D bridge fullscreen',exact:true}).click();await checkBridgeCanvasFillsStage(page);
+      const drawer=page.locator('[data-bridge-scene-drawer]'),summary=drawer.locator('summary').first();await summary.press('Enter');
+      const orbit=page.locator('[data-bridge-energy-orbit="scene"]'),plot=orbit.locator('[data-orbit-plot]');
+      await plot.scrollIntoViewIfNeeded();await expect(plot).toBeVisible();await expect(orbit.locator('[data-orbit-marker]')).toHaveCount(2);
+      const range=await orbit.locator('[data-orbit-frame]').getAttribute('data-orbit-limit');
+      const curves=await orbit.locator('[data-orbit-free]').evaluateAll(nodes=>nodes.map(node=>node.getAttribute('points')));
+      expect(curves[0]).not.toBe(curves[1]);expect(curves.join(' ')).not.toMatch(/NaN|Infinity/);
+      const next=page.getByRole('button',{name:'Next turning point',exact:true}),turn=Number(await next.getAttribute('data-orbit-next-time'));await next.click();
+      expect(await page.evaluate(()=>(window as any).__bucket().seismicTime)).toBe(turn);
+      await expect(orbit.locator('[data-orbit-insight]')).toHaveAttribute('data-orbit-insight','turning');
+      expect(Number(await orbit.locator('[data-orbit-energy="kinetic"]').getAttribute('data-orbit-value'))).toBeLessThan(1e-20);
+      await page.getByRole('button',{name:'Next center crossing',exact:true}).click();
+      await expect(orbit.locator('[data-orbit-insight]')).toHaveAttribute('data-orbit-insight','crossing');
+      expect(Number(await orbit.locator('[data-orbit-energy="elastic"]').getAttribute('data-orbit-value'))).toBeLessThan(1e-20);
+      await page.getByRole('button',{name:'A · reference',exact:true}).click();
+      await expect(orbit.locator('[data-orbit-frame]')).toHaveAttribute('data-orbit-trial','reference');await expect(orbit.locator('[data-orbit-frame]')).toHaveAttribute('data-orbit-limit',range!);
+      await page.getByRole('button',{name:'Next turning point',exact:true}).click();
+      const time=await page.evaluate(()=>(window as any).__bucket().seismicTime);
+      expect(await orbit.locator('[data-orbit-free]').evaluateAll(nodes=>nodes.map(node=>node.getAttribute('points')))).toEqual(curves);
+      await inspectWholeOrbit(page);await stage.screenshot({path:join(ENHANCEMENT_REPORT,'bridge-'+size.width+'-energy-orbit.png')});
+      expect(await drawer.evaluate(el=>el.scrollWidth-el.clientWidth)).toBeLessThanOrEqual(1);
+      await next.focus();await next.press('Escape');await expect(drawer).not.toHaveAttribute('open');await expect(summary).toBeFocused();
+      await expect(page.locator('[data-bridge-compact-orbit]')).toContainText('J/kg');
+      await stage.screenshot({path:join(ENHANCEMENT_REPORT,'bridge-'+size.width+'-orbit-scene.png')});
+      await summary.press('Enter');await page.locator('[data-bridge-scene-recorder] > summary').press('Enter');
+      await page.getByRole('textbox',{name:'Scene observation note',exact:true}).fill('At a turning point the deck has no relative velocity.');await page.getByRole('button',{name:'Save scene observation',exact:true}).click();
+      const saved=await page.evaluate(()=>(window as any).__bucket().seismicTrials[0]);expect(saved.scene.display.energyOrbit).toBe(true);expect(saved.timeS).toBe(time);
+      await page.getByRole('button',{name:'Exit fullscreen 3D bridge (Escape)',exact:true}).click();
+      await page.evaluate(()=>(window as any).__set({seismicEnergyOrbit:false,seismicTime:0,bridgeView:'2d',seismicDampingRatio:0.3}));
+      await page.getByRole('button',{name:'Revisit scene observation 1: Scene observation 1',exact:true}).click();
+      expect(await page.evaluate(()=>(window as any).__bucket())).toMatchObject({seismicEnergyOrbit:true,seismicTime:time,seismicPlaying:false,seismicSceneTrial:'reference'});
+      const evidence=await page.locator('[data-seismic-scene-orbit]').textContent();
+      await page.getByRole('button',{name:'Open earthquake evidence report',exact:true}).click();
+      await expect(page.locator('[data-bridge-print-seismic] [data-seismic-scene-orbit]')).toHaveText(evidence!);
+      await expect(page.locator('[data-bridge-print-seismic]').locator('button,input,select,textarea')).toHaveCount(0);await checkWorkflowHealth(page);
+    });
+  }
+  test('energy orbit: reduced-motion zero shaking, landscape tools and deliberate graphics recovery',async ({page})=>{
+    await page.emulateMedia({reducedMotion:'reduce'});
+    await mountWorkflow(page,844,{bridgeView:'immersive',bridgeObserver:'bank',seismicEnabled:true,seismicTime:16,seismicIntensityG:0,seismicEnergyOrbit:true,seismicSceneFocus:true,seismicReadoutCollapsed:true,crossSectionMm2:30000,lateralBraceEvery:1});
+    await page.setViewportSize({width:844,height:390});const stage=page.locator('[data-allo-fs-stage]');await stage.scrollIntoViewIfNeeded();
+    await page.getByRole('button',{name:'View the 3D bridge fullscreen',exact:true}).click();await checkBridgeCanvasFillsStage(page);
+    const drawer=page.locator('[data-bridge-scene-drawer]');await drawer.locator('summary').first().press('Enter');
+    const orbit=page.locator('[data-bridge-energy-orbit="scene"]');await inspectWholeOrbit(page);
+    await expect(page.getByRole('button',{name:'Next turning point',exact:true})).toBeDisabled();await expect(page.getByRole('button',{name:'Next center crossing',exact:true})).toBeDisabled();
+    await expect(orbit.locator('[data-orbit-insight]')).toContainText('No shaking');
+    expect(await orbit.locator('[data-orbit-energy]').evaluateAll(rows=>rows.every(row=>Number(row.getAttribute('data-orbit-value'))===0))).toBe(true);
+    await stage.screenshot({path:join(ENHANCEMENT_REPORT,'bridge-844-orbit-zero.png')});
+    await page.getByRole('button',{name:'Next turning point',exact:true}).focus();
+    await page.evaluate(()=>{const canvas=document.querySelector('canvas[data-bridge-gl]') as HTMLCanvasElement;const context=canvas.getContext('webgl2')||canvas.getContext('webgl'),extension=context?.getExtension('WEBGL_lose_context');if(!extension)throw new Error('No context loss extension');(window as any).__orbitLoss=extension;extension.loseContext();});
+    await expect(page.locator('[data-bridge-elevation]')).toBeFocused();
+    const fallback=page.locator('[data-bridge-energy-orbit="fallback"]');await expect(fallback).toHaveAttribute('open','');await expect(fallback.locator('[data-orbit-frame]')).toHaveAttribute('data-orbit-trial','current');
+    await page.evaluate(()=>(window as any).__orbitLoss.restoreContext());await expect.poll(()=>page.evaluate(()=>(window as any).__gl().state)).toBe('ready');
+    expect(await page.evaluate(()=>(window as any).__bucket().bridgeView)).toBe('2d');await page.getByRole('button',{name:'From the riverbank',exact:true}).click();
+    expect(await page.evaluate(()=>(window as any).__bucket())).toMatchObject({seismicEnergyOrbit:true,seismicPlaying:false,seismicTime:16});await checkWorkflowHealth(page);
+  });
+  test('energy orbit: undamped free-vibration inspection in the labelled 2D view',async ({page})=>{
+    await page.emulateMedia({reducedMotion:'reduce'});await mountWorkflow(page,1000,{bridgeView:'3d',seismicEnabled:true,seismicTime:16,seismicDampingRatio:0,seismicEnergyOrbit:true});
+    await page.getByRole('button',{name:'Labelled 2D view',exact:true}).click();
+    const orbit=page.locator('[data-bridge-energy-orbit="fallback"]');await expect(orbit.locator('[data-orbit-insight]')).toContainText('undamped');
+    const before=Number(await orbit.locator('[data-orbit-energy="stored"]').getAttribute('data-orbit-value'));
+    await page.getByRole('button',{name:'Next turning point',exact:true}).click();await expect(orbit.locator('[data-orbit-insight]')).toHaveAttribute('data-orbit-insight','turning');
+    await page.getByRole('button',{name:'Next center crossing',exact:true}).click();const after=Number(await orbit.locator('[data-orbit-energy="stored"]').getAttribute('data-orbit-value'));
+    await expect(orbit.locator('[data-orbit-insight]')).toContainText('If damping is present');
+    expect(Math.abs(after-before)/before).toBeLessThan(0.01);expect(await page.evaluate(()=>(window as any).__bucket().seismicPlaying)).toBe(false);
+    await captureImmersiveRegion(page,orbit,'bridge-1000-orbit-2d.png',ENHANCEMENT_REPORT);await checkWorkflowHealth(page);
+  });
+
+  test('force lens: selected A/B vectors, fixed scale and stable resources in the riverbank scene',async ({page})=>{
+    await mountWorkflow(page,1000,{bridgeView:'immersive',bridgeObserver:'bank',seismicEnabled:true,seismicGuideOpen:true,crossSectionMm2:30000,lateralBraceEvery:1});
+    await page.setViewportSize({width:1000,height:800});
+    await page.getByRole('button',{name:'Prepare 5% / 20% comparison',exact:true}).click();
+    await page.evaluate(()=>(window as any).__set({seismicTime:7.217}));
+    const stage=page.locator('[data-allo-fs-stage]');await stage.scrollIntoViewIfNeeded();
+    const lens=page.locator('[data-bridge-force-lens="scene"]');
+    await lens.locator('summary').press('Enter');
+    await expect(lens).toHaveAttribute('open','');
+    await stage.scrollIntoViewIfNeeded();
+    await expect.poll(()=>page.evaluate(()=>(window as any).__gl().forceLensVisible)).toBe(true);
+    const before=await page.evaluate(()=>(window as any).__gl());
+    expect(before.forceTrial).toBe('current');expect(before.forceVectors).toHaveLength(3);
+    const values=await lens.locator('[data-force-reading]').evaluateAll(rows=>rows.map(row=>Number(row.getAttribute('data-force-value'))));
+    expect(values).toEqual(before.forceVectors.map((v:any)=>v.valueNPerKg));expect(values[0]+values[1]).toBeCloseTo(values[2],10);
+    await page.getByRole('button',{name:'A · reference',exact:true}).click();await stage.scrollIntoViewIfNeeded();
+    await expect.poll(()=>page.evaluate(()=>(window as any).__gl().forceTrial)).toBe('reference');
+    const a=await page.evaluate(()=>(window as any).__gl());expect(a.forceLimitNPerKg).toBe(before.forceLimitNPerKg);
+    expect(a.forceVectors.map((v:any)=>v.valueNPerKg)).not.toEqual(values);
+    await expect(page.locator('[data-force-frame]')).toHaveAttribute('data-force-trial','reference');
+    await page.getByRole('button',{name:'Focus scene',exact:true}).click();
+    await expect(page.locator('[data-bridge-compact-forces]')).toContainText('N/kg');
+    await page.getByRole('button',{name:'View the 3D bridge fullscreen',exact:true}).click();await checkBridgeCanvasFillsStage(page);
+    await page.getByRole('button',{name:'Step scene backward 0.5 s',exact:true}).click();await page.getByRole('button',{name:'Step scene forward 0.5 s',exact:true}).click();
+    await expect.poll(()=>page.evaluate(()=>(window as any).__gl().forceVectors[0].valueNPerKg)).toBeCloseTo(a.forceVectors[0].valueNPerKg,10);
+    const warm=await page.evaluate(()=>(window as any).__gl());
+    for(let cycle=0;cycle<3;cycle++){await page.getByRole('button',{name:'Step scene backward 0.5 s',exact:true}).click();await page.getByRole('button',{name:'Step scene forward 0.5 s',exact:true}).click();}
+    expect(await page.evaluate(()=>(window as any).__gl().sceneBuilds)).toBe(before.sceneBuilds);expect(await page.evaluate(()=>(window as any).__gl().resources)).toEqual(warm.resources);
+    await stage.screenshot({path:join(ENHANCEMENT_REPORT,'bridge-1000-force-bank.png')});
+    await page.locator('[data-bridge-scene-drawer] > summary').press('Enter');await lens.locator('[data-force-reading="spring"]').scrollIntoViewIfNeeded();
+    await stage.screenshot({path:join(ENHANCEMENT_REPORT,'bridge-1000-force-tools.png')});
+    expect(await page.evaluate(()=>(window as any).__bucket().seismicTime)).toBe(7.217);expect(await page.evaluate(()=>(window as any).__bucket().seismicPlaying)).toBe(false);
+    await checkWorkflowHealth(page);
+  });
+
+  test('force lens: phone walking, camera turns, keyboard tools and saved observation restoration',async ({page})=>{
+    await page.emulateMedia({reducedMotion:'reduce'});
+    await mountWorkflow(page,320,{bridgeView:'immersive',bridgeObserver:'deck',bridgeWalkPos:0.45,seismicEnabled:true,seismicTime:7.217,seismicForceLens:true,crossSectionMm2:30000,lateralBraceEvery:1});
+    await page.setViewportSize({width:320,height:568});
+    const stage=page.locator('[data-allo-fs-stage]');await stage.scrollIntoViewIfNeeded();
+    await page.getByRole('button',{name:'Focus scene',exact:true}).click();await page.getByRole('button',{name:'View the 3D bridge fullscreen',exact:true}).click();await checkBridgeCanvasFillsStage(page);
+    await expect.poll(()=>page.evaluate(()=>(window as any).__gl().forceLensVisible)).toBe(true);
+    const before=await page.evaluate(()=>(window as any).__gl());
+    await page.getByRole('button',{name:'Walk toward far end',exact:true}).click();
+    await expect.poll(()=>page.evaluate(()=>(window as any).__gl().forceVectors[0].origin[0])).toBeCloseTo(before.forceVectors[0].origin[0]+1.5,8);
+    const viewer=page.locator('[aria-describedby="bridge-gl-description"]');await viewer.focus();await viewer.press('ArrowRight');
+    await expect.poll(()=>page.evaluate(()=>(window as any).__gl().forceVectors[0].origin[2])).not.toBe(before.forceVectors[0].origin[2]);
+    expect(await page.evaluate(()=>(window as any).__gl().forceVectors.map((v:any)=>v.valueNPerKg))).toEqual(before.forceVectors.map((v:any)=>v.valueNPerKg));
+    await stage.screenshot({path:join(ENHANCEMENT_REPORT,'bridge-320-force-walkway.png')});
+    const drawer=page.locator('[data-bridge-scene-drawer]'),summary=drawer.locator('summary').first();await summary.press('Enter');
+    const lens=page.locator('[data-bridge-force-lens="scene"]');await lens.locator('summary').scrollIntoViewIfNeeded();
+    expect(await drawer.evaluate(el=>el.scrollWidth-el.clientWidth)).toBeLessThanOrEqual(1);
+    await lens.locator('summary').press('Escape');await expect(drawer).not.toHaveAttribute('open');await expect(summary).toBeFocused();
+    await summary.press('Enter');await page.locator('[data-bridge-scene-recorder] > summary').press('Enter');
+    await page.getByRole('textbox',{name:'Scene observation note',exact:true}).fill('Spring and damping can point in different directions.');
+    await page.getByRole('button',{name:'Save scene observation',exact:true}).click();
+    const saved=await page.evaluate(()=>(window as any).__bucket().seismicTrials[0]);expect(saved.scene.display.forceLens).toBe(true);
+    await page.getByRole('button',{name:'Exit fullscreen 3D bridge (Escape)',exact:true}).click();
+    await page.evaluate(()=>(window as any).__set({seismicForceLens:false,seismicTime:0,bridgeView:'2d'}));
+    await page.getByRole('button',{name:'Revisit scene observation 1: Scene observation 1',exact:true}).click();
+    expect(await page.evaluate(()=>(window as any).__bucket())).toMatchObject({seismicForceLens:true,seismicTime:7.217,seismicPlaying:false,bridgeWalkPos:0.5});
+    await summary.press('Enter');await stage.scrollIntoViewIfNeeded();await expect.poll(()=>page.evaluate(()=>(window as any).__gl().forceLensVisible)).toBe(true);
+    expect(await page.evaluate(()=>(window as any).__gl().sceneBuilds)).toBe(before.sceneBuilds);
+    await expect(page.locator('[data-seismic-scene-forces]')).toContainText('spring / damping / net');
+    const evidence=await page.locator('[data-seismic-scene-forces]').textContent();
+    await page.getByRole('button',{name:'Open earthquake evidence report',exact:true}).click();
+    await expect(page.locator('[data-bridge-print-seismic] [data-seismic-scene-forces]')).toHaveText(evidence!);
+    await expect(page.locator('[data-bridge-print-seismic]').locator('button,input,select,textarea')).toHaveCount(0);
+    await checkWorkflowHealth(page);
+  });
+
+  test('force lens: zero shaking, graphics fallback and deliberate recovery in landscape',async ({page})=>{
+    await mountWorkflow(page,844,{bridgeView:'immersive',bridgeObserver:'bank',seismicEnabled:true,seismicTime:16,seismicIntensityG:0,seismicForceLens:true,seismicSceneFocus:true,seismicReadoutCollapsed:true,crossSectionMm2:30000,lateralBraceEvery:1});
+    await page.setViewportSize({width:844,height:390});const stage=page.locator('[data-allo-fs-stage]');await stage.scrollIntoViewIfNeeded();
+    await page.getByRole('button',{name:'View the 3D bridge fullscreen',exact:true}).click();await checkBridgeCanvasFillsStage(page);
+    await expect.poll(()=>page.evaluate(()=>(window as any).__gl().forceLensVisible)).toBe(true);
+    expect(await page.evaluate(()=>(window as any).__gl().forceVectors.every((v:any)=>v.direction===0&&v.valueNPerKg===0))).toBe(true);
+    await stage.screenshot({path:join(ENHANCEMENT_REPORT,'bridge-844-force-zero.png')});
+    await page.evaluate(()=>{const canvas=document.querySelector('canvas[data-bridge-gl]') as HTMLCanvasElement;
+      const context=canvas.getContext('webgl2')||canvas.getContext('webgl'),extension=context?.getExtension('WEBGL_lose_context');
+      if(!extension)throw new Error('WebGL loss extension unavailable');(window as any).__forceLoss=extension;extension.loseContext();});
+    await expect(page.locator('[data-bridge-elevation]')).toBeFocused();
+    const fallback=page.locator('[data-bridge-force-lens="fallback"]');await expect(fallback).toHaveAttribute('open','');
+    await expect(fallback.locator('[data-force-frame]')).toHaveAttribute('data-force-trial','current');
+    expect(await fallback.locator('[data-force-reading]').evaluateAll(rows=>rows.every(row=>Number(row.getAttribute('data-force-value'))===0))).toBe(true);
+    await page.evaluate(()=>(window as any).__forceLoss.restoreContext());await expect.poll(()=>page.evaluate(()=>(window as any).__gl().state)).toBe('ready');
+    expect(await page.evaluate(()=>(window as any).__bucket().bridgeView)).toBe('2d');await page.getByRole('button',{name:'From the riverbank',exact:true}).click();await stage.scrollIntoViewIfNeeded();
+    await expect.poll(()=>page.evaluate(()=>(window as any).__gl().forceLensVisible)).toBe(true);
+    expect(await page.evaluate(()=>(window as any).__bucket())).toMatchObject({seismicForceLens:true,seismicTime:16,seismicPlaying:false});
+    await checkWorkflowHealth(page);
+  });
+
+  for (const size of [{width:1000,height:800},{width:320,height:568},{width:844,height:390}]) {
+    test('scene focus: paired drawer, compact replay and stable graphics at '+size.width+'x'+size.height,async ({page})=>{
+      await mountWorkflow(page,size.width,{bridgeView:'immersive',bridgeObserver:'bank',seismicEnabled:true,seismicGuideOpen:true,
+        crossSectionMm2:30000,lateralBraceEvery:1,seismicObservation:'Keep the comparison.'});
+      await page.setViewportSize(size);
+      await page.getByRole('button',{name:'Prepare 5% / 20% comparison',exact:true}).click();
+      const stage=page.locator('[data-allo-fs-stage]');await stage.scrollIntoViewIfNeeded();
+      await page.getByRole('button',{name:'A · reference',exact:true}).click();
+      await page.getByRole('combobox',{name:'Scene key moments',exact:true}).selectOption('motion');
+      await page.getByRole('button',{name:'B · current',exact:true}).click();
+      const time=await page.evaluate(()=>(window as any).__bucket().seismicTime);
+      await expect.poll(()=>page.evaluate(()=>(window as any).__gl().comparisonOverlayVisible)).toBe(true);
+      const before=await page.evaluate(()=>(window as any).__gl());
+      const focusBox=await page.getByRole('button',{name:'Focus scene',exact:true}).boundingBox();
+      const initialPanel=await page.locator('[data-bridge-scene-readout]').boundingBox();
+      if(!focusBox||!initialPanel)throw new Error('Scene controls missing');
+      expect(focusBox.x).toBeGreaterThanOrEqual(initialPanel.x+initialPanel.width+3);
+      await page.getByRole('button',{name:'Focus scene',exact:true}).click();
+      await expect(stage).toHaveAttribute('data-bridge-scene-focus','true');
+      const drawer=page.locator('[data-bridge-scene-drawer]');
+      await expect(drawer).not.toHaveAttribute('open');
+      await expect(page.locator('[data-bridge-compact-comparison]')).toHaveAttribute('data-bridge-compact-comparison',String(time));
+      await page.getByRole('button',{name:'View the 3D bridge fullscreen',exact:true}).click();
+      await checkBridgeCanvasFillsStage(page);
+      const replay=page.locator('[data-bridge-focus-replay]');
+      const a=await drawer.boundingBox(),b=await replay.boundingBox();
+      if(!a||!b)throw new Error('Focus panels missing');expect(a.y+a.height).toBeLessThanOrEqual(b.y-4);
+      expect(await replay.evaluate(element=>element.scrollWidth-element.clientWidth)).toBeLessThanOrEqual(1);
+      await expect(page.getByRole('combobox',{name:'Scene key moments',exact:true})).toHaveCount(0);
+      await expect(page.getByRole('slider',{name:'Scene replay time (s)',exact:true})).toHaveCount(1);
+      await page.getByRole('button',{name:'Step scene backward 0.5 s',exact:true}).click();
+      expect(await page.evaluate(()=>(window as any).__bucket().seismicTime)).toBeCloseTo(time-0.5,9);
+      await page.getByRole('button',{name:'Step scene forward 0.5 s',exact:true}).click();
+      expect(await page.evaluate(()=>(window as any).__bucket().seismicTime)).toBeCloseTo(time,9);
+      const warm=await page.evaluate(()=>(window as any).__gl());
+      expect(warm.sceneBuilds).toBe(before.sceneBuilds);
+      // A changed viewport or first inspected frame can bring previously culled
+      // geometry into view. Verify repeated inspection after those first uploads.
+      for(let cycle=0;cycle<3;cycle++){
+        await page.getByRole('button',{name:'Step scene backward 0.5 s',exact:true}).click();
+        await page.getByRole('button',{name:'Step scene forward 0.5 s',exact:true}).click();
+      }
+      expect(await page.evaluate(()=>(window as any).__gl().resources)).toEqual(warm.resources);
+      expect(await page.evaluate(()=>(window as any).__gl().sceneBuilds)).toBe(before.sceneBuilds);
+      await stage.screenshot({path:join(ENHANCEMENT_REPORT,'bridge-'+size.width+'x'+size.height+'-focus-scene.png')});
+      const summary=drawer.locator('summary').first();
+      await summary.press('Enter');await expect(drawer).toHaveAttribute('open','');
+      await expect(page.getByRole('combobox',{name:'Scene key moments',exact:true})).toBeVisible();
+      const expanded=await drawer.boundingBox(),replayBox=await replay.boundingBox();
+      if(!expanded||!replayBox)throw new Error('Focus drawer missing');expect(expanded.y+expanded.height).toBeLessThanOrEqual(replayBox.y-4);
+      expect(await drawer.evaluate(element=>element.scrollWidth-element.clientWidth)).toBeLessThanOrEqual(1);
+      expect(await page.evaluate(()=>(window as any).__bucket().seismicPlaying)).toBe(false);
+      await stage.screenshot({path:join(ENHANCEMENT_REPORT,'bridge-'+size.width+'x'+size.height+'-focus-tools.png')});
+      await page.getByRole('combobox',{name:'Scene key moments',exact:true}).selectOption('end');
+      expect(await page.evaluate(()=>(window as any).__bucket().seismicTime)).toBe(24);
+      await summary.press('Enter');await expect(drawer).not.toHaveAttribute('open');
+      await page.getByRole('button',{name:'Leave scene focus',exact:true}).click();
+      await expect(stage).toHaveAttribute('data-bridge-scene-focus','false');
+      await expect(page.getByRole('combobox',{name:'Scene key moments',exact:true})).toHaveCount(1);
+      expect(await page.evaluate(()=>(window as any).__gl().sceneBuilds)).toBe(before.sceneBuilds);
+      expect(await page.evaluate(()=>(window as any).__bucket().seismicObservation)).toBe('Keep the comparison.');
+      await checkWorkflowHealth(page);
+    });
+  }
+
+  test('scene focus: fullscreen touch walking and complete observation restoration on a phone',async ({page})=>{
+    await mountWorkflow(page,320,{bridgeView:'immersive',bridgeObserver:'deck',bridgeWalkPos:0.45,seismicEnabled:true,
+      seismicGuideOpen:true,crossSectionMm2:30000,lateralBraceEvery:1,designName:'Walkway study'});
+    await page.setViewportSize({width:320,height:568});
+    await page.getByRole('button',{name:'Prepare 5% / 20% comparison',exact:true}).click();
+    await page.evaluate(()=>(window as any).__set({seismicTime:7.217}));
+    const stage=page.locator('[data-allo-fs-stage]');await stage.scrollIntoViewIfNeeded();
+    await page.getByRole('button',{name:'Focus scene',exact:true}).click();
+    await page.getByRole('button',{name:'View the 3D bridge fullscreen',exact:true}).click();
+    await checkBridgeCanvasFillsStage(page);
+    const before=await page.evaluate(()=>(window as any).__gl());
+    const forward=page.getByRole('button',{name:'Walk toward far end',exact:true});
+    await forward.click();expect(await page.evaluate(()=>(window as any).__bucket().bridgeWalkPos)).toBe(0.5);
+    await forward.click();expect(await page.evaluate(()=>(window as any).__bucket().bridgeWalkPos)).toBe(0.55);
+    const back=page.getByRole('button',{name:'Walk toward entrance',exact:true});await back.click();
+    expect(await page.evaluate(()=>(window as any).__bucket())).toMatchObject({bridgeWalkPos:0.5,seismicTime:7.217,seismicPlaying:false});
+    expect(await forward.evaluate(element=>element.getBoundingClientRect().width)).toBeGreaterThanOrEqual(44);
+    expect(await back.evaluate(element=>element.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+    expect(await page.evaluate(()=>(window as any).__gl().sceneBuilds)).toBe(before.sceneBuilds);
+    expect(await page.evaluate(()=>(window as any).__gl().resources)).toEqual(before.resources);
+    await stage.screenshot({path:join(ENHANCEMENT_REPORT,'bridge-320-focus-walkway.png')});
+    const drawer=page.locator('[data-bridge-scene-drawer]');await drawer.locator('summary').first().press('Enter');
+    await expect(page.locator('[data-bridge-walk-controls]')).toHaveCount(0);
+    await page.locator('[data-bridge-scene-recorder] > summary').press('Enter');
+    await page.getByRole('textbox',{name:'Scene observation note',exact:true}).fill('At the midpoint I can compare the railing with the dashed outline.');
+    await page.getByRole('button',{name:'Save scene observation',exact:true}).click();
+    const saved=await page.evaluate(()=>(window as any).__bucket().seismicTrials[0]);
+    expect(saved.scene.display.focusMode).toBe(true);expect(saved.scene.walkPos).toBe(0.5);
+    await page.getByRole('button',{name:'Exit fullscreen 3D bridge (Escape)',exact:true}).click();
+    await page.evaluate(()=>(window as any).__set({seismicSceneFocus:false,bridgeView:'2d',bridgeWalkPos:0.12,span:20,
+      seismicTime:18,seismicDampingRatio:0.3,seismicSceneCompare:false}));
+    await page.getByRole('button',{name:'Revisit scene observation 1: Scene observation 1',exact:true}).click();
+    await expect(page.locator('[aria-describedby="bridge-gl-description"]')).toBeFocused();
+    expect(await page.evaluate(()=>(window as any).__bucket())).toMatchObject({seismicSceneFocus:true,seismicReadoutCollapsed:false,
+      bridgeView:'immersive',bridgeObserver:'deck',bridgeWalkPos:0.5,span:30,seismicTime:7.217,seismicDampingRatio:0.2,
+      seismicSceneSource:'capture',seismicSceneCompare:true,seismicPlaying:false});
+    await expect(page.getByRole('textbox',{name:'Scene observation note',exact:true})).toHaveValue(saved.observation);
+    await drawer.locator('summary').first().press('Enter');
+    await expect(page.locator('[data-bridge-walk-position]')).toHaveText('50%');
+    await expect.poll(()=>page.evaluate(()=>(window as any).__gl().comparisonOverlayVisible)).toBe(true);
+    await checkWorkflowHealth(page);
+  });
+
+  test('scene focus: keyboard drawer, reduced-motion steps and fill-frame landscape',async ({page})=>{
+    await page.emulateMedia({reducedMotion:'reduce'});
+    await mountWorkflow(page,844,{bridgeView:'immersive',bridgeObserver:'bank',seismicEnabled:true,seismicTime:7.217});
+    await page.setViewportSize({width:844,height:390});
+    const stage=page.locator('[data-allo-fs-stage]');await stage.scrollIntoViewIfNeeded();
+    await page.evaluate(()=>{const stage=document.querySelector('[data-allo-fs-stage]') as any;
+      stage.requestFullscreen=()=>Promise.reject(new Error('Use fill-frame for this keyboard workflow'));stage.webkitRequestFullscreen=undefined;});
+    await page.getByRole('button',{name:'Focus scene',exact:true}).click();
+    await page.getByRole('button',{name:'View the 3D bridge fullscreen',exact:true}).click();
+    await checkBridgeCanvasFillsStage(page);
+    await expect(page.getByRole('button',{name:'Replay scene',exact:true})).toBeDisabled();
+    await page.getByRole('button',{name:'Step scene forward 0.5 s',exact:true}).click();
+    expect(await page.evaluate(()=>(window as any).__bucket().seismicTime)).toBeCloseTo(7.717,9);
+    const drawer=page.locator('[data-bridge-scene-drawer]'),summary=drawer.locator('summary').first();
+    await summary.press('Enter');
+    const moments=page.getByRole('combobox',{name:'Scene key moments',exact:true});await moments.focus();await moments.press('Escape');
+    await expect(drawer).not.toHaveAttribute('open');await expect(summary).toBeFocused();
+    await expect(page.getByRole('button',{name:'Exit fullscreen 3D bridge (Escape)',exact:true})).toHaveAttribute('aria-pressed','true');
+    await summary.press('Enter');await page.locator('[data-bridge-scene-recorder] > summary').press('Enter');
+    const note=page.getByRole('textbox',{name:'Scene observation note',exact:true});await note.fill('Keyboard inspection remains available.');
+    await note.press('Escape');await expect(drawer).not.toHaveAttribute('open');await expect(summary).toBeFocused();
+    expect(await page.evaluate(()=>(window as any).__bucket().seismicSceneNote)).toBe('Keyboard inspection remains available.');
+    await page.getByRole('button',{name:'Exit fullscreen 3D bridge (Escape)',exact:true}).click();
+    await checkWorkflowHealth(page);
+  });
+
+  test('scene focus: graphics recovery preserves the layout and paused phone observation',async ({page})=>{
+    await mountWorkflow(page,320,{bridgeView:'immersive',bridgeObserver:'deck',seismicEnabled:true,seismicTime:7.217,
+      seismicSceneNote:'Keep my scene draft.',seismicSceneFocus:true,seismicReadoutCollapsed:true});
+    await page.setViewportSize({width:320,height:568});const stage=page.locator('[data-allo-fs-stage]');await stage.scrollIntoViewIfNeeded();
+    await page.getByRole('button',{name:'View the 3D bridge fullscreen',exact:true}).click();
+    await page.getByRole('button',{name:'Leave scene focus',exact:true}).focus();
+    await page.evaluate(()=>{const canvas=document.querySelector('canvas[data-bridge-gl]') as HTMLCanvasElement;
+      const context=canvas.getContext('webgl2')||canvas.getContext('webgl'),extension=context?.getExtension('WEBGL_lose_context');
+      if(!extension)throw new Error('WebGL loss extension unavailable');(window as any).__focusLoss=extension;extension.loseContext();});
+    await expect(page.locator('[data-bridge-elevation]')).toBeFocused();
+    expect(await page.evaluate(()=>(window as any).__bucket())).toMatchObject({bridgeView:'2d',seismicSceneFocus:true,seismicTime:7.217,
+      seismicPlaying:false,seismicSceneNote:'Keep my scene draft.'});
+    await page.evaluate(()=>(window as any).__focusLoss.restoreContext());await expect.poll(()=>page.evaluate(()=>(window as any).__gl().state)).toBe('ready');
+    expect(await page.evaluate(()=>(window as any).__bucket().bridgeView)).toBe('2d');
+    await page.getByRole('button',{name:'On the bridge',exact:true}).click();await stage.scrollIntoViewIfNeeded();
+    await expect(page.locator('[data-bridge-focus-replay]')).toBeVisible();
+    await expect(page.getByRole('button',{name:'Walk toward far end',exact:true})).toBeVisible();
+    expect(await page.evaluate(()=>(window as any).__bucket().seismicPlaying)).toBe(false);
+    await checkWorkflowHealth(page);
+  });
+
+  for (const width of [1000,320]) {
+    test('simultaneous responses: shared frame, stable resources and complete snapshot at '+width+'px',async ({page})=>{
+      const design={span:40,height:8,nBays:6,trussStyle:'pratt',materialId:'steel',crossSectionMm2:30000,
+        loadMode:'vehicle',loadPerJoint:73,vehicleLoad:220,vehiclePos:0.37,lateralBraceEvery:1};
+      await mountWorkflow(page,width,{...design,bridgeView:'immersive',bridgeObserver:'bank',seismicEnabled:true,seismicGuideOpen:true,
+        designName:'Classroom crossing',designNotes:'Inspect the deck against the banks.'});
+      await page.getByRole('button',{name:'Prepare 5% / 20% comparison',exact:true}).click();
+      const stage=page.locator('[data-allo-fs-stage]'); await stage.scrollIntoViewIfNeeded();
+      await page.getByRole('button',{name:'A · reference',exact:true}).click();
+      await page.getByRole('combobox',{name:'Scene key moments',exact:true}).selectOption('motion');
+      const time=await page.evaluate(()=>(window as any).__bucket().seismicTime);
+      await page.getByRole('button',{name:'B · current',exact:true}).click();
+      const readings=page.locator('[data-bridge-overlay-readings]');
+      await expect(readings).toHaveAttribute('data-bridge-overlay-readings',String(time));
+      await expect.poll(()=>page.evaluate(()=>(window as any).__gl().comparisonOverlayVisible)).toBe(true);
+      await expect.poll(()=>page.evaluate(()=>(window as any).__gl().comparisonOutlineTrial)).toBe('reference');
+      const expected=await page.evaluate(()=>(window as any).__gl());
+      expect(expected.comparisonReferenceM).not.toBe(expected.comparisonCurrentM);
+      expect(expected.comparisonOutlinePosition[2]).toBeCloseTo(expected.comparisonReferenceM*10,8);
+      expect(expected.deckOffsetM).toBeCloseTo(expected.comparisonCurrentM,12);
+      expect(expected.comparisonTrailSamples).toBe(31);
+      await page.getByRole('button',{name:'A · reference',exact:true}).click();
+      await expect.poll(()=>page.evaluate(()=>(window as any).__gl().comparisonOutlineTrial)).toBe('current');
+      await page.getByRole('button',{name:'B · current',exact:true}).click();
+      await expect.poll(()=>page.evaluate(()=>(window as any).__gl().comparisonOutlineTrial)).toBe('reference');
+      const warm=await page.evaluate(()=>(window as any).__gl());
+      for(let i=0;i<8;i++){
+        await page.getByRole('button',{name:'Show both responses',exact:true}).click();
+        await expect.poll(()=>page.evaluate(()=>(window as any).__gl().comparisonOverlayVisible)).toBe(i%2!==0);
+        await page.evaluate(t=>(window as any).__set({seismicTime:t}),time+i*0.05);
+      }
+      await page.evaluate(t=>(window as any).__set({seismicTime:t}),time);
+      await expect.poll(()=>page.evaluate(()=>(window as any).__gl().comparisonReferenceM)).toBeCloseTo(expected.comparisonReferenceM,12);
+      const after=await page.evaluate(()=>(window as any).__gl());
+      expect(after.sceneBuilds).toBe(warm.sceneBuilds); expect(after.resources).toEqual(warm.resources);
+      await page.getByRole('button',{name:'View the 3D bridge fullscreen',exact:true}).click();
+      await checkBridgeCanvasFillsStage(page);
+      await stage.screenshot({path:join(ENHANCEMENT_REPORT,'bridge-'+width+'-simultaneous-responses.png')});
+      const measurementToggle=page.locator('[data-bridge-scene-readout] > summary');
+      await measurementToggle.press('Enter');
+      await expect(page.locator('[data-bridge-compact-comparison]')).toHaveAttribute('data-bridge-compact-comparison',String(time));
+      await expect(page.locator('[data-compact-response=reference]')).toContainText('outline');
+      await expect(page.locator('[data-compact-response=current]')).toContainText('solid');
+      await stage.screenshot({path:join(ENHANCEMENT_REPORT,'bridge-'+width+'-simultaneous-compact.png')});
+      await measurementToggle.press('Enter');
+      await expect(readings).toHaveAttribute('data-bridge-overlay-readings',String(time));
+      const panel=await page.locator('[data-bridge-scene-readout]').boundingBox(),replay=await page.locator('[data-bridge-scene-replay]').boundingBox();
+      if(!panel||!replay)throw new Error('Scene panels missing'); expect(panel.y+panel.height).toBeLessThanOrEqual(replay.y-4);
+      await page.locator('[data-bridge-scene-recorder] > summary').press('Enter');
+      await page.getByRole('textbox',{name:'Scene observation note',exact:true}).fill('The reference moves farther under the same ground motion.');
+      await page.getByRole('button',{name:'Save scene observation',exact:true}).click();
+      const saved=await page.evaluate(()=>(window as any).__bucket().seismicTrials[0]);
+      expect(saved.scene.design.inputs).toEqual(design);
+      expect(saved.scene.comparison).toMatchObject({referenceInputs:{dampingRatio:0.05},currentInputs:{dampingRatio:0.2}});
+      await page.getByRole('button',{name:'Exit fullscreen 3D bridge (Escape)',exact:true}).click();
+      await page.evaluate(()=>(window as any).__set({span:20,height:3,nBays:4,materialId:'wood',trussStyle:'howe',crossSectionMm2:1000,
+        loadMode:'uniform',loadPerJoint:1,vehicleLoad:40,vehiclePos:0.9,lateralBraceEvery:2,bridgeView:'2d',
+        designName:'Changed',designNotes:'Changed',seismicTime:18,seismicDampingRatio:0.3,seismicFrequencyHz:2,
+        seismicIntensityG:0.2,seismicSceneCompare:false,seismicSceneOverlay:false,seismicGuideBaseline:null}));
+      await page.getByRole('button',{name:'Revisit scene observation 1: Scene observation 1',exact:true}).click();
+      await expect(page.locator('[aria-describedby="bridge-gl-description"]')).toBeFocused();
+      const restored=await page.evaluate(()=>(window as any).__bucket());
+      expect(restored).toMatchObject({...design,designName:'Classroom crossing',designNotes:'Inspect the deck against the banks.',
+        seismicTime:time,seismicDampingRatio:0.2,seismicFrequencyHz:1.1,seismicIntensityG:0.12,
+        seismicSceneCompare:true,seismicSceneSource:'capture',seismicSceneTrial:'current',seismicSceneOverlay:true,seismicPlaying:false});
+      await expect.poll(()=>page.evaluate(()=>(window as any).__gl().comparisonOverlayVisible)).toBe(true);
+      const reproduced=await page.evaluate(()=>(window as any).__gl());
+      expect(reproduced.extent).toEqual(expected.extent);
+      expect(reproduced.comparisonReferenceM).toBeCloseTo(expected.comparisonReferenceM,12);
+      expect(reproduced.comparisonCurrentM).toBeCloseTo(expected.comparisonCurrentM,12);
+      const motion=await page.locator('[data-seismic-scene-pair-motion]').textContent();
+      await page.getByRole('button',{name:'Open earthquake evidence report',exact:true}).click();
+      const report=page.locator('[data-bridge-print-seismic]');
+      await expect(report.locator('[data-seismic-scene-design]')).toContainText('40 m × 8 m');
+      await expect(report).toContainText('Classroom crossing');
+      await expect(report.locator('[data-seismic-scene-pair-motion]')).toHaveText(motion!);
+      await expect(report.locator('button,input,textarea,select')).toHaveCount(0);
+      await captureImmersiveRegion(page,report,'bridge-'+width+'-complete-scene-report.png',ENHANCEMENT_REPORT);
+      await checkWorkflowHealth(page);
+    });
+  }
+
+  test('simultaneous responses: matching motion, reduced-motion inspection and captured A/B graphics recovery',async ({page})=>{
+    await page.emulateMedia({reducedMotion:'reduce'});
+    await mountWorkflow(page,1000,{span:40,bridgeView:'immersive',bridgeObserver:'bank',seismicEnabled:true,seismicGuideOpen:true});
+    await page.getByRole('button',{name:'Prepare 5% / 20% comparison',exact:true}).click();
+    const stage=page.locator('[data-allo-fs-stage]'); await stage.scrollIntoViewIfNeeded();
+    await page.evaluate(()=>(window as any).__set({seismicTime:7.217,seismicFrequencyHz:1.4}));
+    await expect(page.getByRole('button',{name:'Show both responses',exact:true})).toBeDisabled();
+    await expect.poll(()=>page.evaluate(()=>(window as any).__gl().comparisonOverlayVisible)).toBe(false);
+    await page.evaluate(()=>(window as any).__set({seismicFrequencyHz:1.1}));
+    await expect.poll(()=>page.evaluate(()=>(window as any).__gl().comparisonOverlayVisible)).toBe(true);
+    await expect(page.getByRole('button',{name:'Replay scene',exact:true})).toBeDisabled();
+    await page.getByRole('button',{name:'A · reference',exact:true}).click();
+    await page.getByRole('button',{name:'View the 3D bridge fullscreen',exact:true}).click();
+    await page.locator('[data-bridge-scene-recorder] > summary').press('Enter');
+    await page.getByRole('textbox',{name:'Scene observation note',exact:true}).fill('A and B share the ground motion.');
+    await page.getByRole('button',{name:'Save scene observation',exact:true}).click();
+    await page.evaluate(()=>{
+      const canvas=document.querySelector('canvas[data-bridge-gl]') as HTMLCanvasElement;
+      const context=canvas.getContext('webgl2')||canvas.getContext('webgl');const extension=context?.getExtension('WEBGL_lose_context');
+      if(!extension)throw new Error('WebGL loss extension unavailable');(window as any).__pairLoss=extension;extension.loseContext();
+    });
+    await expect(page.locator('[data-bridge-elevation]')).toBeFocused();
+    await page.evaluate(()=>(window as any).__set({span:25,seismicTime:18,seismicDampingRatio:0.3}));
+    await page.getByRole('button',{name:'Revisit scene observation 1: Scene observation 1',exact:true}).click();
+    await expect(page.locator('[data-bridge-elevation]')).toBeFocused();
+    expect(await page.evaluate(()=>(window as any).__bucket())).toMatchObject({span:40,bridgeView:'2d',seismicTime:7.217,
+      seismicDampingRatio:0.2,seismicSceneCompare:true,seismicSceneTrial:'reference',seismicSceneSource:'capture',seismicPlaying:false});
+    await page.evaluate(()=>(window as any).__pairLoss.restoreContext());
+    await expect.poll(()=>page.evaluate(()=>(window as any).__gl().state)).toBe('ready');
+    expect(await page.evaluate(()=>(window as any).__bucket().bridgeView)).toBe('2d');
+    await page.getByRole('button',{name:'From the riverbank',exact:true}).click();await stage.scrollIntoViewIfNeeded();
+    await expect.poll(()=>page.evaluate(()=>(window as any).__gl().comparisonOverlayVisible)).toBe(true);
+    await expect.poll(()=>page.evaluate(()=>(window as any).__gl().comparisonOutlineTrial)).toBe('current');
+    await expect(page.getByRole('button',{name:'Replay scene',exact:true})).toBeDisabled();
+    await checkWorkflowHealth(page);
+  });
+
   for (const width of [1000, 320]) {
     test('scene observations: record reference A, revisit the bank and print at ' + width + 'px', async ({ page }) => {
       await mountWorkflow(page,width,{bridgeView:'immersive',bridgeObserver:'bank',bridgeBankYaw:18,bridgeBankPitch:-8,
@@ -1335,8 +1842,8 @@ test.describe('Bridge Lab — real WebGL', () => {
       await expect(view).toBeFocused();
       await expect.poll(() => page.evaluate(() => (window as any).__gl().observerAnchor)).toBe('ground');
       expect(await page.evaluate(() => (window as any).__bucket())).toMatchObject({bridgeView:'immersive',bridgeObserver:'bank',
-        bridgeBankYaw:18,bridgeBankPitch:-8,seismicTime:7.217,seismicDampingRatio:0.05,seismicSceneCompare:false,
-        seismicSceneTrial:'current',seismicSceneNote:note,seismicPlaying:false});
+        bridgeBankYaw:18,bridgeBankPitch:-8,seismicTime:7.217,seismicDampingRatio:0.2,seismicSceneCompare:true,
+        seismicSceneSource:'capture',seismicSceneTrial:'reference',seismicSceneNote:note,seismicPlaying:false});
       await expect(page.getByRole('textbox',{name:'Scene observation note',exact:true})).toHaveValue(note);
       await page.getByRole('button',{name:'Open earthquake evidence report',exact:true}).click();
       const report=page.locator('[data-bridge-print-seismic]');

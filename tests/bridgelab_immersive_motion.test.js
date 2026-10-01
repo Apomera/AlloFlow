@@ -79,6 +79,437 @@ describe('Bridge Lab immersive earthquake interaction', () => {
     inputs: { archetype: 'balanced', groundFrequencyHz: 1.1, intensityG: 0.12, dampingRatio: 0.05 },
     timeS: 7.217, prediction: '', observation: 'Energy moves into the damper.', scene: scenePose(), ...overrides });
 
+  it('recent orbit follows the shared replay clock and the selected comparison trial', () => {
+    mount({seismicEnergyOrbit:true,seismicGuideOpen:true});click('Prepare 5% / 20% comparison');patch({seismicTime:7.217});
+    const signature=lastScene.sig, plot=host.querySelector('[data-orbit-frame]');
+    const current=[...host.querySelectorAll('[data-orbit-recent]')].map(node=>node.getAttribute('points'));
+    expect(current).toHaveLength(4);expect(host.querySelector('[data-orbit-direction]').dataset.orbitDirection).toBe('current');
+    expect(Number(host.querySelector('[data-orbit-recent]').dataset.orbitRecentEnd)).toBeCloseTo(state.seismicTime,12);
+    click('A · reference');expect(state.seismicTime).toBe(7.217);expect(plot.dataset.orbitTrial).toBe('reference');
+    expect([...host.querySelectorAll('[data-orbit-recent]')].map(node=>node.getAttribute('points'))).not.toEqual(current);
+    expect(host.querySelector('[data-orbit-direction]').dataset.orbitDirection).toBe('reference');
+    expect(host.querySelector('[data-orbit-split]').dataset.orbitSplit).toBe('reference');
+    patch({seismicTime:7.467});expect(Number(host.querySelector('[data-orbit-recent]').dataset.orbitRecentEnd)).toBeCloseTo(7.467,12);
+    expect(lastScene.sig).toBe(signature);expect(state.seismicPlaying).toBe(false);
+  });
+  it('stored-energy split shows exchange extrema and remains empty for zero shaking', () => {
+    mount({seismicEnergyOrbit:true});click('Next turning point');
+    const fraction=id=>Number(host.querySelector('[data-orbit-part="'+id+'"]').dataset.orbitFraction);
+    expect(fraction('kinetic')).toBeCloseTo(0,10);expect(fraction('elastic')).toBeCloseTo(1,10);
+    click('Next center crossing');expect(fraction('kinetic')).toBeCloseTo(1,10);expect(fraction('elastic')).toBeCloseTo(0,10);
+    patch({seismicIntensityG:0});expect(fraction('kinetic')).toBe(0);expect(fraction('elastic')).toBe(0);
+    expect(host.querySelector('[data-orbit-split]').textContent).toContain('No stored energy');
+    expect(host.querySelector('[data-orbit-recent-caption]').textContent).toBe('No recent motion');
+    expect(host.querySelector('[data-orbit-direction]')).toBeNull();expect(host.querySelector('[data-orbit-recent]')).toBeNull();
+  });
+  it('saved observation restoration rebuilds the same trail and energy split from model inputs', () => {
+    mount({seismicEnergyOrbit:true,seismicSceneRecording:true,seismicTime:7.217});
+    const paths=()=>[...host.querySelectorAll('[data-orbit-recent]')].map(node=>node.getAttribute('points'));
+    const fractions=()=>[...host.querySelectorAll('[data-orbit-part]')].map(node=>node.dataset.orbitFraction);
+    const expectedPaths=paths(), expectedFractions=fractions();click('Save scene observation');const record=state.seismicTrials[0];
+    patch({seismicTime:20,seismicDampingRatio:0.4});expect(paths()).not.toEqual(expectedPaths);
+    click('Revisit scene observation 1: '+record.name);expect(paths()).toEqual(expectedPaths);expect(fractions()).toEqual(expectedFractions);
+    expect(state.seismicTime).toBe(7.217);expect(state.seismicPlaying).toBe(false);
+  });
+
+  it('energy orbit opens paused and keeps the complete history and scale fixed during inspection',()=>{
+    mount({seismicTime:7.217});click('Replay scene');tick(100);const time=state.seismicTime,signature=lastScene.sig;
+    const orbit=host.querySelector('[data-bridge-energy-orbit="scene"]');
+    act(()=>{orbit.open=true;orbit.dispatchEvent(new Event('toggle'));});
+    expect(state).toMatchObject({seismicEnergyOrbit:true,seismicPlaying:false,seismicTime:time});
+    const path=orbit.querySelector('[data-orbit-free]').getAttribute('points'),range=orbit.querySelector('[data-orbit-frame]').dataset.orbitLimit;
+    patch({seismicTime:16});expect(orbit.querySelector('[data-orbit-free]').getAttribute('points')).toBe(path);
+    expect(orbit.querySelector('[data-orbit-frame]').dataset.orbitLimit).toBe(range);expect(lastScene.sig).toBe(signature);
+    expect(orbit.querySelector('[data-orbit-insight]').textContent).toContain('contracts');
+    click('Focus scene');expect(host.querySelector('[data-bridge-compact-orbit]')).toBeTruthy();expect(state.seismicEnergyOrbit).toBe(true);
+  });
+  it('energy orbit inspects selected-trial free-vibration turning points and center crossings without starting replay',()=>{
+    mount({seismicEnergyOrbit:true,seismicForceLens:true,seismicGuideOpen:true,seismicObservation:'Keep my explanation.'});click('Prepare 5% / 20% comparison');patch({seismicTime:7.217});
+    const orbit=host.querySelector('[data-bridge-energy-orbit="scene"]'),turn=Number(button('Next turning point').dataset.orbitNextTime);
+    click('Next turning point');expect(state.seismicTime).toBe(turn);expect(turn).toBeGreaterThanOrEqual(16);
+    expect(Math.abs(lastScene.forceLens.dampingNPerKg)).toBeLessThan(1e-10);expect(Math.abs(Number(orbit.querySelector('[data-orbit-energy="kinetic"]').dataset.orbitValue))).toBeLessThan(1e-20);
+    expect(orbit.querySelector('[data-orbit-insight]').dataset.orbitInsight).toBe('turning');
+    click('Next center crossing');expect(state.seismicTime).toBeGreaterThan(turn);
+    expect(Math.abs(lastScene.forceLens.springNPerKg)).toBeLessThan(1e-10);expect(Number(orbit.querySelector('[data-orbit-energy="kinetic"]').dataset.orbitValue)).toBeGreaterThan(0);
+    expect(orbit.querySelector('[data-orbit-insight]').dataset.orbitInsight).toBe('crossing');
+    const time=state.seismicTime,range=orbit.querySelector('[data-orbit-frame]').dataset.orbitLimit;
+    click('A · reference');expect(state.seismicTime).toBe(time);expect(orbit.querySelector('[data-orbit-frame]').dataset.orbitTrial).toBe('reference');
+    expect(orbit.querySelector('[data-orbit-frame]').dataset.orbitLimit).toBe(range);expect(orbit.querySelector('[data-orbit-insight]').dataset.orbitInsight).toBe('response');
+    expect(orbit.querySelectorAll('[data-orbit-marker]')).toHaveLength(2);expect(state.seismicObservation).toBe('Keep my explanation.');
+    tick(500);expect(state.seismicTime).toBe(time);expect(state.seismicPlaying).toBe(false);
+  });
+  it('energy orbit supports manual cycle inspection under reduced motion and disables exhausted or zero-input cycles',()=>{
+    act(()=>media.change(true));mount({seismicEnergyOrbit:true,seismicTime:16,seismicDampingRatio:0});
+    expect(button('Replay scene').disabled).toBe(true);click('Next center crossing');expect(state.seismicTime).toBeGreaterThan(16);
+    expect(host.querySelector('[data-orbit-insight]').dataset.orbitInsight).toBe('crossing');
+    patch({seismicTime:24});expect(button('Next center crossing').disabled).toBe(true);expect(button('Next turning point').disabled).toBe(true);
+    patch({seismicTime:7.217,seismicIntensityG:0});expect(button('Next center crossing').disabled).toBe(true);expect(button('Next turning point').disabled).toBe(true);
+    expect(host.querySelector('[data-orbit-insight]').textContent).toContain('No shaking');
+    expect([...host.querySelectorAll('[data-orbit-energy]')].every(row=>Number(row.dataset.orbitValue)===0)).toBe(true);
+    expect(host.querySelector('[data-orbit-free]').getAttribute('points')).not.toMatch(/NaN|Infinity/);
+  });
+  it('energy orbit saves and restores its exact cycle frame and prints recalculated energy evidence',()=>{
+    mount({seismicEnergyOrbit:true,seismicSceneRecording:true,seismicSceneNote:'At a turn, kinetic energy is zero.'});click('Next turning point');
+    const time=state.seismicTime,energies=[...host.querySelectorAll('[data-orbit-energy]')].map(row=>row.querySelector('strong').textContent).join(' / ');
+    click('Save scene observation');const record=state.seismicTrials[0];expect(record.scene.display.energyOrbit).toBe(true);expect(record.timeS).toBe(time);
+    patch({seismicEnergyOrbit:false,seismicTime:0,seismicTrials:[{...record,orbit:{storedJPerKg:999999}}]});
+    expect(host.querySelector('[data-seismic-scene-orbit]').textContent).toContain(energies);
+    click('Revisit scene observation 1: '+record.name);expect(state).toMatchObject({seismicEnergyOrbit:true,seismicTime:time,seismicPlaying:false});
+    expect(host.querySelector('[data-orbit-insight]').dataset.orbitInsight).toBe('turning');
+    click('Open earthquake evidence report');const report=host.querySelector('[data-bridge-print-seismic]');
+    expect(report.querySelector('[data-seismic-scene-orbit]').textContent).toContain(energies);expect(report.textContent).not.toContain('999999');expect(report.querySelector('button,input,select,textarea')).toBeNull();
+  });
+  it('energy orbit rejects malformed optional flags while preserving usable legacy observations',()=>{
+    for(const flag of [undefined,'true',1,null]){
+      mount({seismicEnergyOrbit:true,seismicTrials:[sceneTrial({scene:scenePose({display:{version:'bridge-scene-display-v1',motionGuide:false,energyInFrame:false,energyFlow:false,overlay:false,energyOrbit:flag}})})]});
+      click('Revisit scene observation 1: My scene');expect(state.seismicEnergyOrbit).toBe(false);expect(state.seismicTime).toBe(7.217);
+      expect(host.querySelector('[data-orbit-plot]')).toBeNull();act(()=>root.unmount());root=null;host.remove();
+    }
+  });
+  it('energy orbit retains the preference after graphics loss and uses the current experiment in fallback',()=>{
+    mount({seismicEnergyOrbit:true,seismicGuideOpen:true,seismicTime:7.217});click('Prepare 5% / 20% comparison');click('A · reference');patch({seismicTime:16});
+    const a=Number(button('Next turning point').dataset.orbitNextTime);
+    act(()=>{viewerStatus='failed';viewerListener('failed');});
+    const orbit=host.querySelector('[data-bridge-energy-orbit="fallback"]');expect(orbit).toBeTruthy();expect(orbit.querySelector('[data-orbit-frame]').dataset.orbitTrial).toBe('current');
+    expect(Number(button('Next turning point').dataset.orbitNextTime)).not.toBe(a);expect(state.seismicEnergyOrbit).toBe(true);
+    click('Next turning point');expect(state.seismicTime).toBeGreaterThan(16);expect(state.seismicPlaying).toBe(false);
+    act(()=>{viewerStatus='ready';viewerListener('ready');});click('From the riverbank');expect(host.querySelector('[data-bridge-energy-orbit="scene"]')).toBeTruthy();
+  });
+
+  it('force lens pauses on opening and follows selected A/B with a fixed scale and static design untouched', () => {
+    mount({seismicGuideOpen:true}); click('Prepare 5% / 20% comparison'); patch({seismicTime:7.217});
+    const signature=lastScene.sig;
+    click('Replay scene'); tick(100); const time=state.seismicTime;
+    const lens=host.querySelector('[data-bridge-force-lens="scene"]');
+    act(()=>{lens.open=true;lens.dispatchEvent(new Event('toggle'));});
+    expect(state).toMatchObject({seismicForceLens:true,seismicPlaying:false,seismicTime:time});
+    const f=lastScene.forceLens, limit=f.limitNPerKg;
+    expect(f.enabled).toBe(true); expect(f.trial).toBe('current');
+    expect(Number(host.querySelector('[data-force-reading="spring"]').dataset.forceValue)).toBe(f.springNPerKg);
+    expect(f.netNPerKg).toBeCloseTo(f.springNPerKg+f.dampingNPerKg,12);
+    click('A · reference'); expect(lastScene.forceLens.trial).toBe('reference'); expect(lastScene.forceLens.limitNPerKg).toBe(limit);
+    expect(lastScene.forceLens.dampingNPerKg).not.toBe(f.dampingNPerKg);
+    expect(host.querySelector('[data-force-frame]').dataset.forceTrial).toBe('reference');
+    expect(lastScene.sig).toBe(signature); expect(state.seismicTime).toBe(time);
+    click('Focus scene'); expect(host.querySelector('[data-bridge-compact-forces]')).toBeTruthy(); expect(lastScene.forceLens.enabled).toBe(true);
+  });
+  it('force lens retains its display preference in observations and restores the selected frame', () => {
+    mount({seismicForceLens:true,seismicSceneRecording:true,seismicTime:7.217}); click('Save scene observation');
+    const saved=state.seismicTrials[0], frame=JSON.stringify(lastScene.forceLens);
+    expect(saved.scene.display.forceLens).toBe(true);
+    patch({seismicForceLens:false,seismicTime:0}); click('Revisit scene observation 1: '+saved.name);
+    expect(state).toMatchObject({seismicForceLens:true,seismicTime:7.217,seismicPlaying:false}); expect(JSON.stringify(lastScene.forceLens)).toBe(frame);
+  });
+  it('force lens prints recalculated saved forces and preserves escaped writing without trusting imported answers', () => {
+    mount({seismicForceLens:true,seismicSceneRecording:true,seismicTime:7.217,seismicSceneNote:'<img src=x onerror=bad()> Compare arrows.'});
+    click('Save scene observation'); const record=state.seismicTrials[0];
+    const frame=lastScene.forceLens, expected=[frame.springNPerKg,frame.dampingNPerKg,frame.netNPerKg].map(v=>v.toFixed(3)).join(' / ');
+    patch({seismicForceLens:false,seismicTime:0,seismicTrials:[{...record,forces:{springNPerKg:999999},sample:{netNPerKg:999999}}]});
+    expect(host.querySelector('[data-seismic-scene-forces]').textContent).toContain(expected);
+    click('Open earthquake evidence report'); const report=host.querySelector('[data-bridge-print-seismic]');
+    expect(report.querySelector('[data-seismic-scene-forces]').textContent).toContain(expected);
+    expect(report.textContent).not.toContain('999999');expect(report.textContent).toContain(record.observation);
+    expect(report.querySelector('button,input,select,textarea,img')).toBeNull();
+  });
+  it('force lens ignores malformed optional preferences while retaining legacy observations', () => {
+    for (const flag of [undefined,'true',1,null]) {
+      mount({seismicForceLens:true,seismicTrials:[sceneTrial({scene:scenePose({display:{version:'bridge-scene-display-v1',motionGuide:false,energyInFrame:false,energyFlow:false,overlay:false,forceLens:flag}})})]});
+      click('Revisit scene observation 1: My scene'); expect(state.seismicForceLens).toBe(false); expect(state.seismicTime).toBe(7.217);
+      act(()=>root.unmount()); root=null; host.remove();
+    }
+  });
+  it('force lens supports reduced motion and zero shaking without spurious values', () => {
+    act(()=>media.change(true)); mount({seismicForceLens:true,seismicIntensityG:0,seismicTime:7.217});
+    expect(button('Replay scene').disabled).toBe(true);
+    const readings=[...host.querySelectorAll('[data-force-reading]')]; expect(readings).toHaveLength(3);
+    expect(readings.every(row=>Number(row.dataset.forceValue)===0)).toBe(true);
+    expect(lastScene.forceLens.limitNPerKg).toBeGreaterThan(0);
+    patch({seismicTime:16}); expect(host.querySelector('[data-force-frame]').dataset.forceFrame).toBe('16');
+    expect(state.seismicPlaying).toBeFalsy();
+  });
+  it('force lens remains available with paused fallback after graphics loss and recovers deliberately', () => {
+    mount({seismicForceLens:true,seismicTime:7.217});
+    act(()=>{viewerStatus='failed';viewerListener('failed');});
+    expect(state.bridgeView).toBe('2d'); expect(host.querySelector('[data-bridge-force-lens="fallback"]')).toBeTruthy();
+    expect(host.querySelector('[data-force-frame]').dataset.forceTrial).toBe('current');
+    expect(state.seismicTime).toBe(7.217);
+    act(()=>{viewerStatus='ready';viewerListener('ready');}); click('3D structure');
+    expect(lastScene.forceLens.enabled).toBe(true); expect(host.querySelector('[data-bridge-force-lens="scene"]')).toBeTruthy();
+  });
+
+  it('defers graphics failure focus until native fullscreen finishes restoring focus', () => {
+    mount({seismicForceLens:true,seismicTime:7.217});
+    const stage=host.querySelector('[data-allo-fs-stage]'), viewer=host.querySelector('[aria-describedby="bridge-gl-description"]');
+    let fullscreen=stage;
+    const previous=Object.getOwnPropertyDescriptor(document,'fullscreenElement'), exit=window.__alloStemFS;
+    Object.defineProperty(document,'fullscreenElement',{configurable:true,get:()=>fullscreen});
+    window.__alloStemFS=vi.fn(()=>{fullscreen=null;});
+    try {
+      act(()=>viewer.focus());
+      act(()=>{viewerStatus='failed';viewerListener('failed');});
+      expect(window.__alloStemFS).toHaveBeenCalledWith(stage);
+      act(()=>document.dispatchEvent(new Event('fullscreenchange')));
+      tick(32);
+      expect(document.activeElement).toBe(host.querySelector('[data-bridge-elevation]'));
+      expect(state).toMatchObject({bridgeView:'2d',seismicPlaying:false,seismicTime:7.217,seismicForceLens:true});
+    } finally { if(previous)Object.defineProperty(document,'fullscreenElement',previous);else delete document.fullscreenElement;window.__alloStemFS=exit; }
+  });
+
+  it('focuses the scene without resetting replay, paired readings, physical inputs or geometry', () => {
+    mount({ bridgeView: 'immersive', seismicGuideOpen: true, seismicObservation: 'Keep my notes.' });
+    click('Prepare 5% / 20% comparison'); patch({ seismicTime: 7.217 });
+    click('Replay scene'); tick(100);
+    const time = state.seismicTime, comparison = JSON.stringify(lastScene.comparison), signature = lastScene.sig;
+    click('Focus scene');
+    expect(state).toMatchObject({ seismicSceneFocus: true, seismicReadoutCollapsed: true, seismicPlaying: true,
+      seismicTime: time, seismicDampingRatio: 0.2, seismicObservation: 'Keep my notes.' });
+    expect(button('Leave scene focus').getAttribute('aria-pressed')).toBe('true');
+    expect(host.querySelector('[data-bridge-scene-focus]').dataset.bridgeSceneFocus).toBe('true');
+    expect(host.querySelector('[data-bridge-scene-drawer]').open).toBe(false);
+    expect(host.querySelector('[data-bridge-compact-comparison]').dataset.bridgeCompactComparison).toBe(String(time));
+    expect(host.querySelectorAll('[aria-label="Scene replay time (s)"]')).toHaveLength(1);
+    expect(host.querySelector('[aria-label="Scene key moments"]')).toBeNull();
+    expect(JSON.stringify(lastScene.comparison)).toBe(comparison); expect(lastScene.sig).toBe(signature);
+    click('Leave scene focus');
+    expect(state).toMatchObject({ seismicSceneFocus: false, seismicReadoutCollapsed: false, seismicPlaying: true, seismicTime: time });
+    expect(host.querySelector('[data-bridge-focus-replay]')).toBeNull();
+    expect(host.querySelectorAll('[aria-label="Scene key moments"]')).toHaveLength(1);
+    expect(host.querySelectorAll('[aria-label="Scene replay time (s)"]')).toHaveLength(1);
+  });
+
+  it('pauses on opening focus tools and closes them with Escape while restoring keyboard focus', () => {
+    mount({ seismicTime: 7.217 }); click('Focus scene'); click('Replay scene'); tick(100);
+    const time = state.seismicTime, drawer = host.querySelector('[data-bridge-scene-drawer]');
+    act(() => { drawer.open = true; drawer.dispatchEvent(new Event('toggle')); });
+    expect(state).toMatchObject({ seismicReadoutCollapsed: false, seismicPlaying: false, seismicTime: time });
+    expect(host.querySelectorAll('[aria-label="Scene key moments"]')).toHaveLength(1);
+    const moments = field('Scene key moments');
+    act(() => moments.focus());
+    act(() => Simulate.keyDown(moments, { key: 'Escape' }));
+    expect(state.seismicReadoutCollapsed).toBe(true);
+    expect(document.activeElement).toBe(drawer.querySelector('summary'));
+    expect(host.querySelector('[aria-label="Scene key moments"]')).toBeNull();
+    tick(500); expect(state.seismicTime).toBe(time);
+  });
+
+  it('keeps manual focus steps usable under reduced motion with exact boundary clamping', () => {
+    act(() => media.change(true));
+    mount({ seismicSceneFocus: true, seismicReadoutCollapsed: true, seismicTime: 0, seismicIntensityG: 0 });
+    expect(button('Replay scene').disabled).toBe(true);
+    expect(button('Step scene backward 0.5 s').disabled).toBe(true);
+    click('Step scene forward 0.5 s'); expect(state.seismicTime).toBe(0.5);
+    click('Step scene backward 0.5 s'); expect(state.seismicTime).toBe(0);
+    patch({ seismicTime: 23.9 }); click('Step scene forward 0.5 s');
+    expect(state.seismicTime).toBe(24); expect(button('Step scene forward 0.5 s').disabled).toBe(true);
+    act(() => Simulate.change(field('Scene replay time (s)'), { target: { value: '7.25' } }));
+    expect(state).toMatchObject({ seismicTime: 7.25, seismicPlaying: false });
+    expect(lastScene.quake).toMatchObject({ groundM: 0, deckM: 0 });
+    tick(500); expect(state.seismicTime).toBe(7.25);
+  });
+
+  it('uses bounded touch walking, pauses motion in place, and preserves camera angles and evidence', () => {
+    mount({ bridgeView: 'immersive', bridgeObserver: 'deck', seismicSceneFocus: true, seismicReadoutCollapsed: true,
+      bridgeWalkPos: 0.95, bridgeLookYaw: 32, bridgeLookPitch: -7, seismicTime: 7.217, seismicObservation: 'Keep this moment.' });
+    const signature = lastScene.sig;
+    click('Replay scene'); tick(100); const time = state.seismicTime;
+    click('Walk toward far end');
+    expect(state).toMatchObject({ bridgeWalkPos: 0.97, bridgeLookYaw: 32, bridgeLookPitch: -7,
+      seismicTime: time, seismicPlaying: false, autoDriving: false, seismicObservation: 'Keep this moment.' });
+    expect(button('Walk toward far end').disabled).toBe(true);
+    expect(host.querySelector('[data-bridge-walk-position]').textContent).toBe('97%');
+    click('Walk toward entrance'); expect(state.bridgeWalkPos).toBe(0.92);
+    patch({ bridgeWalkPos: 0.031 }); click('Walk toward entrance');
+    expect(state.bridgeWalkPos).toBe(0.03); expect(button('Walk toward entrance').disabled).toBe(true);
+    expect(lastScene.sig).toBe(signature);
+    tick(500); expect(state.seismicTime).toBe(time);
+  });
+
+  it('shows walking only on the deck and retains independent poses when switching observers in focus mode', () => {
+    mount({ bridgeView: 'immersive', seismicSceneFocus: true, seismicReadoutCollapsed: true,
+      bridgeWalkPos: 0.62, bridgeLookYaw: 27, bridgeLookPitch: -12, bridgeBankYaw: 18, bridgeBankPitch: -8, seismicTime: 7.217 });
+    expect(host.querySelector('[data-bridge-walk-controls]')).toBeTruthy();
+    click('Switch to riverbank viewpoint');
+    expect(host.querySelector('[data-bridge-walk-controls]')).toBeNull();
+    expect(lastScene.cameraMode).toBe('bank'); expect(state.seismicSceneFocus).toBe(true);
+    click('Switch to deck viewpoint');
+    expect(lastScene.cameraMode).toBe('deck');
+    expect(state).toMatchObject({ bridgeWalkPos: 0.62, bridgeLookYaw: 27, bridgeLookPitch: -12,
+      bridgeBankYaw: 18, bridgeBankPitch: -8, seismicTime: 7.217, seismicPlaying: false });
+    expect(host.querySelector('[data-bridge-walk-controls]')).toBeTruthy();
+  });
+
+  it('saves focus preference with the full comparison and restores it with the recorder accessible', () => {
+    mount({ bridgeView: 'immersive', seismicSceneFocus: true, seismicSceneRecording: true, seismicGuideOpen: true });
+    click('Prepare 5% / 20% comparison'); patch({ seismicTime: 7.217, seismicSceneNote: 'Inspect this from the walkway.' });
+    click('Save scene observation'); const saved = state.seismicTrials[0];
+    expect(saved.scene.display.focusMode).toBe(true);
+    const comparison = JSON.stringify(lastScene.comparison);
+    patch({ seismicSceneFocus: false, seismicTime: 18, seismicDampingRatio: 0.3, seismicSceneCompare: false, bridgeView: '2d' });
+    click('Revisit scene observation 1: ' + saved.name);
+    expect(state).toMatchObject({ seismicSceneFocus: true, seismicReadoutCollapsed: false, seismicSceneRecording: true,
+      seismicSceneSource: 'capture', seismicSceneNote: 'Inspect this from the walkway.', seismicTime: 7.217, seismicPlaying: false });
+    expect(host.querySelector('[data-bridge-scene-drawer]').open).toBe(true);
+    expect(field('Scene observation note').value).toBe('Inspect this from the walkway.');
+    expect(JSON.stringify(lastScene.comparison)).toBe(comparison);
+  });
+
+  it('keeps older display records usable and never enables focus from malformed flags', () => {
+    const display = { version: 'bridge-scene-display-v1', motionGuide: true, energyInFrame: true, energyFlow: false, overlay: false };
+    const trial = sceneTrial({ scene: scenePose({ display }) });
+    mount({ seismicSceneFocus: true, seismicTrials: [trial] });
+    click('Revisit scene observation 1: My scene');
+    expect(state).toMatchObject({ seismicSceneFocus: false, seismicMotionGuide: true, seismicSceneEnergy: true, seismicEnergyFlow: false });
+    for (const flag of ['true', 1, {}, null]) {
+      patch({ seismicSceneFocus: true, seismicTrials: [sceneTrial({ scene: scenePose({ display: { ...display, focusMode: flag } }) })] });
+      click('Revisit scene observation 1: My scene'); expect(state.seismicSceneFocus).toBe(false);
+    }
+    patch({ seismicSceneFocus: 'true' });
+    expect(host.querySelector('[data-bridge-scene-focus]').dataset.bridgeSceneFocus).toBe('false');
+  });
+
+  it('retains focus preference and pauses after graphics loss, then waits for deliberate view recovery', () => {
+    mount({ bridgeView: 'immersive', seismicSceneFocus: true, seismicReadoutCollapsed: true, seismicTime: 7.217 });
+    act(() => button('Leave scene focus').focus());
+    click('Replay scene'); tick(100); const time = state.seismicTime;
+    act(() => button('Leave scene focus').focus());
+    act(() => { viewerStatus = 'failed'; viewerListener?.('failed'); });
+    expect(state).toMatchObject({ bridgeView: '2d', seismicSceneFocus: true, seismicTime: time, seismicPlaying: false });
+    expect(document.activeElement).toBe(host.querySelector('[data-bridge-elevation]'));
+    expect(host.querySelector('[data-bridge-focus-replay]')).toBeNull();
+    act(() => { viewerStatus = 'ready'; viewerListener?.('ready'); });
+    expect(state.bridgeView).toBe('2d');
+    click('From the riverbank');
+    expect(host.querySelector('[data-bridge-focus-replay]')).toBeTruthy();
+    expect(state).toMatchObject({ seismicSceneFocus: true, seismicTime: time, seismicPlaying: false });
+  });
+
+  it('supports touch exploration without enabling an earthquake or changing the static analysis', () => {
+    mount({ bridgeView: 'immersive', seismicEnabled: false });
+    const inspector = host.querySelector('[data-bridge-inspector]').textContent, signature = lastScene.sig;
+    click('Focus scene'); click('Walk toward far end');
+    expect(host.querySelector('[data-bridge-focus-replay]')).toBeNull();
+    expect(host.querySelector('[data-bridge-scene-drawer]')).toBeNull();
+    expect(lastScene.quake.enabled).toBe(false); expect(lastScene.sig).toBe(signature);
+    expect(host.querySelector('[data-bridge-inspector]').textContent).toBe(inspector);
+  });
+
+  it('shows both model responses at one exact time and flips only the dashed outline when selecting A', () => {
+    mount({bridgeView:'immersive',seismicGuideOpen:true,seismicTime:7.217,seismicObservation:'Keep B notes'});
+    click('Prepare 5% / 20% comparison'); patch({seismicTime:7.217});
+    const motion=lastScene.comparison;
+    expect(motion).toMatchObject({enabled:true,outlineTrial:'reference'});
+    expect(motion.referenceTrailM).toHaveLength(31); expect(motion.currentTrailM).toHaveLength(31);
+    expect(motion.referenceTrailM.at(-1)).toBeCloseTo(motion.referenceM,12);
+    expect(motion.currentTrailM.at(-1)).toBeCloseTo(motion.currentM,12);
+    const readings=host.querySelector('[data-bridge-overlay-readings]');
+    expect(readings.dataset.bridgeOverlayReadings).toBe('7.217');
+    expect(readings.textContent).toContain('Solid bridge: B · current');
+    const sig=lastScene.sig;
+    click('A · reference');
+    expect(lastScene.comparison).toMatchObject({...motion,outlineTrial:'current'});
+    expect(lastScene.quake.deckM).toBe(motion.referenceM);
+    expect(host.querySelector('[data-overlay-legend]').textContent).toBe('Solid bridge: A · reference');
+    expect(state).toMatchObject({seismicTime:7.217,seismicDampingRatio:0.2,seismicObservation:'Keep B notes',seismicPlaying:false});
+    expect(lastScene.sig).toBe(sig);
+    click('Replay scene'); tick(100);
+    click('Show both responses');
+    expect(lastScene.comparison.enabled).toBe(false); expect(state.seismicPlaying).toBe(true);
+    tick(100); click('Show both responses');
+    expect(lastScene.comparison.enabled).toBe(true); expect(state.seismicPlaying).toBe(true);
+    expect(host.querySelector('[data-bridge-overlay-readings]')).toBeTruthy();
+  });
+
+  it('requires matching ground motion for the overlay and retains the display preference through changes', () => {
+    mount({seismicGuideOpen:true}); click('Prepare 5% / 20% comparison'); patch({seismicTime:7.217});
+    patch({seismicFrequencyHz:1.4});
+    expect(button('Show both responses').disabled).toBe(true);
+    expect(lastScene.comparison.enabled).toBe(false);
+    expect(host.querySelector('[data-bridge-overlay-readings]')).toBeNull();
+    expect(state.seismicSceneOverlay).toBe(true);
+    patch({seismicFrequencyHz:1.1});
+    expect(button('Show both responses').disabled).toBe(false);
+    expect(lastScene.comparison.enabled).toBe(true);
+    click('End scene comparison');
+    expect(lastScene.comparison.enabled).toBe(false);
+    expect(host.querySelector('[data-bridge-overlay-readings]')).toBeNull();
+  });
+
+  it('keeps zero-input comparisons and reduced-motion inspection finite and reproducible after scrubbing', () => {
+    act(() => media.change(true));
+    mount({seismicIntensityG:0,seismicGuideOpen:true}); click('Prepare 5% / 20% comparison');
+    patch({seismicTime:0.217,seismicFrequencyHz:2.1});
+    expect(button('Show both responses').disabled).toBe(false);
+    expect(lastScene.comparison.referenceTrailM).toEqual(Array(31).fill(0));
+    expect(lastScene.comparison.currentTrailM).toEqual(Array(31).fill(0));
+    expect(button('Replay scene').disabled).toBe(true);
+    patch({seismicIntensityG:0.12}); click('Prepare 5% / 20% comparison'); patch({seismicTime:7.217});
+    const frame=JSON.stringify(lastScene.comparison);
+    patch({seismicTime:18}); patch({seismicTime:7.217});
+    expect(JSON.stringify(lastScene.comparison)).toBe(frame);
+    patch({seismicReadoutCollapsed:true}); expect(lastScene.comparison.enabled).toBe(true);
+    expect(host.querySelector('[data-bridge-compact-comparison]').dataset.bridgeCompactComparison).toBe('7.217');
+    expect(host.querySelector('[data-compact-response=reference]').textContent).toContain('outline');
+    expect(host.querySelector('[data-compact-response=current]').textContent).toContain('solid');
+    expect(host.querySelector('[data-bridge-scene-readout] > summary').getAttribute('aria-describedby')).toBe('bridge-scene-compact-comparison');
+    expect(state.seismicPlaying).toBe(false);
+  });
+
+  it('restores the complete saved bridge, both trials and display settings after the live experiment changes', () => {
+    const design={span:40,height:8,nBays:6,materialId:'composite',crossSectionMm2:18000,trussStyle:'pratt',
+      loadMode:'vehicle',loadPerJoint:73,vehicleLoad:220,vehiclePos:0.37,lateralBraceEvery:3};
+    mount({...design,designName:'Student crossing',designNotes:'Use the bank to observe.',seismicGuideOpen:true,
+      seismicMotionGuide:true,seismicEnergyFlow:true,seismicSceneEnergy:true,seismicSceneRecording:true});
+    click('Prepare 5% / 20% comparison'); patch({seismicTime:7.217,seismicSceneNote:'A moves farther than B.'}); click('A · reference');
+    const motion=JSON.stringify(lastScene.comparison),sig=lastScene.sig;
+    click('Save scene observation');
+    const record=state.seismicTrials[0];
+    expect(record.scene.design).toMatchObject({version:'bridge-scene-design-v1',inputs:design,name:'Student crossing',notes:'Use the bank to observe.'});
+    expect(record.scene.comparison).toMatchObject({referenceInputs:{dampingRatio:0.05},currentInputs:{dampingRatio:0.2}});
+    record.scene.design.inputs.tab='quiz'; record.scene.design.inputs.seismicPlaying=true;
+    patch({span:20,height:3,nBays:4,materialId:'steel',crossSectionMm2:1000,trussStyle:'howe',loadMode:'uniform',
+      loadPerJoint:1,vehicleLoad:40,vehiclePos:0.9,lateralBraceEvery:1,designName:'Changed',designNotes:'Changed',
+      seismicDampingRatio:0.3,seismicFrequencyHz:2,seismicIntensityG:0.2,seismicTime:18,seismicSceneCompare:false,
+      seismicMotionGuide:false,seismicEnergyFlow:false,seismicSceneEnergy:false,seismicSceneOverlay:false});
+    click('Revisit scene observation 1: '+record.name);
+    expect(state).toMatchObject({...design,tab:'build',designName:'Student crossing',designNotes:'Use the bank to observe.',
+      seismicTime:7.217,seismicDampingRatio:0.2,seismicFrequencyHz:1.1,seismicIntensityG:0.12,
+      seismicSceneCompare:true,seismicSceneSource:'capture',seismicSceneTrial:'reference',seismicPlaying:false,
+      seismicSceneNote:'A moves farther than B.',seismicMotionGuide:true,seismicEnergyFlow:true,seismicSceneEnergy:true,seismicSceneOverlay:true});
+    expect(lastScene.sig).toBe(sig); expect(JSON.stringify(lastScene.comparison)).toBe(motion);
+    expect(document.activeElement.getAttribute('aria-describedby')).toBe('bridge-gl-description');
+    const card=host.querySelector('[data-seismic-trial="0"]');
+    expect(card.querySelector('[data-seismic-scene-design]').textContent).toContain('40 m × 8 m');
+    const pairMotion=card.querySelector('[data-seismic-scene-pair-motion]').textContent;
+    click('Open earthquake evidence report');
+    const report=host.querySelector('[data-bridge-print-seismic]');
+    expect(report.querySelector('[data-seismic-scene-pair-motion]').textContent).toBe(pairMotion);
+    expect(report.textContent).toContain('Student crossing'); expect(report.textContent).toContain('18000 mm²');
+    expect(report.querySelector('button,input,textarea,select')).toBeNull();
+  });
+
+  it.each([{span:999},{nBays:3,lateralBraceEvery:4},{materialId:'future-material'}])('keeps valid earthquake evidence while rejecting an invalid optional bridge setup %j', invalid => {
+    mount({seismicSceneRecording:true,seismicTime:7.217,span:40}); click('Save scene observation');
+    const record=state.seismicTrials[0]; Object.assign(record.scene.design.inputs,invalid);
+    patch({span:25,seismicTime:18});
+    expect(host.querySelector('[data-seismic-scene-design]')).toBeNull();
+    click('Revisit scene observation 1: '+record.name);
+    expect(state).toMatchObject({span:25,seismicTime:7.217,seismicPlaying:false});
+    expect(state.seismicTrials).toHaveLength(1);
+  });
+
+  it('rejects a mismatched or unsupported saved comparison while restoring valid pose and bridge evidence', () => {
+    mount({seismicGuideOpen:true,seismicSceneRecording:true,span:40}); click('Prepare 5% / 20% comparison');
+    click('A · reference'); patch({seismicTime:7.217}); click('Save scene observation');
+    const record=state.seismicTrials[0]; record.scene.comparison.referenceInputs.dampingRatio=0.1;
+    patch({span:25,seismicTime:18});
+    click('Revisit scene observation 1: '+record.name);
+    expect(state).toMatchObject({span:40,seismicDampingRatio:0.05,seismicSceneCompare:false,seismicTime:7.217});
+    expect(lastScene.comparison.enabled).toBe(false);
+    patch({seismicSceneSource:'capture',seismicSceneCompare:true,seismicSceneCapture:{version:'future-comparison'}});
+    expect(lastScene.comparison.enabled).toBe(false);
+    expect(host.querySelector('[data-bridge-overlay-readings]')).toBeNull();
+  });
+
   it('records displayed reference A with its exact time and independent note, preserving the working experiment', () => {
     const unsupported={version:'future-model',observation:'Keep me'};
     mount({ bridgeView:'immersive', bridgeObserver:'bank', seismicGuideOpen:true, seismicSceneRecording:true,

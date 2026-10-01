@@ -297,3 +297,101 @@ describe('Bridge Lab deck viewpoint and seismic scene', () => {
     expect(state.motionReference.visible).toBe(true);
   });
 });
+
+
+describe('Bridge Lab simultaneous earthquake geometry', () => {
+  const comparison = overrides => ({enabled:true,outlineTrial:'reference',referenceM:-0.11,currentM:0.07,
+    referenceTrailM:Array.from({length:31},(_,i)=>-0.11*i/30),currentTrailM:Array.from({length:31},(_,i)=>0.07*i/30),...overrides});
+  it('places the other response and both trails in shared world coordinates with unchanged supports', () => {
+    const {state}=scene({crossSectionMm2:30000,lateralBraceEvery:1},{comparison:comparison(),quake:{enabled:true,groundM:0.04,deckM:0.07,maxOffsetM:0.2}});
+    state.tick();
+    expect(state.comparisonOutline.visible).toBe(true); expect(state.comparisonOutline.position.z).toBeCloseTo(-1.1);
+    expect(state.structure.position.z).toBeCloseTo(0.7); expect(state.ground.position.z).toBeCloseTo(0.4);
+    expect(sceneConfiguration.debug(state)).toMatchObject({comparisonOverlayVisible:true,comparisonOutlineTrial:'reference',comparisonReferenceM:-0.11,comparisonCurrentM:0.07,comparisonTrailSamples:31});
+    const railZ=state.extent.d/2-0.12;
+    state.comparisonTrails.forEach((trail,i)=>{
+      expect(trail.line.visible).toBe(true); expect(trail.marker.visible).toBe(true);
+      expect(trail.line.geometry.attributes.position.getZ(30)-railZ).toBeCloseTo((i?0.07:-0.11)*10,5);
+      expect(trail.marker.position.z-railZ).toBeCloseTo((i?0.07:-0.11)*10);
+      expect(trail.line.frustumCulled).toBe(false);
+    });
+    expect(state.supportEndpoints.every(p=>Math.abs(p.base.z-p.top.z+0.3)<1e-8)).toBe(true);
+    state.data.comparison.outlineTrial='current'; state.data.quake.deckM=-0.11; state.tick();
+    expect(state.comparisonOutline.position.z).toBeCloseTo(0.7); expect(state.structure.position.z).toBeCloseTo(-1.1);
+    expect(state.comparisonOutline.material.color.getHex()).toBe(0x22d3ee);
+  });
+
+  it('retains the same buffers and objects through time changes, toggles and selected trials', () => {
+    const {state}=scene({}, {comparison:comparison(),quake:{enabled:true,groundM:0.04,deckM:0.07,maxOffsetM:0.2}});
+    const children=[...state.model.children],outlineGeometry=state.comparisonOutline.geometry;
+    const buffers=state.comparisonTrails.map(t=>t.line.geometry.attributes.position.array);
+    state.tick(); const restOutline=Array.from(outlineGeometry.attributes.position.array);
+    for(let i=0;i<20;i++){
+      state.data.comparison=comparison({enabled:i%2===0,outlineTrial:i%3?'reference':'current',referenceM:i/100});state.tick();
+      expect(state.model.children).toEqual(children); expect(state.comparisonOutline.geometry).toBe(outlineGeometry);
+      expect(Array.from(outlineGeometry.attributes.position.array)).toEqual(restOutline);
+      expect(state.comparisonOutline.visible).toBe(i%2===0);
+      state.comparisonTrails.forEach((t,j)=>expect(t.line.geometry.attributes.position.array).toBe(buffers[j]));
+    }
+    expect(state.bridgeBuilds).toBe(1);
+  });
+
+  it('hides every comparison object for incomplete or nonfinite data and disabled shaking', () => {
+    const {state}=scene({}, {quake:{enabled:true,groundM:0,deckM:0},comparison:comparison()});
+    for(const invalid of [{enabled:'true'},{referenceM:NaN},{currentM:Infinity},{outlineTrial:'future'},
+      {referenceTrailM:[0,1]},{currentTrailM:Array(31).fill(Infinity)}]){
+      state.data.comparison=comparison(invalid);state.tick();expect(state.comparisonOutline.visible).toBe(false);
+      expect(state.comparisonTrails.every(t=>!t.line.visible&&!t.marker.visible)).toBe(true);
+      expect(sceneConfiguration.debug(state).comparisonReferenceM).toBeNull();
+    }
+    state.data.comparison=comparison();state.data.quake.enabled=false;state.tick();expect(state.comparisonOutline.visible).toBe(false);
+    state.data.quake={enabled:true,groundM:NaN,deckM:0};state.tick();expect(state.comparisonOutline.visible).toBe(false);
+  });
+});
+
+
+describe('Bridge Lab force lens geometry', () => {
+  const forces = {enabled:true,trial:'current',springNPerKg:-2,dampingNPerKg:0.5,netNPerKg:-1.5,limitNPerKg:4};
+  const quake={enabled:true,groundM:0.01,deckM:0.02};
+  it('uses world transverse direction, proportional lengths and actual arrow tips', () => {
+    const {state}=scene({}, {quake,forceLens:forces}); state.tick();
+    expect(state.forceLens.visible).toBe(true);
+    expect(state.forceVectors.map(v=>v.direction)).toEqual([-1,1,-1]);
+    for (let i=0;i<3;i++) {
+      const vector=state.forceVectors[i], head=state.forceLens.children[i*3+1];
+      expect(vector.origin[0]).toBe(0); expect(vector.origin[2]).toBeCloseTo(0.2);
+      expect(vector.signedLengthM).toBeCloseTo(vector.valueNPerKg/4*3);
+      head.updateMatrixWorld(true);
+      const tip=new THREE.Vector3(0,0.5,0).applyMatrix4(head.matrixWorld);
+      expect(tip.distanceTo(new THREE.Vector3(...vector.tip))).toBeLessThan(1e-7);
+    }
+  });
+  it('reuses every buffer and mesh while reversing arrows, walking and showing zero force', () => {
+    const {state}=scene({}, {quake,forceLens:forces,cameraMode:'deck',deckPosition:0.63,deckYaw:90}); state.tick();
+    const geometry=state.forceLens.children.map(c=>c.geometry), children=[...state.forceLens.children];
+    const initialZ=state.forceVectors[0].origin[2];
+    state.data={...state.data,deckYaw:-90,forceLens:{...forces,springNPerKg:2,dampingNPerKg:-0.5,netNPerKg:1.5}}; state.tick();
+    expect(state.forceVectors.map(v=>v.direction)).toEqual([1,-1,1]);
+    expect(initialZ-state.forceVectors[0].origin[2]).toBeCloseTo(8);
+    expect(state.forceVectors[0].origin[0]).toBeCloseTo(-18+36*0.63);
+    const flatY=state.forceVectors[2].origin[1]; state.data.deckPitch=30; state.tick();
+    expect(state.forceVectors[2].origin[1]-flatY).toBeCloseTo(2);
+    expect(state.forceVectors[2].origin[2]).toBeCloseTo(state.extent.d/2-0.72+0.2-4*Math.cos(Math.PI/6));
+    state.data.forceLens={...forces,springNPerKg:0.05,dampingNPerKg:-0.025,netNPerKg:0.025}; state.tick();
+    for(let i=0;i<3;i++) expect(state.forceLens.children[i*3+2].geometry.parameters.radius*state.forceLens.children[i*3+2].scale.x).toBeLessThan(Math.abs(state.forceVectors[i].signedLengthM));
+    state.data.forceLens={...forces,springNPerKg:0,dampingNPerKg:0,netNPerKg:0}; state.tick();
+    expect(state.forceVectors.every(v=>v.direction===0&&v.signedLengthM===0)).toBe(true);
+    for (let i=0;i<3;i++) { expect(children[i*3].visible).toBe(false); expect(children[i*3+1].visible).toBe(false); expect(children[i*3+2].visible).toBe(true); }
+    expect(state.forceLens.children).toEqual(children);
+    expect(state.forceLens.children.map(c=>c.geometry)).toEqual(geometry);
+  });
+  it('hides malformed, unbalanced or out of range force overlays and clears debug readings', () => {
+    const {state}=scene({}, {quake,forceLens:forces});
+    for (const invalid of [{enabled:'true'},{trial:'invented'},{limitNPerKg:0},{limitNPerKg:NaN},{netNPerKg:Infinity},{springNPerKg:'-2'},{netNPerKg:-1},{limitNPerKg:0.1}]) {
+      state.data.forceLens=forces; state.tick(); expect(state.forceLens.visible).toBe(true);
+      state.data.forceLens={...forces,...invalid}; state.tick(); expect(state.forceLens.visible).toBe(false);
+      expect(state.forceVectors).toEqual([]); expect(state.forceLimitNPerKg).toBeNull(); expect(state.forceTrial).toBeNull();
+    }
+    state.data.forceLens=forces; state.data.quake={...quake,enabled:false}; state.tick(); expect(state.forceLens.visible).toBe(false);
+  });
+});

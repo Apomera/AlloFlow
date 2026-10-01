@@ -5,11 +5,48 @@ import vm from 'node:vm';
 const source = readFileSync('stem_lab/stem_tool_bridgelab.js', 'utf8');
 const sandbox = { window: { StemLab: { registerTool() {} } }, console };
 vm.runInNewContext(source.replace("window.StemLab.registerTool('bridgeLab', {", `
-  window.seismicModel = { bridgeSeismicResponse, bridgeSeismicSample, bridgeSeismicForces, bridgeSeismicTrials, bridgeSeismicTimeline, bridgeSeismicComparison, bridgeSeismicScanPoint, bridgeSeismicScanSummary, BRIDGE_RESPONSE_ARCHETYPES };
+  window.seismicModel = { bridgeSeismicResponse, bridgeSeismicSample, bridgeSeismicForces, bridgeSeismicForceFrame, bridgeSeismicOrbitFrame, bridgeSeismicOrbitLimit, bridgeSeismicOrbitChart, bridgeSeismicOrbitTrail, bridgeSeismicTrials, bridgeSeismicTimeline, bridgeSeismicComparison, bridgeSeismicScanPoint, bridgeSeismicScanSummary, BRIDGE_RESPONSE_ARCHETYPES };
   window.StemLab.registerTool('bridgeLab', {`), sandbox);
 const { bridgeSeismicResponse: response, bridgeSeismicSample: sample, BRIDGE_RESPONSE_ARCHETYPES: archetypes } = sandbox.window.seismicModel;
 
 describe('Bridge Lab illustrative seismic response', () => {
+  it('force lens preserves Newton balance and bounds every force across the complete event', () => {
+    const frame = sandbox.window.seismicModel.bridgeSeismicForceFrame;
+    for (const mode of archetypes) for (const dampingRatio of [0, 0.05, 0.4]) {
+      const r = response({archetype:mode.id, dampingRatio, intensityG:0.5, groundFrequencyHz:mode.naturalFrequencyHz});
+      const limit = frame(r, sample(r,0)).limitNPerKg;
+      for (let time=0; time<=24; time+=0.137) {
+        const p=sample(r,time), f=frame(r,p);
+        expect(f.netNPerKg).toBeCloseTo(p.absoluteAccelerationMps2,9);
+        expect(f.limitNPerKg).toBe(limit);
+        for (const value of [f.springNPerKg,f.dampingNPerKg,f.netNPerKg]) expect(Math.abs(value)).toBeLessThanOrEqual(limit);
+        expect(f.springNPerKg*p.relativeM).toBeLessThanOrEqual(0);
+        expect(f.dampingNPerKg*p.velocityMps).toBeLessThanOrEqual(0);
+        expect(f.dampingPowerWPerKg).toBeCloseTo(2*dampingRatio*2*Math.PI*r.naturalFrequencyHz*p.velocityMps**2,10);
+      }
+      for (const p of r.samples.filter((_,i)=>i%37===0)) expect(frame(r,p).dampingPowerWPerKg).toBeCloseTo(p.dampingPowerWPerKg,10);
+    }
+  });
+  it('force lens shares the same scale when exchanging A/B and inspecting different moments', () => {
+    const frame=sandbox.window.seismicModel.bridgeSeismicForceFrame;
+    const a=response({archetype:'flexible',dampingRatio:0.05}), b=response({archetype:'stiff',dampingRatio:0.2});
+    const limit=frame(a,sample(a,0),b).limitNPerKg;
+    for (const time of [0,7.217,16,24]) {
+      expect(frame(a,sample(a,time),b).limitNPerKg).toBe(limit);
+      expect(frame(b,sample(b,time),a).limitNPerKg).toBe(limit);
+    }
+  });
+  it('force lens separates a stretched spring at rest from viscous damping and supports no shaking', () => {
+    const frame=sandbox.window.seismicModel.bridgeSeismicForceFrame, r=response({dampingRatio:0.2});
+    const f=frame(r,{relativeM:0.03,velocityMps:0});
+    expect(f.springNPerKg).toBeLessThan(0); expect(Math.abs(f.dampingNPerKg)).toBe(0); expect(Math.abs(f.dampingPowerWPerKg)).toBe(0);
+    const zero=response({intensityG:0});
+    for (const time of [0,7.217,16,24]) {
+      const p=frame(zero,sample(zero,time));
+      expect(Math.abs(p.springNPerKg)+Math.abs(p.dampingNPerKg)+Math.abs(p.netNPerKg)).toBe(0);
+      expect(p.limitNPerKg).toBeGreaterThan(0);
+    }
+  });
   it('reports power consistent with the equation of motion across modes and damping settings', () => {
     for (const archetype of archetypes) for (const dampingRatio of [0, 0.05, 0.4]) {
       const result = response({ archetype: archetype.id, dampingRatio, intensityG: 0.5, groundFrequencyHz: 3 });
@@ -351,5 +388,120 @@ describe('Bridge Lab illustrative seismic response', () => {
     expect(sample(null, 4)).toBeNull();
     expect(sample({ samples: [] }, 4)).toBeNull();
     expect(sample(result, 0)).not.toBe(result.samples[0]);
+  });
+});
+
+
+describe('Bridge Lab energy orbit physics',()=>{
+  const {bridgeSeismicOrbitFrame:frame,bridgeSeismicOrbitLimit:limit,bridgeSeismicOrbitChart:chart}=sandbox.window.seismicModel;
+  it('maps the phase radius to relative modal kinetic plus elastic energy at stored samples',()=>{
+    for(const mode of archetypes){const r=response({archetype:mode.id,dampingRatio:0.2});
+      for(const p of r.samples.filter((_,i)=>i%23===0)){const f=frame(r,p);
+        expect(f.kineticJPerKg).toBeCloseTo(p.kineticJPerKg,12);expect(f.elasticJPerKg).toBeCloseTo(p.strainJPerKg,12);
+        expect(f.radiusMps**2/2).toBeCloseTo(p.storedJPerKg,12);expect(f.storedJPerKg).toBeCloseTo(f.kineticJPerKg+f.elasticJPerKg,12);
+      }
+    }
+  });
+  it('keeps a common finite scale for A/B and bounds every interpolated cursor',()=>{
+    const a=response({archetype:'flexible',intensityG:0.5,dampingRatio:0}),b=response({archetype:'stiff',intensityG:0.5,dampingRatio:0.4});
+    const range=limit(a,b);expect(limit(b,a)).toBe(range);
+    for(const r of [a,b])for(let time=0;time<=24;time+=0.113){const f=frame(r,sample(r,time));expect(f.radiusMps).toBeLessThan(range);expect(f.storedJPerKg).toBeGreaterThanOrEqual(0);}
+    const c=chart(a,range);expect(c.shaking).not.toMatch(/NaN|Infinity/);expect(c.free).not.toMatch(/NaN|Infinity/);
+  });
+  it('retains energy in the undamped free orbit and contracts with damping at integration samples',()=>{
+    for(const dampingRatio of [0,0.05,0.2]){const r=response({dampingRatio});const start=frame(r,sample(r,16)).storedJPerKg;
+      const points=r.samples.filter(p=>p.timeS>=16);
+      for(let i=1;i<points.length;i++){const energy=frame(r,points[i]).storedJPerKg;
+        if(dampingRatio===0)expect(Math.abs(energy-start)/Math.max(1,start)).toBeLessThan(1e-7);
+        else expect(energy).toBeLessThanOrEqual(frame(r,points[i-1]).storedJPerKg+1e-10);
+      }
+      if(dampingRatio>0)expect(frame(r,sample(r,24)).storedJPerKg).toBeLessThan(start);
+    }
+  });
+  it('locates sampled turning points and center crossings near an independent analytic free-vibration solution',()=>{
+    for(const mode of archetypes)for(const dampingRatio of [0,0.05,0.4]){
+      const r=response({archetype:mode.id,dampingRatio}),start=sample(r,16),w=2*Math.PI*r.naturalFrequencyHz,wd=w*Math.sqrt(1-dampingRatio**2),decay=dampingRatio*w;
+      const a=start.relativeM,b=(start.velocityMps+decay*a)/wd,c=start.velocityMps,d=-decay*b-wd*a;
+      const orbit=chart(r,limit(r));
+      for(const [kind,first,second,field] of [['crossing',a,b,'relativeM'],['turning',c,d,'velocityMps']]){
+        const rootAngle=(Math.atan2(-first,second)+Math.PI*4)%Math.PI;
+        const expected=[];for(let angle=rootAngle;angle/wd<=8;angle+=Math.PI)expected.push(16+angle/wd);
+        expect(orbit[kind]).toHaveLength(expected.length);
+        orbit[kind].forEach((time,i)=>{expect(Math.abs(time-expected[i])).toBeLessThan(0.001);expect(Math.abs(sample(r,time)[field])).toBeLessThan(1e-10);expect(time).toBeGreaterThanOrEqual(16);expect(time).toBeLessThanOrEqual(24);});
+      }
+    }
+  });
+  it('has no fabricated cycle or energy with zero applied shaking',()=>{
+    const r=response({intensityG:0}),c=chart(r,limit(r));expect(c.turning).toEqual([]);expect(c.crossing).toEqual([]);
+    for(const time of [0,7.217,16,24]){const f=frame(r,sample(r,time));expect(f.radiusMps+f.storedJPerKg).toBe(0);}
+    expect(c.free).not.toMatch(/NaN|Infinity/);expect(c.shaking).not.toMatch(/NaN|Infinity/);expect(limit(r)).toBeGreaterThan(0);
+  });
+});
+
+
+describe('Bridge Lab recent orbit motion', () => {
+  const { bridgeSeismicOrbitFrame: frame, bridgeSeismicOrbitLimit: limit,
+    bridgeSeismicOrbitChart: chart, bridgeSeismicOrbitTrail: trail } = sandbox.window.seismicModel;
+  it('uses only past recorded motion and ends at the exact interpolated replay point', () => {
+    for (const mode of archetypes) {
+      const r=response({archetype:mode.id,dampingRatio:0.2}), scale=limit(r), mapping=chart(r,scale);
+      for (const time of [-5,0,0.003,7.217,16,24,99,NaN]) {
+        const recent=trail(r,time,scale), p=sample(r,time);
+        expect(recent.timeS).toBeCloseTo(p.timeS,12);
+        expect(recent.startTimeS).toBeCloseTo(Math.max(0,p.timeS-1/r.naturalFrequencyHz),12);
+        expect(recent.points.length).toBeLessThanOrEqual(95);
+        for (let i=0;i<recent.points.length;i++) {
+          const point=recent.points[i], actual=sample(r,point.timeS);
+          expect(point.timeS).toBeGreaterThanOrEqual(recent.startTimeS-1e-12);
+          expect(point.timeS).toBeLessThanOrEqual(p.timeS+1e-12);
+          if(i)expect(point.timeS).toBeGreaterThanOrEqual(recent.points[i-1].timeS);
+          expect(point.x).toBeCloseTo(mapping.x(2*Math.PI*r.naturalFrequencyHz*actual.relativeM),10);
+          expect(point.y).toBeCloseTo(mapping.y(actual.velocityMps),10);
+        }
+        if(recent.points.length){expect(recent.points.at(-1).x).toBeCloseTo(mapping.x(frame(r,p).elasticMps),10);expect(recent.points.at(-1).y).toBeCloseTo(mapping.y(p.velocityMps),10);}
+      }
+    }
+  });
+  it('stitches the fading segments without a break or an invalid coordinate', () => {
+    const r=response({dampingRatio:0.05}), recent=trail(r,7.217,limit(r));
+    expect(recent.segments).toHaveLength(4);
+    recent.segments.forEach((segment,i)=>{
+      expect(segment.path).not.toMatch(/NaN|Infinity/);
+      if(i){expect(segment.path.split(' ')[0]).toBe(recent.segments[i-1].path.split(' ').at(-1));expect(segment.opacity).toBeGreaterThan(recent.segments[i-1].opacity);}
+    });
+    const [first,last]=[recent.points[0],recent.points.at(-1)];
+    expect(recent.segments[0].path.split(' ')[0]).toBe(first.x.toFixed(3)+','+first.y.toFixed(3));
+    expect(recent.segments.at(-1).path.split(' ').at(-1)).toBe(last.x.toFixed(3)+','+last.y.toFixed(3));
+  });
+  it('points along the physical free-vibration phase direction using two past frames', () => {
+    for(const mode of archetypes){const r=response({archetype:mode.id,groundFrequencyHz:mode.naturalFrequencyHz,dampingRatio:0});
+      for(const time of [16.2,17.7,20.3,24]){
+        const recent=trail(r,time,limit(r)), cue=recent.direction;
+        expect(cue).not.toBeNull();expect(cue.timeS).toBeLessThan(recent.timeS);expect(cue.timeS).toBeGreaterThan(recent.startTimeS);
+        const p=sample(r,cue.timeS-1/120), w=2*Math.PI*r.naturalFrequencyHz;
+        const dx=w*p.velocityMps, dy=w*w*p.relativeM, norm=Math.hypot(dx,dy);
+        expect((Math.cos(cue.angleRad)*dx+Math.sin(cue.angleRad)*dy)/norm).toBeGreaterThan(0.999);
+        expect(cue.path).not.toMatch(/NaN|Infinity/);
+      }
+    }
+  });
+  it('shows no trail or direction at the start or with zero shaking', () => {
+    const r=response(), zero=response({intensityG:0});
+    expect(trail(r,0,limit(r))).toMatchObject({points:[],segments:[],direction:null});
+    for(const time of [0,7.217,16,24])expect(trail(zero,time,limit(zero))).toMatchObject({points:[],segments:[],direction:null});
+  });
+  it('expresses composition as fractions of current stored energy with empty zero-energy fractions', () => {
+    const r=response(), w=2*Math.PI*r.naturalFrequencyHz;
+    for(const p of [{relativeM:0.02,velocityMps:0.4},{relativeM:0.02,velocityMps:0},{relativeM:0,velocityMps:0.4},{relativeM:0,velocityMps:0}]){
+      const f=frame(r,p), kinetic=p.velocityMps**2/2, elastic=(w*p.relativeM)**2/2, stored=kinetic+elastic;
+      expect(f.kineticFraction).toBeCloseTo(stored?kinetic/stored:0,12);
+      expect(f.elasticFraction).toBeCloseTo(stored?elastic/stored:0,12);
+      expect(f.kineticFraction+f.elasticFraction).toBeCloseTo(stored?1:0,12);
+    }
+  });
+  it('leaves response samples immutable during repeated forward and backward inspection', () => {
+    const r=response();r.samples.forEach(Object.freeze);Object.freeze(r.samples);Object.freeze(r.peaks);Object.freeze(r);
+    const first=trail(r,7.217,limit(r));trail(r,20.7,limit(r));trail(r,0.05,limit(r));
+    expect(trail(r,7.217,limit(r))).toEqual(first);
   });
 });
