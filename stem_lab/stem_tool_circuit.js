@@ -3218,9 +3218,23 @@ function CircuitActiveLearningEntry(props) {
   var lesson=circuitActiveLesson(selected),record=records[selected]||null,tested=!!(record&&record.tested);
   var done=ids.filter(function(id){return records[id]&&records[id].tested;}).length;
   var phase=!record?'fresh':tested?'result':'prediction';
-  var action=!record?t('stem.circuit.learning_entry_open','Open guided experiment'):tested?t('stem.circuit.learning_entry_review','Review saved result'):t('stem.circuit.learning_entry_resume','Resume prediction');
-  var cue=!record?t('stem.circuit.learning_entry_fresh_cue','Make a prediction, test a change, and explain the readings.'):tested?t('stem.circuit.learning_entry_result_cue','Review the saved readings and continue your explanation.'):t('stem.circuit.learning_entry_prediction_cue','Choose or review your prediction, then test the change.');
-  return h('section',{className:'circuit-active-learning-entry','data-entry-phase':phase,'data-lesson-id':selected,'aria-labelledby':uid+'-title'},
+  var stage=circuitActiveLessonJourney(state,selected).phase;
+  var actions={
+    start:['stem.circuit.learning_entry_open','Open guided experiment'],
+    predict:['stem.circuit.learning_entry_resume','Resume prediction'],
+    test:['stem.circuit.learning_entry_continue_test','Continue to test'],
+    explain:['stem.circuit.learning_entry_explain_action','Review result and explain'],
+    review:['stem.circuit.learning_entry_review_experiment','Review saved experiment']
+  };
+  var cues={
+    start:['stem.circuit.learning_entry_fresh_cue','Make a prediction, test a change, and explain the readings.'],
+    predict:['stem.circuit.learning_entry_choose_cue','Choose what you expect the lamp current to do, then test the change.'],
+    test:['stem.circuit.learning_entry_test_cue','Your prediction is saved. Open the experiment to test the planned change.'],
+    explain:['stem.circuit.learning_entry_explain_cue','The test readings are saved. Use them to support or revise your prediction.'],
+    review:['stem.circuit.learning_entry_review_cue','Your prediction, test readings, and explanation are saved. Review them or revise your explanation.']
+  };
+  var action=t(actions[stage][0],actions[stage][1]),cue=t(cues[stage][0],cues[stage][1]);
+  return h('section',{className:'circuit-active-learning-entry','data-entry-phase':phase,'data-entry-stage':stage,'data-lesson-id':selected,'aria-labelledby':uid+'-title'},
     h('div',{className:'circuit-learning-entry-copy'},
       h('div',{className:'circuit-learning-entry-meta'},h('span',{className:'circuit-learning-entry-label'},t('stem.circuit.learning_entry_label','Guided experiments')),h('span',{className:'circuit-learning-entry-count'},t('stem.circuit.learning_entry_count','{count} of 3 tested').replace('{count}',String(done)))),
       h('h3',{id:uid+'-title'},t('stem.circuit.active_lesson_'+selected+'_title',lesson.title)),
@@ -3326,6 +3340,18 @@ function CircuitActiveLessonJourney(props) {
         h('p', { className: 'circuit-journey-cue' }, cues[journey.phase] || cues.predict));
 }
 
+function circuitActiveLessonNavigationAction(t,phase) {
+    var labels={
+        start:['stem.circuit.map_open_experiment','Open experiment'],
+        predict:['stem.circuit.map_resume_prediction','Resume prediction'],
+        test:['stem.circuit.learning_entry_continue_test','Continue to test'],
+        explain:['stem.circuit.learning_entry_explain_action','Review result and explain'],
+        review:['stem.circuit.learning_entry_review_experiment','Review saved experiment']
+    };
+    var label=labels[phase]||labels.predict;
+    return t(label[0],label[1]);
+}
+
 function CircuitActiveLessonMap(props) {
     var React = props.React, h = React.createElement, t = circuitToolT(props), map = props.map;
     if (!Array.isArray(map) || !map.length) return null;
@@ -3345,11 +3371,7 @@ function CircuitActiveLessonMap(props) {
             var selected = row.id === props.selected, lesson = circuitActiveLesson(row.id);
             var title = t('stem.circuit.active_lesson_' + row.id + '_title', lesson.title);
             var light = row.change.key === 'light';
-            var action = row.phase === 'start'
-                ? t('stem.circuit.map_open_experiment', 'Open experiment')
-                : row.phase === 'explain' || row.phase === 'review'
-                    ? t('stem.circuit.map_review_result', 'Review result')
-                    : t('stem.circuit.map_resume_prediction', 'Resume prediction');
+            var action = circuitActiveLessonNavigationAction(t,row.phase);
             var project = row.project === 'manual'
                 ? t('stem.circuit.plan_manual', 'Manual control')
                 : row.project === 'dark'
@@ -3379,9 +3401,7 @@ function CircuitActiveLessonContinuation(props) {
     var React = props.React, h = React.createElement, t = circuitToolT(props), row = props.row;
     var title = row ? t('stem.circuit.active_lesson_' + row.id + '_title', circuitActiveLesson(row.id).title) : '';
     var light = !!(row && row.change.key === 'light');
-    var action = row && row.phase === 'start'
-        ? t('stem.circuit.map_open_experiment', 'Open experiment')
-        : t('stem.circuit.map_resume_prediction', 'Resume prediction');
+    var action = row ? circuitActiveLessonNavigationAction(t,row.phase) : '';
     var project = row && (row.project === 'manual'
         ? t('stem.circuit.plan_manual', 'Manual control')
         : row.project === 'dark'
@@ -3467,6 +3487,7 @@ function CircuitActiveLessonLab(props) {
   var uid=React.useId(),questionRef=React.useRef(null),resultRef=React.useRef(null),explanationRef=React.useRef(null),mapRef=React.useRef(null),pendingFocus=React.useRef(null);
   var entrySeen=React.useRef(props.entryVersion||0);
   var focusState=React.useState(0),focusVersion=focusState[0];
+  var explanationSize=React.useState(false);
   React.useEffect(function(){
     var request=pendingFocus.current;
     if(!request||request.id!==selected||(request.target==='result'&&!tested))return;
@@ -3504,11 +3525,20 @@ function CircuitActiveLessonLab(props) {
     h('div',{className:'circuit-active-lesson-question-block'},h('span',{className:'circuit-eyebrow'},title),h('h5',{ref:questionRef,tabIndex:-1,'data-active-lesson-question':true,'aria-describedby':!record?uid+'-start-help':undefined},t('stem.circuit.active_lesson_'+selected+'_question',lesson.question))),
     h(CircuitActiveExperimentPlan,{React:React,t:props.t,plan:circuitActiveLessonPlan(selected)}),
     record&&!tested&&h('p',{role:'status',className:'circuit-active-lesson-bench-note circuit-plan-bench-note'},replayNote),
-    !record?h('div',{className:'circuit-active-lesson-start'},h('p',{id:uid+'-start-help'},t('stem.circuit.active_lesson_start_help','Start loads this experiment’s baseline. Undo restores your previous circuit; your investigation notebook stays saved.')),h('button',{type:'button',onClick:function(){act(selected,'start',undefined,'question');}},t('stem.circuit.start_transistor_prediction','Start transistor prediction'))):h(React.Fragment,null,
+    !record?h('div',{className:'circuit-active-lesson-start'},h('p',{id:uid+'-start-help'},t('stem.circuit.active_lesson_start_help','Start loads this experiment’s baseline. Undo restores your previous circuit; your investigation notebook stays saved.')),h('button',{type:'button',className:'circuit-active-lesson-primary',onClick:function(){act(selected,'start',undefined,'question');}},t('stem.circuit.start_transistor_prediction','Start transistor prediction'))):h(React.Fragment,null,
       !tested?h(React.Fragment,null,
-        h('fieldset',{className:'circuit-active-lesson-predictions'},h('legend',null,t('stem.circuit.active_predict_lamp_current','Predict the lamp current')),h('div',{className:'circuit-active-lesson-actions'},['more','same','less'].map(function(choice){return h('button',{key:choice,type:'button','aria-pressed':record.choice===choice,onClick:function(){act(selected,'predict',choice);}},choiceText(choice));}))),
-        h('div',{className:'circuit-active-lesson-actions'},h('button',{type:'button',className:'circuit-active-lesson-primary',disabled:record.choice==null,onClick:function(){act(selected,'test',undefined,'result');}},t('stem.circuit.test_transistor_prediction','Test transistor prediction'))),
-        h('p',{className:'circuit-active-lesson-help'},t('stem.circuit.active_lesson_test_help','Test runs the stated change from the experiment baseline.'))):h(React.Fragment,null,
+        h('fieldset',{className:'circuit-active-lesson-predictions'},
+          h('legend',null,t('stem.circuit.active_predict_lamp_current','Predict the lamp current')),
+          h('p',{id:uid+'-prediction-help',className:'circuit-prediction-help'},t('stem.circuit.active_prediction_compare_start','Compared with the starting circuit.')),
+          h('div',{className:'circuit-prediction-choices'},['more','same','less'].map(function(choice){
+            var direction={more:'M12 20V4M5 11l7-7 7 7',same:'M4 12h16M13 5l7 7-7 7',less:'M12 4v16M5 13l7 7 7-7'}[choice];
+            return h('button',{key:choice,type:'button',className:'circuit-prediction-choice','aria-pressed':record.choice===choice,'aria-describedby':uid+'-prediction-help',onClick:function(){act(selected,'predict',choice);}},
+              h('span',{className:'circuit-prediction-direction','aria-hidden':true},h('svg',{viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round',focusable:'false','aria-hidden':true},h('path',{d:direction}))),
+              h('span',{className:'circuit-lesson-prediction-label'},choiceText(choice)),
+              h('span',{className:'circuit-prediction-selected','aria-hidden':true},h('svg',{viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:3,strokeLinecap:'round',strokeLinejoin:'round',focusable:'false','aria-hidden':true},h('path',{d:'M5 12l4 4L19 6'}))));
+          }))),
+        h('div',{className:'circuit-active-lesson-actions'},h('button',{type:'button',className:'circuit-active-lesson-primary','aria-describedby':uid+'-test-help',disabled:record.choice==null,onClick:function(){act(selected,'test',undefined,'result');}},t('stem.circuit.test_transistor_prediction','Test transistor prediction'))),
+        h('p',{id:uid+'-test-help',className:'circuit-active-lesson-help'},record.choice==null?t('stem.circuit.active_prediction_test_required','Choose a prediction to enable Test.'):t('stem.circuit.active_lesson_test_help','Test runs the stated change from the experiment baseline.'))):h(React.Fragment,null,
         h('div',{className:'circuit-active-lesson-saved-prediction'},h('span',null,t('stem.circuit.active_saved_prediction','Your prediction')),h('strong',null,choiceText(record.choice))),
         h('section',{className:'circuit-active-lesson-evidence','aria-labelledby':uid+'-result'},
           h('div',{className:'circuit-active-lesson-result-heading'},h('div',null,h('span',{className:'circuit-eyebrow'},t('stem.circuit.active_observed_result','OBSERVED RESULT')),h('h5',{id:uid+'-result',ref:resultRef,tabIndex:-1,'data-active-lesson-result':true,'aria-describedby':uid+'-result-summary'},resultTitle)),h('p',{className:'circuit-active-lesson-delta'},h('span',null,t('stem.circuit.active_current_change','Change in lamp current')),h('strong',null,(delta>0?'+':'')+circuitCurrentText(delta)))),
@@ -3518,9 +3548,12 @@ function CircuitActiveLessonLab(props) {
           h(CircuitActiveLessonTrace,{React:React,t:props.t,lesson:lesson,before:before,after:after}))),
       tested&&h('button',{type:'button',className:'circuit-lesson-explanation-jump','aria-describedby':uid+'-explanation-help',onClick:function(){var field=explanationRef.current;if(field){field.focus({preventScroll:true});if(typeof field.scrollIntoView==='function')field.scrollIntoView({block:'start',behavior:'instant'});}}},journey.explanationSaved?t('stem.circuit.journey_review_explanation','Review explanation'):t('stem.circuit.journey_write_explanation','Write explanation')),
       h('div',{className:'circuit-active-lesson-replay'},h('h5',null,t('stem.circuit.active_revisit_experiment','Revisit the circuit')),tested&&h('p',{role:'status',className:'circuit-active-lesson-bench-note'},replayNote),h('div',{className:'circuit-active-lesson-actions'},h('button',{type:'button','aria-pressed':baselineMatch,onClick:function(){act(selected,'baseline');}},t('stem.circuit.active_load_baseline','Load experiment baseline')),tested&&h('button',{type:'button','aria-pressed':resultMatch,onClick:function(){act(selected,'result');}},t('stem.circuit.active_load_result','Load this experiment result'))),h('p',{className:'circuit-active-lesson-help'},t('stem.circuit.active_replay_help','Loading replaces the live circuit. Your prediction and explanation stay saved. Undo restores the previous circuit.'))),
-      h('label',{className:'circuit-active-lesson-explanation',htmlFor:uid+'-explanation'},t('stem.circuit.active_my_lesson_explanation','My explanation for this experiment')),
+      h('div',{className:'circuit-lesson-writing-heading'},
+        h('label',{className:'circuit-active-lesson-explanation',htmlFor:uid+'-explanation'},t('stem.circuit.active_my_lesson_explanation','My explanation for this experiment')),
+        h('button',{type:'button',className:'circuit-lesson-writing-size-toggle','aria-controls':uid+'-explanation','aria-expanded':explanationSize[0],onClick:function(){if(explanationRef.current)explanationRef.current.style.height='';explanationSize[1](function(expanded){return !expanded;});}},explanationSize[0]?t('stem.circuit.reflection_reduce','Reduce writing space'):t('stem.circuit.reflection_expand','Expand writing space'))),
       h('p',{id:uid+'-explanation-help',className:'circuit-active-lesson-help'},t('stem.circuit.active_explanation_help','Use the lamp current and operating regions to explain the change. This response stays with this experiment; your investigation notebook has its own explanation.')),
-      h('textarea',{id:uid+'-explanation',ref:explanationRef,'aria-label':t('stem.circuit.transistor_experiment_explanation','Transistor experiment explanation'),'aria-describedby':uid+'-explanation-help',maxLength:4000,rows:3,value:record.explanation||'',placeholder:t('stem.circuit.active_lesson_explanation_placeholder','I observed… The readings show…'),onChange:function(e){act(selected,'explain',e.target.value);}}),
+      h('textarea',{id:uid+'-explanation',ref:explanationRef,className:'circuit-lesson-writing-field','aria-label':t('stem.circuit.transistor_experiment_explanation','Transistor experiment explanation'),'aria-describedby':uid+'-explanation-help '+uid+'-explanation-count',maxLength:4000,rows:explanationSize[0]?12:6,value:record.explanation||'',placeholder:t('stem.circuit.active_lesson_explanation_placeholder','I observed… The readings show…'),onChange:function(e){act(selected,'explain',e.target.value);}}),
+      h('p',{id:uid+'-explanation-count',className:'circuit-lesson-writing-count'},t('stem.circuit.reflection_character_count','{count} / 4000 characters').replace('{count}',String((record.explanation||'').length))),
       h(CircuitActiveLessonExplanationGuide,{React:React,t:props.t,lessonId:selected,tested:tested}),
       tested&&h(CircuitActiveLessonContinuation,{React:React,t:props.t,row:map.find(function(row){return row.id===next;})||null,onSelect:select,mapId:uid+'-map',onReviewMap:function(){var element=mapRef.current;if(element){element.open=true;var summary=element.querySelector('summary');if(summary){summary.focus({preventScroll:true});if(typeof summary.scrollIntoView==='function')summary.scrollIntoView({block:'start',behavior:'instant'});}}}}),
       h('details',{className:'circuit-active-lesson-retry'},h('summary',null,t('stem.circuit.active_retry_disclosure','Start this experiment again')),h('div',{className:'circuit-active-lesson-retry-body'},h('p',{className:'circuit-active-lesson-help'},t('stem.circuit.active_retry_help','Starting again replaces this experiment’s saved prediction, result, and explanation, and loads its baseline. Your investigation notebook stays saved.')),h('button',{type:'button',onClick:function(){act(selected,'start',undefined,'question');}},t('stem.circuit.start_transistor_prediction','Start transistor prediction'))))));
@@ -4701,7 +4734,20 @@ function CircuitActiveLessonLab(props) {
 .circuit-active-root .circuit-active-lesson-question-block{margin:20px 0 16px}
 .circuit-active-root .circuit-active-lesson-question-block h5{margin:6px 0 0;font-size:18px;line-height:1.6;color:#edf8f8;overflow-wrap:anywhere;scroll-margin-block:20px}
 .circuit-active-root .circuit-active-lesson-predictions{border:0;padding:0;margin:16px 0;min-width:0}
-.circuit-active-root .circuit-active-lesson-predictions legend{font-size:13px;font-weight:650;color:#dceef1;margin-bottom:10px}
+.circuit-active-root .circuit-active-lesson-predictions legend{font-size:16px;font-weight:650;color:#e4f2f2;margin-bottom:0}
+.circuit-active-root .circuit-active-lesson-predictions .circuit-prediction-help{margin:5px 0 12px;color:#c4d8df;font-size:12px}
+.circuit-active-root .circuit-prediction-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;min-width:0}
+.circuit-active-root .circuit-active-lesson-predictions .circuit-prediction-choice{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;width:100%;min-height:116px;padding:18px 26px;border:2px solid #648591;border-radius:12px;background:#173743;color:#e5f3f5;text-align:center}
+.circuit-active-root .circuit-prediction-direction{display:grid;place-items:center;flex:0 0 auto;width:40px;height:40px;border:1px solid #73929b;border-radius:50%;background:#102b36;color:inherit}
+.circuit-active-root .circuit-prediction-direction svg{display:block;width:22px;height:22px}
+.circuit-active-root .circuit-lesson-prediction-label{min-width:0;max-width:100%;color:inherit;line-height:1.6;overflow-wrap:anywhere}
+.circuit-active-root .circuit-prediction-selected{position:absolute;top:8px;right:8px;display:grid;place-items:center;width:18px;height:18px;border-radius:50%;opacity:0;color:inherit}
+.circuit-active-root .circuit-prediction-selected svg{display:block;width:14px;height:14px}
+.circuit-active-root .circuit-active-lesson-predictions .circuit-prediction-choice[aria-pressed=true]{border-color:#b5ebdd;background:#b5ebdd;color:#143a34}
+.circuit-active-root .circuit-prediction-choice[aria-pressed=true] .circuit-prediction-direction{border-color:#46736a;background:#c9f2e7}
+.circuit-active-root .circuit-prediction-choice[aria-pressed=true] .circuit-prediction-selected{opacity:1}
+@media(max-width:600px){.circuit-active-root .circuit-prediction-choices{grid-template-columns:1fr;gap:8px}.circuit-active-root .circuit-active-lesson-predictions .circuit-prediction-choice{flex-direction:row;justify-content:flex-start;gap:12px;min-height:68px;padding:12px 34px 12px 14px;text-align:left}.circuit-active-root .circuit-prediction-direction{width:34px;height:34px}.circuit-active-root .circuit-prediction-selected{top:calc(50% - 9px);right:10px}}
+@media(forced-colors:active){.circuit-active-root .circuit-active-lesson-predictions .circuit-prediction-choice[aria-pressed=true]{border-color:Highlight}.circuit-active-root .circuit-prediction-choice[aria-pressed=true] .circuit-prediction-direction{border-color:ButtonText;background:ButtonFace}.circuit-active-root .circuit-prediction-direction{border-color:ButtonText}.circuit-active-root .circuit-active-lesson-predictions .circuit-prediction-choice:focus-visible{outline:3px solid Highlight;outline-offset:3px}}
 .circuit-active-root .circuit-active-lesson-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .circuit-active-root .circuit-active-lesson-saved-prediction{padding:12px 14px;border-left:3px solid #8baab6;background:#17323d;margin:18px 0;border-radius:0 9px 9px 0}
 .circuit-active-root .circuit-active-lesson-saved-prediction span{display:block;font-size:12px;color:#c3d6df;margin-bottom:5px}
@@ -5544,6 +5590,86 @@ function CircuitActiveLessonLab(props) {
     .circuit-active-root details.circuit-active-lesson-retry > summary:focus-visible,
     .circuit-active-root .circuit-active-lesson-retry-body > button:focus-visible {
         outline-color: Highlight;
+    }
+}
+.circuit-active-root .circuit-lesson-writing-heading {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:12px 18px;
+    min-width:0;
+    margin-block-start:24px;
+}
+.circuit-active-root .circuit-lesson-writing-heading > .circuit-active-lesson-explanation {
+    flex:1 1 230px;
+    min-width:0;
+    margin:0;
+    overflow-wrap:anywhere;
+}
+.circuit-active-root button.circuit-lesson-writing-size-toggle {
+    box-sizing:border-box;
+    min-height:44px;
+    min-width:0;
+    max-width:100%;
+    padding:9px 12px;
+    border:1px solid #819fa9;
+    border-radius:8px;
+    background:#1e3b4b;
+    color:#e2edf2;
+    font-size:13px;
+    font-weight:650;
+    line-height:1.65;
+    white-space:normal;
+    overflow-wrap:anywhere;
+}
+.circuit-active-root button.circuit-lesson-writing-size-toggle:hover {
+    background:#294b5d;
+    border-color:#aecbd4;
+}
+.circuit-active-root .circuit-active-lesson-lab textarea.circuit-lesson-writing-field {
+    box-sizing:border-box;
+    min-height:0;
+    white-space:pre-wrap;
+    overflow-wrap:anywhere;
+}
+.circuit-active-root p.circuit-lesson-writing-count {
+    margin:8px 0 0;
+    color:#bed2df;
+    font-size:12px;
+    line-height:1.65;
+    text-align:end;
+    overflow-wrap:anywhere;
+}
+.circuit-active-root .circuit-lesson-writing-size-toggle:focus-visible,
+.circuit-active-root textarea.circuit-lesson-writing-field:focus {
+    outline:3px solid #f2d296;
+    outline-offset:3px;
+}
+@media(max-width:600px) {
+    .circuit-active-root button.circuit-lesson-writing-size-toggle {
+        flex:1 1 170px;
+    }
+}
+@media(forced-colors:active) {
+    .circuit-active-root button.circuit-lesson-writing-size-toggle,
+    .circuit-active-root button.circuit-lesson-writing-size-toggle:hover {
+        border-color:ButtonText;
+        background:ButtonFace;
+        color:ButtonText;
+    }
+    .circuit-active-root .circuit-lesson-writing-heading > .circuit-active-lesson-explanation,
+    .circuit-active-root p.circuit-lesson-writing-count {
+        color:CanvasText;
+    }
+    .circuit-active-root textarea.circuit-lesson-writing-field {
+        border-color:CanvasText;
+        background:Canvas;
+        color:CanvasText;
+    }
+    .circuit-active-root .circuit-lesson-writing-size-toggle:focus-visible,
+    .circuit-active-root textarea.circuit-lesson-writing-field:focus {
+        outline-color:Highlight;
     }
 }
 .circuit-active-root details.circuit-active-explanation-guide {

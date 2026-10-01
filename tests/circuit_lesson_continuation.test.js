@@ -13,7 +13,7 @@ const plans = [
 ];
 const saved = (choice = null, tested = false, explanation = '') => ({ choice, tested, explanation });
 const phaseLabels = { start: 'Not started', predict: 'Prediction needed', test: 'Prediction saved', explain: 'Result saved \u00b7 explanation needed', review: 'Explanation saved' };
-const actionLabels = { start: 'Open experiment', predict: 'Resume prediction', test: 'Resume prediction', explain: 'Review result', review: 'Review result' };
+const actionLabels = { start: 'Open experiment', predict: 'Resume prediction', test: 'Continue to test', explain: 'Review result and explain', review: 'Review saved experiment' };
 let api, config;
 beforeEach(() => { resetStemLab(); config = loadTool('stem_lab/stem_tool_circuit.js', 'circuit'); api = window.StemLab; });
 const seed = () => ({ ...api.circuitActiveDesign({ project: 'dark', light: 37, input: 4.2, supply: 12, baseResistance: 33000, loadResistance: 680, beta: 240 }), view: 'schematic', probeRed: 'drive', probeBlack: 'base', observations: [api.circuitActiveObservation({ input: .8 }, 'Keep this observation.')], reference: { version: 1, design: api.circuitActiveDesign({ input: .9 }) }, reflection: 'My independent notebook.', investigationTitle: 'A tuned circuit', undo: [api.circuitActiveDesign({ input: 2 })], redo: [api.circuitActiveDesign({ input: 3 })] });
@@ -55,9 +55,10 @@ describe('Lesson continuation and deliberate retry', () => {
     expect(continuation().textContent).not.toMatch(/mA|\u00b5A|cutoff|saturat|matches these readings/); expect(continuation().querySelector('[aria-live],[role="status"]')).toBeNull();
     expect(latest._circuitActive.supply).toBe(12); expect(writes).not.toHaveBeenCalled(); expect(awards).not.toHaveBeenCalled(); expect(host.contains(document.activeElement)).toBe(false);
   });
-  it.each([null, 'same'])('offers Resume prediction for an unfinished saved choice %s', async choice => {
+  it.each([[null, 'Resume prediction'], ['same', 'Continue to test']])('offers the appropriate next action for an unfinished choice %s', async (choice, action) => {
     await mount({ lessonRecords: { gain: saved('less', true, ''), limit: saved(choice, false, 'Keep my draft') } });
-    expect(continuation().dataset.nextLessonId).toBe('limit'); expect(nextButton().textContent).toBe('Resume prediction'); expect(nextButton().getAttribute('aria-label')).toBe('Resume prediction: Find the limit');
+    expect(continuation().dataset.nextLessonId).toBe('limit'); expect(nextButton().textContent).toBe(action); expect(nextButton().getAttribute('aria-label')).toBe(action + ': Find the limit'); expect(map().querySelector('[data-map-id="limit"] button').textContent).toBe(action);
+    const before = latest; await act(async () => setLocale('Translated: ')); await flush(); expect(nextButton().textContent).toBe('Translated: ' + action); expect(nextButton().getAttribute('aria-label')).toContain('Translated: ' + action); expect(nextButton().getAttribute('aria-label')).toContain('Translated: Find the limit'); expect(latest).toBe(before);
   });
   it.each([undefined, saved('less', false, 'An early draft')])('does not show an ending before the selected experiment has been tested (%j)', async record => {
     await mount({ lessonRecords: record ? { gain: record } : {} }); expect(continuation()).toBeNull(); expect(host.contains(document.activeElement)).toBe(false); expect(writes).not.toHaveBeenCalled();
@@ -66,12 +67,23 @@ describe('Lesson continuation and deliberate retry', () => {
     await mount({ lessonRecords: allSaved() }); expect(continuation().dataset.continuationMode).toBe('all-tested'); expect(nextButton()).toBeNull(); expect(reviewMap().textContent).toBe('Review experiment map');
     expect(continuation().querySelector('.circuit-continuation-value')).toBeNull(); expect(continuation().textContent).not.toMatch(/mastered|correct explanation|must explain|completed all/i); expect(map().open).toBe(false); expect(writes).not.toHaveBeenCalled();
   });
-  it.each([undefined, saved('same', false, 'My earlier prediction reasoning')])('opening the next experiment preserves its unfinished record and the edited circuit (%j)', async nextRecord => {
-    await mount({ lessonRecords: { gain: saved('less', true, ''), ...(nextRecord ? { limit: nextRecord } : {}) } }); const before = protectedWork(latest._circuitActive), records = clone(latest._circuitActive.lessonRecords), network = latest._circuitNetwork;
+  it.each([undefined, saved(null, false, 'My draft before predicting'), saved('same', false, 'My earlier prediction reasoning')])('opening the next experiment preserves its unfinished record and the edited circuit (%j)', async nextRecord => {
+    await mount({ lessonRecords: { gain: saved('less', true, ''), ...(nextRecord ? { limit: nextRecord } : {}) } }); await click(lab().querySelector('.circuit-lesson-writing-size-toggle')); const writing = field(); const action = !nextRecord ? actionLabels.start : nextRecord.choice === null ? actionLabels.predict : actionLabels.test; expect(nextButton().textContent).toBe(action); expect(nextButton().getAttribute('aria-label')).toBe(action + ': Find the limit'); expect(map().querySelector('[data-map-id="limit"] button').textContent).toBe(action); const before = protectedWork(latest._circuitActive), records = clone(latest._circuitActive.lessonRecords), network = latest._circuitNetwork;
     await click(nextButton()); expect(latest._circuitActive.lessonId).toBe('limit'); expect(protectedWork(latest._circuitActive)).toEqual(before); expect(latest._circuitActive.lessonRecords).toEqual(records); expect(latest._circuitNetwork).toBe(network);
     expect(document.activeElement).toBe(lab().querySelector('[data-active-lesson-question]')); expect(lab().querySelector('select').value).toBe('limit'); expect(host.querySelector('.circuit-active-learning-entry').dataset.lessonId).toBe('limit'); expect(map().querySelector('[data-map-id="limit"]').dataset.mapSelected).toBe('true'); expect(continuation()).toBeNull();
-    if (nextRecord) { expect(field().value).toBe(nextRecord.explanation); expect(lab().querySelector('.circuit-active-lesson-journey').dataset.journeyPhase).toBe('test'); }
+    if (nextRecord) { expect(field()).toBe(writing); expect(field().rows).toBe(12); expect(field().value).toBe(nextRecord.explanation); expect(lab().querySelector('.circuit-active-lesson-journey').dataset.journeyPhase).toBe(nextRecord.choice === null ? 'predict' : 'test'); expect(host.querySelector('.circuit-learning-entry-action').textContent).toBe(action); expect(latest._circuitActive.lessonRecords.limit.tested).toBe(false); expect(lab().querySelector('.circuit-active-lesson-evidence')).toBeNull(); const selected = latest; await click(map().querySelector('[data-map-id="limit"] button')); expect(latest).toBe(selected); expect(field().rows).toBe(12); expect(latest._circuitActive.lessonRecords.limit.tested).toBe(false); }
     else expect(latest._circuitActive.lessonRecords.limit).toBeUndefined();
+  });
+  it.each([
+    [{ id: 'limit', choice: 'same', tested: false }, undefined, 'test', 'Continue to test'],
+    [{ id: 'limit', choice: 'same', tested: true }, saved('invalid', true, 'Pre-test notes cannot repair the choice.'), 'predict', 'Resume prediction']
+  ])('uses normalized legacy or explicit progress for the first untested continuation (%j)', async (challenge, explicit, phase, action) => {
+    await mount({ challenge, lessonRecords: { gain: saved('less', true, ' \n\t'), ...(explicit ? { limit: explicit } : {}) } });
+    const before = latest;
+    expect(continuation().dataset.nextLessonId).toBe('limit'); expect(nextButton().textContent).toBe(action); expect(nextButton().getAttribute('aria-label')).toBe(action + ': Find the limit');
+    const targetCard = map().querySelector('[data-map-id="limit"]'); expect(targetCard.dataset.mapPhase).toBe(phase); expect(targetCard.querySelector('button').textContent).toBe(action);
+    expect(map().querySelector('[data-map-id="gain"] button').textContent).toBe('Review result and explain'); expect(host.querySelector('.circuit-learning-entry-action').textContent).toBe('Review result and explain');
+    expect(latest).toBe(before); expect(writes).not.toHaveBeenCalled(); expect(awards).not.toHaveBeenCalled();
   });
   it('keeps the next setup fixed through live edits and baseline replay without treating an explanation as a gate', async () => {
     await mount(); const text = continuation().textContent; await mutate(prev => ({ ...prev, _circuitActive: { ...prev._circuitActive, input: 0, light: 90, supply: 9 } })); expect(continuation().textContent).toBe(text);

@@ -13,7 +13,7 @@ const plans = [
 ];
 const saved = (choice = null, tested = false, explanation = '') => ({ choice, tested, explanation });
 const phaseLabels = { start: 'Not started', predict: 'Prediction needed', test: 'Prediction saved', explain: 'Result saved \u00b7 explanation needed', review: 'Explanation saved' };
-const actionLabels = { start: 'Open experiment', predict: 'Resume prediction', test: 'Resume prediction', explain: 'Review result', review: 'Review result' };
+const actionLabels = { start: 'Open experiment', predict: 'Resume prediction', test: 'Continue to test', explain: 'Review result and explain', review: 'Review saved experiment' };
 let api, config;
 beforeEach(() => { resetStemLab(); config = loadTool('stem_lab/stem_tool_circuit.js', 'circuit'); api = window.StemLab; });
 const seed = () => ({ ...api.circuitActiveDesign({ project: 'dark', light: 37, input: 4.2, supply: 12, baseResistance: 33000, loadResistance: 680, beta: 240 }), view: 'schematic', probeRed: 'drive', probeBlack: 'base', observations: [api.circuitActiveObservation({ input: .8 }, 'Keep this observation.')], reference: { version: 1, design: api.circuitActiveDesign({ input: .9 }) }, reflection: 'My independent notebook.', investigationTitle: 'A tuned circuit', undo: [api.circuitActiveDesign({ input: 2 })], redo: [api.circuitActiveDesign({ input: 3 })] });
@@ -95,18 +95,34 @@ describe('Optional map navigation preserves the live circuit and saved work', ()
     [{ gain: saved('less', true, 'Evidence'), limit: saved('same', true, ' '), sensor: saved('more', true, 'More evidence') }, ['review', 'explain', 'review']]
   ])('shows each saved stage independently of the selected-card marker (%j)', async (records, phases) => {
     await mount({ lessonId: 'limit', lessonRecords: records });
-    for (const [i, id] of ids.entries()) { expect(card(id).dataset.mapPhase).toBe(phases[i]); expect(card(id).querySelector('.circuit-map-status').textContent).toBe(phaseLabels[phases[i]]); expect(openCard(id).textContent).toBe(actionLabels[phases[i]]); expect(card(id).dataset.mapSelected).toBe(id === 'limit' ? 'true' : 'false'); }
+    for (const [i, id] of ids.entries()) { expect(card(id).dataset.mapPhase).toBe(phases[i]); expect(card(id).querySelector('.circuit-map-status').textContent).toBe(phaseLabels[phases[i]]); expect(openCard(id).textContent).toBe(actionLabels[phases[i]]); expect(openCard(id).getAttribute('aria-label')).toBe(actionLabels[phases[i]] + ': ' + titles[id]); expect(card(id).dataset.mapSelected).toBe(id === 'limit' ? 'true' : 'false'); }
+    const entry = host.querySelector('.circuit-active-learning-entry'); expect(entry.dataset.entryStage).toBe(phases[1]); expect(entry.querySelector('button').textContent).toBe(actionLabels[phases[1]]);
+    const before = latest; await act(async () => setLocale('Translated: ')); await flush();
+    for (const [i, id] of ids.entries()) { expect(openCard(id).textContent).toBe('Translated: ' + actionLabels[phases[i]]); expect(openCard(id).getAttribute('aria-label')).toContain('Translated: ' + actionLabels[phases[i]]); expect(openCard(id).getAttribute('aria-label')).toContain('Translated: ' + titles[id]); }
+    expect(latest).toBe(before); expect(writes).not.toHaveBeenCalled();
   });
   it.each([['sensor', false], ['limit', true]])('selecting %s focuses its saved destination without loading its circuit', async (id, tested) => {
-    await mount({ lessonId: 'gain', lessonRecords: { gain: saved('less', true, 'Gain evidence'), [id]: saved('more', tested, 'Keep my own draft') } }); await toggle(true);
+    await mount({ lessonId: 'gain', lessonRecords: { gain: saved('less', true, 'Gain evidence'), [id]: saved('more', tested, 'Keep my own draft') } }); await click(lab().querySelector('.circuit-lesson-writing-size-toggle')); const writing = field(); await toggle(true);
     const before = protectedWork(latest._circuitActive), records = clone(latest._circuitActive.lessonRecords), other = latest._circuitNetwork;
+    const action = tested ? actionLabels.review : actionLabels.test; expect(openCard(id).textContent).toBe(action); expect(openCard(id).getAttribute('aria-label')).toBe(action + ': ' + titles[id]);
     await click(openCard(id)); expect(latest._circuitActive.lessonId).toBe(id); expect(protectedWork(latest._circuitActive)).toEqual(before); expect(latest._circuitActive.lessonRecords).toEqual(records); expect(latest._circuitNetwork).toBe(other);
-    expect(document.activeElement).toBe(lab().querySelector(tested ? '[data-active-lesson-result]' : '[data-active-lesson-question]')); expect(lab().querySelector('select').value).toBe(id); expect(host.querySelector('.circuit-active-learning-entry').dataset.lessonId).toBe(id); expect(card(id).dataset.mapSelected).toBe('true'); expect(map().open).toBe(true); expect(field().value).toBe('Keep my own draft');
+    expect(document.activeElement).toBe(lab().querySelector(tested ? '[data-active-lesson-result]' : '[data-active-lesson-question]')); expect(lab().querySelector('select').value).toBe(id); expect(host.querySelector('.circuit-active-learning-entry').dataset.lessonId).toBe(id); expect(card(id).dataset.mapSelected).toBe('true'); expect(map().open).toBe(true); expect(field().value).toBe('Keep my own draft'); expect(field()).toBe(writing); expect(field().rows).toBe(12); expect(host.querySelector('.circuit-learning-entry-action').textContent).toBe(action); expect(latest._circuitActive.lessonRecords[id].tested).toBe(tested);
+    if (!tested) { expect(lab().querySelector('.circuit-active-lesson-evidence')).toBeNull(); const selected = latest; await click(openCard(id)); expect(latest).toBe(selected); expect(latest._circuitActive.lessonRecords[id].tested).toBe(false); expect(field().rows).toBe(12); }
   });
-  it.each([['start', undefined], ['test', saved('less')], ['review', saved('less', true, 'Saved explanation')]])('the current %s card focuses directly without a toolData write or new focus request', async (phase, record) => {
+  it.each([['start', undefined], ['predict', saved(null, false, 'A draft before predicting')], ['test', saved('less')], ['explain', saved('less', true, ' \n\t')], ['review', saved('less', true, 'Saved explanation')]])('the current %s card focuses directly without a toolData write or new focus request', async (phase, record) => {
     await mount({ lessonId: 'gain', ...(record ? { lessonRecords: { gain: record } } : {}) }); await toggle(true); const before = latest, json = JSON.stringify(latest);
-    await click(openCard('gain')); expect(document.activeElement).toBe(lab().querySelector(phase === 'review' ? '[data-active-lesson-result]' : '[data-active-lesson-question]')); expect(latest).toBe(before); expect(JSON.stringify(latest)).toBe(json); expect(writes).not.toHaveBeenCalled();
+    expect(openCard('gain').textContent).toBe(actionLabels[phase]); expect(openCard('gain').getAttribute('aria-label')).toBe(actionLabels[phase] + ': ' + titles.gain); expect(host.querySelector('.circuit-active-learning-entry').dataset.entryStage).toBe(phase);
+    await click(openCard('gain')); expect(document.activeElement).toBe(lab().querySelector(['explain', 'review'].includes(phase) ? '[data-active-lesson-result]' : '[data-active-lesson-question]')); expect(latest).toBe(before); expect(JSON.stringify(latest)).toBe(json); expect(writes).not.toHaveBeenCalled();
     const own = host.querySelector('.circuit-notebook-reflection'); own.focus(); await mutate(prev => ({ ...prev, _circuitActive: { ...prev._circuitActive, light: 24 } })); expect(document.activeElement).toBe(own);
+  });
+  it('normalizes invalid choices and legacy evidence without mistaking pre-test writing for a tested result', async () => {
+    await mount({ lessonId: 'gain', challenge: { id: 'sensor', choice: 'less', tested: true }, lessonRecords: { gain: saved('invalid', true, 'Writing cannot validate an invalid prediction.'), limit: saved('same', false, 'A draft before Test.') } });
+    const before = latest;
+    for (const [id, phase] of [['gain', 'predict'], ['limit', 'test'], ['sensor', 'explain']]) {
+      expect(card(id).dataset.mapPhase).toBe(phase); expect(openCard(id).textContent).toBe(actionLabels[phase]); expect(openCard(id).getAttribute('aria-label')).toBe(actionLabels[phase] + ': ' + titles[id]);
+    }
+    expect(host.querySelector('.circuit-learning-entry-action').textContent).toBe(actionLabels.predict); expect(writes).not.toHaveBeenCalled();
+    await toggle(true); await click(openCard('gain')); expect(latest).toBe(before); expect(document.activeElement).toBe(lab().querySelector('[data-active-lesson-question]')); expect(latest._circuitActive.lessonRecords.gain.choice).toBe('invalid');
   });
   it('repeatedly selecting the current saved result returns focus without resetting work', async () => {
     await mount({ lessonId: 'sensor', lessonRecords: { sensor: saved('less', true, 'Sensor reasoning') } }); await toggle(true); const before = JSON.stringify(latest);

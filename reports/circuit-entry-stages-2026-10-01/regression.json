@@ -1,0 +1,1791 @@
+{
+  "success": true,
+  "startTime": 1790872935794,
+  "aggregate": true,
+  "coverage": {
+    "mode": "isolated-per-file-processes",
+    "rawReports": [
+      "regression-file-01-circuit_guided_entry.json",
+      "regression-file-02-circuit_lesson_journey.json",
+      "regression-file-03-circuit_experiment_map.json",
+      "regression-file-04-circuit_lesson_continuation.json",
+      "regression-file-05-circuit_lesson_writing_space.json",
+      "regression-file-06-circuit_explanation_guide.json",
+      "regression-file-07-circuit_localization.json",
+      "regression-file-08-circuit_form_labels_a11y.json"
+    ],
+    "expectedCounts": {
+      "tests/circuit_guided_entry.test.js": 26,
+      "tests/circuit_lesson_journey.test.js": 27,
+      "tests/circuit_experiment_map.test.js": 20,
+      "tests/circuit_lesson_continuation.test.js": 20,
+      "tests/circuit_lesson_writing_space.test.js": 19,
+      "tests/circuit_explanation_guide.test.js": 20,
+      "tests/circuit_localization.test.js": 4,
+      "tests/circuit_form_labels_a11y.test.js": 4
+    }
+  },
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "A fixed experiment map derived from saved work"
+          ],
+          "fullName": "A fixed experiment map derived from saved work returns exactly three setup-only rows in curriculum order, with no selected state or outcome data",
+          "status": "passed",
+          "title": "returns exactly three setup-only rows in curriculum order, with no selected state or outcome data",
+          "duration": 934.9371,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "A fixed experiment map derived from saved work"
+          ],
+          "fullName": "A fixed experiment map derived from saved work uses each lesson record independently instead of the selected lesson or tuned live circuit",
+          "status": "passed",
+          "title": "uses each lesson record independently instead of the selected lesson or tuned live circuit",
+          "duration": 14.519400000000132,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "A fixed experiment map derived from saved work"
+          ],
+          "fullName": "A fixed experiment map derived from saved work includes normalized legacy progress while respecting explicit records",
+          "status": "passed",
+          "title": "includes normalized legacy progress while respecting explicit records",
+          "duration": 1.6089999999999236,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "A fixed experiment map derived from saved work"
+          ],
+          "fullName": "A fixed experiment map derived from saved work does not mutate state and returns fresh nested changes on every read",
+          "status": "passed",
+          "title": "does not mutate state and returns fresh nested changes on every read",
+          "duration": 1.608600000000024,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "A fixed experiment map derived from saved work"
+          ],
+          "fullName": "A fixed experiment map derived from saved work updates only the affected saved phase after a real prediction, Test, and explanation",
+          "status": "passed",
+          "title": "updates only the affected saved phase after a real prediction, Test, and explanation",
+          "duration": 1.7976999999998498,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Optional map navigation preserves the live circuit and saved work"
+          ],
+          "fullName": "Optional map navigation preserves the live circuit and saved work starts closed, and native disclosure toggles do not select, load, reward, write, or navigate",
+          "status": "passed",
+          "title": "starts closed, and native disclosure toggles do not select, load, reward, write, or navigate",
+          "duration": 88.9967999999999,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Optional map navigation preserves the live circuit and saved work"
+          ],
+          "fullName": "Optional map navigation preserves the live circuit and saved work shows three selectable setup cards without revealing solved outcomes on a tuned sensor bench",
+          "status": "passed",
+          "title": "shows three selectable setup cards without revealing solved outcomes on a tuned sensor bench",
+          "duration": 62.558500000000095,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Optional map navigation preserves the live circuit and saved work"
+          ],
+          "fullName": "Optional map navigation preserves the live circuit and saved work shows each saved stage independently of the selected-card marker ({\"gain\":{\"choice\":null,\"tested\":false,\"explanation\":\"\"},\"limit\":{\"choice\":\"same\",\"tested\":false,\"explanation\":\"\"},\"sensor\":{\"choice\":\"more\",\"tested\":true,\"explanation\":\" \"}})",
+          "status": "passed",
+          "title": "shows each saved stage independently of the selected-card marker ({\"gain\":{\"choice\":null,\"tested\":false,\"explanation\":\"\"},\"limit\":{\"choice\":\"same\",\"tested\":false,\"explanation\":\"\"},\"sensor\":{\"choice\":\"more\",\"tested\":true,\"explanation\":\" \"}})",
+          "duration": 35.67059999999992,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Optional map navigation preserves the live circuit and saved work"
+          ],
+          "fullName": "Optional map navigation preserves the live circuit and saved work shows each saved stage independently of the selected-card marker ({\"gain\":{\"choice\":\"less\",\"tested\":true,\"explanation\":\"Evidence\"},\"limit\":{\"choice\":\"same\",\"tested\":true,\"explanation\":\" \"},\"sensor\":{\"choice\":\"more\",\"tested\":true,\"explanation\":\"More evidence\"}})",
+          "status": "passed",
+          "title": "shows each saved stage independently of the selected-card marker ({\"gain\":{\"choice\":\"less\",\"tested\":true,\"explanation\":\"Evidence\"},\"limit\":{\"choice\":\"same\",\"tested\":true,\"explanation\":\" \"},\"sensor\":{\"choice\":\"more\",\"tested\":true,\"explanation\":\"More evidence\"}})",
+          "duration": 28.79529999999977,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Optional map navigation preserves the live circuit and saved work"
+          ],
+          "fullName": "Optional map navigation preserves the live circuit and saved work selecting sensor focuses its saved destination without loading its circuit",
+          "status": "passed",
+          "title": "selecting sensor focuses its saved destination without loading its circuit",
+          "duration": 51.4697000000001,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Optional map navigation preserves the live circuit and saved work"
+          ],
+          "fullName": "Optional map navigation preserves the live circuit and saved work selecting limit focuses its saved destination without loading its circuit",
+          "status": "passed",
+          "title": "selecting limit focuses its saved destination without loading its circuit",
+          "duration": 40.93589999999995,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Optional map navigation preserves the live circuit and saved work"
+          ],
+          "fullName": "Optional map navigation preserves the live circuit and saved work the current start card focuses directly without a toolData write or new focus request",
+          "status": "passed",
+          "title": "the current start card focuses directly without a toolData write or new focus request",
+          "duration": 40.833900000000085,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Optional map navigation preserves the live circuit and saved work"
+          ],
+          "fullName": "Optional map navigation preserves the live circuit and saved work the current test card focuses directly without a toolData write or new focus request",
+          "status": "passed",
+          "title": "the current test card focuses directly without a toolData write or new focus request",
+          "duration": 32.63619999999992,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Optional map navigation preserves the live circuit and saved work"
+          ],
+          "fullName": "Optional map navigation preserves the live circuit and saved work the current review card focuses directly without a toolData write or new focus request",
+          "status": "passed",
+          "title": "the current review card focuses directly without a toolData write or new focus request",
+          "duration": 34.44489999999996,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Optional map navigation preserves the live circuit and saved work"
+          ],
+          "fullName": "Optional map navigation preserves the live circuit and saved work repeatedly selecting the current saved result returns focus without resetting work",
+          "status": "passed",
+          "title": "repeatedly selecting the current saved result returns focus without resetting work",
+          "duration": 36.82679999999982,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Optional map navigation preserves the live circuit and saved work"
+          ],
+          "fullName": "Optional map navigation preserves the live circuit and saved work rapid different-card selections retain the final selection and do not later replay focus",
+          "status": "passed",
+          "title": "rapid different-card selections retain the final selection and do not later replay focus",
+          "duration": 38.77579999999989,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Optional map navigation preserves the live circuit and saved work"
+          ],
+          "fullName": "Optional map navigation preserves the live circuit and saved work the existing native picker and map remain synchronized without closing the optional disclosure",
+          "status": "passed",
+          "title": "the existing native picker and map remain synchronized without closing the optional disclosure",
+          "duration": 47.25510000000031,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Optional map navigation preserves the live circuit and saved work"
+          ],
+          "fullName": "Optional map navigation preserves the live circuit and saved work typing and translating update saved badges without remounting the map or stealing text focus",
+          "status": "passed",
+          "title": "typing and translating update saved badges without remounting the map or stealing text focus",
+          "duration": 39.49070000000029,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Optional map navigation preserves the live circuit and saved work"
+          ],
+          "fullName": "Optional map navigation preserves the live circuit and saved work import and restore refresh all map records without auto-selection, baseline load, or focus replay",
+          "status": "passed",
+          "title": "import and restore refresh all map records without auto-selection, baseline load, or focus replay",
+          "duration": 63.56970000000001,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Optional map navigation preserves the live circuit and saved work"
+          ],
+          "fullName": "Optional map navigation preserves the live circuit and saved work selects the legacy current lesson or invalid-ID fallback without changing old persisted data",
+          "status": "passed",
+          "title": "selects the legacy current lesson or invalid-ID fallback without changing old persisted data",
+          "duration": 22.611399999999776,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790872944090,
+      "endTime": 1790872945709.6113,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/circuit_experiment_map.test.js"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Optional lesson explanation guide"
+          ],
+          "fullName": "Optional lesson explanation guide does not disclose explanation prompts before a normalized Test (undefined)",
+          "status": "passed",
+          "title": "does not disclose explanation prompts before a normalized Test (undefined)",
+          "duration": 1095.3229,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Optional lesson explanation guide"
+          ],
+          "fullName": "Optional lesson explanation guide does not disclose explanation prompts before a normalized Test ({\"choice\":\"less\",\"tested\":false,\"explanation\":\"Early reasoning\"})",
+          "status": "passed",
+          "title": "does not disclose explanation prompts before a normalized Test ({\"choice\":\"less\",\"tested\":false,\"explanation\":\"Early reasoning\"})",
+          "duration": 53.36210000000028,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Optional lesson explanation guide"
+          ],
+          "fullName": "Optional lesson explanation guide does not disclose explanation prompts before a normalized Test ({\"choice\":null,\"tested\":true,\"explanation\":\"Invalid tested flag\"})",
+          "status": "passed",
+          "title": "does not disclose explanation prompts before a normalized Test ({\"choice\":null,\"tested\":true,\"explanation\":\"Invalid tested flag\"})",
+          "duration": 50.06089999999995,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Optional lesson explanation guide"
+          ],
+          "fullName": "Optional lesson explanation guide routes the three ordered prompts to gain saved evidence on a separately tuned live bench",
+          "status": "passed",
+          "title": "routes the three ordered prompts to gain saved evidence on a separately tuned live bench",
+          "duration": 39.454099999999926,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Optional lesson explanation guide"
+          ],
+          "fullName": "Optional lesson explanation guide routes the three ordered prompts to limit saved evidence on a separately tuned live bench",
+          "status": "passed",
+          "title": "routes the three ordered prompts to limit saved evidence on a separately tuned live bench",
+          "duration": 33.7496000000001,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Optional lesson explanation guide"
+          ],
+          "fullName": "Optional lesson explanation guide routes the three ordered prompts to sensor saved evidence on a separately tuned live bench",
+          "status": "passed",
+          "title": "routes the three ordered prompts to sensor saved evidence on a separately tuned live bench",
+          "duration": 33.34429999999975,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Optional lesson explanation guide"
+          ],
+          "fullName": "Optional lesson explanation guide is optional for incorrect predictions and an explanation of \"\" without grading or gating",
+          "status": "passed",
+          "title": "is optional for incorrect predictions and an explanation of \"\" without grading or gating",
+          "duration": 29.469300000000203,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Optional lesson explanation guide"
+          ],
+          "fullName": "Optional lesson explanation guide is optional for incorrect predictions and an explanation of \"An explanation to revisit\" without grading or gating",
+          "status": "passed",
+          "title": "is optional for incorrect predictions and an explanation of \"An explanation to revisit\" without grading or gating",
+          "duration": 28.301699999999983,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Optional lesson explanation guide"
+          ],
+          "fullName": "Optional lesson explanation guide inserts only the optional guide after the existing textarea and before continuation",
+          "status": "passed",
+          "title": "inserts only the optional guide after the existing textarea and before continuation",
+          "duration": 39.32699999999977,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Optional lesson explanation guide"
+          ],
+          "fullName": "Optional lesson explanation guide native opening and closing preserve exact state, text selection, summary focus and history",
+          "status": "passed",
+          "title": "native opening and closing preserve exact state, text selection, summary focus and history",
+          "duration": 35.202999999999975,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Optional lesson explanation guide"
+          ],
+          "fullName": "Optional lesson explanation guide typing leaves the guide open, keeps the textarea node/caret, and edits only its own explanation",
+          "status": "passed",
+          "title": "typing leaves the guide open, keeps the textarea node/caret, and edits only its own explanation",
+          "duration": 51.23270000000002,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Optional lesson explanation guide"
+          ],
+          "fullName": "Optional lesson explanation guide live electrical edits preserve open prompts and do not steal writing focus",
+          "status": "passed",
+          "title": "live electrical edits preserve open prompts and do not steal writing focus",
+          "duration": 40.72640000000001,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Optional lesson explanation guide"
+          ],
+          "fullName": "Optional lesson explanation guide baseline and result replay leave the guide and writing saved while Undo restores the edited circuit",
+          "status": "passed",
+          "title": "baseline and result replay leave the guide and writing saved while Undo restores the edited circuit",
+          "duration": 81.75870000000032,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Optional lesson explanation guide"
+          ],
+          "fullName": "Optional lesson explanation guide switching tested lessons reuses the open disclosure with the current prompts and saved writing",
+          "status": "passed",
+          "title": "switching tested lessons reuses the open disclosure with the current prompts and saved writing",
+          "duration": 54.69860000000017,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Optional lesson explanation guide"
+          ],
+          "fullName": "Optional lesson explanation guide translates every visible guide text while preserving native disclosure, writing identity and noncollapsed selection",
+          "status": "passed",
+          "title": "translates every visible guide text while preserving native disclosure, writing identity and noncollapsed selection",
+          "duration": 47.32049999999981,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Optional lesson explanation guide"
+          ],
+          "fullName": "Optional lesson explanation guide the existing writing jump retains text and selection without opening the guide or writing state",
+          "status": "passed",
+          "title": "the existing writing jump retains text and selection without opening the guide or writing state",
+          "duration": 28.466100000000097,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Optional lesson explanation guide"
+          ],
+          "fullName": "Optional lesson explanation guide explicit retry removes the guide and a real prediction/Test remounts it closed without losing independent work",
+          "status": "passed",
+          "title": "explicit retry removes the guide and a real prediction/Test remounts it closed without losing independent work",
+          "duration": 78.74410000000034,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Optional lesson explanation guide"
+          ],
+          "fullName": "Optional lesson explanation guide next experiment selection hides the guide for the untested target and restores it closed on return",
+          "status": "passed",
+          "title": "next experiment selection hides the guide for the untested target and restores it closed on return",
+          "duration": 48.640300000000025,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Optional lesson explanation guide"
+          ],
+          "fullName": "Optional lesson explanation guide actual JSON tested-to-tested load and restore update prompts without closing the guide or replaying focus",
+          "status": "passed",
+          "title": "actual JSON tested-to-tested load and restore update prompts without closing the guide or replaying focus",
+          "duration": 68.98129999999992,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Optional lesson explanation guide"
+          ],
+          "fullName": "Optional lesson explanation guide actual JSON untested load hides guidance; restoring tested work mounts it closed without automatic navigation",
+          "status": "passed",
+          "title": "actual JSON untested load hides guidance; restoring tested work mounts it closed without automatic navigation",
+          "duration": 74.3105999999998,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790872954300,
+      "endTime": 1790872956313.3105,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/circuit_explanation_guide.test.js"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Circuit Lab form labels"
+          ],
+          "fullName": "Circuit Lab form labels names the AI tutor question field independently of its placeholder",
+          "status": "passed",
+          "title": "names the AI tutor question field independently of its placeholder",
+          "duration": 1021.6247000000001,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Circuit Lab form labels"
+          ],
+          "fullName": "Circuit Lab form labels associates visible labels with both Ohm inquiry text areas",
+          "status": "passed",
+          "title": "associates visible labels with both Ohm inquiry text areas",
+          "duration": 18.76319999999987,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Circuit Lab form labels"
+          ],
+          "fullName": "Circuit Lab form labels retains accessible names on every other form control",
+          "status": "passed",
+          "title": "retains accessible names on every other form control",
+          "duration": 3.075000000000273,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Circuit Lab form labels"
+          ],
+          "fullName": "Circuit Lab form labels keeps the source and deploy copies identical",
+          "status": "passed",
+          "title": "keeps the source and deploy copies identical",
+          "duration": 6.373999999999796,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790872961342,
+      "endTime": 1790872962392.374,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/circuit_form_labels_a11y.test.js"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Active guided entry and fixed experiment trace"
+          ],
+          "fullName": "Active guided entry and fixed experiment trace shows the normalized start stage with accurate copy and no automatic navigation or writes",
+          "status": "passed",
+          "title": "shows the normalized start stage with accurate copy and no automatic navigation or writes",
+          "duration": 1071.3145999999997,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Active guided entry and fixed experiment trace"
+          ],
+          "fullName": "Active guided entry and fixed experiment trace shows the normalized predict stage with accurate copy and no automatic navigation or writes",
+          "status": "passed",
+          "title": "shows the normalized predict stage with accurate copy and no automatic navigation or writes",
+          "duration": 78.63299999999981,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Active guided entry and fixed experiment trace"
+          ],
+          "fullName": "Active guided entry and fixed experiment trace shows the normalized test stage with accurate copy and no automatic navigation or writes",
+          "status": "passed",
+          "title": "shows the normalized test stage with accurate copy and no automatic navigation or writes",
+          "duration": 33.82520000000022,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Active guided entry and fixed experiment trace"
+          ],
+          "fullName": "Active guided entry and fixed experiment trace shows the normalized explain stage with accurate copy and no automatic navigation or writes",
+          "status": "passed",
+          "title": "shows the normalized explain stage with accurate copy and no automatic navigation or writes",
+          "duration": 34.089200000000346,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Active guided entry and fixed experiment trace"
+          ],
+          "fullName": "Active guided entry and fixed experiment trace shows the normalized review stage with accurate copy and no automatic navigation or writes",
+          "status": "passed",
+          "title": "shows the normalized review stage with accurate copy and no automatic navigation or writes",
+          "duration": 79.6875,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Active guided entry and fixed experiment trace"
+          ],
+          "fullName": "Active guided entry and fixed experiment trace explicit start entry focuses the existing step repeatedly without changing any saved work",
+          "status": "passed",
+          "title": "explicit start entry focuses the existing step repeatedly without changing any saved work",
+          "duration": 48.704499999999825,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Active guided entry and fixed experiment trace"
+          ],
+          "fullName": "Active guided entry and fixed experiment trace explicit predict entry focuses the existing step repeatedly without changing any saved work",
+          "status": "passed",
+          "title": "explicit predict entry focuses the existing step repeatedly without changing any saved work",
+          "duration": 44.453599999999824,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Active guided entry and fixed experiment trace"
+          ],
+          "fullName": "Active guided entry and fixed experiment trace explicit test entry focuses the existing step repeatedly without changing any saved work",
+          "status": "passed",
+          "title": "explicit test entry focuses the existing step repeatedly without changing any saved work",
+          "duration": 33.8742000000002,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Active guided entry and fixed experiment trace"
+          ],
+          "fullName": "Active guided entry and fixed experiment trace explicit explain entry focuses the existing step repeatedly without changing any saved work",
+          "status": "passed",
+          "title": "explicit explain entry focuses the existing step repeatedly without changing any saved work",
+          "duration": 36.220000000000255,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Active guided entry and fixed experiment trace"
+          ],
+          "fullName": "Active guided entry and fixed experiment trace explicit review entry focuses the existing step repeatedly without changing any saved work",
+          "status": "passed",
+          "title": "explicit review entry focuses the existing step repeatedly without changing any saved work",
+          "duration": 44.622299999999996,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Active guided entry and fixed experiment trace"
+          ],
+          "fullName": "Active guided entry and fixed experiment trace opens an unstarted experiment at its question without silently loading its baseline",
+          "status": "passed",
+          "title": "opens an unstarted experiment at its question without silently loading its baseline",
+          "duration": 30.40169999999989,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Active guided entry and fixed experiment trace"
+          ],
+          "fullName": "Active guided entry and fixed experiment trace keeps fallback, legacy, and invalid-record stages aligned with the existing lab ({\"lessonId\":\"unrecognized\",\"challenge\":{\"id\":\"limit\",\"choice\":\"same\",\"tested\":true}})",
+          "status": "passed",
+          "title": "keeps fallback, legacy, and invalid-record stages aligned with the existing lab ({\"lessonId\":\"unrecognized\",\"challenge\":{\"id\":\"limit\",\"choice\":\"same\",\"tested\":true}})",
+          "duration": 38.50279999999975,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Active guided entry and fixed experiment trace"
+          ],
+          "fullName": "Active guided entry and fixed experiment trace keeps fallback, legacy, and invalid-record stages aligned with the existing lab ({\"challenge\":{\"id\":\"limit\",\"choice\":\"same\",\"tested\":true}})",
+          "status": "passed",
+          "title": "keeps fallback, legacy, and invalid-record stages aligned with the existing lab ({\"challenge\":{\"id\":\"limit\",\"choice\":\"same\",\"tested\":true}})",
+          "duration": 44.48239999999987,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Active guided entry and fixed experiment trace"
+          ],
+          "fullName": "Active guided entry and fixed experiment trace keeps fallback, legacy, and invalid-record stages aligned with the existing lab ({\"challenge\":{\"id\":\"limit\",\"choice\":\"same\",\"tested\":false}})",
+          "status": "passed",
+          "title": "keeps fallback, legacy, and invalid-record stages aligned with the existing lab ({\"challenge\":{\"id\":\"limit\",\"choice\":\"same\",\"tested\":false}})",
+          "duration": 29.364600000000337,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Active guided entry and fixed experiment trace"
+          ],
+          "fullName": "Active guided entry and fixed experiment trace keeps fallback, legacy, and invalid-record stages aligned with the existing lab ({\"lessonId\":\"sensor\",\"lessonRecords\":{\"sensor\":{\"choice\":null,\"tested\":true,\"explanation\":\"\"}}})",
+          "status": "passed",
+          "title": "keeps fallback, legacy, and invalid-record stages aligned with the existing lab ({\"lessonId\":\"sensor\",\"lessonRecords\":{\"sensor\":{\"choice\":null,\"tested\":true,\"explanation\":\"\"}}})",
+          "duration": 31.901100000000042,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Active guided entry and fixed experiment trace"
+          ],
+          "fullName": "Active guided entry and fixed experiment trace keeps fallback, legacy, and invalid-record stages aligned with the existing lab ({\"lessonId\":\"sensor\",\"challenge\":{\"id\":\"sensor\",\"choice\":\"more\",\"tested\":true},\"lessonRecords\":{\"sensor\":{\"choice\":\"invalid\",\"tested\":true,\"explanation\":\"This does not make an invalid prediction tested.\"}}})",
+          "status": "passed",
+          "title": "keeps fallback, legacy, and invalid-record stages aligned with the existing lab ({\"lessonId\":\"sensor\",\"challenge\":{\"id\":\"sensor\",\"choice\":\"more\",\"tested\":true},\"lessonRecords\":{\"sensor\":{\"choice\":\"invalid\",\"tested\":true,\"explanation\":\"This does not make an invalid prediction tested.\"}}})",
+          "duration": 37.816100000000006,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Active guided entry and fixed experiment trace"
+          ],
+          "fullName": "Active guided entry and fixed experiment trace does not reuse a consumed navigation request on live edits, locale rerenders, or record replacement",
+          "status": "passed",
+          "title": "does not reuse a consumed navigation request on live edits, locale rerenders, or record replacement",
+          "duration": 48.04449999999997,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Active guided entry and fixed experiment trace"
+          ],
+          "fullName": "Active guided entry and fixed experiment trace file load and restore recompute the stage without replaying navigation (explanation=\" \\n\\t\")",
+          "status": "passed",
+          "title": "file load and restore recompute the stage without replaying navigation (explanation=\" \\n\\t\")",
+          "duration": 80.98819999999978,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Active guided entry and fixed experiment trace"
+          ],
+          "fullName": "Active guided entry and fixed experiment trace file load and restore recompute the stage without replaying navigation (explanation=\"Imported evidence\")",
+          "status": "passed",
+          "title": "file load and restore recompute the stage without replaying navigation (explanation=\"Imported evidence\")",
+          "duration": 64.18820000000005,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Active guided entry and fixed experiment trace"
+          ],
+          "fullName": "Active guided entry and fixed experiment trace ordinary lesson selection focuses once and does not replay the earlier entry request on explanation edits",
+          "status": "passed",
+          "title": "ordinary lesson selection focuses once and does not replay the earlier entry request on explanation edits",
+          "duration": 81.0981999999999,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Active guided entry and fixed experiment trace"
+          ],
+          "fullName": "Active guided entry and fixed experiment trace returns through the real workbench switch without automatically replaying navigation or losing work",
+          "status": "passed",
+          "title": "returns through the real workbench switch without automatically replaying navigation or losing work",
+          "duration": 114.87670000000026,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Active guided entry and fixed experiment trace"
+          ],
+          "fullName": "Active guided entry and fixed experiment trace tracks real Start, Predict, Test, and explanation writing without previewing evidence or inserting an answer",
+          "status": "passed",
+          "title": "tracks real Start, Predict, Test, and explanation writing without previewing evidence or inserting an answer",
+          "duration": 91.76060000000007,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Active guided entry and fixed experiment trace"
+          ],
+          "fullName": "Active guided entry and fixed experiment trace shows independently calculated gain experiment readings, irrespective of the live circuit",
+          "status": "passed",
+          "title": "shows independently calculated gain experiment readings, irrespective of the live circuit",
+          "duration": 60.35640000000012,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Active guided entry and fixed experiment trace"
+          ],
+          "fullName": "Active guided entry and fixed experiment trace shows independently calculated limit experiment readings, irrespective of the live circuit",
+          "status": "passed",
+          "title": "shows independently calculated limit experiment readings, irrespective of the live circuit",
+          "duration": 39.23709999999983,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Active guided entry and fixed experiment trace"
+          ],
+          "fullName": "Active guided entry and fixed experiment trace shows independently calculated sensor experiment readings, irrespective of the live circuit",
+          "status": "passed",
+          "title": "shows independently calculated sensor experiment readings, irrespective of the live circuit",
+          "duration": 60.71340000000009,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Active guided entry and fixed experiment trace"
+          ],
+          "fullName": "Active guided entry and fixed experiment trace returns to the original fixed trace after switching experiments, retaining the wrong prediction and notes",
+          "status": "passed",
+          "title": "returns to the original fixed trace after switching experiments, retaining the wrong prediction and notes",
+          "duration": 57.57490000000007,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790872936981,
+      "endTime": 1790872939397.575,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/circuit_guided_entry.test.js"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Lesson continuation and deliberate retry"
+          ],
+          "fullName": "Lesson continuation and deliberate retry after sensor offers the first untested { sensor: { choice: 'less', tested: true, explanation: '' } } setup without revealing its outcome",
+          "status": "passed",
+          "title": "after sensor offers the first untested { sensor: { choice: 'less', tested: true, explanation: '' } } setup without revealing its outcome",
+          "duration": 1046.2683,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lesson continuation and deliberate retry"
+          ],
+          "fullName": "Lesson continuation and deliberate retry after gain offers the first untested { gain: { choice: 'less', tested: true, explanation: '' } } setup without revealing its outcome",
+          "status": "passed",
+          "title": "after gain offers the first untested { gain: { choice: 'less', tested: true, explanation: '' } } setup without revealing its outcome",
+          "duration": 60.0643,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lesson continuation and deliberate retry"
+          ],
+          "fullName": "Lesson continuation and deliberate retry after limit offers the first untested { gain: { choice: 'less', tested: true, explanation: '' }, limit: { choice: 'less', tested: true, explanation: '' } } setup without revealing its outcome",
+          "status": "passed",
+          "title": "after limit offers the first untested { gain: { choice: 'less', tested: true, explanation: '' }, limit: { choice: 'less', tested: true, explanation: '' } } setup without revealing its outcome",
+          "duration": 28.1871000000001,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lesson continuation and deliberate retry"
+          ],
+          "fullName": "Lesson continuation and deliberate retry offers Resume prediction for an unfinished saved choice null",
+          "status": "passed",
+          "title": "offers Resume prediction for an unfinished saved choice null",
+          "duration": 27.3104000000003,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lesson continuation and deliberate retry"
+          ],
+          "fullName": "Lesson continuation and deliberate retry offers Resume prediction for an unfinished saved choice same",
+          "status": "passed",
+          "title": "offers Resume prediction for an unfinished saved choice same",
+          "duration": 32.246399999999994,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lesson continuation and deliberate retry"
+          ],
+          "fullName": "Lesson continuation and deliberate retry does not show an ending before the selected experiment has been tested (undefined)",
+          "status": "passed",
+          "title": "does not show an ending before the selected experiment has been tested (undefined)",
+          "duration": 21.402000000000044,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lesson continuation and deliberate retry"
+          ],
+          "fullName": "Lesson continuation and deliberate retry does not show an ending before the selected experiment has been tested ({\"choice\":\"less\",\"tested\":false,\"explanation\":\"An early draft\"})",
+          "status": "passed",
+          "title": "does not show an ending before the selected experiment has been tested ({\"choice\":\"less\",\"tested\":false,\"explanation\":\"An early draft\"})",
+          "duration": 23.069500000000062,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lesson continuation and deliberate retry"
+          ],
+          "fullName": "Lesson continuation and deliberate retry offers the map when all three experiments are tested, including wrong predictions and blank explanations",
+          "status": "passed",
+          "title": "offers the map when all three experiments are tested, including wrong predictions and blank explanations",
+          "duration": 38.115299999999934,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lesson continuation and deliberate retry"
+          ],
+          "fullName": "Lesson continuation and deliberate retry opening the next experiment preserves its unfinished record and the edited circuit (undefined)",
+          "status": "passed",
+          "title": "opening the next experiment preserves its unfinished record and the edited circuit (undefined)",
+          "duration": 44.82679999999982,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lesson continuation and deliberate retry"
+          ],
+          "fullName": "Lesson continuation and deliberate retry opening the next experiment preserves its unfinished record and the edited circuit ({\"choice\":\"same\",\"tested\":false,\"explanation\":\"My earlier prediction reasoning\"})",
+          "status": "passed",
+          "title": "opening the next experiment preserves its unfinished record and the edited circuit ({\"choice\":\"same\",\"tested\":false,\"explanation\":\"My earlier prediction reasoning\"})",
+          "duration": 47.710399999999936,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lesson continuation and deliberate retry"
+          ],
+          "fullName": "Lesson continuation and deliberate retry keeps the next setup fixed through live edits and baseline replay without treating an explanation as a gate",
+          "status": "passed",
+          "title": "keeps the next setup fixed through live edits and baseline replay without treating an explanation as a gate",
+          "duration": 57.053699999999935,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lesson continuation and deliberate retry"
+          ],
+          "fullName": "Lesson continuation and deliberate retry Review experiment map explicitly opens and focuses its existing summary without writing or selecting",
+          "status": "passed",
+          "title": "Review experiment map explicitly opens and focuses its existing summary without writing or selecting",
+          "duration": 34.90869999999995,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lesson continuation and deliberate retry"
+          ],
+          "fullName": "Lesson continuation and deliberate retry a previous map-review action is not replayed by subsequent writing, circuit edits, or locale rerenders",
+          "status": "passed",
+          "title": "a previous map-review action is not replayed by subsequent writing, circuit edits, or locale rerenders",
+          "duration": 35.11279999999988,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lesson continuation and deliberate retry"
+          ],
+          "fullName": "Lesson continuation and deliberate retry puts retry behind a closed native disclosure for an existing record ({\"choice\":\"less\",\"tested\":false,\"explanation\":\"\"})",
+          "status": "passed",
+          "title": "puts retry behind a closed native disclosure for an existing record ({\"choice\":\"less\",\"tested\":false,\"explanation\":\"\"})",
+          "duration": 21.838700000000244,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lesson continuation and deliberate retry"
+          ],
+          "fullName": "Lesson continuation and deliberate retry puts retry behind a closed native disclosure for an existing record ({\"choice\":\"less\",\"tested\":true,\"explanation\":\"Saved result explanation\"})",
+          "status": "passed",
+          "title": "puts retry behind a closed native disclosure for an existing record ({\"choice\":\"less\",\"tested\":true,\"explanation\":\"Saved result explanation\"})",
+          "duration": 29.641599999999926,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lesson continuation and deliberate retry"
+          ],
+          "fullName": "Lesson continuation and deliberate retry opening and closing the retry warning does not reset, load, write, reward, or move focus",
+          "status": "passed",
+          "title": "opening and closing the retry warning does not reset, load, write, reward, or move focus",
+          "duration": 25.141899999999623,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lesson continuation and deliberate retry"
+          ],
+          "fullName": "Lesson continuation and deliberate retry the explicit restart resets only its lesson and keeps the prior live circuit recoverable by electrical Undo",
+          "status": "passed",
+          "title": "the explicit restart resets only its lesson and keeps the prior live circuit recoverable by electrical Undo",
+          "duration": 47.897899999999936,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lesson continuation and deliberate retry"
+          ],
+          "fullName": "Lesson continuation and deliberate retry switching saved lessons retains the optional native disclosure without performing a retry",
+          "status": "passed",
+          "title": "switching saved lessons retains the optional native disclosure without performing a retry",
+          "duration": 58.80589999999984,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lesson continuation and deliberate retry"
+          ],
+          "fullName": "Lesson continuation and deliberate retry writing and translating preserve the textarea node, selection, and continuation target without refocusing",
+          "status": "passed",
+          "title": "writing and translating preserve the textarea node, selection, and continuation target without refocusing",
+          "duration": 45.16390000000001,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lesson continuation and deliberate retry"
+          ],
+          "fullName": "Lesson continuation and deliberate retry JSON import and restore recompute the ending without replaying map focus or opening retry",
+          "status": "passed",
+          "title": "JSON import and restore recompute the ending without replaying map focus or opening retry",
+          "duration": 64.53540000000021,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790872947314,
+      "endTime": 1790872949103.5354,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/circuit_lesson_continuation.test.js"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Journey stages reflect saved work"
+          ],
+          "fullName": "Journey stages reflect saved work derives start from the saved record without changing any state",
+          "status": "passed",
+          "title": "derives start from the saved record without changing any state",
+          "duration": 957.0729000000001,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Journey stages reflect saved work"
+          ],
+          "fullName": "Journey stages reflect saved work derives predict from the saved record without changing any state",
+          "status": "passed",
+          "title": "derives predict from the saved record without changing any state",
+          "duration": 13.509800000000041,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Journey stages reflect saved work"
+          ],
+          "fullName": "Journey stages reflect saved work derives test from the saved record without changing any state",
+          "status": "passed",
+          "title": "derives test from the saved record without changing any state",
+          "duration": 1.9003000000000156,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Journey stages reflect saved work"
+          ],
+          "fullName": "Journey stages reflect saved work derives explain from the saved record without changing any state",
+          "status": "passed",
+          "title": "derives explain from the saved record without changing any state",
+          "duration": 1.3730000000000473,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Journey stages reflect saved work"
+          ],
+          "fullName": "Journey stages reflect saved work derives review from the saved record without changing any state",
+          "status": "passed",
+          "title": "derives review from the saved record without changing any state",
+          "duration": 1.2929999999998927,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Journey stages reflect saved work"
+          ],
+          "fullName": "Journey stages reflect saved work normalizes legacy records and explicit records, leaving the notebook reflection separate",
+          "status": "passed",
+          "title": "normalizes legacy records and explicit records, leaving the notebook reflection separate",
+          "duration": 1.7806000000000495,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Journey stages reflect saved work"
+          ],
+          "fullName": "Journey stages reflect saved work normalizes malformed or premature evidence without claiming explanation progress ({\"choice\":\"invalid\",\"tested\":true,\"explanation\":\"A draft\"})",
+          "status": "passed",
+          "title": "normalizes malformed or premature evidence without claiming explanation progress ({\"choice\":\"invalid\",\"tested\":true,\"explanation\":\"A draft\"})",
+          "duration": 1.7919999999999163,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Journey stages reflect saved work"
+          ],
+          "fullName": "Journey stages reflect saved work normalizes malformed or premature evidence without claiming explanation progress ({\"choice\":\"more\",\"tested\":false,\"explanation\":\"I wrote before testing\"})",
+          "status": "passed",
+          "title": "normalizes malformed or premature evidence without claiming explanation progress ({\"choice\":\"more\",\"tested\":false,\"explanation\":\"I wrote before testing\"})",
+          "duration": 1.4108000000001084,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Journey stages reflect saved work"
+          ],
+          "fullName": "Journey stages reflect saved work normalizes malformed or premature evidence without claiming explanation progress ({\"choice\":\"more\",\"tested\":true,\"explanation\":\" \\t\\n \"})",
+          "status": "passed",
+          "title": "normalizes malformed or premature evidence without claiming explanation progress ({\"choice\":\"more\",\"tested\":true,\"explanation\":\" \\t\\n \"})",
+          "duration": 1.3838000000000648,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Journey stages reflect saved work"
+          ],
+          "fullName": "Journey stages reflect saved work normalizes malformed or premature evidence without claiming explanation progress ({\"choice\":\"more\",\"tested\":\"true\",\"explanation\":\"A draft\"})",
+          "status": "passed",
+          "title": "normalizes malformed or premature evidence without claiming explanation progress ({\"choice\":\"more\",\"tested\":\"true\",\"explanation\":\"A draft\"})",
+          "duration": 1.320799999999963,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Journey stages reflect saved work"
+          ],
+          "fullName": "Journey stages reflect saved work normalizes malformed or premature evidence without claiming explanation progress ({\"choice\":\"less\",\"tested\":true,\"explanation\":null})",
+          "status": "passed",
+          "title": "normalizes malformed or premature evidence without claiming explanation progress ({\"choice\":\"less\",\"tested\":true,\"explanation\":null})",
+          "duration": 1.2307000000000698,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Journey stages reflect saved work"
+          ],
+          "fullName": "Journey stages reflect saved work uses the explicit lesson ID and falls back to gain for absent or invalid IDs",
+          "status": "passed",
+          "title": "uses the explicit lesson ID and falls back to gain for absent or invalid IDs",
+          "duration": 1.2635999999999967,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Journey stages reflect saved work"
+          ],
+          "fullName": "Journey stages reflect saved work keeps Explain current for a wrong prediction, later circuit changes, electrical Undo, and replay",
+          "status": "passed",
+          "title": "keeps Explain current for a wrong prediction, later circuit changes, electrical Undo, and replay",
+          "duration": 1.8127999999999247,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Journey stages reflect saved work"
+          ],
+          "fullName": "Journey stages reflect saved work returns fresh step objects and keeps blanking a saved explanation reversible",
+          "status": "passed",
+          "title": "returns fresh step objects and keeps blanking a saved explanation reversible",
+          "duration": 1.0257000000001426,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Visible journey and explanation focus continuity"
+          ],
+          "fullName": "Visible journey and explanation focus continuity renders the start stage, honest statuses, and one current step without moving focus",
+          "status": "passed",
+          "title": "renders the start stage, honest statuses, and one current step without moving focus",
+          "duration": 76.77749999999992,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Visible journey and explanation focus continuity"
+          ],
+          "fullName": "Visible journey and explanation focus continuity renders the predict stage, honest statuses, and one current step without moving focus",
+          "status": "passed",
+          "title": "renders the predict stage, honest statuses, and one current step without moving focus",
+          "duration": 33.289200000000164,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Visible journey and explanation focus continuity"
+          ],
+          "fullName": "Visible journey and explanation focus continuity renders the test stage, honest statuses, and one current step without moving focus",
+          "status": "passed",
+          "title": "renders the test stage, honest statuses, and one current step without moving focus",
+          "duration": 35.453899999999976,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Visible journey and explanation focus continuity"
+          ],
+          "fullName": "Visible journey and explanation focus continuity renders the explain stage, honest statuses, and one current step without moving focus",
+          "status": "passed",
+          "title": "renders the explain stage, honest statuses, and one current step without moving focus",
+          "duration": 28.790799999999763,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Visible journey and explanation focus continuity"
+          ],
+          "fullName": "Visible journey and explanation focus continuity renders the review stage, honest statuses, and one current step without moving focus",
+          "status": "passed",
+          "title": "renders the review stage, honest statuses, and one current step without moving focus",
+          "duration": 29.240800000000036,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Visible journey and explanation focus continuity"
+          ],
+          "fullName": "Visible journey and explanation focus continuity updates the stage after a chosen prediction while keeping focus on that choice",
+          "status": "passed",
+          "title": "updates the stage after a chosen prediction while keeping focus on that choice",
+          "duration": 68.23440000000028,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Visible journey and explanation focus continuity"
+          ],
+          "fullName": "Visible journey and explanation focus continuity a pre-test draft does not unlock Explain or the explanation shortcut",
+          "status": "passed",
+          "title": "a pre-test draft does not unlock Explain or the explanation shortcut",
+          "duration": 37.757500000000164,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Visible journey and explanation focus continuity"
+          ],
+          "fullName": "Visible journey and explanation focus continuity the explanation shortcut only focuses the existing textarea and preserves its selection and all work ()",
+          "status": "passed",
+          "title": "the explanation shortcut only focuses the existing textarea and preserves its selection and all work ()",
+          "duration": 41.24839999999995,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Visible journey and explanation focus continuity"
+          ],
+          "fullName": "Visible journey and explanation focus continuity the explanation shortcut only focuses the existing textarea and preserves its selection and all work (I used the saved readings to revise my claim.)",
+          "status": "passed",
+          "title": "the explanation shortcut only focuses the existing textarea and preserves its selection and all work (I used the saved readings to revise my claim.)",
+          "duration": 28.272099999999682,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Visible journey and explanation focus continuity"
+          ],
+          "fullName": "Visible journey and explanation focus continuity typing, clearing, and translating an explanation update cues without remounting or refocusing it",
+          "status": "passed",
+          "title": "typing, clearing, and translating an explanation update cues without remounting or refocusing it",
+          "duration": 57.035499999999956,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Visible journey and explanation focus continuity"
+          ],
+          "fullName": "Visible journey and explanation focus continuity live edits, electrical Undo, and replay keep the saved stage and independent notebook intact",
+          "status": "passed",
+          "title": "live edits, electrical Undo, and replay keep the saved stage and independent notebook intact",
+          "duration": 43.69950000000017,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Visible journey and explanation focus continuity"
+          ],
+          "fullName": "Visible journey and explanation focus continuity switching lessons restores each stage without replaying a previous explanation-focus request",
+          "status": "passed",
+          "title": "switching lessons restores each stage without replaying a previous explanation-focus request",
+          "duration": 46.02599999999984,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Visible journey and explanation focus continuity"
+          ],
+          "fullName": "Visible journey and explanation focus continuity loading and restoring a file after jumping do not focus an imported or restored explanation",
+          "status": "passed",
+          "title": "loading and restoring a file after jumping do not focus an imported or restored explanation",
+          "duration": 52.801600000000235,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790872940994,
+      "endTime": 1790872942561.8015,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/circuit_lesson_journey.test.js"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Lesson writing space"
+          ],
+          "fullName": "Lesson writing space waits for a started lesson before offering writing controls and does not create a lesson record",
+          "status": "passed",
+          "title": "waits for a started lesson before offering writing controls and does not create a lesson record",
+          "duration": 1057.4315,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lesson writing space"
+          ],
+          "fullName": "Lesson writing space provides six rows and correctly associated quiet controls for tested=false",
+          "status": "passed",
+          "title": "provides six rows and correctly associated quiet controls for tested=false",
+          "duration": 63.94060000000013,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lesson writing space"
+          ],
+          "fullName": "Lesson writing space provides six rows and correctly associated quiet controls for tested=true",
+          "status": "passed",
+          "title": "provides six rows and correctly associated quiet controls for tested=true",
+          "duration": 49.74089999999978,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lesson writing space"
+          ],
+          "fullName": "Lesson writing space expands and reduces the existing field without any saved-state or selection changes for tested=false",
+          "status": "passed",
+          "title": "expands and reduces the existing field without any saved-state or selection changes for tested=false",
+          "duration": 41.205299999999625,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lesson writing space"
+          ],
+          "fullName": "Lesson writing space expands and reduces the existing field without any saved-state or selection changes for tested=true",
+          "status": "passed",
+          "title": "expands and reduces the existing field without any saved-state or selection changes for tested=true",
+          "duration": 40.11479999999983,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lesson writing space"
+          ],
+          "fullName": "Lesson writing space clears only a manual height override on explicit resizing and retains other styles and caret state",
+          "status": "passed",
+          "title": "clears only a manual height override on explicit resizing and retains other styles and caret state",
+          "duration": 45.91730000000007,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lesson writing space"
+          ],
+          "fullName": "Lesson writing space updates the quiet count for exact 4000-character writing without truncating valid text or changing other work",
+          "status": "passed",
+          "title": "updates the quiet count for exact 4000-character writing without truncating valid text or changing other work",
+          "duration": 43.67439999999988,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lesson writing space"
+          ],
+          "fullName": "Lesson writing space loads long saved writing with its exact count and exports unchanged data before and after local expansion",
+          "status": "passed",
+          "title": "loads long saved writing with its exact count and exports unchanged data before and after local expansion",
+          "duration": 59.95839999999998,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lesson writing space"
+          ],
+          "fullName": "Lesson writing space locale rerenders translate the size action and counter without changing the expanded field, selection, state or focus",
+          "status": "passed",
+          "title": "locale rerenders translate the size action and counter without changing the expanded field, selection, state or focus",
+          "duration": 42.31870000000026,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lesson writing space"
+          ],
+          "fullName": "Lesson writing space electrical edits preserve local expansion and focused writing without altering records or adding resize history",
+          "status": "passed",
+          "title": "electrical edits preserve local expansion and focused writing without altering records or adding resize history",
+          "duration": 50.5305000000003,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lesson writing space"
+          ],
+          "fullName": "Lesson writing space notebook writing and its own size control remain independent of the expanded lesson field",
+          "status": "passed",
+          "title": "notebook writing and its own size control remain independent of the expanded lesson field",
+          "duration": 36.24549999999999,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lesson writing space"
+          ],
+          "fullName": "Lesson writing space lesson selection retains the local writing size while showing each record and count without resetting saved work",
+          "status": "passed",
+          "title": "lesson selection retains the local writing size while showing each record and count without resetting saved work",
+          "duration": 68.82570000000032,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lesson writing space"
+          ],
+          "fullName": "Lesson writing space selecting a new lesson hides writing, and starting it restores the same local size with an empty count",
+          "status": "passed",
+          "title": "selecting a new lesson hides writing, and starting it restores the same local size with an empty count",
+          "duration": 46.421800000000076,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lesson writing space"
+          ],
+          "fullName": "Lesson writing space explicit retry resets the selected explanation but retains local size and independent saved writing",
+          "status": "passed",
+          "title": "explicit retry resets the selected explanation but retains local size and independent saved writing",
+          "duration": 42.52520000000004,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lesson writing space"
+          ],
+          "fullName": "Lesson writing space JSON load and restore retain local expansion and update exact counts without replaying writing focus",
+          "status": "passed",
+          "title": "JSON load and restore retain local expansion and update exact counts without replaying writing focus",
+          "duration": 51.79479999999967,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lesson writing space"
+          ],
+          "fullName": "Lesson writing space remounting the workbench resets only local writing size and retains the saved explanation",
+          "status": "passed",
+          "title": "remounting the workbench resets only local writing size and retains the saved explanation",
+          "duration": 70.51209999999992,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lesson writing space"
+          ],
+          "fullName": "Lesson writing space two mounted lessons have distinct field/count associations and independent local expansion",
+          "status": "passed",
+          "title": "two mounted lessons have distinct field/count associations and independent local expansion",
+          "duration": 60.82529999999997,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lesson writing space"
+          ],
+          "fullName": "Lesson writing space the existing writing jump still focuses the expanded field and scrolls instantly for \"\"",
+          "status": "passed",
+          "title": "the existing writing jump still focuses the expanded field and scrolls instantly for \"\"",
+          "duration": 27.44860000000017,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lesson writing space"
+          ],
+          "fullName": "Lesson writing space the existing writing jump still focuses the expanded field and scrolls instantly for \"An explanation to review.\"",
+          "status": "passed",
+          "title": "the existing writing jump still focuses the expanded field and scrolls instantly for \"An explanation to review.\"",
+          "duration": 37.429099999999835,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790872950735,
+      "endTime": 1790872952671.4292,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/circuit_lesson_writing_space.test.js"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Circuit workbench language changes"
+          ],
+          "fullName": "Circuit workbench language changes updates Simple labels and memoized 3D labels without losing a draft or circuit state",
+          "status": "passed",
+          "title": "updates Simple labels and memoized 3D labels without losing a draft or circuit state",
+          "duration": 1254.591,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Circuit workbench language changes"
+          ],
+          "fullName": "Circuit workbench language changes updates mixedWorkbench root and nested labels with the current translator",
+          "status": "passed",
+          "title": "updates mixedWorkbench root and nested labels with the current translator",
+          "duration": 180.48120000000017,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Circuit workbench language changes"
+          ],
+          "fullName": "Circuit workbench language changes updates activeWorkbench root and nested labels with the current translator",
+          "status": "passed",
+          "title": "updates activeWorkbench root and nested labels with the current translator",
+          "duration": 54.1869999999999,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Circuit workbench language changes"
+          ],
+          "fullName": "Circuit workbench language changes updates networkWorkbench root and nested labels with the current translator",
+          "status": "passed",
+          "title": "updates networkWorkbench root and nested labels with the current translator",
+          "duration": 79.97920000000022,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790872958120,
+      "endTime": 1790872959688.9792,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/circuit_localization.test.js"
+    }
+  ],
+  "numTotalTestSuites": 18,
+  "numPassedTestSuites": 18,
+  "numFailedTestSuites": 0,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 140,
+  "numPassedTests": 140,
+  "numFailedTests": 0,
+  "numPendingTests": 0,
+  "numTodoTests": 0
+}

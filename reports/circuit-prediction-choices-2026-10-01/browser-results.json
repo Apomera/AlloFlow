@@ -1,0 +1,6703 @@
+{
+  "sourceSha256": "fff052d145b7e16ea99b424c6d81ccdc4049b6dcf0da85258d970d75a9aef8cf",
+  "scriptSha256": "bfe4ac15856f8e903c62c5a212ea607c100f426cf7bc5ddb95d37ee74b189906",
+  "checks": [
+    {
+      "name": "All three selected choices share the same highlight and checkmark; correctness does not affect the choice presentation"
+    },
+    {
+      "name": "Choice styling is scoped to the active workbench; map, replay, and retry keep their original controls",
+      "otherButtons": [
+        {
+          "label": "Continue to test",
+          "choice": false,
+          "icons": 0
+        },
+        {
+          "label": "Open experiment",
+          "choice": false,
+          "icons": 0
+        },
+        {
+          "label": "Open experiment",
+          "choice": false,
+          "icons": 0
+        },
+        {
+          "label": "Load experiment baseline",
+          "choice": false,
+          "icons": 0
+        },
+        {
+          "label": "Start transistor prediction",
+          "choice": false,
+          "icons": 0
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "axe": [
+    {
+      "name": "fresh-start",
+      "width": 1280,
+      "scale": 1,
+      "forcedColors": false,
+      "excludedRules": [],
+      "exclusionReason": null,
+      "violations": []
+    },
+    {
+      "name": "fresh-start",
+      "width": 390,
+      "scale": 1,
+      "forcedColors": false,
+      "excludedRules": [],
+      "exclusionReason": null,
+      "violations": []
+    },
+    {
+      "name": "prediction-empty",
+      "width": 1280,
+      "scale": 1,
+      "forcedColors": false,
+      "excludedRules": [],
+      "exclusionReason": null,
+      "violations": []
+    },
+    {
+      "name": "prediction-empty",
+      "width": 390,
+      "scale": 1,
+      "forcedColors": false,
+      "excludedRules": [],
+      "exclusionReason": null,
+      "violations": []
+    },
+    {
+      "name": "prediction-empty",
+      "width": 320,
+      "scale": 1,
+      "forcedColors": false,
+      "excludedRules": [],
+      "exclusionReason": null,
+      "violations": []
+    },
+    {
+      "name": "prediction-more",
+      "width": 390,
+      "scale": 1,
+      "forcedColors": false,
+      "excludedRules": [],
+      "exclusionReason": null,
+      "violations": []
+    },
+    {
+      "name": "prediction-same",
+      "width": 390,
+      "scale": 1,
+      "forcedColors": false,
+      "excludedRules": [],
+      "exclusionReason": null,
+      "violations": []
+    },
+    {
+      "name": "prediction-less",
+      "width": 390,
+      "scale": 1,
+      "forcedColors": false,
+      "excludedRules": [],
+      "exclusionReason": null,
+      "violations": []
+    },
+    {
+      "name": "prediction-empty-200pct-text",
+      "width": 320,
+      "scale": 2,
+      "forcedColors": false,
+      "excludedRules": [],
+      "exclusionReason": null,
+      "violations": []
+    },
+    {
+      "name": "prediction-less-200pct-text",
+      "width": 320,
+      "scale": 2,
+      "forcedColors": false,
+      "excludedRules": [],
+      "exclusionReason": null,
+      "violations": []
+    },
+    {
+      "name": "forced-colors-prediction-empty",
+      "width": 320,
+      "scale": 1,
+      "forcedColors": true,
+      "excludedRules": [
+        "color-contrast"
+      ],
+      "exclusionReason": "axe 4.12.1 reports authored foreground colors instead of forced used colors. Fresh-page reproduction: forced-colors-diagnostic.json. Computed colors and screenshot inspected separately.",
+      "violations": []
+    },
+    {
+      "name": "forced-colors-prediction-less",
+      "width": 320,
+      "scale": 1,
+      "forcedColors": true,
+      "excludedRules": [
+        "color-contrast"
+      ],
+      "exclusionReason": "axe 4.12.1 reports authored foreground colors instead of forced used colors. Fresh-page reproduction: forced-colors-diagnostic.json. Computed colors and screenshot inspected separately.",
+      "violations": []
+    }
+  ],
+  "layouts": [
+    {
+      "name": "fresh-start",
+      "scale": 1,
+      "width": 1280,
+      "scrollWidth": 1280
+    },
+    {
+      "name": "fresh-start",
+      "scale": 1,
+      "width": 390,
+      "scrollWidth": 390
+    },
+    {
+      "name": "prediction-empty",
+      "scale": 1,
+      "width": 1280,
+      "scrollWidth": 1280
+    },
+    {
+      "name": "prediction-empty",
+      "scale": 1,
+      "width": 390,
+      "scrollWidth": 390
+    },
+    {
+      "name": "prediction-empty",
+      "scale": 1,
+      "width": 320,
+      "scrollWidth": 320
+    },
+    {
+      "name": "prediction-more",
+      "scale": 1,
+      "width": 390,
+      "scrollWidth": 390
+    },
+    {
+      "name": "prediction-same",
+      "scale": 1,
+      "width": 390,
+      "scrollWidth": 390
+    },
+    {
+      "name": "prediction-less",
+      "scale": 1,
+      "width": 390,
+      "scrollWidth": 390
+    },
+    {
+      "name": "prediction-empty-200pct-text",
+      "scale": 2,
+      "width": 320,
+      "scrollWidth": 320
+    },
+    {
+      "name": "prediction-less-200pct-text",
+      "scale": 2,
+      "width": 320,
+      "scrollWidth": 320
+    },
+    {
+      "name": "forced-colors-prediction-empty",
+      "scale": 1,
+      "width": 320,
+      "scrollWidth": 320
+    },
+    {
+      "name": "forced-colors-prediction-less",
+      "scale": 1,
+      "width": 320,
+      "scrollWidth": 320
+    }
+  ],
+  "contentBounds": [
+    {
+      "name": "fresh-start",
+      "width": 1280,
+      "scale": 1,
+      "cards": [
+        {
+          "selector": ".circuit-active-lesson-start",
+          "stage": null,
+          "left": 255,
+          "right": 1025,
+          "clientWidth": 770,
+          "scrollWidth": 770,
+          "lines": [
+            {
+              "text": "Start",
+              "context": "Start loads this experiment’s baseline. Undo restores your previous circuit; your investigation notebook stays saved.",
+              "left": 255,
+              "right": 281.4375,
+              "top": 5786.390625,
+              "bottom": 5803.390625
+            },
+            {
+              "text": "loads",
+              "context": "Start loads this experiment’s baseline. Undo restores your previous circuit; your investigation notebook stays saved.",
+              "left": 284.984375,
+              "right": 315.546875,
+              "top": 5786.390625,
+              "bottom": 5803.390625
+            },
+            {
+              "text": "this",
+              "context": "Start loads this experiment’s baseline. Undo restores your previous circuit; your investigation notebook stays saved.",
+              "left": 319.09375,
+              "right": 339.546875,
+              "top": 5786.390625,
+              "bottom": 5803.390625
+            },
+            {
+              "text": "experiment’s",
+              "context": "Start loads this experiment’s baseline. Undo restores your previous circuit; your investigation notebook stays saved.",
+              "left": 343.078125,
+              "right": 416.21875,
+              "top": 5786.390625,
+              "bottom": 5803.390625
+            },
+            {
+              "text": "baseline.",
+              "context": "Start loads this experiment’s baseline. Undo restores your previous circuit; your investigation notebook stays saved.",
+              "left": 419.765625,
+              "right": 469.625,
+              "top": 5786.390625,
+              "bottom": 5803.390625
+            },
+            {
+              "text": "Undo",
+              "context": "Start loads this experiment’s baseline. Undo restores your previous circuit; your investigation notebook stays saved.",
+              "left": 473.171875,
+              "right": 504.75,
+              "top": 5786.390625,
+              "bottom": 5803.390625
+            },
+            {
+              "text": "restores",
+              "context": "Start loads this experiment’s baseline. Undo restores your previous circuit; your investigation notebook stays saved.",
+              "left": 508.296875,
+              "right": 554,
+              "top": 5786.390625,
+              "bottom": 5803.390625
+            },
+            {
+              "text": "your",
+              "context": "Start loads this experiment’s baseline. Undo restores your previous circuit; your investigation notebook stays saved.",
+              "left": 557.546875,
+              "right": 583.34375,
+              "top": 5786.390625,
+              "bottom": 5803.390625
+            },
+            {
+              "text": "previous",
+              "context": "Start loads this experiment’s baseline. Undo restores your previous circuit; your investigation notebook stays saved.",
+              "left": 586.890625,
+              "right": 635.734375,
+              "top": 5786.390625,
+              "bottom": 5803.390625
+            },
+            {
+              "text": "circuit;",
+              "context": "Start loads this experiment’s baseline. Undo restores your previous circuit; your investigation notebook stays saved.",
+              "left": 639.28125,
+              "right": 676.703125,
+              "top": 5786.390625,
+              "bottom": 5803.390625
+            },
+            {
+              "text": "your",
+              "context": "Start loads this experiment’s baseline. Undo restores your previous circuit; your investigation notebook stays saved.",
+              "left": 680.25,
+              "right": 706.046875,
+              "top": 5786.390625,
+              "bottom": 5803.390625
+            },
+            {
+              "text": "investigation",
+              "context": "Start loads this experiment’s baseline. Undo restores your previous circuit; your investigation notebook stays saved.",
+              "left": 709.59375,
+              "right": 783,
+              "top": 5786.390625,
+              "bottom": 5803.390625
+            },
+            {
+              "text": "notebook",
+              "context": "Start loads this experiment’s baseline. Undo restores your previous circuit; your investigation notebook stays saved.",
+              "left": 786.546875,
+              "right": 842.078125,
+              "top": 5786.390625,
+              "bottom": 5803.390625
+            },
+            {
+              "text": "stays",
+              "context": "Start loads this experiment’s baseline. Undo restores your previous circuit; your investigation notebook stays saved.",
+              "left": 845.625,
+              "right": 873.984375,
+              "top": 5786.390625,
+              "bottom": 5803.390625
+            },
+            {
+              "text": "saved.",
+              "context": "Start loads this experiment’s baseline. Undo restores your previous circuit; your investigation notebook stays saved.",
+              "left": 877.53125,
+              "right": 913.171875,
+              "top": 5786.390625,
+              "bottom": 5803.390625
+            },
+            {
+              "text": "Start",
+              "context": "Start transistor prediction",
+              "left": 268,
+              "right": 297.625,
+              "top": 5830.390625,
+              "bottom": 5847.390625
+            },
+            {
+              "text": "transistor",
+              "context": "Start transistor prediction",
+              "left": 301.203125,
+              "right": 359.578125,
+              "top": 5830.390625,
+              "bottom": 5847.390625
+            },
+            {
+              "text": "prediction",
+              "context": "Start transistor prediction",
+              "left": 363.140625,
+              "right": 425.921875,
+              "top": 5830.390625,
+              "bottom": 5847.390625
+            }
+          ],
+          "violations": []
+        }
+      ]
+    },
+    {
+      "name": "fresh-start",
+      "width": 390,
+      "scale": 1,
+      "cards": [
+        {
+          "selector": ".circuit-active-lesson-start",
+          "stage": null,
+          "left": 50,
+          "right": 340,
+          "clientWidth": 290,
+          "scrollWidth": 290,
+          "lines": [
+            {
+              "text": "Start",
+              "context": "Start loads this experiment’s baseline. Undo restores your previous circuit; your investigation notebook stays saved.",
+              "left": 50,
+              "right": 76.4375,
+              "top": 8131.71875,
+              "bottom": 8148.71875
+            },
+            {
+              "text": "loads",
+              "context": "Start loads this experiment’s baseline. Undo restores your previous circuit; your investigation notebook stays saved.",
+              "left": 79.984375,
+              "right": 110.546875,
+              "top": 8131.71875,
+              "bottom": 8148.71875
+            },
+            {
+              "text": "this",
+              "context": "Start loads this experiment’s baseline. Undo restores your previous circuit; your investigation notebook stays saved.",
+              "left": 114.09375,
+              "right": 134.546875,
+              "top": 8131.71875,
+              "bottom": 8148.71875
+            },
+            {
+              "text": "experiment’s",
+              "context": "Start loads this experiment’s baseline. Undo restores your previous circuit; your investigation notebook stays saved.",
+              "left": 138.078125,
+              "right": 211.21875,
+              "top": 8131.71875,
+              "bottom": 8148.71875
+            },
+            {
+              "text": "baseline.",
+              "context": "Start loads this experiment’s baseline. Undo restores your previous circuit; your investigation notebook stays saved.",
+              "left": 214.765625,
+              "right": 264.625,
+              "top": 8131.71875,
+              "bottom": 8148.71875
+            },
+            {
+              "text": "Undo",
+              "context": "Start loads this experiment’s baseline. Undo restores your previous circuit; your investigation notebook stays saved.",
+              "left": 268.171875,
+              "right": 299.75,
+              "top": 8131.71875,
+              "bottom": 8148.71875
+            },
+            {
+              "text": "restores",
+              "context": "Start loads this experiment’s baseline. Undo restores your previous circuit; your investigation notebook stays saved.",
+              "left": 50,
+              "right": 95.703125,
+              "top": 8154.46875,
+              "bottom": 8171.46875
+            },
+            {
+              "text": "your",
+              "context": "Start loads this experiment’s baseline. Undo restores your previous circuit; your investigation notebook stays saved.",
+              "left": 99.25,
+              "right": 125.046875,
+              "top": 8154.46875,
+              "bottom": 8171.46875
+            },
+            {
+              "text": "previous",
+              "context": "Start loads this experiment’s baseline. Undo restores your previous circuit; your investigation notebook stays saved.",
+              "left": 128.59375,
+              "right": 177.4375,
+              "top": 8154.46875,
+              "bottom": 8171.46875
+            },
+            {
+              "text": "circuit;",
+              "context": "Start loads this experiment’s baseline. Undo restores your previous circuit; your investigation notebook stays saved.",
+              "left": 180.96875,
+              "right": 218.390625,
+              "top": 8154.46875,
+              "bottom": 8171.46875
+            },
+            {
+              "text": "your",
+              "context": "Start loads this experiment’s baseline. Undo restores your previous circuit; your investigation notebook stays saved.",
+              "left": 221.9375,
+              "right": 247.75,
+              "top": 8154.46875,
+              "bottom": 8171.46875
+            },
+            {
+              "text": "investigation",
+              "context": "Start loads this experiment’s baseline. Undo restores your previous circuit; your investigation notebook stays saved.",
+              "left": 251.296875,
+              "right": 324.703125,
+              "top": 8154.46875,
+              "bottom": 8171.46875
+            },
+            {
+              "text": "notebook",
+              "context": "Start loads this experiment’s baseline. Undo restores your previous circuit; your investigation notebook stays saved.",
+              "left": 50,
+              "right": 105.53125,
+              "top": 8177.21875,
+              "bottom": 8194.21875
+            },
+            {
+              "text": "stays",
+              "context": "Start loads this experiment’s baseline. Undo restores your previous circuit; your investigation notebook stays saved.",
+              "left": 109.0625,
+              "right": 137.421875,
+              "top": 8177.21875,
+              "bottom": 8194.21875
+            },
+            {
+              "text": "saved.",
+              "context": "Start loads this experiment’s baseline. Undo restores your previous circuit; your investigation notebook stays saved.",
+              "left": 140.96875,
+              "right": 176.625,
+              "top": 8177.21875,
+              "bottom": 8194.21875
+            },
+            {
+              "text": "Start",
+              "context": "Start transistor prediction",
+              "left": 63,
+              "right": 92.625,
+              "top": 8221.21875,
+              "bottom": 8238.21875
+            },
+            {
+              "text": "transistor",
+              "context": "Start transistor prediction",
+              "left": 96.203125,
+              "right": 154.578125,
+              "top": 8221.21875,
+              "bottom": 8238.21875
+            },
+            {
+              "text": "prediction",
+              "context": "Start transistor prediction",
+              "left": 158.140625,
+              "right": 220.921875,
+              "top": 8221.21875,
+              "bottom": 8238.21875
+            }
+          ],
+          "violations": []
+        }
+      ]
+    },
+    {
+      "name": "prediction-empty",
+      "width": 1280,
+      "scale": 1,
+      "cards": [
+        {
+          "selector": ".circuit-active-lesson-predictions",
+          "stage": null,
+          "left": 255,
+          "right": 1025,
+          "clientWidth": 770,
+          "scrollWidth": 770,
+          "lines": [
+            {
+              "text": "Predict",
+              "context": "Predict the lamp current",
+              "left": 255,
+              "right": 308.15625,
+              "top": 772.375,
+              "bottom": 793.375
+            },
+            {
+              "text": "the",
+              "context": "Predict the lamp current",
+              "left": 312.5625,
+              "right": 337.078125,
+              "top": 772.375,
+              "bottom": 793.375
+            },
+            {
+              "text": "lamp",
+              "context": "Predict the lamp current",
+              "left": 341.484375,
+              "right": 379.234375,
+              "top": 772.375,
+              "bottom": 793.375
+            },
+            {
+              "text": "current",
+              "context": "Predict the lamp current",
+              "left": 383.640625,
+              "right": 438.234375,
+              "top": 772.375,
+              "bottom": 793.375
+            },
+            {
+              "text": "Compared",
+              "context": "Compared with the starting circuit.",
+              "left": 255,
+              "right": 310.484375,
+              "top": 803.5625,
+              "bottom": 819.5625
+            },
+            {
+              "text": "with",
+              "context": "Compared with the starting circuit.",
+              "left": 313.75,
+              "right": 336.203125,
+              "top": 803.5625,
+              "bottom": 819.5625
+            },
+            {
+              "text": "the",
+              "context": "Compared with the starting circuit.",
+              "left": 339.46875,
+              "right": 356.625,
+              "top": 803.5625,
+              "bottom": 819.5625
+            },
+            {
+              "text": "starting",
+              "context": "Compared with the starting circuit.",
+              "left": 359.890625,
+              "right": 400.171875,
+              "top": 803.5625,
+              "bottom": 819.5625
+            },
+            {
+              "text": "circuit.",
+              "context": "Compared with the starting circuit.",
+              "left": 403.453125,
+              "right": 437.984375,
+              "top": 803.5625,
+              "bottom": 819.5625
+            },
+            {
+              "text": "Increases",
+              "context": "Increases",
+              "left": 352.0625,
+              "right": 407.921875,
+              "top": 909.15625,
+              "bottom": 926.15625
+            },
+            {
+              "text": "Stays",
+              "context": "Stays the same",
+              "left": 594.75,
+              "right": 626.484375,
+              "top": 909.15625,
+              "bottom": 926.15625
+            },
+            {
+              "text": "the",
+              "context": "Stays the same",
+              "left": 630.0625,
+              "right": 650,
+              "top": 909.15625,
+              "bottom": 926.15625
+            },
+            {
+              "text": "same",
+              "context": "Stays the same",
+              "left": 653.5625,
+              "right": 685.234375,
+              "top": 909.15625,
+              "bottom": 926.15625
+            },
+            {
+              "text": "Decreases",
+              "context": "Decreases",
+              "left": 869.75,
+              "right": 930.234375,
+              "top": 909.15625,
+              "bottom": 926.15625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-prediction-choice",
+          "stage": null,
+          "left": 283,
+          "right": 477,
+          "clientWidth": 246,
+          "scrollWidth": 246,
+          "lines": [
+            {
+              "text": "Increases",
+              "context": "Increases",
+              "left": 352.0625,
+              "right": 407.921875,
+              "top": 909.15625,
+              "bottom": 926.15625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-prediction-choice",
+          "stage": null,
+          "left": 543,
+          "right": 737,
+          "clientWidth": 246,
+          "scrollWidth": 246,
+          "lines": [
+            {
+              "text": "Stays",
+              "context": "Stays the same",
+              "left": 594.75,
+              "right": 626.484375,
+              "top": 909.15625,
+              "bottom": 926.15625
+            },
+            {
+              "text": "the",
+              "context": "Stays the same",
+              "left": 630.0625,
+              "right": 650,
+              "top": 909.15625,
+              "bottom": 926.15625
+            },
+            {
+              "text": "same",
+              "context": "Stays the same",
+              "left": 653.5625,
+              "right": 685.234375,
+              "top": 909.15625,
+              "bottom": 926.15625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-prediction-choice",
+          "stage": null,
+          "left": 803,
+          "right": 997,
+          "clientWidth": 246,
+          "scrollWidth": 246,
+          "lines": [
+            {
+              "text": "Decreases",
+              "context": "Decreases",
+              "left": 869.75,
+              "right": 930.234375,
+              "top": 909.15625,
+              "bottom": 926.15625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-active-lesson-primary",
+          "stage": null,
+          "left": 268,
+          "right": 420.5625,
+          "clientWidth": 177,
+          "scrollWidth": 177,
+          "lines": [
+            {
+              "text": "Test",
+              "context": "Test transistor prediction",
+              "left": 268,
+              "right": 292.265625,
+              "top": 979.8125,
+              "bottom": 996.8125
+            },
+            {
+              "text": "transistor",
+              "context": "Test transistor prediction",
+              "left": 295.84375,
+              "right": 354.203125,
+              "top": 979.8125,
+              "bottom": 996.8125
+            },
+            {
+              "text": "prediction",
+              "context": "Test transistor prediction",
+              "left": 357.78125,
+              "right": 420.5625,
+              "top": 979.8125,
+              "bottom": 996.8125
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": "#:r4:-test-help",
+          "stage": null,
+          "left": 255,
+          "right": 1025,
+          "clientWidth": 770,
+          "scrollWidth": 770,
+          "lines": [
+            {
+              "text": "Choose",
+              "context": "Choose a prediction to enable Test.",
+              "left": 255,
+              "right": 294.65625,
+              "top": 1022.5625,
+              "bottom": 1038.5625
+            },
+            {
+              "text": "a",
+              "context": "Choose a prediction to enable Test.",
+              "left": 297.9375,
+              "right": 304.046875,
+              "top": 1022.5625,
+              "bottom": 1038.5625
+            },
+            {
+              "text": "prediction",
+              "context": "Choose a prediction to enable Test.",
+              "left": 307.328125,
+              "right": 361.15625,
+              "top": 1022.5625,
+              "bottom": 1038.5625
+            },
+            {
+              "text": "to",
+              "context": "Choose a prediction to enable Test.",
+              "left": 364.421875,
+              "right": 375.53125,
+              "top": 1022.5625,
+              "bottom": 1038.5625
+            },
+            {
+              "text": "enable",
+              "context": "Choose a prediction to enable Test.",
+              "left": 378.8125,
+              "right": 414.234375,
+              "top": 1022.5625,
+              "bottom": 1038.5625
+            },
+            {
+              "text": "Test.",
+              "context": "Choose a prediction to enable Test.",
+              "left": 417.5,
+              "right": 440.671875,
+              "top": 1022.5625,
+              "bottom": 1038.5625
+            }
+          ],
+          "violations": []
+        }
+      ]
+    },
+    {
+      "name": "prediction-empty",
+      "width": 390,
+      "scale": 1,
+      "cards": [
+        {
+          "selector": ".circuit-active-lesson-predictions",
+          "stage": null,
+          "left": 50,
+          "right": 340,
+          "clientWidth": 290,
+          "scrollWidth": 290,
+          "lines": [
+            {
+              "text": "Predict",
+              "context": "Predict the lamp current",
+              "left": 50,
+              "right": 103.15625,
+              "top": 8086.953125,
+              "bottom": 8107.953125
+            },
+            {
+              "text": "the",
+              "context": "Predict the lamp current",
+              "left": 107.5625,
+              "right": 132.078125,
+              "top": 8086.953125,
+              "bottom": 8107.953125
+            },
+            {
+              "text": "lamp",
+              "context": "Predict the lamp current",
+              "left": 136.484375,
+              "right": 174.234375,
+              "top": 8086.953125,
+              "bottom": 8107.953125
+            },
+            {
+              "text": "current",
+              "context": "Predict the lamp current",
+              "left": 178.640625,
+              "right": 233.234375,
+              "top": 8086.953125,
+              "bottom": 8107.953125
+            },
+            {
+              "text": "Compared",
+              "context": "Compared with the starting circuit.",
+              "left": 50,
+              "right": 105.484375,
+              "top": 8118.140625,
+              "bottom": 8134.140625
+            },
+            {
+              "text": "with",
+              "context": "Compared with the starting circuit.",
+              "left": 108.75,
+              "right": 131.203125,
+              "top": 8118.140625,
+              "bottom": 8134.140625
+            },
+            {
+              "text": "the",
+              "context": "Compared with the starting circuit.",
+              "left": 134.46875,
+              "right": 151.625,
+              "top": 8118.140625,
+              "bottom": 8134.140625
+            },
+            {
+              "text": "starting",
+              "context": "Compared with the starting circuit.",
+              "left": 154.890625,
+              "right": 195.171875,
+              "top": 8118.140625,
+              "bottom": 8134.140625
+            },
+            {
+              "text": "circuit.",
+              "context": "Compared with the starting circuit.",
+              "left": 198.453125,
+              "right": 232.984375,
+              "top": 8118.140625,
+              "bottom": 8134.140625
+            },
+            {
+              "text": "Increases",
+              "context": "Increases",
+              "left": 112,
+              "right": 167.859375,
+              "top": 8173.734375,
+              "bottom": 8190.734375
+            },
+            {
+              "text": "Stays",
+              "context": "Stays the same",
+              "left": 112,
+              "right": 143.734375,
+              "top": 8249.734375,
+              "bottom": 8266.734375
+            },
+            {
+              "text": "the",
+              "context": "Stays the same",
+              "left": 147.3125,
+              "right": 167.25,
+              "top": 8249.734375,
+              "bottom": 8266.734375
+            },
+            {
+              "text": "same",
+              "context": "Stays the same",
+              "left": 170.8125,
+              "right": 202.484375,
+              "top": 8249.734375,
+              "bottom": 8266.734375
+            },
+            {
+              "text": "Decreases",
+              "context": "Decreases",
+              "left": 112,
+              "right": 172.484375,
+              "top": 8325.734375,
+              "bottom": 8342.734375
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-prediction-choice",
+          "stage": null,
+          "left": 66,
+          "right": 304,
+          "clientWidth": 286,
+          "scrollWidth": 286,
+          "lines": [
+            {
+              "text": "Increases",
+              "context": "Increases",
+              "left": 112,
+              "right": 167.859375,
+              "top": 8173.734375,
+              "bottom": 8190.734375
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-prediction-choice",
+          "stage": null,
+          "left": 66,
+          "right": 304,
+          "clientWidth": 286,
+          "scrollWidth": 286,
+          "lines": [
+            {
+              "text": "Stays",
+              "context": "Stays the same",
+              "left": 112,
+              "right": 143.734375,
+              "top": 8249.734375,
+              "bottom": 8266.734375
+            },
+            {
+              "text": "the",
+              "context": "Stays the same",
+              "left": 147.3125,
+              "right": 167.25,
+              "top": 8249.734375,
+              "bottom": 8266.734375
+            },
+            {
+              "text": "same",
+              "context": "Stays the same",
+              "left": 170.8125,
+              "right": 202.484375,
+              "top": 8249.734375,
+              "bottom": 8266.734375
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-prediction-choice",
+          "stage": null,
+          "left": 66,
+          "right": 304,
+          "clientWidth": 286,
+          "scrollWidth": 286,
+          "lines": [
+            {
+              "text": "Decreases",
+              "context": "Decreases",
+              "left": 112,
+              "right": 172.484375,
+              "top": 8325.734375,
+              "bottom": 8342.734375
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-active-lesson-primary",
+          "stage": null,
+          "left": 63,
+          "right": 215.5625,
+          "clientWidth": 177,
+          "scrollWidth": 177,
+          "lines": [
+            {
+              "text": "Test",
+              "context": "Test transistor prediction",
+              "left": 63,
+              "right": 87.265625,
+              "top": 8398.390625,
+              "bottom": 8415.390625
+            },
+            {
+              "text": "transistor",
+              "context": "Test transistor prediction",
+              "left": 90.84375,
+              "right": 149.203125,
+              "top": 8398.390625,
+              "bottom": 8415.390625
+            },
+            {
+              "text": "prediction",
+              "context": "Test transistor prediction",
+              "left": 152.78125,
+              "right": 215.5625,
+              "top": 8398.390625,
+              "bottom": 8415.390625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": "#:r4:-test-help",
+          "stage": null,
+          "left": 50,
+          "right": 340,
+          "clientWidth": 290,
+          "scrollWidth": 290,
+          "lines": [
+            {
+              "text": "Choose",
+              "context": "Choose a prediction to enable Test.",
+              "left": 50,
+              "right": 89.65625,
+              "top": 8441.140625,
+              "bottom": 8457.140625
+            },
+            {
+              "text": "a",
+              "context": "Choose a prediction to enable Test.",
+              "left": 92.9375,
+              "right": 99.046875,
+              "top": 8441.140625,
+              "bottom": 8457.140625
+            },
+            {
+              "text": "prediction",
+              "context": "Choose a prediction to enable Test.",
+              "left": 102.328125,
+              "right": 156.15625,
+              "top": 8441.140625,
+              "bottom": 8457.140625
+            },
+            {
+              "text": "to",
+              "context": "Choose a prediction to enable Test.",
+              "left": 159.421875,
+              "right": 170.53125,
+              "top": 8441.140625,
+              "bottom": 8457.140625
+            },
+            {
+              "text": "enable",
+              "context": "Choose a prediction to enable Test.",
+              "left": 173.8125,
+              "right": 209.234375,
+              "top": 8441.140625,
+              "bottom": 8457.140625
+            },
+            {
+              "text": "Test.",
+              "context": "Choose a prediction to enable Test.",
+              "left": 212.5,
+              "right": 235.671875,
+              "top": 8441.140625,
+              "bottom": 8457.140625
+            }
+          ],
+          "violations": []
+        }
+      ]
+    },
+    {
+      "name": "prediction-empty",
+      "width": 320,
+      "scale": 1,
+      "cards": [
+        {
+          "selector": ".circuit-active-lesson-predictions",
+          "stage": null,
+          "left": 50,
+          "right": 270,
+          "clientWidth": 220,
+          "scrollWidth": 220,
+          "lines": [
+            {
+              "text": "Predict",
+              "context": "Predict the lamp current",
+              "left": 50,
+              "right": 103.15625,
+              "top": 8994.78125,
+              "bottom": 9015.78125
+            },
+            {
+              "text": "the",
+              "context": "Predict the lamp current",
+              "left": 107.5625,
+              "right": 132.078125,
+              "top": 8994.78125,
+              "bottom": 9015.78125
+            },
+            {
+              "text": "lamp",
+              "context": "Predict the lamp current",
+              "left": 136.484375,
+              "right": 174.234375,
+              "top": 8994.78125,
+              "bottom": 9015.78125
+            },
+            {
+              "text": "current",
+              "context": "Predict the lamp current",
+              "left": 178.640625,
+              "right": 233.234375,
+              "top": 8994.78125,
+              "bottom": 9015.78125
+            },
+            {
+              "text": "Compared",
+              "context": "Compared with the starting circuit.",
+              "left": 50,
+              "right": 105.484375,
+              "top": 9025.96875,
+              "bottom": 9041.96875
+            },
+            {
+              "text": "with",
+              "context": "Compared with the starting circuit.",
+              "left": 108.75,
+              "right": 131.203125,
+              "top": 9025.96875,
+              "bottom": 9041.96875
+            },
+            {
+              "text": "the",
+              "context": "Compared with the starting circuit.",
+              "left": 134.46875,
+              "right": 151.625,
+              "top": 9025.96875,
+              "bottom": 9041.96875
+            },
+            {
+              "text": "starting",
+              "context": "Compared with the starting circuit.",
+              "left": 154.890625,
+              "right": 195.171875,
+              "top": 9025.96875,
+              "bottom": 9041.96875
+            },
+            {
+              "text": "circuit.",
+              "context": "Compared with the starting circuit.",
+              "left": 198.453125,
+              "right": 232.984375,
+              "top": 9025.96875,
+              "bottom": 9041.96875
+            },
+            {
+              "text": "Increases",
+              "context": "Increases",
+              "left": 112,
+              "right": 167.859375,
+              "top": 9081.5625,
+              "bottom": 9098.5625
+            },
+            {
+              "text": "Stays",
+              "context": "Stays the same",
+              "left": 112,
+              "right": 143.734375,
+              "top": 9157.5625,
+              "bottom": 9174.5625
+            },
+            {
+              "text": "the",
+              "context": "Stays the same",
+              "left": 147.3125,
+              "right": 167.25,
+              "top": 9157.5625,
+              "bottom": 9174.5625
+            },
+            {
+              "text": "same",
+              "context": "Stays the same",
+              "left": 170.8125,
+              "right": 202.484375,
+              "top": 9157.5625,
+              "bottom": 9174.5625
+            },
+            {
+              "text": "Decreases",
+              "context": "Decreases",
+              "left": 112,
+              "right": 172.484375,
+              "top": 9233.5625,
+              "bottom": 9250.5625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-prediction-choice",
+          "stage": null,
+          "left": 66,
+          "right": 234,
+          "clientWidth": 216,
+          "scrollWidth": 216,
+          "lines": [
+            {
+              "text": "Increases",
+              "context": "Increases",
+              "left": 112,
+              "right": 167.859375,
+              "top": 9081.5625,
+              "bottom": 9098.5625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-prediction-choice",
+          "stage": null,
+          "left": 66,
+          "right": 234,
+          "clientWidth": 216,
+          "scrollWidth": 216,
+          "lines": [
+            {
+              "text": "Stays",
+              "context": "Stays the same",
+              "left": 112,
+              "right": 143.734375,
+              "top": 9157.5625,
+              "bottom": 9174.5625
+            },
+            {
+              "text": "the",
+              "context": "Stays the same",
+              "left": 147.3125,
+              "right": 167.25,
+              "top": 9157.5625,
+              "bottom": 9174.5625
+            },
+            {
+              "text": "same",
+              "context": "Stays the same",
+              "left": 170.8125,
+              "right": 202.484375,
+              "top": 9157.5625,
+              "bottom": 9174.5625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-prediction-choice",
+          "stage": null,
+          "left": 66,
+          "right": 234,
+          "clientWidth": 216,
+          "scrollWidth": 216,
+          "lines": [
+            {
+              "text": "Decreases",
+              "context": "Decreases",
+              "left": 112,
+              "right": 172.484375,
+              "top": 9233.5625,
+              "bottom": 9250.5625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-active-lesson-primary",
+          "stage": null,
+          "left": 63,
+          "right": 215.5625,
+          "clientWidth": 177,
+          "scrollWidth": 177,
+          "lines": [
+            {
+              "text": "Test",
+              "context": "Test transistor prediction",
+              "left": 63,
+              "right": 87.265625,
+              "top": 9306.21875,
+              "bottom": 9323.21875
+            },
+            {
+              "text": "transistor",
+              "context": "Test transistor prediction",
+              "left": 90.84375,
+              "right": 149.203125,
+              "top": 9306.21875,
+              "bottom": 9323.21875
+            },
+            {
+              "text": "prediction",
+              "context": "Test transistor prediction",
+              "left": 152.78125,
+              "right": 215.5625,
+              "top": 9306.21875,
+              "bottom": 9323.21875
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": "#:r4:-test-help",
+          "stage": null,
+          "left": 50,
+          "right": 270,
+          "clientWidth": 220,
+          "scrollWidth": 220,
+          "lines": [
+            {
+              "text": "Choose",
+              "context": "Choose a prediction to enable Test.",
+              "left": 50,
+              "right": 89.65625,
+              "top": 9348.96875,
+              "bottom": 9364.96875
+            },
+            {
+              "text": "a",
+              "context": "Choose a prediction to enable Test.",
+              "left": 92.9375,
+              "right": 99.046875,
+              "top": 9348.96875,
+              "bottom": 9364.96875
+            },
+            {
+              "text": "prediction",
+              "context": "Choose a prediction to enable Test.",
+              "left": 102.328125,
+              "right": 156.15625,
+              "top": 9348.96875,
+              "bottom": 9364.96875
+            },
+            {
+              "text": "to",
+              "context": "Choose a prediction to enable Test.",
+              "left": 159.421875,
+              "right": 170.53125,
+              "top": 9348.96875,
+              "bottom": 9364.96875
+            },
+            {
+              "text": "enable",
+              "context": "Choose a prediction to enable Test.",
+              "left": 173.8125,
+              "right": 209.234375,
+              "top": 9348.96875,
+              "bottom": 9364.96875
+            },
+            {
+              "text": "Test.",
+              "context": "Choose a prediction to enable Test.",
+              "left": 212.5,
+              "right": 235.671875,
+              "top": 9348.96875,
+              "bottom": 9364.96875
+            }
+          ],
+          "violations": []
+        }
+      ]
+    },
+    {
+      "name": "prediction-more",
+      "width": 390,
+      "scale": 1,
+      "cards": [
+        {
+          "selector": ".circuit-active-lesson-predictions",
+          "stage": null,
+          "left": 50,
+          "right": 340,
+          "clientWidth": 290,
+          "scrollWidth": 290,
+          "lines": [
+            {
+              "text": "Predict",
+              "context": "Predict the lamp current",
+              "left": 50,
+              "right": 103.15625,
+              "top": -179.046875,
+              "bottom": -158.046875
+            },
+            {
+              "text": "the",
+              "context": "Predict the lamp current",
+              "left": 107.5625,
+              "right": 132.078125,
+              "top": -179.046875,
+              "bottom": -158.046875
+            },
+            {
+              "text": "lamp",
+              "context": "Predict the lamp current",
+              "left": 136.484375,
+              "right": 174.234375,
+              "top": -179.046875,
+              "bottom": -158.046875
+            },
+            {
+              "text": "current",
+              "context": "Predict the lamp current",
+              "left": 178.640625,
+              "right": 233.234375,
+              "top": -179.046875,
+              "bottom": -158.046875
+            },
+            {
+              "text": "Compared",
+              "context": "Compared with the starting circuit.",
+              "left": 50,
+              "right": 105.484375,
+              "top": -147.859375,
+              "bottom": -131.859375
+            },
+            {
+              "text": "with",
+              "context": "Compared with the starting circuit.",
+              "left": 108.75,
+              "right": 131.203125,
+              "top": -147.859375,
+              "bottom": -131.859375
+            },
+            {
+              "text": "the",
+              "context": "Compared with the starting circuit.",
+              "left": 134.46875,
+              "right": 151.625,
+              "top": -147.859375,
+              "bottom": -131.859375
+            },
+            {
+              "text": "starting",
+              "context": "Compared with the starting circuit.",
+              "left": 154.890625,
+              "right": 195.171875,
+              "top": -147.859375,
+              "bottom": -131.859375
+            },
+            {
+              "text": "circuit.",
+              "context": "Compared with the starting circuit.",
+              "left": 198.453125,
+              "right": 232.984375,
+              "top": -147.859375,
+              "bottom": -131.859375
+            },
+            {
+              "text": "Increases",
+              "context": "Increases",
+              "left": 112,
+              "right": 167.859375,
+              "top": -92.265625,
+              "bottom": -75.265625
+            },
+            {
+              "text": "Stays",
+              "context": "Stays the same",
+              "left": 112,
+              "right": 143.734375,
+              "top": -16.265625,
+              "bottom": 0.734375
+            },
+            {
+              "text": "the",
+              "context": "Stays the same",
+              "left": 147.3125,
+              "right": 167.25,
+              "top": -16.265625,
+              "bottom": 0.734375
+            },
+            {
+              "text": "same",
+              "context": "Stays the same",
+              "left": 170.8125,
+              "right": 202.484375,
+              "top": -16.265625,
+              "bottom": 0.734375
+            },
+            {
+              "text": "Decreases",
+              "context": "Decreases",
+              "left": 112,
+              "right": 172.484375,
+              "top": 59.734375,
+              "bottom": 76.734375
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-prediction-choice",
+          "stage": null,
+          "left": 66,
+          "right": 304,
+          "clientWidth": 286,
+          "scrollWidth": 286,
+          "lines": [
+            {
+              "text": "Increases",
+              "context": "Increases",
+              "left": 112,
+              "right": 167.859375,
+              "top": -92.265625,
+              "bottom": -75.265625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-prediction-choice",
+          "stage": null,
+          "left": 66,
+          "right": 304,
+          "clientWidth": 286,
+          "scrollWidth": 286,
+          "lines": [
+            {
+              "text": "Stays",
+              "context": "Stays the same",
+              "left": 112,
+              "right": 143.734375,
+              "top": -16.265625,
+              "bottom": 0.734375
+            },
+            {
+              "text": "the",
+              "context": "Stays the same",
+              "left": 147.3125,
+              "right": 167.25,
+              "top": -16.265625,
+              "bottom": 0.734375
+            },
+            {
+              "text": "same",
+              "context": "Stays the same",
+              "left": 170.8125,
+              "right": 202.484375,
+              "top": -16.265625,
+              "bottom": 0.734375
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-prediction-choice",
+          "stage": null,
+          "left": 66,
+          "right": 304,
+          "clientWidth": 286,
+          "scrollWidth": 286,
+          "lines": [
+            {
+              "text": "Decreases",
+              "context": "Decreases",
+              "left": 112,
+              "right": 172.484375,
+              "top": 59.734375,
+              "bottom": 76.734375
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-active-lesson-primary",
+          "stage": null,
+          "left": 63,
+          "right": 215.5625,
+          "clientWidth": 177,
+          "scrollWidth": 177,
+          "lines": [
+            {
+              "text": "Test",
+              "context": "Test transistor prediction",
+              "left": 63,
+              "right": 87.265625,
+              "top": 132.390625,
+              "bottom": 149.390625
+            },
+            {
+              "text": "transistor",
+              "context": "Test transistor prediction",
+              "left": 90.84375,
+              "right": 149.203125,
+              "top": 132.390625,
+              "bottom": 149.390625
+            },
+            {
+              "text": "prediction",
+              "context": "Test transistor prediction",
+              "left": 152.78125,
+              "right": 215.5625,
+              "top": 132.390625,
+              "bottom": 149.390625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": "#:r4:-test-help",
+          "stage": null,
+          "left": 50,
+          "right": 340,
+          "clientWidth": 290,
+          "scrollWidth": 290,
+          "lines": [
+            {
+              "text": "Test",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 50,
+              "right": 70.5625,
+              "top": 175.140625,
+              "bottom": 191.140625
+            },
+            {
+              "text": "runs",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 73.828125,
+              "right": 96.6875,
+              "top": 175.140625,
+              "bottom": 191.140625
+            },
+            {
+              "text": "the",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 99.96875,
+              "right": 117.109375,
+              "top": 175.140625,
+              "bottom": 191.140625
+            },
+            {
+              "text": "stated",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 120.375,
+              "right": 153.0625,
+              "top": 175.140625,
+              "bottom": 191.140625
+            },
+            {
+              "text": "change",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 156.34375,
+              "right": 194.921875,
+              "top": 175.140625,
+              "bottom": 191.140625
+            },
+            {
+              "text": "from",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 198.203125,
+              "right": 223.515625,
+              "top": 175.140625,
+              "bottom": 191.140625
+            },
+            {
+              "text": "the",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 226.78125,
+              "right": 243.921875,
+              "top": 175.140625,
+              "bottom": 191.140625
+            },
+            {
+              "text": "experiment",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 247.203125,
+              "right": 306.875,
+              "top": 175.140625,
+              "bottom": 191.140625
+            },
+            {
+              "text": "baseline.",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 50,
+              "right": 96.015625,
+              "top": 196.140625,
+              "bottom": 212.140625
+            }
+          ],
+          "violations": []
+        }
+      ]
+    },
+    {
+      "name": "prediction-same",
+      "width": 390,
+      "scale": 1,
+      "cards": [
+        {
+          "selector": ".circuit-active-lesson-predictions",
+          "stage": null,
+          "left": 50,
+          "right": 340,
+          "clientWidth": 290,
+          "scrollWidth": 290,
+          "lines": [
+            {
+              "text": "Predict",
+              "context": "Predict the lamp current",
+              "left": 50,
+              "right": 103.15625,
+              "top": -218.546875,
+              "bottom": -197.546875
+            },
+            {
+              "text": "the",
+              "context": "Predict the lamp current",
+              "left": 107.5625,
+              "right": 132.078125,
+              "top": -218.546875,
+              "bottom": -197.546875
+            },
+            {
+              "text": "lamp",
+              "context": "Predict the lamp current",
+              "left": 136.484375,
+              "right": 174.234375,
+              "top": -218.546875,
+              "bottom": -197.546875
+            },
+            {
+              "text": "current",
+              "context": "Predict the lamp current",
+              "left": 178.640625,
+              "right": 233.234375,
+              "top": -218.546875,
+              "bottom": -197.546875
+            },
+            {
+              "text": "Compared",
+              "context": "Compared with the starting circuit.",
+              "left": 50,
+              "right": 105.484375,
+              "top": -187.359375,
+              "bottom": -171.359375
+            },
+            {
+              "text": "with",
+              "context": "Compared with the starting circuit.",
+              "left": 108.75,
+              "right": 131.203125,
+              "top": -187.359375,
+              "bottom": -171.359375
+            },
+            {
+              "text": "the",
+              "context": "Compared with the starting circuit.",
+              "left": 134.46875,
+              "right": 151.625,
+              "top": -187.359375,
+              "bottom": -171.359375
+            },
+            {
+              "text": "starting",
+              "context": "Compared with the starting circuit.",
+              "left": 154.890625,
+              "right": 195.171875,
+              "top": -187.359375,
+              "bottom": -171.359375
+            },
+            {
+              "text": "circuit.",
+              "context": "Compared with the starting circuit.",
+              "left": 198.453125,
+              "right": 232.984375,
+              "top": -187.359375,
+              "bottom": -171.359375
+            },
+            {
+              "text": "Increases",
+              "context": "Increases",
+              "left": 112,
+              "right": 167.859375,
+              "top": -131.765625,
+              "bottom": -114.765625
+            },
+            {
+              "text": "Stays",
+              "context": "Stays the same",
+              "left": 112,
+              "right": 143.734375,
+              "top": -55.765625,
+              "bottom": -38.765625
+            },
+            {
+              "text": "the",
+              "context": "Stays the same",
+              "left": 147.3125,
+              "right": 167.25,
+              "top": -55.765625,
+              "bottom": -38.765625
+            },
+            {
+              "text": "same",
+              "context": "Stays the same",
+              "left": 170.8125,
+              "right": 202.484375,
+              "top": -55.765625,
+              "bottom": -38.765625
+            },
+            {
+              "text": "Decreases",
+              "context": "Decreases",
+              "left": 112,
+              "right": 172.484375,
+              "top": 20.234375,
+              "bottom": 37.234375
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-prediction-choice",
+          "stage": null,
+          "left": 66,
+          "right": 304,
+          "clientWidth": 286,
+          "scrollWidth": 286,
+          "lines": [
+            {
+              "text": "Increases",
+              "context": "Increases",
+              "left": 112,
+              "right": 167.859375,
+              "top": -131.765625,
+              "bottom": -114.765625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-prediction-choice",
+          "stage": null,
+          "left": 66,
+          "right": 304,
+          "clientWidth": 286,
+          "scrollWidth": 286,
+          "lines": [
+            {
+              "text": "Stays",
+              "context": "Stays the same",
+              "left": 112,
+              "right": 143.734375,
+              "top": -55.765625,
+              "bottom": -38.765625
+            },
+            {
+              "text": "the",
+              "context": "Stays the same",
+              "left": 147.3125,
+              "right": 167.25,
+              "top": -55.765625,
+              "bottom": -38.765625
+            },
+            {
+              "text": "same",
+              "context": "Stays the same",
+              "left": 170.8125,
+              "right": 202.484375,
+              "top": -55.765625,
+              "bottom": -38.765625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-prediction-choice",
+          "stage": null,
+          "left": 66,
+          "right": 304,
+          "clientWidth": 286,
+          "scrollWidth": 286,
+          "lines": [
+            {
+              "text": "Decreases",
+              "context": "Decreases",
+              "left": 112,
+              "right": 172.484375,
+              "top": 20.234375,
+              "bottom": 37.234375
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-active-lesson-primary",
+          "stage": null,
+          "left": 63,
+          "right": 215.5625,
+          "clientWidth": 177,
+          "scrollWidth": 177,
+          "lines": [
+            {
+              "text": "Test",
+              "context": "Test transistor prediction",
+              "left": 63,
+              "right": 87.265625,
+              "top": 92.890625,
+              "bottom": 109.890625
+            },
+            {
+              "text": "transistor",
+              "context": "Test transistor prediction",
+              "left": 90.84375,
+              "right": 149.203125,
+              "top": 92.890625,
+              "bottom": 109.890625
+            },
+            {
+              "text": "prediction",
+              "context": "Test transistor prediction",
+              "left": 152.78125,
+              "right": 215.5625,
+              "top": 92.890625,
+              "bottom": 109.890625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": "#:r4:-test-help",
+          "stage": null,
+          "left": 50,
+          "right": 340,
+          "clientWidth": 290,
+          "scrollWidth": 290,
+          "lines": [
+            {
+              "text": "Test",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 50,
+              "right": 70.5625,
+              "top": 135.640625,
+              "bottom": 151.640625
+            },
+            {
+              "text": "runs",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 73.828125,
+              "right": 96.6875,
+              "top": 135.640625,
+              "bottom": 151.640625
+            },
+            {
+              "text": "the",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 99.96875,
+              "right": 117.109375,
+              "top": 135.640625,
+              "bottom": 151.640625
+            },
+            {
+              "text": "stated",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 120.375,
+              "right": 153.0625,
+              "top": 135.640625,
+              "bottom": 151.640625
+            },
+            {
+              "text": "change",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 156.34375,
+              "right": 194.921875,
+              "top": 135.640625,
+              "bottom": 151.640625
+            },
+            {
+              "text": "from",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 198.203125,
+              "right": 223.515625,
+              "top": 135.640625,
+              "bottom": 151.640625
+            },
+            {
+              "text": "the",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 226.78125,
+              "right": 243.921875,
+              "top": 135.640625,
+              "bottom": 151.640625
+            },
+            {
+              "text": "experiment",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 247.203125,
+              "right": 306.875,
+              "top": 135.640625,
+              "bottom": 151.640625
+            },
+            {
+              "text": "baseline.",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 50,
+              "right": 96.015625,
+              "top": 156.640625,
+              "bottom": 172.640625
+            }
+          ],
+          "violations": []
+        }
+      ]
+    },
+    {
+      "name": "prediction-less",
+      "width": 390,
+      "scale": 1,
+      "cards": [
+        {
+          "selector": ".circuit-active-lesson-predictions",
+          "stage": null,
+          "left": 50,
+          "right": 340,
+          "clientWidth": 290,
+          "scrollWidth": 290,
+          "lines": [
+            {
+              "text": "Predict",
+              "context": "Predict the lamp current",
+              "left": 50,
+              "right": 103.15625,
+              "top": -218.546875,
+              "bottom": -197.546875
+            },
+            {
+              "text": "the",
+              "context": "Predict the lamp current",
+              "left": 107.5625,
+              "right": 132.078125,
+              "top": -218.546875,
+              "bottom": -197.546875
+            },
+            {
+              "text": "lamp",
+              "context": "Predict the lamp current",
+              "left": 136.484375,
+              "right": 174.234375,
+              "top": -218.546875,
+              "bottom": -197.546875
+            },
+            {
+              "text": "current",
+              "context": "Predict the lamp current",
+              "left": 178.640625,
+              "right": 233.234375,
+              "top": -218.546875,
+              "bottom": -197.546875
+            },
+            {
+              "text": "Compared",
+              "context": "Compared with the starting circuit.",
+              "left": 50,
+              "right": 105.484375,
+              "top": -187.359375,
+              "bottom": -171.359375
+            },
+            {
+              "text": "with",
+              "context": "Compared with the starting circuit.",
+              "left": 108.75,
+              "right": 131.203125,
+              "top": -187.359375,
+              "bottom": -171.359375
+            },
+            {
+              "text": "the",
+              "context": "Compared with the starting circuit.",
+              "left": 134.46875,
+              "right": 151.625,
+              "top": -187.359375,
+              "bottom": -171.359375
+            },
+            {
+              "text": "starting",
+              "context": "Compared with the starting circuit.",
+              "left": 154.890625,
+              "right": 195.171875,
+              "top": -187.359375,
+              "bottom": -171.359375
+            },
+            {
+              "text": "circuit.",
+              "context": "Compared with the starting circuit.",
+              "left": 198.453125,
+              "right": 232.984375,
+              "top": -187.359375,
+              "bottom": -171.359375
+            },
+            {
+              "text": "Increases",
+              "context": "Increases",
+              "left": 112,
+              "right": 167.859375,
+              "top": -131.765625,
+              "bottom": -114.765625
+            },
+            {
+              "text": "Stays",
+              "context": "Stays the same",
+              "left": 112,
+              "right": 143.734375,
+              "top": -55.765625,
+              "bottom": -38.765625
+            },
+            {
+              "text": "the",
+              "context": "Stays the same",
+              "left": 147.3125,
+              "right": 167.25,
+              "top": -55.765625,
+              "bottom": -38.765625
+            },
+            {
+              "text": "same",
+              "context": "Stays the same",
+              "left": 170.8125,
+              "right": 202.484375,
+              "top": -55.765625,
+              "bottom": -38.765625
+            },
+            {
+              "text": "Decreases",
+              "context": "Decreases",
+              "left": 112,
+              "right": 172.484375,
+              "top": 20.234375,
+              "bottom": 37.234375
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-prediction-choice",
+          "stage": null,
+          "left": 66,
+          "right": 304,
+          "clientWidth": 286,
+          "scrollWidth": 286,
+          "lines": [
+            {
+              "text": "Increases",
+              "context": "Increases",
+              "left": 112,
+              "right": 167.859375,
+              "top": -131.765625,
+              "bottom": -114.765625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-prediction-choice",
+          "stage": null,
+          "left": 66,
+          "right": 304,
+          "clientWidth": 286,
+          "scrollWidth": 286,
+          "lines": [
+            {
+              "text": "Stays",
+              "context": "Stays the same",
+              "left": 112,
+              "right": 143.734375,
+              "top": -55.765625,
+              "bottom": -38.765625
+            },
+            {
+              "text": "the",
+              "context": "Stays the same",
+              "left": 147.3125,
+              "right": 167.25,
+              "top": -55.765625,
+              "bottom": -38.765625
+            },
+            {
+              "text": "same",
+              "context": "Stays the same",
+              "left": 170.8125,
+              "right": 202.484375,
+              "top": -55.765625,
+              "bottom": -38.765625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-prediction-choice",
+          "stage": null,
+          "left": 66,
+          "right": 304,
+          "clientWidth": 286,
+          "scrollWidth": 286,
+          "lines": [
+            {
+              "text": "Decreases",
+              "context": "Decreases",
+              "left": 112,
+              "right": 172.484375,
+              "top": 20.234375,
+              "bottom": 37.234375
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-active-lesson-primary",
+          "stage": null,
+          "left": 63,
+          "right": 215.5625,
+          "clientWidth": 177,
+          "scrollWidth": 177,
+          "lines": [
+            {
+              "text": "Test",
+              "context": "Test transistor prediction",
+              "left": 63,
+              "right": 87.265625,
+              "top": 92.890625,
+              "bottom": 109.890625
+            },
+            {
+              "text": "transistor",
+              "context": "Test transistor prediction",
+              "left": 90.84375,
+              "right": 149.203125,
+              "top": 92.890625,
+              "bottom": 109.890625
+            },
+            {
+              "text": "prediction",
+              "context": "Test transistor prediction",
+              "left": 152.78125,
+              "right": 215.5625,
+              "top": 92.890625,
+              "bottom": 109.890625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": "#:r4:-test-help",
+          "stage": null,
+          "left": 50,
+          "right": 340,
+          "clientWidth": 290,
+          "scrollWidth": 290,
+          "lines": [
+            {
+              "text": "Test",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 50,
+              "right": 70.5625,
+              "top": 135.640625,
+              "bottom": 151.640625
+            },
+            {
+              "text": "runs",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 73.828125,
+              "right": 96.6875,
+              "top": 135.640625,
+              "bottom": 151.640625
+            },
+            {
+              "text": "the",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 99.96875,
+              "right": 117.109375,
+              "top": 135.640625,
+              "bottom": 151.640625
+            },
+            {
+              "text": "stated",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 120.375,
+              "right": 153.0625,
+              "top": 135.640625,
+              "bottom": 151.640625
+            },
+            {
+              "text": "change",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 156.34375,
+              "right": 194.921875,
+              "top": 135.640625,
+              "bottom": 151.640625
+            },
+            {
+              "text": "from",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 198.203125,
+              "right": 223.515625,
+              "top": 135.640625,
+              "bottom": 151.640625
+            },
+            {
+              "text": "the",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 226.78125,
+              "right": 243.921875,
+              "top": 135.640625,
+              "bottom": 151.640625
+            },
+            {
+              "text": "experiment",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 247.203125,
+              "right": 306.875,
+              "top": 135.640625,
+              "bottom": 151.640625
+            },
+            {
+              "text": "baseline.",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 50,
+              "right": 96.015625,
+              "top": 156.640625,
+              "bottom": 172.640625
+            }
+          ],
+          "violations": []
+        }
+      ]
+    },
+    {
+      "name": "prediction-empty-200pct-text",
+      "width": 320,
+      "scale": 2,
+      "cards": [
+        {
+          "selector": ".circuit-active-lesson-predictions",
+          "stage": null,
+          "left": 50,
+          "right": 270,
+          "clientWidth": 220,
+          "scrollWidth": 220,
+          "lines": [
+            {
+              "text": "Predict",
+              "context": "Predict the lamp current",
+              "left": 50,
+              "right": 156.296875,
+              "top": 8444.859375,
+              "bottom": 8487.859375
+            },
+            {
+              "text": "the",
+              "context": "Predict the lamp current",
+              "left": 165.125,
+              "right": 214.15625,
+              "top": 8444.859375,
+              "bottom": 8487.859375
+            },
+            {
+              "text": "lamp",
+              "context": "Predict the lamp current",
+              "left": 50,
+              "right": 125.46875,
+              "top": 8499.25,
+              "bottom": 8542.25
+            },
+            {
+              "text": "current",
+              "context": "Predict the lamp current",
+              "left": 134.296875,
+              "right": 243.484375,
+              "top": 8499.25,
+              "bottom": 8542.25
+            },
+            {
+              "text": "Compared",
+              "context": "Compared with the starting circuit.",
+              "left": 50,
+              "right": 160.953125,
+              "top": 8558.640625,
+              "bottom": 8590.640625
+            },
+            {
+              "text": "with",
+              "context": "Compared with the starting circuit.",
+              "left": 167.515625,
+              "right": 212.390625,
+              "top": 8558.640625,
+              "bottom": 8590.640625
+            },
+            {
+              "text": "the",
+              "context": "Compared with the starting circuit.",
+              "left": 218.953125,
+              "right": 253.234375,
+              "top": 8558.640625,
+              "bottom": 8590.640625
+            },
+            {
+              "text": "starting",
+              "context": "Compared with the starting circuit.",
+              "left": 50,
+              "right": 130.53125,
+              "top": 8600.640625,
+              "bottom": 8632.640625
+            },
+            {
+              "text": "circuit.",
+              "context": "Compared with the starting circuit.",
+              "left": 137.09375,
+              "right": 206.171875,
+              "top": 8600.640625,
+              "bottom": 8632.640625
+            },
+            {
+              "text": "Increases",
+              "context": "Increases",
+              "left": 112,
+              "right": 223.703125,
+              "top": 8666.640625,
+              "bottom": 8701.640625
+            },
+            {
+              "text": "Stays",
+              "context": "Stays the same",
+              "left": 112,
+              "right": 175.46875,
+              "top": 8744.234375,
+              "bottom": 8779.234375
+            },
+            {
+              "text": "the",
+              "context": "Stays the same",
+              "left": 182.625,
+              "right": 222.484375,
+              "top": 8744.234375,
+              "bottom": 8779.234375
+            },
+            {
+              "text": "same",
+              "context": "Stays the same",
+              "left": 112,
+              "right": 175.3125,
+              "top": 8785.828125,
+              "bottom": 8820.828125
+            },
+            {
+              "text": "Decreases",
+              "context": "Decreases",
+              "left": 112,
+              "right": 232.96875,
+              "top": 8863.421875,
+              "bottom": 8898.421875
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-prediction-choice",
+          "stage": null,
+          "left": 66,
+          "right": 234,
+          "clientWidth": 216,
+          "scrollWidth": 216,
+          "lines": [
+            {
+              "text": "Increases",
+              "context": "Increases",
+              "left": 112,
+              "right": 223.703125,
+              "top": 8666.640625,
+              "bottom": 8701.640625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-prediction-choice",
+          "stage": null,
+          "left": 66,
+          "right": 234,
+          "clientWidth": 216,
+          "scrollWidth": 216,
+          "lines": [
+            {
+              "text": "Stays",
+              "context": "Stays the same",
+              "left": 112,
+              "right": 175.46875,
+              "top": 8744.234375,
+              "bottom": 8779.234375
+            },
+            {
+              "text": "the",
+              "context": "Stays the same",
+              "left": 182.625,
+              "right": 222.484375,
+              "top": 8744.234375,
+              "bottom": 8779.234375
+            },
+            {
+              "text": "same",
+              "context": "Stays the same",
+              "left": 112,
+              "right": 175.3125,
+              "top": 8785.828125,
+              "bottom": 8820.828125
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-prediction-choice",
+          "stage": null,
+          "left": 66,
+          "right": 234,
+          "clientWidth": 216,
+          "scrollWidth": 216,
+          "lines": [
+            {
+              "text": "Decreases",
+              "context": "Decreases",
+              "left": 112,
+              "right": 232.96875,
+              "top": 8863.421875,
+              "bottom": 8898.421875
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-active-lesson-primary",
+          "stage": null,
+          "left": 63,
+          "right": 257,
+          "clientWidth": 218,
+          "scrollWidth": 218,
+          "lines": [
+            {
+              "text": "Test",
+              "context": "Test transistor prediction",
+              "left": 73.796875,
+              "right": 122.328125,
+              "top": 8945.015625,
+              "bottom": 8980.015625
+            },
+            {
+              "text": "transistor",
+              "context": "Test transistor prediction",
+              "left": 129.484375,
+              "right": 246.203125,
+              "top": 8945.015625,
+              "bottom": 8980.015625
+            },
+            {
+              "text": "prediction",
+              "context": "Test transistor prediction",
+              "left": 97.234375,
+              "right": 222.765625,
+              "top": 8984.015625,
+              "bottom": 9019.015625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": "#:r4:-test-help",
+          "stage": null,
+          "left": 50,
+          "right": 270,
+          "clientWidth": 220,
+          "scrollWidth": 220,
+          "lines": [
+            {
+              "text": "Choose",
+              "context": "Choose a prediction to enable Test.",
+              "left": 50,
+              "right": 129.3125,
+              "top": 9047.015625,
+              "bottom": 9079.015625
+            },
+            {
+              "text": "a",
+              "context": "Choose a prediction to enable Test.",
+              "left": 135.875,
+              "right": 148.09375,
+              "top": 9047.015625,
+              "bottom": 9079.015625
+            },
+            {
+              "text": "prediction",
+              "context": "Choose a prediction to enable Test.",
+              "left": 154.65625,
+              "right": 262.296875,
+              "top": 9047.015625,
+              "bottom": 9079.015625
+            },
+            {
+              "text": "to",
+              "context": "Choose a prediction to enable Test.",
+              "left": 50,
+              "right": 72.203125,
+              "top": 9089.015625,
+              "bottom": 9121.015625
+            },
+            {
+              "text": "enable",
+              "context": "Choose a prediction to enable Test.",
+              "left": 78.765625,
+              "right": 149.59375,
+              "top": 9089.015625,
+              "bottom": 9121.015625
+            },
+            {
+              "text": "Test.",
+              "context": "Choose a prediction to enable Test.",
+              "left": 156.15625,
+              "right": 202.46875,
+              "top": 9089.015625,
+              "bottom": 9121.015625
+            }
+          ],
+          "violations": []
+        }
+      ]
+    },
+    {
+      "name": "prediction-less-200pct-text",
+      "width": 320,
+      "scale": 2,
+      "cards": [
+        {
+          "selector": ".circuit-active-lesson-predictions",
+          "stage": null,
+          "left": 50,
+          "right": 270,
+          "clientWidth": 220,
+          "scrollWidth": 220,
+          "lines": [
+            {
+              "text": "Predict",
+              "context": "Predict the lamp current",
+              "left": 50,
+              "right": 156.296875,
+              "top": 10824.859375,
+              "bottom": 10867.859375
+            },
+            {
+              "text": "the",
+              "context": "Predict the lamp current",
+              "left": 165.125,
+              "right": 214.15625,
+              "top": 10824.859375,
+              "bottom": 10867.859375
+            },
+            {
+              "text": "lamp",
+              "context": "Predict the lamp current",
+              "left": 50,
+              "right": 125.46875,
+              "top": 10879.25,
+              "bottom": 10922.25
+            },
+            {
+              "text": "current",
+              "context": "Predict the lamp current",
+              "left": 134.296875,
+              "right": 243.484375,
+              "top": 10879.25,
+              "bottom": 10922.25
+            },
+            {
+              "text": "Compared",
+              "context": "Compared with the starting circuit.",
+              "left": 50,
+              "right": 160.953125,
+              "top": 10938.640625,
+              "bottom": 10970.640625
+            },
+            {
+              "text": "with",
+              "context": "Compared with the starting circuit.",
+              "left": 167.515625,
+              "right": 212.390625,
+              "top": 10938.640625,
+              "bottom": 10970.640625
+            },
+            {
+              "text": "the",
+              "context": "Compared with the starting circuit.",
+              "left": 218.953125,
+              "right": 253.234375,
+              "top": 10938.640625,
+              "bottom": 10970.640625
+            },
+            {
+              "text": "starting",
+              "context": "Compared with the starting circuit.",
+              "left": 50,
+              "right": 130.53125,
+              "top": 10980.640625,
+              "bottom": 11012.640625
+            },
+            {
+              "text": "circuit.",
+              "context": "Compared with the starting circuit.",
+              "left": 137.09375,
+              "right": 206.171875,
+              "top": 10980.640625,
+              "bottom": 11012.640625
+            },
+            {
+              "text": "Increases",
+              "context": "Increases",
+              "left": 112,
+              "right": 223.703125,
+              "top": 11046.640625,
+              "bottom": 11081.640625
+            },
+            {
+              "text": "Stays",
+              "context": "Stays the same",
+              "left": 112,
+              "right": 175.46875,
+              "top": 11124.234375,
+              "bottom": 11159.234375
+            },
+            {
+              "text": "the",
+              "context": "Stays the same",
+              "left": 182.625,
+              "right": 222.484375,
+              "top": 11124.234375,
+              "bottom": 11159.234375
+            },
+            {
+              "text": "same",
+              "context": "Stays the same",
+              "left": 112,
+              "right": 175.3125,
+              "top": 11165.828125,
+              "bottom": 11200.828125
+            },
+            {
+              "text": "Decreases",
+              "context": "Decreases",
+              "left": 112,
+              "right": 232.96875,
+              "top": 11243.421875,
+              "bottom": 11278.421875
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-prediction-choice",
+          "stage": null,
+          "left": 66,
+          "right": 234,
+          "clientWidth": 216,
+          "scrollWidth": 216,
+          "lines": [
+            {
+              "text": "Increases",
+              "context": "Increases",
+              "left": 112,
+              "right": 223.703125,
+              "top": 11046.640625,
+              "bottom": 11081.640625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-prediction-choice",
+          "stage": null,
+          "left": 66,
+          "right": 234,
+          "clientWidth": 216,
+          "scrollWidth": 216,
+          "lines": [
+            {
+              "text": "Stays",
+              "context": "Stays the same",
+              "left": 112,
+              "right": 175.46875,
+              "top": 11124.234375,
+              "bottom": 11159.234375
+            },
+            {
+              "text": "the",
+              "context": "Stays the same",
+              "left": 182.625,
+              "right": 222.484375,
+              "top": 11124.234375,
+              "bottom": 11159.234375
+            },
+            {
+              "text": "same",
+              "context": "Stays the same",
+              "left": 112,
+              "right": 175.3125,
+              "top": 11165.828125,
+              "bottom": 11200.828125
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-prediction-choice",
+          "stage": null,
+          "left": 66,
+          "right": 234,
+          "clientWidth": 216,
+          "scrollWidth": 216,
+          "lines": [
+            {
+              "text": "Decreases",
+              "context": "Decreases",
+              "left": 112,
+              "right": 232.96875,
+              "top": 11243.421875,
+              "bottom": 11278.421875
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-active-lesson-primary",
+          "stage": null,
+          "left": 63,
+          "right": 257,
+          "clientWidth": 218,
+          "scrollWidth": 218,
+          "lines": [
+            {
+              "text": "Test",
+              "context": "Test transistor prediction",
+              "left": 73.796875,
+              "right": 122.328125,
+              "top": 11325.015625,
+              "bottom": 11360.015625
+            },
+            {
+              "text": "transistor",
+              "context": "Test transistor prediction",
+              "left": 129.484375,
+              "right": 246.203125,
+              "top": 11325.015625,
+              "bottom": 11360.015625
+            },
+            {
+              "text": "prediction",
+              "context": "Test transistor prediction",
+              "left": 97.234375,
+              "right": 222.765625,
+              "top": 11364.015625,
+              "bottom": 11399.015625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": "#:r4:-test-help",
+          "stage": null,
+          "left": 50,
+          "right": 270,
+          "clientWidth": 220,
+          "scrollWidth": 220,
+          "lines": [
+            {
+              "text": "Test",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 50,
+              "right": 91.109375,
+              "top": 11427.015625,
+              "bottom": 11459.015625
+            },
+            {
+              "text": "runs",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 97.671875,
+              "right": 143.375,
+              "top": 11427.015625,
+              "bottom": 11459.015625
+            },
+            {
+              "text": "the",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 149.9375,
+              "right": 184.203125,
+              "top": 11427.015625,
+              "bottom": 11459.015625
+            },
+            {
+              "text": "stated",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 190.765625,
+              "right": 256.125,
+              "top": 11427.015625,
+              "bottom": 11459.015625
+            },
+            {
+              "text": "change",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 50,
+              "right": 127.15625,
+              "top": 11469.015625,
+              "bottom": 11501.015625
+            },
+            {
+              "text": "from",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 133.71875,
+              "right": 184.3125,
+              "top": 11469.015625,
+              "bottom": 11501.015625
+            },
+            {
+              "text": "the",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 190.875,
+              "right": 225.15625,
+              "top": 11469.015625,
+              "bottom": 11501.015625
+            },
+            {
+              "text": "experiment",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 50,
+              "right": 169.328125,
+              "top": 11511.015625,
+              "bottom": 11543.015625
+            },
+            {
+              "text": "baseline.",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 175.890625,
+              "right": 267.921875,
+              "top": 11511.015625,
+              "bottom": 11543.015625
+            }
+          ],
+          "violations": []
+        }
+      ]
+    },
+    {
+      "name": "forced-colors-prediction-empty",
+      "width": 320,
+      "scale": 1,
+      "cards": [
+        {
+          "selector": ".circuit-active-lesson-predictions",
+          "stage": null,
+          "left": 50,
+          "right": 270,
+          "clientWidth": 220,
+          "scrollWidth": 220,
+          "lines": [
+            {
+              "text": "Predict",
+              "context": "Predict the lamp current",
+              "left": 50,
+              "right": 103.15625,
+              "top": -440.140625,
+              "bottom": -419.140625
+            },
+            {
+              "text": "the",
+              "context": "Predict the lamp current",
+              "left": 107.5625,
+              "right": 132.078125,
+              "top": -440.140625,
+              "bottom": -419.140625
+            },
+            {
+              "text": "lamp",
+              "context": "Predict the lamp current",
+              "left": 136.484375,
+              "right": 174.234375,
+              "top": -440.140625,
+              "bottom": -419.140625
+            },
+            {
+              "text": "current",
+              "context": "Predict the lamp current",
+              "left": 178.640625,
+              "right": 233.234375,
+              "top": -440.140625,
+              "bottom": -419.140625
+            },
+            {
+              "text": "Compared",
+              "context": "Compared with the starting circuit.",
+              "left": 50,
+              "right": 105.484375,
+              "top": -408.953125,
+              "bottom": -392.953125
+            },
+            {
+              "text": "with",
+              "context": "Compared with the starting circuit.",
+              "left": 108.75,
+              "right": 131.203125,
+              "top": -408.953125,
+              "bottom": -392.953125
+            },
+            {
+              "text": "the",
+              "context": "Compared with the starting circuit.",
+              "left": 134.46875,
+              "right": 151.625,
+              "top": -408.953125,
+              "bottom": -392.953125
+            },
+            {
+              "text": "starting",
+              "context": "Compared with the starting circuit.",
+              "left": 154.890625,
+              "right": 195.171875,
+              "top": -408.953125,
+              "bottom": -392.953125
+            },
+            {
+              "text": "circuit.",
+              "context": "Compared with the starting circuit.",
+              "left": 198.453125,
+              "right": 232.984375,
+              "top": -408.953125,
+              "bottom": -392.953125
+            },
+            {
+              "text": "Increases",
+              "context": "Increases",
+              "left": 112,
+              "right": 167.859375,
+              "top": -353.359375,
+              "bottom": -336.359375
+            },
+            {
+              "text": "Stays",
+              "context": "Stays the same",
+              "left": 112,
+              "right": 143.734375,
+              "top": -277.359375,
+              "bottom": -260.359375
+            },
+            {
+              "text": "the",
+              "context": "Stays the same",
+              "left": 147.3125,
+              "right": 167.25,
+              "top": -277.359375,
+              "bottom": -260.359375
+            },
+            {
+              "text": "same",
+              "context": "Stays the same",
+              "left": 170.8125,
+              "right": 202.484375,
+              "top": -277.359375,
+              "bottom": -260.359375
+            },
+            {
+              "text": "Decreases",
+              "context": "Decreases",
+              "left": 112,
+              "right": 172.484375,
+              "top": -201.359375,
+              "bottom": -184.359375
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-prediction-choice",
+          "stage": null,
+          "left": 66,
+          "right": 234,
+          "clientWidth": 216,
+          "scrollWidth": 216,
+          "lines": [
+            {
+              "text": "Increases",
+              "context": "Increases",
+              "left": 112,
+              "right": 167.859375,
+              "top": -353.359375,
+              "bottom": -336.359375
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-prediction-choice",
+          "stage": null,
+          "left": 66,
+          "right": 234,
+          "clientWidth": 216,
+          "scrollWidth": 216,
+          "lines": [
+            {
+              "text": "Stays",
+              "context": "Stays the same",
+              "left": 112,
+              "right": 143.734375,
+              "top": -277.359375,
+              "bottom": -260.359375
+            },
+            {
+              "text": "the",
+              "context": "Stays the same",
+              "left": 147.3125,
+              "right": 167.25,
+              "top": -277.359375,
+              "bottom": -260.359375
+            },
+            {
+              "text": "same",
+              "context": "Stays the same",
+              "left": 170.8125,
+              "right": 202.484375,
+              "top": -277.359375,
+              "bottom": -260.359375
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-prediction-choice",
+          "stage": null,
+          "left": 66,
+          "right": 234,
+          "clientWidth": 216,
+          "scrollWidth": 216,
+          "lines": [
+            {
+              "text": "Decreases",
+              "context": "Decreases",
+              "left": 112,
+              "right": 172.484375,
+              "top": -201.359375,
+              "bottom": -184.359375
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-active-lesson-primary",
+          "stage": null,
+          "left": 63,
+          "right": 215.5625,
+          "clientWidth": 177,
+          "scrollWidth": 177,
+          "lines": [
+            {
+              "text": "Test",
+              "context": "Test transistor prediction",
+              "left": 63,
+              "right": 87.265625,
+              "top": -128.703125,
+              "bottom": -111.703125
+            },
+            {
+              "text": "transistor",
+              "context": "Test transistor prediction",
+              "left": 90.84375,
+              "right": 149.203125,
+              "top": -128.703125,
+              "bottom": -111.703125
+            },
+            {
+              "text": "prediction",
+              "context": "Test transistor prediction",
+              "left": 152.78125,
+              "right": 215.5625,
+              "top": -128.703125,
+              "bottom": -111.703125
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": "#:r4:-test-help",
+          "stage": null,
+          "left": 50,
+          "right": 270,
+          "clientWidth": 220,
+          "scrollWidth": 220,
+          "lines": [
+            {
+              "text": "Choose",
+              "context": "Choose a prediction to enable Test.",
+              "left": 50,
+              "right": 89.65625,
+              "top": -85.953125,
+              "bottom": -69.953125
+            },
+            {
+              "text": "a",
+              "context": "Choose a prediction to enable Test.",
+              "left": 92.9375,
+              "right": 99.046875,
+              "top": -85.953125,
+              "bottom": -69.953125
+            },
+            {
+              "text": "prediction",
+              "context": "Choose a prediction to enable Test.",
+              "left": 102.328125,
+              "right": 156.15625,
+              "top": -85.953125,
+              "bottom": -69.953125
+            },
+            {
+              "text": "to",
+              "context": "Choose a prediction to enable Test.",
+              "left": 159.421875,
+              "right": 170.53125,
+              "top": -85.953125,
+              "bottom": -69.953125
+            },
+            {
+              "text": "enable",
+              "context": "Choose a prediction to enable Test.",
+              "left": 173.8125,
+              "right": 209.234375,
+              "top": -85.953125,
+              "bottom": -69.953125
+            },
+            {
+              "text": "Test.",
+              "context": "Choose a prediction to enable Test.",
+              "left": 212.5,
+              "right": 235.671875,
+              "top": -85.953125,
+              "bottom": -69.953125
+            }
+          ],
+          "violations": []
+        }
+      ]
+    },
+    {
+      "name": "forced-colors-prediction-less",
+      "width": 320,
+      "scale": 1,
+      "cards": [
+        {
+          "selector": ".circuit-active-lesson-predictions",
+          "stage": null,
+          "left": 50,
+          "right": 270,
+          "clientWidth": 220,
+          "scrollWidth": 220,
+          "lines": [
+            {
+              "text": "Predict",
+              "context": "Predict the lamp current",
+              "left": 50,
+              "right": 103.15625,
+              "top": 10822.859375,
+              "bottom": 10843.859375
+            },
+            {
+              "text": "the",
+              "context": "Predict the lamp current",
+              "left": 107.5625,
+              "right": 132.078125,
+              "top": 10822.859375,
+              "bottom": 10843.859375
+            },
+            {
+              "text": "lamp",
+              "context": "Predict the lamp current",
+              "left": 136.484375,
+              "right": 174.234375,
+              "top": 10822.859375,
+              "bottom": 10843.859375
+            },
+            {
+              "text": "current",
+              "context": "Predict the lamp current",
+              "left": 178.640625,
+              "right": 233.234375,
+              "top": 10822.859375,
+              "bottom": 10843.859375
+            },
+            {
+              "text": "Compared",
+              "context": "Compared with the starting circuit.",
+              "left": 50,
+              "right": 105.484375,
+              "top": 10854.046875,
+              "bottom": 10870.046875
+            },
+            {
+              "text": "with",
+              "context": "Compared with the starting circuit.",
+              "left": 108.75,
+              "right": 131.203125,
+              "top": 10854.046875,
+              "bottom": 10870.046875
+            },
+            {
+              "text": "the",
+              "context": "Compared with the starting circuit.",
+              "left": 134.46875,
+              "right": 151.625,
+              "top": 10854.046875,
+              "bottom": 10870.046875
+            },
+            {
+              "text": "starting",
+              "context": "Compared with the starting circuit.",
+              "left": 154.890625,
+              "right": 195.171875,
+              "top": 10854.046875,
+              "bottom": 10870.046875
+            },
+            {
+              "text": "circuit.",
+              "context": "Compared with the starting circuit.",
+              "left": 198.453125,
+              "right": 232.984375,
+              "top": 10854.046875,
+              "bottom": 10870.046875
+            },
+            {
+              "text": "Increases",
+              "context": "Increases",
+              "left": 112,
+              "right": 167.859375,
+              "top": 10909.640625,
+              "bottom": 10926.640625
+            },
+            {
+              "text": "Stays",
+              "context": "Stays the same",
+              "left": 112,
+              "right": 143.734375,
+              "top": 10985.640625,
+              "bottom": 11002.640625
+            },
+            {
+              "text": "the",
+              "context": "Stays the same",
+              "left": 147.3125,
+              "right": 167.25,
+              "top": 10985.640625,
+              "bottom": 11002.640625
+            },
+            {
+              "text": "same",
+              "context": "Stays the same",
+              "left": 170.8125,
+              "right": 202.484375,
+              "top": 10985.640625,
+              "bottom": 11002.640625
+            },
+            {
+              "text": "Decreases",
+              "context": "Decreases",
+              "left": 112,
+              "right": 172.484375,
+              "top": 11061.640625,
+              "bottom": 11078.640625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-prediction-choice",
+          "stage": null,
+          "left": 66,
+          "right": 234,
+          "clientWidth": 216,
+          "scrollWidth": 216,
+          "lines": [
+            {
+              "text": "Increases",
+              "context": "Increases",
+              "left": 112,
+              "right": 167.859375,
+              "top": 10909.640625,
+              "bottom": 10926.640625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-prediction-choice",
+          "stage": null,
+          "left": 66,
+          "right": 234,
+          "clientWidth": 216,
+          "scrollWidth": 216,
+          "lines": [
+            {
+              "text": "Stays",
+              "context": "Stays the same",
+              "left": 112,
+              "right": 143.734375,
+              "top": 10985.640625,
+              "bottom": 11002.640625
+            },
+            {
+              "text": "the",
+              "context": "Stays the same",
+              "left": 147.3125,
+              "right": 167.25,
+              "top": 10985.640625,
+              "bottom": 11002.640625
+            },
+            {
+              "text": "same",
+              "context": "Stays the same",
+              "left": 170.8125,
+              "right": 202.484375,
+              "top": 10985.640625,
+              "bottom": 11002.640625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-prediction-choice",
+          "stage": null,
+          "left": 66,
+          "right": 234,
+          "clientWidth": 216,
+          "scrollWidth": 216,
+          "lines": [
+            {
+              "text": "Decreases",
+              "context": "Decreases",
+              "left": 112,
+              "right": 172.484375,
+              "top": 11061.640625,
+              "bottom": 11078.640625
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": ".circuit-active-lesson-primary",
+          "stage": null,
+          "left": 63,
+          "right": 215.5625,
+          "clientWidth": 177,
+          "scrollWidth": 177,
+          "lines": [
+            {
+              "text": "Test",
+              "context": "Test transistor prediction",
+              "left": 63,
+              "right": 87.265625,
+              "top": 11134.296875,
+              "bottom": 11151.296875
+            },
+            {
+              "text": "transistor",
+              "context": "Test transistor prediction",
+              "left": 90.84375,
+              "right": 149.203125,
+              "top": 11134.296875,
+              "bottom": 11151.296875
+            },
+            {
+              "text": "prediction",
+              "context": "Test transistor prediction",
+              "left": 152.78125,
+              "right": 215.5625,
+              "top": 11134.296875,
+              "bottom": 11151.296875
+            }
+          ],
+          "violations": []
+        },
+        {
+          "selector": "#:r4:-test-help",
+          "stage": null,
+          "left": 50,
+          "right": 270,
+          "clientWidth": 220,
+          "scrollWidth": 220,
+          "lines": [
+            {
+              "text": "Test",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 50,
+              "right": 70.5625,
+              "top": 11177.046875,
+              "bottom": 11193.046875
+            },
+            {
+              "text": "runs",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 73.828125,
+              "right": 96.6875,
+              "top": 11177.046875,
+              "bottom": 11193.046875
+            },
+            {
+              "text": "the",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 99.96875,
+              "right": 117.109375,
+              "top": 11177.046875,
+              "bottom": 11193.046875
+            },
+            {
+              "text": "stated",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 120.375,
+              "right": 153.0625,
+              "top": 11177.046875,
+              "bottom": 11193.046875
+            },
+            {
+              "text": "change",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 156.34375,
+              "right": 194.921875,
+              "top": 11177.046875,
+              "bottom": 11193.046875
+            },
+            {
+              "text": "from",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 198.203125,
+              "right": 223.515625,
+              "top": 11177.046875,
+              "bottom": 11193.046875
+            },
+            {
+              "text": "the",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 226.78125,
+              "right": 243.921875,
+              "top": 11177.046875,
+              "bottom": 11193.046875
+            },
+            {
+              "text": "experiment",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 50,
+              "right": 109.671875,
+              "top": 11198.046875,
+              "bottom": 11214.046875
+            },
+            {
+              "text": "baseline.",
+              "context": "Test runs the stated change from the experiment baseline.",
+              "left": 112.9375,
+              "right": 158.96875,
+              "top": 11198.046875,
+              "bottom": 11214.046875
+            }
+          ],
+          "violations": []
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "name": "fresh-start",
+      "width": 1280,
+      "scale": 1,
+      "actions": [
+        {
+          "tag": "BUTTON",
+          "label": "Start transistor prediction",
+          "width": 183.921875,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "fresh-start",
+      "width": 390,
+      "scale": 1,
+      "actions": [
+        {
+          "tag": "BUTTON",
+          "label": "Start transistor prediction",
+          "width": 183.921875,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "prediction-empty",
+      "width": 1280,
+      "scale": 1,
+      "actions": [
+        {
+          "tag": "BUTTON",
+          "label": "Increases",
+          "width": 250,
+          "height": 116,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Stays the same",
+          "width": 250,
+          "height": 116,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Decreases",
+          "width": 250,
+          "height": 116,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "prediction-empty-test",
+      "width": 1280,
+      "actions": [
+        {
+          "tag": "BUTTON",
+          "label": "Test transistor prediction",
+          "width": 178.5625,
+          "height": 44,
+          "disabled": true,
+          "color": "rgb(171, 192, 204)",
+          "background": "rgb(26, 48, 59)",
+          "opacity": "1",
+          "describedby": ":r4:-test-help"
+        }
+      ]
+    },
+    {
+      "name": "prediction-empty",
+      "width": 390,
+      "scale": 1,
+      "actions": [
+        {
+          "tag": "BUTTON",
+          "label": "Increases",
+          "width": 290,
+          "height": 68,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Stays the same",
+          "width": 290,
+          "height": 68,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Decreases",
+          "width": 290,
+          "height": 68,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "prediction-empty-test",
+      "width": 390,
+      "actions": [
+        {
+          "tag": "BUTTON",
+          "label": "Test transistor prediction",
+          "width": 178.5625,
+          "height": 44,
+          "disabled": true,
+          "color": "rgb(171, 192, 204)",
+          "background": "rgb(26, 48, 59)",
+          "opacity": "1",
+          "describedby": ":r4:-test-help"
+        }
+      ]
+    },
+    {
+      "name": "prediction-empty",
+      "width": 320,
+      "scale": 1,
+      "actions": [
+        {
+          "tag": "BUTTON",
+          "label": "Increases",
+          "width": 220,
+          "height": 68,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Stays the same",
+          "width": 220,
+          "height": 68,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Decreases",
+          "width": 220,
+          "height": 68,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "prediction-empty-test",
+      "width": 320,
+      "actions": [
+        {
+          "tag": "BUTTON",
+          "label": "Test transistor prediction",
+          "width": 178.5625,
+          "height": 44,
+          "disabled": true,
+          "color": "rgb(171, 192, 204)",
+          "background": "rgb(26, 48, 59)",
+          "opacity": "1",
+          "describedby": ":r4:-test-help"
+        }
+      ]
+    },
+    {
+      "name": "prediction-more",
+      "width": 390,
+      "scale": 1,
+      "actions": [
+        {
+          "tag": "BUTTON",
+          "label": "Increases",
+          "width": 290,
+          "height": 68,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Stays the same",
+          "width": 290,
+          "height": 68,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Decreases",
+          "width": 290,
+          "height": 68,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "prediction-more-test",
+      "width": 390,
+      "actions": [
+        {
+          "tag": "BUTTON",
+          "label": "Test transistor prediction",
+          "width": 178.5625,
+          "height": 44,
+          "disabled": false,
+          "color": "rgb(20, 58, 52)",
+          "background": "rgb(181, 235, 221)",
+          "opacity": "1",
+          "describedby": ":r4:-test-help"
+        }
+      ]
+    },
+    {
+      "name": "prediction-same",
+      "width": 390,
+      "scale": 1,
+      "actions": [
+        {
+          "tag": "BUTTON",
+          "label": "Increases",
+          "width": 290,
+          "height": 68,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Stays the same",
+          "width": 290,
+          "height": 68,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Decreases",
+          "width": 290,
+          "height": 68,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "prediction-same-test",
+      "width": 390,
+      "actions": [
+        {
+          "tag": "BUTTON",
+          "label": "Test transistor prediction",
+          "width": 178.5625,
+          "height": 44,
+          "disabled": false,
+          "color": "rgb(20, 58, 52)",
+          "background": "rgb(181, 235, 221)",
+          "opacity": "1",
+          "describedby": ":r4:-test-help"
+        }
+      ]
+    },
+    {
+      "name": "prediction-less",
+      "width": 390,
+      "scale": 1,
+      "actions": [
+        {
+          "tag": "BUTTON",
+          "label": "Increases",
+          "width": 290,
+          "height": 68,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Stays the same",
+          "width": 290,
+          "height": 68,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Decreases",
+          "width": 290,
+          "height": 68,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "prediction-less-test",
+      "width": 390,
+      "actions": [
+        {
+          "tag": "BUTTON",
+          "label": "Test transistor prediction",
+          "width": 178.5625,
+          "height": 44,
+          "disabled": false,
+          "color": "rgb(20, 58, 52)",
+          "background": "rgb(181, 235, 221)",
+          "opacity": "1",
+          "describedby": ":r4:-test-help"
+        }
+      ]
+    },
+    {
+      "name": "prediction-empty-200pct-text",
+      "width": 320,
+      "scale": 2,
+      "actions": [
+        {
+          "tag": "BUTTON",
+          "label": "Increases",
+          "width": 220,
+          "height": 69.59375,
+          "disabled": false,
+          "transitionDuration": "0s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Stays the same",
+          "width": 220,
+          "height": 111.1875,
+          "disabled": false,
+          "transitionDuration": "0s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Decreases",
+          "width": 220,
+          "height": 69.59375,
+          "disabled": false,
+          "transitionDuration": "0s"
+        }
+      ]
+    },
+    {
+      "name": "prediction-empty-200pct-text-test",
+      "width": 320,
+      "actions": [
+        {
+          "tag": "BUTTON",
+          "label": "Test transistor prediction",
+          "width": 220,
+          "height": 100,
+          "disabled": true,
+          "color": "rgb(171, 192, 204)",
+          "background": "rgb(26, 48, 59)",
+          "opacity": "1",
+          "describedby": ":r4:-test-help"
+        }
+      ]
+    },
+    {
+      "name": "prediction-less-200pct-text",
+      "width": 320,
+      "scale": 2,
+      "actions": [
+        {
+          "tag": "BUTTON",
+          "label": "Increases",
+          "width": 220,
+          "height": 69.59375,
+          "disabled": false,
+          "transitionDuration": "0s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Stays the same",
+          "width": 220,
+          "height": 111.1875,
+          "disabled": false,
+          "transitionDuration": "0s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Decreases",
+          "width": 220,
+          "height": 69.59375,
+          "disabled": false,
+          "transitionDuration": "0s"
+        }
+      ]
+    },
+    {
+      "name": "prediction-less-200pct-text-test",
+      "width": 320,
+      "actions": [
+        {
+          "tag": "BUTTON",
+          "label": "Test transistor prediction",
+          "width": 220,
+          "height": 100,
+          "disabled": false,
+          "color": "rgb(20, 58, 52)",
+          "background": "rgb(181, 235, 221)",
+          "opacity": "1",
+          "describedby": ":r4:-test-help"
+        }
+      ]
+    },
+    {
+      "name": "forced-colors-prediction-empty",
+      "width": 320,
+      "scale": 1,
+      "actions": [
+        {
+          "tag": "BUTTON",
+          "label": "Increases",
+          "width": 220,
+          "height": 68,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Stays the same",
+          "width": 220,
+          "height": 68,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Decreases",
+          "width": 220,
+          "height": 68,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "forced-colors-prediction-empty-test",
+      "width": 320,
+      "actions": [
+        {
+          "tag": "BUTTON",
+          "label": "Test transistor prediction",
+          "width": 178.5625,
+          "height": 44,
+          "disabled": true,
+          "color": "rgb(96, 0, 0)",
+          "background": "rgb(255, 255, 255)",
+          "opacity": "1",
+          "describedby": ":r4:-test-help"
+        }
+      ]
+    },
+    {
+      "name": "forced-colors-prediction-less",
+      "width": 320,
+      "scale": 1,
+      "actions": [
+        {
+          "tag": "BUTTON",
+          "label": "Increases",
+          "width": 220,
+          "height": 68,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Stays the same",
+          "width": 220,
+          "height": 68,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Decreases",
+          "width": 220,
+          "height": 68,
+          "disabled": false,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "forced-colors-prediction-less-test",
+      "width": 320,
+      "actions": [
+        {
+          "tag": "BUTTON",
+          "label": "Test transistor prediction",
+          "width": 178.5625,
+          "height": 44,
+          "disabled": false,
+          "color": "rgb(0, 0, 0)",
+          "background": "rgb(255, 255, 255)",
+          "opacity": "1",
+          "describedby": ":r4:-test-help"
+        }
+      ]
+    }
+  ],
+  "focus": [
+    {
+      "name": "fresh-start",
+      "width": 1280,
+      "selector": "button",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(20, 58, 52)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "fresh-start",
+      "width": 390,
+      "selector": "button",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(20, 58, 52)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "prediction-empty",
+      "width": 1280,
+      "selector": "button:nth-child(1)",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(229, 243, 245)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "prediction-empty",
+      "width": 1280,
+      "selector": "button:nth-child(2)",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(229, 243, 245)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "prediction-empty",
+      "width": 1280,
+      "selector": "button:nth-child(3)",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(229, 243, 245)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "prediction-empty",
+      "width": 390,
+      "selector": "button:nth-child(1)",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(229, 243, 245)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "prediction-empty",
+      "width": 390,
+      "selector": "button:nth-child(2)",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(229, 243, 245)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "prediction-empty",
+      "width": 390,
+      "selector": "button:nth-child(3)",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(229, 243, 245)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "prediction-empty",
+      "width": 320,
+      "selector": "button:nth-child(1)",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(229, 243, 245)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "prediction-empty",
+      "width": 320,
+      "selector": "button:nth-child(2)",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(229, 243, 245)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "prediction-empty",
+      "width": 320,
+      "selector": "button:nth-child(3)",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(229, 243, 245)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "prediction-more",
+      "width": 390,
+      "selector": "button:nth-child(1)",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(20, 58, 52)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "prediction-more",
+      "width": 390,
+      "selector": "button:nth-child(2)",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(229, 243, 245)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "prediction-more",
+      "width": 390,
+      "selector": "button:nth-child(3)",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(229, 243, 245)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "prediction-more-test",
+      "width": 390,
+      "selector": ".circuit-active-lesson-primary",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "prediction-same",
+      "width": 390,
+      "selector": "button:nth-child(1)",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(229, 243, 245)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "prediction-same",
+      "width": 390,
+      "selector": "button:nth-child(2)",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(20, 58, 52)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "prediction-same",
+      "width": 390,
+      "selector": "button:nth-child(3)",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(229, 243, 245)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "prediction-same-test",
+      "width": 390,
+      "selector": ".circuit-active-lesson-primary",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "prediction-less",
+      "width": 390,
+      "selector": "button:nth-child(1)",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(229, 243, 245)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "prediction-less",
+      "width": 390,
+      "selector": "button:nth-child(2)",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(229, 243, 245)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "prediction-less",
+      "width": 390,
+      "selector": "button:nth-child(3)",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(20, 58, 52)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "prediction-less-test",
+      "width": 390,
+      "selector": ".circuit-active-lesson-primary",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(20, 58, 52)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "prediction-empty-200pct-text",
+      "width": 320,
+      "selector": "button:nth-child(1)",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "prediction-empty-200pct-text",
+      "width": 320,
+      "selector": "button:nth-child(2)",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "prediction-empty-200pct-text",
+      "width": 320,
+      "selector": "button:nth-child(3)",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "prediction-less-200pct-text",
+      "width": 320,
+      "selector": "button:nth-child(1)",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "prediction-less-200pct-text",
+      "width": 320,
+      "selector": "button:nth-child(2)",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "prediction-less-200pct-text",
+      "width": 320,
+      "selector": "button:nth-child(3)",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "prediction-less-200pct-text-test",
+      "width": 320,
+      "selector": ".circuit-active-lesson-primary",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "forced-colors-prediction-empty",
+      "width": 320,
+      "selector": "button:nth-child(1)",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(55, 0, 110)",
+      "boxShadow": "none",
+      "visible": true
+    },
+    {
+      "name": "forced-colors-prediction-empty",
+      "width": 320,
+      "selector": "button:nth-child(2)",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(55, 0, 110)",
+      "boxShadow": "none",
+      "visible": true
+    },
+    {
+      "name": "forced-colors-prediction-empty",
+      "width": 320,
+      "selector": "button:nth-child(3)",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(55, 0, 110)",
+      "boxShadow": "none",
+      "visible": true
+    },
+    {
+      "name": "forced-colors-prediction-less",
+      "width": 320,
+      "selector": "button:nth-child(1)",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(55, 0, 110)",
+      "boxShadow": "none",
+      "visible": true
+    },
+    {
+      "name": "forced-colors-prediction-less",
+      "width": 320,
+      "selector": "button:nth-child(2)",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(55, 0, 110)",
+      "boxShadow": "none",
+      "visible": true
+    },
+    {
+      "name": "forced-colors-prediction-less",
+      "width": 320,
+      "selector": "button:nth-child(3)",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(55, 0, 110)",
+      "boxShadow": "none",
+      "visible": true
+    },
+    {
+      "name": "forced-colors-prediction-less-test",
+      "width": 320,
+      "selector": ".circuit-active-lesson-primary",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(55, 0, 110)",
+      "boxShadow": "none",
+      "visible": true
+    }
+  ],
+  "focusTransitions": [],
+  "nodeIds": [
+    {
+      "name": "fresh-start",
+      "width": 1280,
+      "duplicates": []
+    },
+    {
+      "name": "fresh-start",
+      "width": 390,
+      "duplicates": []
+    },
+    {
+      "name": "prediction-empty",
+      "width": 1280,
+      "duplicates": []
+    },
+    {
+      "name": "prediction-empty",
+      "width": 390,
+      "duplicates": []
+    },
+    {
+      "name": "prediction-empty",
+      "width": 320,
+      "duplicates": []
+    },
+    {
+      "name": "prediction-more",
+      "width": 390,
+      "duplicates": []
+    },
+    {
+      "name": "prediction-same",
+      "width": 390,
+      "duplicates": []
+    },
+    {
+      "name": "prediction-less",
+      "width": 390,
+      "duplicates": []
+    },
+    {
+      "name": "prediction-empty-200pct-text",
+      "width": 320,
+      "duplicates": []
+    },
+    {
+      "name": "prediction-less-200pct-text",
+      "width": 320,
+      "duplicates": []
+    },
+    {
+      "name": "forced-colors-prediction-empty",
+      "width": 320,
+      "duplicates": []
+    },
+    {
+      "name": "forced-colors-prediction-less",
+      "width": 320,
+      "duplicates": []
+    }
+  ],
+  "textResize": [
+    {
+      "baselineViewportWidth": 320,
+      "scale": 2,
+      "elements": 19,
+      "fonts": [
+        {
+          "tag": "FIELDSET",
+          "className": "circuit-active-lesson-predictions",
+          "baselineFontSize": 14,
+          "normalFontSize": 14,
+          "afterFontSize": 28
+        },
+        {
+          "tag": "LEGEND",
+          "className": "",
+          "baselineFontSize": 16,
+          "normalFontSize": 16,
+          "afterFontSize": 32
+        },
+        {
+          "tag": "P",
+          "className": "circuit-prediction-help",
+          "baselineFontSize": 12,
+          "normalFontSize": 12,
+          "afterFontSize": 24
+        },
+        {
+          "tag": "DIV",
+          "className": "circuit-prediction-choices",
+          "baselineFontSize": 14,
+          "normalFontSize": 14,
+          "afterFontSize": 28
+        },
+        {
+          "tag": "BUTTON",
+          "className": "circuit-prediction-choice",
+          "baselineFontSize": 13,
+          "normalFontSize": 13,
+          "afterFontSize": 26
+        },
+        {
+          "tag": "SPAN",
+          "className": "circuit-prediction-direction",
+          "baselineFontSize": 13,
+          "normalFontSize": 13,
+          "afterFontSize": 26
+        },
+        {
+          "tag": "SPAN",
+          "className": "circuit-lesson-prediction-label",
+          "baselineFontSize": 13,
+          "normalFontSize": 13,
+          "afterFontSize": 26
+        },
+        {
+          "tag": "SPAN",
+          "className": "circuit-prediction-selected",
+          "baselineFontSize": 13,
+          "normalFontSize": 13,
+          "afterFontSize": 26
+        },
+        {
+          "tag": "BUTTON",
+          "className": "circuit-prediction-choice",
+          "baselineFontSize": 13,
+          "normalFontSize": 13,
+          "afterFontSize": 26
+        },
+        {
+          "tag": "SPAN",
+          "className": "circuit-prediction-direction",
+          "baselineFontSize": 13,
+          "normalFontSize": 13,
+          "afterFontSize": 26
+        },
+        {
+          "tag": "SPAN",
+          "className": "circuit-lesson-prediction-label",
+          "baselineFontSize": 13,
+          "normalFontSize": 13,
+          "afterFontSize": 26
+        },
+        {
+          "tag": "SPAN",
+          "className": "circuit-prediction-selected",
+          "baselineFontSize": 13,
+          "normalFontSize": 13,
+          "afterFontSize": 26
+        },
+        {
+          "tag": "BUTTON",
+          "className": "circuit-prediction-choice",
+          "baselineFontSize": 13,
+          "normalFontSize": 13,
+          "afterFontSize": 26
+        },
+        {
+          "tag": "SPAN",
+          "className": "circuit-prediction-direction",
+          "baselineFontSize": 13,
+          "normalFontSize": 13,
+          "afterFontSize": 26
+        },
+        {
+          "tag": "SPAN",
+          "className": "circuit-lesson-prediction-label",
+          "baselineFontSize": 13,
+          "normalFontSize": 13,
+          "afterFontSize": 26
+        },
+        {
+          "tag": "SPAN",
+          "className": "circuit-prediction-selected",
+          "baselineFontSize": 13,
+          "normalFontSize": 13,
+          "afterFontSize": 26
+        },
+        {
+          "tag": "DIV",
+          "className": "circuit-active-lesson-actions",
+          "baselineFontSize": 14,
+          "normalFontSize": 14,
+          "afterFontSize": 28
+        },
+        {
+          "tag": "BUTTON",
+          "className": "circuit-active-lesson-primary",
+          "baselineFontSize": 13,
+          "normalFontSize": 13,
+          "afterFontSize": 26
+        },
+        {
+          "tag": "P",
+          "className": "circuit-active-lesson-help",
+          "baselineFontSize": 12,
+          "normalFontSize": 12,
+          "afterFontSize": 24
+        }
+      ]
+    },
+    {
+      "baselineViewportWidth": 320,
+      "scale": 2,
+      "elements": 19,
+      "fonts": [
+        {
+          "tag": "FIELDSET",
+          "className": "circuit-active-lesson-predictions",
+          "baselineFontSize": 14,
+          "normalFontSize": 14,
+          "afterFontSize": 28
+        },
+        {
+          "tag": "LEGEND",
+          "className": "",
+          "baselineFontSize": 16,
+          "normalFontSize": 16,
+          "afterFontSize": 32
+        },
+        {
+          "tag": "P",
+          "className": "circuit-prediction-help",
+          "baselineFontSize": 12,
+          "normalFontSize": 12,
+          "afterFontSize": 24
+        },
+        {
+          "tag": "DIV",
+          "className": "circuit-prediction-choices",
+          "baselineFontSize": 14,
+          "normalFontSize": 14,
+          "afterFontSize": 28
+        },
+        {
+          "tag": "BUTTON",
+          "className": "circuit-prediction-choice",
+          "baselineFontSize": 13,
+          "normalFontSize": 13,
+          "afterFontSize": 26
+        },
+        {
+          "tag": "SPAN",
+          "className": "circuit-prediction-direction",
+          "baselineFontSize": 13,
+          "normalFontSize": 13,
+          "afterFontSize": 26
+        },
+        {
+          "tag": "SPAN",
+          "className": "circuit-lesson-prediction-label",
+          "baselineFontSize": 13,
+          "normalFontSize": 13,
+          "afterFontSize": 26
+        },
+        {
+          "tag": "SPAN",
+          "className": "circuit-prediction-selected",
+          "baselineFontSize": 13,
+          "normalFontSize": 13,
+          "afterFontSize": 26
+        },
+        {
+          "tag": "BUTTON",
+          "className": "circuit-prediction-choice",
+          "baselineFontSize": 13,
+          "normalFontSize": 13,
+          "afterFontSize": 26
+        },
+        {
+          "tag": "SPAN",
+          "className": "circuit-prediction-direction",
+          "baselineFontSize": 13,
+          "normalFontSize": 13,
+          "afterFontSize": 26
+        },
+        {
+          "tag": "SPAN",
+          "className": "circuit-lesson-prediction-label",
+          "baselineFontSize": 13,
+          "normalFontSize": 13,
+          "afterFontSize": 26
+        },
+        {
+          "tag": "SPAN",
+          "className": "circuit-prediction-selected",
+          "baselineFontSize": 13,
+          "normalFontSize": 13,
+          "afterFontSize": 26
+        },
+        {
+          "tag": "BUTTON",
+          "className": "circuit-prediction-choice",
+          "baselineFontSize": 13,
+          "normalFontSize": 13,
+          "afterFontSize": 26
+        },
+        {
+          "tag": "SPAN",
+          "className": "circuit-prediction-direction",
+          "baselineFontSize": 13,
+          "normalFontSize": 13,
+          "afterFontSize": 26
+        },
+        {
+          "tag": "SPAN",
+          "className": "circuit-lesson-prediction-label",
+          "baselineFontSize": 13,
+          "normalFontSize": 13,
+          "afterFontSize": 26
+        },
+        {
+          "tag": "SPAN",
+          "className": "circuit-prediction-selected",
+          "baselineFontSize": 13,
+          "normalFontSize": 13,
+          "afterFontSize": 26
+        },
+        {
+          "tag": "DIV",
+          "className": "circuit-active-lesson-actions",
+          "baselineFontSize": 14,
+          "normalFontSize": 14,
+          "afterFontSize": 28
+        },
+        {
+          "tag": "BUTTON",
+          "className": "circuit-active-lesson-primary",
+          "baselineFontSize": 13,
+          "normalFontSize": 13,
+          "afterFontSize": 26
+        },
+        {
+          "tag": "P",
+          "className": "circuit-active-lesson-help",
+          "baselineFontSize": 12,
+          "normalFontSize": 12,
+          "afterFontSize": 24
+        }
+      ]
+    }
+  ],
+  "motion": [
+    {
+      "reduced": true,
+      "animations": 0
+    }
+  ],
+  "styleScope": [
+    {
+      "liveBackground": "rgb(23, 55, 67)",
+      "outsideBackground": "rgba(0, 0, 0, 0)",
+      "liveMinHeight": "116px",
+      "outsideMinHeight": "0px",
+      "liveDisplay": "flex",
+      "outsideDisplay": "inline-block"
+    }
+  ],
+  "scanStyles": [],
+  "screenshots": [
+    {
+      "name": "fresh-start",
+      "width": 1280,
+      "file": "fresh-start-1280.png",
+      "clip": {
+        "x": 249,
+        "y": 5778,
+        "width": 782,
+        "height": 90
+      }
+    },
+    {
+      "name": "fresh-start",
+      "width": 390,
+      "file": "fresh-start-390.png",
+      "clip": {
+        "x": 44,
+        "y": 8123,
+        "width": 302,
+        "height": 135
+      }
+    },
+    {
+      "name": "prediction-empty",
+      "width": 1280,
+      "file": "prediction-empty-1280.png",
+      "clip": {
+        "x": 249,
+        "y": 5754,
+        "width": 782,
+        "height": 285
+      }
+    },
+    {
+      "name": "prediction-empty",
+      "width": 390,
+      "file": "prediction-empty-390.png",
+      "clip": {
+        "x": 44,
+        "y": 8077,
+        "width": 302,
+        "height": 390
+      }
+    },
+    {
+      "name": "prediction-empty",
+      "width": 320,
+      "file": "prediction-empty-320.png",
+      "clip": {
+        "x": 44,
+        "y": 8985,
+        "width": 232,
+        "height": 389
+      }
+    },
+    {
+      "name": "prediction-more",
+      "width": 390,
+      "file": "prediction-more-390.png",
+      "clip": {
+        "x": 44,
+        "y": 8077,
+        "width": 302,
+        "height": 411
+      }
+    },
+    {
+      "name": "prediction-same",
+      "width": 390,
+      "file": "prediction-same-390.png",
+      "clip": {
+        "x": 44,
+        "y": 8123,
+        "width": 302,
+        "height": 410
+      }
+    },
+    {
+      "name": "prediction-less",
+      "width": 390,
+      "file": "prediction-less-390.png",
+      "clip": {
+        "x": 44,
+        "y": 8123,
+        "width": 302,
+        "height": 410
+      }
+    },
+    {
+      "name": "prediction-empty-200pct-text",
+      "width": 320,
+      "file": "prediction-empty-200pct-text-320.png",
+      "clip": {
+        "x": 44,
+        "y": 10813,
+        "width": 232,
+        "height": 700
+      }
+    },
+    {
+      "name": "prediction-less-200pct-text",
+      "width": 320,
+      "file": "prediction-less-200pct-text-320.png",
+      "clip": {
+        "x": 44,
+        "y": 10813,
+        "width": 232,
+        "height": 742
+      }
+    },
+    {
+      "name": "forced-colors-prediction-empty",
+      "width": 320,
+      "file": "forced-colors-prediction-empty-320.png",
+      "clip": {
+        "x": 44,
+        "y": 10813,
+        "width": 232,
+        "height": 390
+      }
+    },
+    {
+      "name": "forced-colors-prediction-less",
+      "width": 320,
+      "file": "forced-colors-prediction-less-320.png",
+      "clip": {
+        "x": 44,
+        "y": 10813,
+        "width": 232,
+        "height": 411
+      }
+    }
+  ],
+  "visualIssues": [],
+  "predictionStates": [
+    {
+      "name": "fresh-start",
+      "width": 1280,
+      "scale": 1,
+      "stage": "start",
+      "action": "Start transistor prediction",
+      "primary": true,
+      "disabled": false,
+      "background": "rgb(181, 235, 221)",
+      "color": "rgb(20, 58, 52)"
+    },
+    {
+      "name": "fresh-start",
+      "width": 390,
+      "scale": 1,
+      "stage": "start",
+      "action": "Start transistor prediction",
+      "primary": true,
+      "disabled": false,
+      "background": "rgb(181, 235, 221)",
+      "color": "rgb(20, 58, 52)"
+    },
+    {
+      "name": "prediction-empty",
+      "width": 1280,
+      "scale": 1,
+      "stage": "predict",
+      "choice": null,
+      "legend": "Predict the lamp current",
+      "description": "Compared with the starting circuit.",
+      "descriptionId": ":r4:-prediction-help",
+      "buttons": [
+        {
+          "label": "Increases",
+          "fontSize": "13px",
+          "labelColor": "rgb(229, 243, 245)",
+          "labelFontSize": "13px",
+          "labelMargins": [
+            "0px",
+            "0px",
+            "0px",
+            "0px"
+          ],
+          "pressed": "false",
+          "describedby": ":r4:-prediction-help",
+          "checkOpacity": 0,
+          "background": "rgb(23, 55, 67)",
+          "color": "rgb(229, 243, 245)",
+          "border": "rgb(100, 133, 145)",
+          "diagrams": [
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M12 20V4M5 11l7-7 7 7"
+            },
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M5 12l4 4L19 6"
+            }
+          ]
+        },
+        {
+          "label": "Stays the same",
+          "fontSize": "13px",
+          "labelColor": "rgb(229, 243, 245)",
+          "labelFontSize": "13px",
+          "labelMargins": [
+            "0px",
+            "0px",
+            "0px",
+            "0px"
+          ],
+          "pressed": "false",
+          "describedby": ":r4:-prediction-help",
+          "checkOpacity": 0,
+          "background": "rgb(23, 55, 67)",
+          "color": "rgb(229, 243, 245)",
+          "border": "rgb(100, 133, 145)",
+          "diagrams": [
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M4 12h16M13 5l7 7-7 7"
+            },
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M5 12l4 4L19 6"
+            }
+          ]
+        },
+        {
+          "label": "Decreases",
+          "fontSize": "13px",
+          "labelColor": "rgb(229, 243, 245)",
+          "labelFontSize": "13px",
+          "labelMargins": [
+            "0px",
+            "0px",
+            "0px",
+            "0px"
+          ],
+          "pressed": "false",
+          "describedby": ":r4:-prediction-help",
+          "checkOpacity": 0,
+          "background": "rgb(23, 55, 67)",
+          "color": "rgb(229, 243, 245)",
+          "border": "rgb(100, 133, 145)",
+          "diagrams": [
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M12 4v16M5 13l7 7 7-7"
+            },
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M5 12l4 4L19 6"
+            }
+          ]
+        }
+      ],
+      "test": {
+        "disabled": true,
+        "describedby": ":r4:-test-help",
+        "description": "Choose a prediction to enable Test.",
+        "title": null
+      }
+    },
+    {
+      "name": "prediction-empty",
+      "width": 390,
+      "scale": 1,
+      "stage": "predict",
+      "choice": null,
+      "legend": "Predict the lamp current",
+      "description": "Compared with the starting circuit.",
+      "descriptionId": ":r4:-prediction-help",
+      "buttons": [
+        {
+          "label": "Increases",
+          "fontSize": "13px",
+          "labelColor": "rgb(229, 243, 245)",
+          "labelFontSize": "13px",
+          "labelMargins": [
+            "0px",
+            "0px",
+            "0px",
+            "0px"
+          ],
+          "pressed": "false",
+          "describedby": ":r4:-prediction-help",
+          "checkOpacity": 0,
+          "background": "rgb(23, 55, 67)",
+          "color": "rgb(229, 243, 245)",
+          "border": "rgb(100, 133, 145)",
+          "diagrams": [
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M12 20V4M5 11l7-7 7 7"
+            },
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M5 12l4 4L19 6"
+            }
+          ]
+        },
+        {
+          "label": "Stays the same",
+          "fontSize": "13px",
+          "labelColor": "rgb(229, 243, 245)",
+          "labelFontSize": "13px",
+          "labelMargins": [
+            "0px",
+            "0px",
+            "0px",
+            "0px"
+          ],
+          "pressed": "false",
+          "describedby": ":r4:-prediction-help",
+          "checkOpacity": 0,
+          "background": "rgb(23, 55, 67)",
+          "color": "rgb(229, 243, 245)",
+          "border": "rgb(100, 133, 145)",
+          "diagrams": [
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M4 12h16M13 5l7 7-7 7"
+            },
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M5 12l4 4L19 6"
+            }
+          ]
+        },
+        {
+          "label": "Decreases",
+          "fontSize": "13px",
+          "labelColor": "rgb(229, 243, 245)",
+          "labelFontSize": "13px",
+          "labelMargins": [
+            "0px",
+            "0px",
+            "0px",
+            "0px"
+          ],
+          "pressed": "false",
+          "describedby": ":r4:-prediction-help",
+          "checkOpacity": 0,
+          "background": "rgb(23, 55, 67)",
+          "color": "rgb(229, 243, 245)",
+          "border": "rgb(100, 133, 145)",
+          "diagrams": [
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M12 4v16M5 13l7 7 7-7"
+            },
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M5 12l4 4L19 6"
+            }
+          ]
+        }
+      ],
+      "test": {
+        "disabled": true,
+        "describedby": ":r4:-test-help",
+        "description": "Choose a prediction to enable Test.",
+        "title": null
+      }
+    },
+    {
+      "name": "prediction-empty",
+      "width": 320,
+      "scale": 1,
+      "stage": "predict",
+      "choice": null,
+      "legend": "Predict the lamp current",
+      "description": "Compared with the starting circuit.",
+      "descriptionId": ":r4:-prediction-help",
+      "buttons": [
+        {
+          "label": "Increases",
+          "fontSize": "13px",
+          "labelColor": "rgb(229, 243, 245)",
+          "labelFontSize": "13px",
+          "labelMargins": [
+            "0px",
+            "0px",
+            "0px",
+            "0px"
+          ],
+          "pressed": "false",
+          "describedby": ":r4:-prediction-help",
+          "checkOpacity": 0,
+          "background": "rgb(23, 55, 67)",
+          "color": "rgb(229, 243, 245)",
+          "border": "rgb(100, 133, 145)",
+          "diagrams": [
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M12 20V4M5 11l7-7 7 7"
+            },
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M5 12l4 4L19 6"
+            }
+          ]
+        },
+        {
+          "label": "Stays the same",
+          "fontSize": "13px",
+          "labelColor": "rgb(229, 243, 245)",
+          "labelFontSize": "13px",
+          "labelMargins": [
+            "0px",
+            "0px",
+            "0px",
+            "0px"
+          ],
+          "pressed": "false",
+          "describedby": ":r4:-prediction-help",
+          "checkOpacity": 0,
+          "background": "rgb(23, 55, 67)",
+          "color": "rgb(229, 243, 245)",
+          "border": "rgb(100, 133, 145)",
+          "diagrams": [
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M4 12h16M13 5l7 7-7 7"
+            },
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M5 12l4 4L19 6"
+            }
+          ]
+        },
+        {
+          "label": "Decreases",
+          "fontSize": "13px",
+          "labelColor": "rgb(229, 243, 245)",
+          "labelFontSize": "13px",
+          "labelMargins": [
+            "0px",
+            "0px",
+            "0px",
+            "0px"
+          ],
+          "pressed": "false",
+          "describedby": ":r4:-prediction-help",
+          "checkOpacity": 0,
+          "background": "rgb(23, 55, 67)",
+          "color": "rgb(229, 243, 245)",
+          "border": "rgb(100, 133, 145)",
+          "diagrams": [
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M12 4v16M5 13l7 7 7-7"
+            },
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M5 12l4 4L19 6"
+            }
+          ]
+        }
+      ],
+      "test": {
+        "disabled": true,
+        "describedby": ":r4:-test-help",
+        "description": "Choose a prediction to enable Test.",
+        "title": null
+      }
+    },
+    {
+      "name": "prediction-more",
+      "width": 390,
+      "scale": 1,
+      "stage": "predict",
+      "choice": "more",
+      "legend": "Predict the lamp current",
+      "description": "Compared with the starting circuit.",
+      "descriptionId": ":r4:-prediction-help",
+      "buttons": [
+        {
+          "label": "Increases",
+          "fontSize": "13px",
+          "labelColor": "rgb(20, 58, 52)",
+          "labelFontSize": "13px",
+          "labelMargins": [
+            "0px",
+            "0px",
+            "0px",
+            "0px"
+          ],
+          "pressed": "true",
+          "describedby": ":r4:-prediction-help",
+          "checkOpacity": 1,
+          "background": "rgb(181, 235, 221)",
+          "color": "rgb(20, 58, 52)",
+          "border": "rgb(181, 235, 221)",
+          "diagrams": [
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M12 20V4M5 11l7-7 7 7"
+            },
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M5 12l4 4L19 6"
+            }
+          ]
+        },
+        {
+          "label": "Stays the same",
+          "fontSize": "13px",
+          "labelColor": "rgb(229, 243, 245)",
+          "labelFontSize": "13px",
+          "labelMargins": [
+            "0px",
+            "0px",
+            "0px",
+            "0px"
+          ],
+          "pressed": "false",
+          "describedby": ":r4:-prediction-help",
+          "checkOpacity": 0,
+          "background": "rgb(23, 55, 67)",
+          "color": "rgb(229, 243, 245)",
+          "border": "rgb(100, 133, 145)",
+          "diagrams": [
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M4 12h16M13 5l7 7-7 7"
+            },
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M5 12l4 4L19 6"
+            }
+          ]
+        },
+        {
+          "label": "Decreases",
+          "fontSize": "13px",
+          "labelColor": "rgb(229, 243, 245)",
+          "labelFontSize": "13px",
+          "labelMargins": [
+            "0px",
+            "0px",
+            "0px",
+            "0px"
+          ],
+          "pressed": "false",
+          "describedby": ":r4:-prediction-help",
+          "checkOpacity": 0,
+          "background": "rgb(23, 55, 67)",
+          "color": "rgb(229, 243, 245)",
+          "border": "rgb(100, 133, 145)",
+          "diagrams": [
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M12 4v16M5 13l7 7 7-7"
+            },
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M5 12l4 4L19 6"
+            }
+          ]
+        }
+      ],
+      "test": {
+        "disabled": false,
+        "describedby": ":r4:-test-help",
+        "description": "Test runs the stated change from the experiment baseline.",
+        "title": null
+      }
+    },
+    {
+      "name": "prediction-same",
+      "width": 390,
+      "scale": 1,
+      "stage": "predict",
+      "choice": "same",
+      "legend": "Predict the lamp current",
+      "description": "Compared with the starting circuit.",
+      "descriptionId": ":r4:-prediction-help",
+      "buttons": [
+        {
+          "label": "Increases",
+          "fontSize": "13px",
+          "labelColor": "rgb(229, 243, 245)",
+          "labelFontSize": "13px",
+          "labelMargins": [
+            "0px",
+            "0px",
+            "0px",
+            "0px"
+          ],
+          "pressed": "false",
+          "describedby": ":r4:-prediction-help",
+          "checkOpacity": 0,
+          "background": "rgb(23, 55, 67)",
+          "color": "rgb(229, 243, 245)",
+          "border": "rgb(100, 133, 145)",
+          "diagrams": [
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M12 20V4M5 11l7-7 7 7"
+            },
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M5 12l4 4L19 6"
+            }
+          ]
+        },
+        {
+          "label": "Stays the same",
+          "fontSize": "13px",
+          "labelColor": "rgb(20, 58, 52)",
+          "labelFontSize": "13px",
+          "labelMargins": [
+            "0px",
+            "0px",
+            "0px",
+            "0px"
+          ],
+          "pressed": "true",
+          "describedby": ":r4:-prediction-help",
+          "checkOpacity": 1,
+          "background": "rgb(181, 235, 221)",
+          "color": "rgb(20, 58, 52)",
+          "border": "rgb(181, 235, 221)",
+          "diagrams": [
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M4 12h16M13 5l7 7-7 7"
+            },
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M5 12l4 4L19 6"
+            }
+          ]
+        },
+        {
+          "label": "Decreases",
+          "fontSize": "13px",
+          "labelColor": "rgb(229, 243, 245)",
+          "labelFontSize": "13px",
+          "labelMargins": [
+            "0px",
+            "0px",
+            "0px",
+            "0px"
+          ],
+          "pressed": "false",
+          "describedby": ":r4:-prediction-help",
+          "checkOpacity": 0,
+          "background": "rgb(23, 55, 67)",
+          "color": "rgb(229, 243, 245)",
+          "border": "rgb(100, 133, 145)",
+          "diagrams": [
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M12 4v16M5 13l7 7 7-7"
+            },
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M5 12l4 4L19 6"
+            }
+          ]
+        }
+      ],
+      "test": {
+        "disabled": false,
+        "describedby": ":r4:-test-help",
+        "description": "Test runs the stated change from the experiment baseline.",
+        "title": null
+      }
+    },
+    {
+      "name": "prediction-less",
+      "width": 390,
+      "scale": 1,
+      "stage": "predict",
+      "choice": "less",
+      "legend": "Predict the lamp current",
+      "description": "Compared with the starting circuit.",
+      "descriptionId": ":r4:-prediction-help",
+      "buttons": [
+        {
+          "label": "Increases",
+          "fontSize": "13px",
+          "labelColor": "rgb(229, 243, 245)",
+          "labelFontSize": "13px",
+          "labelMargins": [
+            "0px",
+            "0px",
+            "0px",
+            "0px"
+          ],
+          "pressed": "false",
+          "describedby": ":r4:-prediction-help",
+          "checkOpacity": 0,
+          "background": "rgb(23, 55, 67)",
+          "color": "rgb(229, 243, 245)",
+          "border": "rgb(100, 133, 145)",
+          "diagrams": [
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M12 20V4M5 11l7-7 7 7"
+            },
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M5 12l4 4L19 6"
+            }
+          ]
+        },
+        {
+          "label": "Stays the same",
+          "fontSize": "13px",
+          "labelColor": "rgb(229, 243, 245)",
+          "labelFontSize": "13px",
+          "labelMargins": [
+            "0px",
+            "0px",
+            "0px",
+            "0px"
+          ],
+          "pressed": "false",
+          "describedby": ":r4:-prediction-help",
+          "checkOpacity": 0,
+          "background": "rgb(23, 55, 67)",
+          "color": "rgb(229, 243, 245)",
+          "border": "rgb(100, 133, 145)",
+          "diagrams": [
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M4 12h16M13 5l7 7-7 7"
+            },
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M5 12l4 4L19 6"
+            }
+          ]
+        },
+        {
+          "label": "Decreases",
+          "fontSize": "13px",
+          "labelColor": "rgb(20, 58, 52)",
+          "labelFontSize": "13px",
+          "labelMargins": [
+            "0px",
+            "0px",
+            "0px",
+            "0px"
+          ],
+          "pressed": "true",
+          "describedby": ":r4:-prediction-help",
+          "checkOpacity": 1,
+          "background": "rgb(181, 235, 221)",
+          "color": "rgb(20, 58, 52)",
+          "border": "rgb(181, 235, 221)",
+          "diagrams": [
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M12 4v16M5 13l7 7 7-7"
+            },
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M5 12l4 4L19 6"
+            }
+          ]
+        }
+      ],
+      "test": {
+        "disabled": false,
+        "describedby": ":r4:-test-help",
+        "description": "Test runs the stated change from the experiment baseline.",
+        "title": null
+      }
+    },
+    {
+      "name": "prediction-empty-200pct-text",
+      "width": 320,
+      "scale": 2,
+      "stage": "predict",
+      "choice": null,
+      "legend": "Predict the lamp current",
+      "description": "Compared with the starting circuit.",
+      "descriptionId": ":r4:-prediction-help",
+      "buttons": [
+        {
+          "label": "Increases",
+          "fontSize": "26px",
+          "labelColor": "rgb(229, 243, 245)",
+          "labelFontSize": "26px",
+          "labelMargins": [
+            "0px",
+            "0px",
+            "0px",
+            "0px"
+          ],
+          "pressed": "false",
+          "describedby": ":r4:-prediction-help",
+          "checkOpacity": 0,
+          "background": "rgb(23, 55, 67)",
+          "color": "rgb(229, 243, 245)",
+          "border": "rgb(100, 133, 145)",
+          "diagrams": [
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M12 20V4M5 11l7-7 7 7"
+            },
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M5 12l4 4L19 6"
+            }
+          ]
+        },
+        {
+          "label": "Stays the same",
+          "fontSize": "26px",
+          "labelColor": "rgb(229, 243, 245)",
+          "labelFontSize": "26px",
+          "labelMargins": [
+            "0px",
+            "0px",
+            "0px",
+            "0px"
+          ],
+          "pressed": "false",
+          "describedby": ":r4:-prediction-help",
+          "checkOpacity": 0,
+          "background": "rgb(23, 55, 67)",
+          "color": "rgb(229, 243, 245)",
+          "border": "rgb(100, 133, 145)",
+          "diagrams": [
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M4 12h16M13 5l7 7-7 7"
+            },
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M5 12l4 4L19 6"
+            }
+          ]
+        },
+        {
+          "label": "Decreases",
+          "fontSize": "26px",
+          "labelColor": "rgb(229, 243, 245)",
+          "labelFontSize": "26px",
+          "labelMargins": [
+            "0px",
+            "0px",
+            "0px",
+            "0px"
+          ],
+          "pressed": "false",
+          "describedby": ":r4:-prediction-help",
+          "checkOpacity": 0,
+          "background": "rgb(23, 55, 67)",
+          "color": "rgb(229, 243, 245)",
+          "border": "rgb(100, 133, 145)",
+          "diagrams": [
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M12 4v16M5 13l7 7 7-7"
+            },
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M5 12l4 4L19 6"
+            }
+          ]
+        }
+      ],
+      "test": {
+        "disabled": true,
+        "describedby": ":r4:-test-help",
+        "description": "Choose a prediction to enable Test.",
+        "title": null
+      }
+    },
+    {
+      "name": "prediction-less-200pct-text",
+      "width": 320,
+      "scale": 2,
+      "stage": "predict",
+      "choice": "less",
+      "legend": "Predict the lamp current",
+      "description": "Compared with the starting circuit.",
+      "descriptionId": ":r4:-prediction-help",
+      "buttons": [
+        {
+          "label": "Increases",
+          "fontSize": "26px",
+          "labelColor": "rgb(229, 243, 245)",
+          "labelFontSize": "26px",
+          "labelMargins": [
+            "0px",
+            "0px",
+            "0px",
+            "0px"
+          ],
+          "pressed": "false",
+          "describedby": ":r4:-prediction-help",
+          "checkOpacity": 0,
+          "background": "rgb(23, 55, 67)",
+          "color": "rgb(229, 243, 245)",
+          "border": "rgb(100, 133, 145)",
+          "diagrams": [
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M12 20V4M5 11l7-7 7 7"
+            },
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M5 12l4 4L19 6"
+            }
+          ]
+        },
+        {
+          "label": "Stays the same",
+          "fontSize": "26px",
+          "labelColor": "rgb(229, 243, 245)",
+          "labelFontSize": "26px",
+          "labelMargins": [
+            "0px",
+            "0px",
+            "0px",
+            "0px"
+          ],
+          "pressed": "false",
+          "describedby": ":r4:-prediction-help",
+          "checkOpacity": 0,
+          "background": "rgb(23, 55, 67)",
+          "color": "rgb(229, 243, 245)",
+          "border": "rgb(100, 133, 145)",
+          "diagrams": [
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M4 12h16M13 5l7 7-7 7"
+            },
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M5 12l4 4L19 6"
+            }
+          ]
+        },
+        {
+          "label": "Decreases",
+          "fontSize": "26px",
+          "labelColor": "rgb(20, 58, 52)",
+          "labelFontSize": "26px",
+          "labelMargins": [
+            "0px",
+            "0px",
+            "0px",
+            "0px"
+          ],
+          "pressed": "true",
+          "describedby": ":r4:-prediction-help",
+          "checkOpacity": 1,
+          "background": "rgb(181, 235, 221)",
+          "color": "rgb(20, 58, 52)",
+          "border": "rgb(181, 235, 221)",
+          "diagrams": [
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M12 4v16M5 13l7 7 7-7"
+            },
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M5 12l4 4L19 6"
+            }
+          ]
+        }
+      ],
+      "test": {
+        "disabled": false,
+        "describedby": ":r4:-test-help",
+        "description": "Test runs the stated change from the experiment baseline.",
+        "title": null
+      }
+    },
+    {
+      "name": "forced-colors-prediction-empty",
+      "width": 320,
+      "scale": 1,
+      "stage": "predict",
+      "choice": null,
+      "legend": "Predict the lamp current",
+      "description": "Compared with the starting circuit.",
+      "descriptionId": ":r4:-prediction-help",
+      "buttons": [
+        {
+          "label": "Increases",
+          "fontSize": "13px",
+          "labelColor": "rgb(0, 0, 0)",
+          "labelFontSize": "13px",
+          "labelMargins": [
+            "0px",
+            "0px",
+            "0px",
+            "0px"
+          ],
+          "pressed": "false",
+          "describedby": ":r4:-prediction-help",
+          "checkOpacity": 0,
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(0, 0, 0)",
+          "border": "rgb(0, 0, 0)",
+          "diagrams": [
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M12 20V4M5 11l7-7 7 7"
+            },
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M5 12l4 4L19 6"
+            }
+          ]
+        },
+        {
+          "label": "Stays the same",
+          "fontSize": "13px",
+          "labelColor": "rgb(0, 0, 0)",
+          "labelFontSize": "13px",
+          "labelMargins": [
+            "0px",
+            "0px",
+            "0px",
+            "0px"
+          ],
+          "pressed": "false",
+          "describedby": ":r4:-prediction-help",
+          "checkOpacity": 0,
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(0, 0, 0)",
+          "border": "rgb(0, 0, 0)",
+          "diagrams": [
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M4 12h16M13 5l7 7-7 7"
+            },
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M5 12l4 4L19 6"
+            }
+          ]
+        },
+        {
+          "label": "Decreases",
+          "fontSize": "13px",
+          "labelColor": "rgb(0, 0, 0)",
+          "labelFontSize": "13px",
+          "labelMargins": [
+            "0px",
+            "0px",
+            "0px",
+            "0px"
+          ],
+          "pressed": "false",
+          "describedby": ":r4:-prediction-help",
+          "checkOpacity": 0,
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(0, 0, 0)",
+          "border": "rgb(0, 0, 0)",
+          "diagrams": [
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M12 4v16M5 13l7 7 7-7"
+            },
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M5 12l4 4L19 6"
+            }
+          ]
+        }
+      ],
+      "test": {
+        "disabled": true,
+        "describedby": ":r4:-test-help",
+        "description": "Choose a prediction to enable Test.",
+        "title": null
+      }
+    },
+    {
+      "name": "forced-colors-prediction-less",
+      "width": 320,
+      "scale": 1,
+      "stage": "predict",
+      "choice": "less",
+      "legend": "Predict the lamp current",
+      "description": "Compared with the starting circuit.",
+      "descriptionId": ":r4:-prediction-help",
+      "buttons": [
+        {
+          "label": "Increases",
+          "fontSize": "13px",
+          "labelColor": "rgb(0, 0, 0)",
+          "labelFontSize": "13px",
+          "labelMargins": [
+            "0px",
+            "0px",
+            "0px",
+            "0px"
+          ],
+          "pressed": "false",
+          "describedby": ":r4:-prediction-help",
+          "checkOpacity": 0,
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(0, 0, 0)",
+          "border": "rgb(0, 0, 0)",
+          "diagrams": [
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M12 20V4M5 11l7-7 7 7"
+            },
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M5 12l4 4L19 6"
+            }
+          ]
+        },
+        {
+          "label": "Stays the same",
+          "fontSize": "13px",
+          "labelColor": "rgb(0, 0, 0)",
+          "labelFontSize": "13px",
+          "labelMargins": [
+            "0px",
+            "0px",
+            "0px",
+            "0px"
+          ],
+          "pressed": "false",
+          "describedby": ":r4:-prediction-help",
+          "checkOpacity": 0,
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(0, 0, 0)",
+          "border": "rgb(0, 0, 0)",
+          "diagrams": [
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M4 12h16M13 5l7 7-7 7"
+            },
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M5 12l4 4L19 6"
+            }
+          ]
+        },
+        {
+          "label": "Decreases",
+          "fontSize": "13px",
+          "labelColor": "rgb(0, 0, 0)",
+          "labelFontSize": "13px",
+          "labelMargins": [
+            "0px",
+            "0px",
+            "0px",
+            "0px"
+          ],
+          "pressed": "true",
+          "describedby": ":r4:-prediction-help",
+          "checkOpacity": 1,
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(0, 0, 0)",
+          "border": "rgb(55, 0, 110)",
+          "diagrams": [
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M12 4v16M5 13l7 7 7-7"
+            },
+            {
+              "hidden": "true",
+              "wrapperHidden": "true",
+              "focusable": "false",
+              "path": "M5 12l4 4L19 6"
+            }
+          ]
+        }
+      ],
+      "test": {
+        "disabled": false,
+        "describedby": ":r4:-test-help",
+        "description": "Test runs the stated change from the experiment baseline.",
+        "title": null
+      }
+    }
+  ],
+  "predictionActions": [
+    {
+      "action": "start",
+      "key": "Enter",
+      "focusedQuestion": true,
+      "baselineLoaded": true,
+      "undoable": true,
+      "notebookPreserved": true
+    },
+    {
+      "action": "predict",
+      "choice": "more",
+      "key": "Space",
+      "focusRetained": true,
+      "preservedBenchAndSavedWork": true,
+      "onePressed": true,
+      "noNavigationReplay": true,
+      "testEnabled": true,
+      "visual": {
+        "label": "Increases",
+        "fontSize": "13px",
+        "labelColor": "rgb(20, 58, 52)",
+        "labelFontSize": "13px",
+        "labelMargins": [
+          "0px",
+          "0px",
+          "0px",
+          "0px"
+        ],
+        "pressed": "true",
+        "describedby": ":r4:-prediction-help",
+        "checkOpacity": 1,
+        "background": "rgb(181, 235, 221)",
+        "color": "rgb(20, 58, 52)",
+        "border": "rgb(181, 235, 221)",
+        "diagrams": [
+          {
+            "hidden": "true",
+            "wrapperHidden": "true",
+            "focusable": "false",
+            "path": "M12 20V4M5 11l7-7 7 7"
+          },
+          {
+            "hidden": "true",
+            "wrapperHidden": "true",
+            "focusable": "false",
+            "path": "M5 12l4 4L19 6"
+          }
+        ]
+      }
+    },
+    {
+      "action": "test",
+      "choice": "more",
+      "key": "Enter",
+      "savedOriginalPrediction": true,
+      "focusedResult": true,
+      "explanationPreserved": true
+    },
+    {
+      "action": "predict",
+      "choice": "same",
+      "key": "Enter",
+      "focusRetained": true,
+      "preservedBenchAndSavedWork": true,
+      "onePressed": true,
+      "noNavigationReplay": true,
+      "testEnabled": true,
+      "visual": {
+        "label": "Stays the same",
+        "fontSize": "13px",
+        "labelColor": "rgb(20, 58, 52)",
+        "labelFontSize": "13px",
+        "labelMargins": [
+          "0px",
+          "0px",
+          "0px",
+          "0px"
+        ],
+        "pressed": "true",
+        "describedby": ":r4:-prediction-help",
+        "checkOpacity": 1,
+        "background": "rgb(181, 235, 221)",
+        "color": "rgb(20, 58, 52)",
+        "border": "rgb(181, 235, 221)",
+        "diagrams": [
+          {
+            "hidden": "true",
+            "wrapperHidden": "true",
+            "focusable": "false",
+            "path": "M4 12h16M13 5l7 7-7 7"
+          },
+          {
+            "hidden": "true",
+            "wrapperHidden": "true",
+            "focusable": "false",
+            "path": "M5 12l4 4L19 6"
+          }
+        ]
+      }
+    },
+    {
+      "action": "test",
+      "choice": "same",
+      "key": "Space",
+      "savedOriginalPrediction": true,
+      "focusedResult": true,
+      "explanationPreserved": true
+    },
+    {
+      "action": "predict",
+      "choice": "less",
+      "key": "Space",
+      "focusRetained": true,
+      "preservedBenchAndSavedWork": true,
+      "onePressed": true,
+      "noNavigationReplay": true,
+      "testEnabled": true,
+      "visual": {
+        "label": "Decreases",
+        "fontSize": "13px",
+        "labelColor": "rgb(20, 58, 52)",
+        "labelFontSize": "13px",
+        "labelMargins": [
+          "0px",
+          "0px",
+          "0px",
+          "0px"
+        ],
+        "pressed": "true",
+        "describedby": ":r4:-prediction-help",
+        "checkOpacity": 1,
+        "background": "rgb(181, 235, 221)",
+        "color": "rgb(20, 58, 52)",
+        "border": "rgb(181, 235, 221)",
+        "diagrams": [
+          {
+            "hidden": "true",
+            "wrapperHidden": "true",
+            "focusable": "false",
+            "path": "M12 4v16M5 13l7 7 7-7"
+          },
+          {
+            "hidden": "true",
+            "wrapperHidden": "true",
+            "focusable": "false",
+            "path": "M5 12l4 4L19 6"
+          }
+        ]
+      }
+    },
+    {
+      "action": "test",
+      "choice": "less",
+      "key": "Enter",
+      "savedOriginalPrediction": true,
+      "focusedResult": true,
+      "explanationPreserved": true
+    }
+  ],
+  "lifecycle": [
+    {
+      "action": "locale-and-live-edit",
+      "translatedDescriptions": true,
+      "sameTextareaAndCaret": true,
+      "sameChoicesNode": true,
+      "noFocusReplay": true,
+      "choicePreserved": true,
+      "writingRows": 12
+    },
+    {
+      "action": "actual-json-import-restore",
+      "noFocusReplay": true,
+      "restoredChoice": "less",
+      "savedWorkRestored": true,
+      "writingRows": 12
+    }
+  ],
+  "numericIntegrity": [
+    {
+      "name": "fresh-start",
+      "width": 1280,
+      "scale": 1,
+      "readings": []
+    },
+    {
+      "name": "fresh-start",
+      "width": 390,
+      "scale": 1,
+      "readings": []
+    },
+    {
+      "name": "prediction-empty",
+      "width": 1280,
+      "scale": 1,
+      "readings": []
+    },
+    {
+      "name": "prediction-empty",
+      "width": 390,
+      "scale": 1,
+      "readings": []
+    },
+    {
+      "name": "prediction-empty",
+      "width": 320,
+      "scale": 1,
+      "readings": []
+    },
+    {
+      "name": "prediction-more",
+      "width": 390,
+      "scale": 1,
+      "readings": []
+    },
+    {
+      "name": "prediction-same",
+      "width": 390,
+      "scale": 1,
+      "readings": []
+    },
+    {
+      "name": "prediction-less",
+      "width": 390,
+      "scale": 1,
+      "readings": []
+    },
+    {
+      "name": "prediction-empty-200pct-text",
+      "width": 320,
+      "scale": 2,
+      "readings": []
+    },
+    {
+      "name": "prediction-less-200pct-text",
+      "width": 320,
+      "scale": 2,
+      "readings": []
+    },
+    {
+      "name": "forced-colors-prediction-empty",
+      "width": 320,
+      "scale": 1,
+      "readings": []
+    },
+    {
+      "name": "forced-colors-prediction-less",
+      "width": 320,
+      "scale": 1,
+      "readings": []
+    }
+  ],
+  "forcedColors": [
+    {
+      "name": "forced-colors-prediction-empty",
+      "width": 320,
+      "active": true,
+      "contrastMethod": "Actual getComputedStyle foreground and opaque ancestor background; screenshot remains required for visual proof.",
+      "colors": [
+        {
+          "text": "Predict the lamp current",
+          "foreground": "rgb(0, 0, 0)",
+          "background": [
+            255,
+            255,
+            255
+          ],
+          "ratio": 21,
+          "required": 4.5,
+          "forcedColorAdjust": "auto"
+        },
+        {
+          "text": "Compared with the starting circuit.",
+          "foreground": "rgb(0, 0, 0)",
+          "background": [
+            255,
+            255,
+            255
+          ],
+          "ratio": 21,
+          "required": 4.5,
+          "forcedColorAdjust": "auto"
+        },
+        {
+          "text": "Increases",
+          "foreground": "rgb(0, 0, 0)",
+          "background": [
+            255,
+            255,
+            255
+          ],
+          "ratio": 21,
+          "required": 4.5,
+          "forcedColorAdjust": "auto"
+        },
+        {
+          "text": "Stays the same",
+          "foreground": "rgb(0, 0, 0)",
+          "background": [
+            255,
+            255,
+            255
+          ],
+          "ratio": 21,
+          "required": 4.5,
+          "forcedColorAdjust": "auto"
+        },
+        {
+          "text": "Decreases",
+          "foreground": "rgb(0, 0, 0)",
+          "background": [
+            255,
+            255,
+            255
+          ],
+          "ratio": 21,
+          "required": 4.5,
+          "forcedColorAdjust": "auto"
+        },
+        {
+          "text": "Choose a prediction to enable Test.",
+          "foreground": "rgb(0, 0, 0)",
+          "background": [
+            255,
+            255,
+            255
+          ],
+          "ratio": 21,
+          "required": 4.5,
+          "forcedColorAdjust": "auto"
+        }
+      ],
+      "violations": []
+    },
+    {
+      "name": "forced-colors-prediction-less",
+      "width": 320,
+      "active": true,
+      "contrastMethod": "Actual getComputedStyle foreground and opaque ancestor background; screenshot remains required for visual proof.",
+      "colors": [
+        {
+          "text": "Predict the lamp current",
+          "foreground": "rgb(0, 0, 0)",
+          "background": [
+            255,
+            255,
+            255
+          ],
+          "ratio": 21,
+          "required": 4.5,
+          "forcedColorAdjust": "auto"
+        },
+        {
+          "text": "Compared with the starting circuit.",
+          "foreground": "rgb(0, 0, 0)",
+          "background": [
+            255,
+            255,
+            255
+          ],
+          "ratio": 21,
+          "required": 4.5,
+          "forcedColorAdjust": "auto"
+        },
+        {
+          "text": "Increases",
+          "foreground": "rgb(0, 0, 0)",
+          "background": [
+            255,
+            255,
+            255
+          ],
+          "ratio": 21,
+          "required": 4.5,
+          "forcedColorAdjust": "auto"
+        },
+        {
+          "text": "Stays the same",
+          "foreground": "rgb(0, 0, 0)",
+          "background": [
+            255,
+            255,
+            255
+          ],
+          "ratio": 21,
+          "required": 4.5,
+          "forcedColorAdjust": "auto"
+        },
+        {
+          "text": "Decreases",
+          "foreground": "rgb(0, 0, 0)",
+          "background": [
+            255,
+            255,
+            255
+          ],
+          "ratio": 21,
+          "required": 4.5,
+          "forcedColorAdjust": "auto"
+        },
+        {
+          "text": "Test transistor prediction",
+          "foreground": "rgb(0, 0, 0)",
+          "background": [
+            255,
+            255,
+            255
+          ],
+          "ratio": 21,
+          "required": 4.5,
+          "forcedColorAdjust": "auto"
+        },
+        {
+          "text": "Test runs the stated change from the experiment baseline.",
+          "foreground": "rgb(0, 0, 0)",
+          "background": [
+            255,
+            255,
+            255
+          ],
+          "ratio": 21,
+          "required": 4.5,
+          "forcedColorAdjust": "auto"
+        }
+      ],
+      "violations": []
+    }
+  ],
+  "mirrorSha256": "fff052d145b7e16ea99b424c6d81ccdc4049b6dcf0da85258d970d75a9aef8cf",
+  "forcedColorsDiagnostic": {
+    "file": "../circuit-explanation-guide-2026-10-01/forced-colors-diagnostic.json",
+    "sha256": "211de59d56f77fdc793293b7bf74730196b3c21d386fd35a6d95387022fbe8d5"
+  },
+  "passed": true,
+  "sourceSha256AtEnd": "fff052d145b7e16ea99b424c6d81ccdc4049b6dcf0da85258d970d75a9aef8cf",
+  "mirrorSha256AtEnd": "fff052d145b7e16ea99b424c6d81ccdc4049b6dcf0da85258d970d75a9aef8cf",
+  "scriptSha256AtEnd": "bfe4ac15856f8e903c62c5a212ea607c100f426cf7bc5ddb95d37ee74b189906",
+  "scriptChangedDuringRun": false,
+  "sourceChangedDuringRun": false,
+  "mirrorMatches": true
+}
