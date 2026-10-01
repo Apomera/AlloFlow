@@ -1,0 +1,19 @@
+Mystery specimens
+Fictional teaching specimens. The observations support broad classifications, not species identification or safety decisions.
+
+C · The wall is the clue
+Revision status: Working notes contain revisions that have not replaced the recorded report.
+Recorded claim: Bacterium
+Recorded reasoning: Original recorded explanation.
+• The supplied cell map has no membrane-bound nucleus. Chemical analysis detects peptidoglycan in the cell wall.
+• The observation sequence shows cells dividing into two. Division by itself does not distinguish bacteria from archaea.
+The evidence supports a broad group or an unresolved classification; species and safety remain unknown.
+Current working notes
+My classification: Bacterium
+Unfinished working notes.
+Current cited observations: Cell structure and chemistry; Behavior and reproduction
+Current conclusion about limits: The evidence supports a broad group or an unresolved classification; species and safety remain unknown.
+Revealed observations:
+Sample context: This fictional specimen was found near a plant root. Many unrelated microbes live around roots.
+Cell structure and chemistry: The supplied cell map has no membrane-bound nucleus. Chemical analysis detects peptidoglycan in the cell wall.
+Behavior and reproduction: The observation sequence shows cells dividing into two. Division by itself does not distinguish bacteria from archaea.

@@ -30,6 +30,7 @@ function mount(seed = {}, overrides = {}) {
   function Host() {
     const [data, setData] = React.useState({ microbiology: { tab: 'growthLab', ...seed } });
     view.state = data.microbiology;
+    view.setData = setData;
     return config.render(makeCtx({ ...overrides, toolData: data, setToolData: setData }));
   }
   mounted = view;
@@ -221,7 +222,7 @@ describe('Microbiology growth investigation workflow', { timeout: 20000 }, () =>
     const svg = mounted.container.querySelector('.micro-growth-figure svg');
     expect(svg.getAttribute('role')).toBe('img');
     expect(svg.getAttribute('aria-label')).toContain('data table');
-    const table = mounted.container.querySelector('.micro-growth-table-wrap table');
+    const table = mounted.container.querySelector('#gl-saved-result .micro-growth-table-wrap table');
     expect(table.caption.textContent).toBe('Simulated population at each model hour');
     expect(table.querySelectorAll('thead th[scope="col"]')).toHaveLength(3);
     expect(table.querySelectorAll('tbody th[scope="row"]')).toHaveLength(25);
@@ -1128,5 +1129,217 @@ describe('Microbiology previous sweep review and guarded navigation', { timeout:
     expect(document.activeElement).toBe(draft);
     expect(book()).toEqual(saved);
     expect(historyStatus().textContent).toBe('');
+  });
+});
+
+describe('Microbiology experiment design preview workflow', { timeout: 20000 }, () => {
+  function design() { return mounted.container.querySelector('#gl-design-preview'); }
+  function status() { return mounted.container.querySelector('#gl-design-status'); }
+  function row(key) { return mounted.container.querySelector('[data-design-setting="' + key + '"]'); }
+  function designState() { return design().getAttribute('data-growth-design'); }
+  function setup() {
+    const control = { ...baseConditions };
+    const investigation = window.__MicrobiologyCore.growth.normalizeNotebook({ control,
+      trials: [3, 9].map(id => ({ id, control, conditions: { ...control, oxygen: 0 }, prediction: 'lower', hypothesis: 'Original reasoning ' + id, explanation: 'Original evidence ' + id })),
+      selectedId: 3, nextId: 20, prediction: 'higher', hypothesis: 'Independent next hypothesis', explanation: 'Retained draft explanation',
+      sweepVariable: 'pH', sweep: { variable: 'tempC', conditions: control }, previousSweep: { variable: 'oxygen', conditions: { profile: 'thermus', tempC: 70, pH: 7.5, oxygen: 100 } },
+      removed: { index: 1, trial: { id: 7, control, conditions: control, prediction: 'unsure', hypothesis: 'Removed reasoning', explanation: 'Removed explanation' } }
+    });
+    return { growthLab: { profile: 'thermus', tempC: 70, pH: 6, oxygen: 0, understood: true, stuckRevealed: true, hypothesis: 'Legacy hypothesis', explanation: 'Legacy explanation', log: [{ preserved: true }] },
+      growthInvestigation: investigation, growthReviewHour: 6, quizAnswers: [1, 2], microscopeFocus: 13, resistanceNotebook: { records: [] } };
+  }
+  function reloadDesign() {
+    const seed = JSON.parse(JSON.stringify(mounted.state));
+    act(() => mounted.root.unmount()); mounted.container.remove(); mounted = null;
+    mount(seed); return seed;
+  }
+
+  it('updates unavailable, unchanged, single and multiple-difference guidance with edits, a new control and presets', () => {
+    mount({ growthLab: baseConditions });
+    expect(designState()).toBe('unavailable');
+    expect(status().textContent).toBe('Save a control to compare your proposed settings.');
+    expect([...design().querySelectorAll('tbody tr')].every(item => item.cells[1].textContent === 'Not saved' && item.cells[3].textContent === 'Unavailable')).toBe(true);
+    expect(design().querySelector('#gl-design-prepare')).toBeNull();
+    expect(button('Run comparison').disabled).toBe(true);
+    click('Use current conditions as control');
+    expect(designState()).toBe('none');
+    expect(status().textContent).toBe('No differences from the saved control.');
+    write('#gl-tempC', '25');
+    expect(designState()).toBe('single');
+    expect(status().textContent).toBe('One difference: Temperature.');
+    expect([...row('tempC').cells].map(cell => cell.textContent)).toEqual(['Temperature', '37 °C', '25 °C', 'Changed']);
+    expect(row('pH').cells[3].textContent).toBe('Held constant');
+    write('#gl-oxygen', '0');
+    expect(designState()).toBe('confounded');
+    expect(status().textContent).toBe('Multiple differences: Temperature, Oxygen availability.');
+    expect(design().textContent).toContain('You can still run it');
+    expect([...design().querySelectorAll('option')].map(option => option.value)).toEqual(['tempC', 'oxygen']);
+    click('Use current conditions as control');
+    expect(designState()).toBe('none');
+    expect(row('oxygen').cells[1].textContent).toBe('0/100');
+    click('A microbe that favors heat');
+    expect(designState()).toBe('single');
+    expect(status().textContent).toBe('One difference: Temperature.');
+    expect(row('tempC').cells[1].textContent).toBe('70 °C');
+    expect(row('tempC').cells[2].textContent).toBe('37 °C');
+  });
+
+  it('shows only settings and design guidance before a run without calculating growth outcomes', () => {
+    const exponent = vi.spyOn(Math, 'exp');
+    mount({ growthLab: { ...baseConditions, tempC: 10, oxygen: 0 }, growthInvestigation: { control: baseConditions, prediction: 'higher' } });
+    expect(designState()).toBe('confounded');
+    expect(exponent).not.toHaveBeenCalled();
+    expect(design().querySelector('svg')).toBeNull();
+    expect(design().textContent).not.toMatch(/matches this run|differs from your prediction|Observed result|population|growth rate|lag|environmental fit/i);
+    expect(design().textContent).toContain('This preview checks settings only.');
+    expect(status().contains(mounted.container.querySelector('#gl-design-table'))).toBe(false);
+    expect(status().getAttribute('role')).toBe('status');
+    expect(status().getAttribute('aria-live')).toBe('polite');
+    expect(mounted.container.querySelector('#gl-design-table').caption.textContent).toBe('Saved control and proposed trial settings');
+    expect(design().querySelectorAll('thead th[scope="col"]')).toHaveLength(4);
+    expect(design().querySelectorAll('tbody th[scope="row"]')).toHaveLength(4);
+    expect(book().trials).toHaveLength(0);
+  });
+
+  it.each(['profile', 'tempC', 'pH', 'oxygen'])('optionally keeps only %s while preserving all saved and draft evidence and unrelated work', key => {
+    vi.useFakeTimers();
+    const awardXP = vi.fn(), initial = setup();
+    mount(initial, { awardXP });
+    const before = JSON.parse(JSON.stringify(mounted.state)), originalBook = book();
+    expect(designState()).toBe('confounded');
+    expect(button('Run comparison').disabled).toBe(false);
+    write('#gl-design-variable', key);
+    click('Keep only this difference');
+    act(() => vi.runOnlyPendingTimers());
+    const expected = { ...initial.growthLab, ...originalBook.control, [key]: initial.growthLab[key] };
+    expect(mounted.state.growthLab).toEqual(expected);
+    expect(mounted.state.growthInvestigation).toEqual(before.growthInvestigation);
+    expect(book()).toEqual(originalBook);
+    for (const field of ['growthReviewHour', 'quizAnswers', 'microscopeFocus', 'resistanceNotebook']) expect(mounted.state[field], field).toEqual(before[field]);
+    expect(designState()).toBe('single');
+    expect([...design().querySelectorAll('tbody tr')].filter(item => item.cells[3].textContent === 'Changed').map(item => item.getAttribute('data-design-setting'))).toEqual([key]);
+    expect(button('Run comparison').disabled).toBe(false);
+    expect(mounted.container.querySelector('#gl-hypothesis').value).toBe('Independent next hypothesis');
+    expect(mounted.container.querySelector('#gl-explanation').value).toBe('Original evidence 3');
+    expect(awardXP).not.toHaveBeenCalled();
+    if (key === 'profile') {
+      expect(design().textContent).toContain('same modeled environment');
+      expect(mounted.state.growthLab).toMatchObject({ profile: 'thermus', tempC: 37, pH: 7, oxygen: 100 });
+    }
+    reloadDesign();
+    expect(mounted.state.growthLab).toEqual(expected);
+    expect(book()).toEqual(originalBook);
+    expect(designState()).toBe('single');
+  });
+
+  it('keeps unchanged and multiple-variable comparisons runnable with the original eligibility rules', () => {
+    mount({ growthLab: baseConditions });
+    click('Use current conditions as control');
+    expect(designState()).toBe('none');
+    expect(button('Run comparison').disabled).toBe(true);
+    choose('unsure');
+    expect(button('Run comparison').disabled).toBe(false);
+    click('Run comparison');
+    expect(book().trials).toHaveLength(1);
+    expect(book().trials[0].conditions).toEqual(book().trials[0].control);
+    write('#gl-tempC', '20'); write('#gl-pH', '5');
+    expect(designState()).toBe('confounded');
+    expect(button('Run comparison').disabled).toBe(false);
+    click('Run comparison');
+    expect(book().trials).toHaveLength(2);
+    expect(book().trials[1]).toMatchObject({ conditions: { ...baseConditions, tempC: 20, pH: 5 }, prediction: 'unsure' });
+    expect(mounted.container.querySelector('[data-design="confounded"]')).not.toBeNull();
+  });
+
+  it('prepares a working setup in a full notebook without evicting evidence or enabling another saved run', () => {
+    vi.useFakeTimers();
+    const initial = setup();
+    initial.growthInvestigation = { ...initial.growthInvestigation, trials: Array.from({ length: 12 }, (_, index) => ({ id: index + 20, control: baseConditions, conditions: baseConditions, prediction: 'unsure', explanation: 'Saved ' + index })), selectedId: 20, nextId: 40 };
+    mount(initial); const before = book();
+    expect(button('Run comparison').disabled).toBe(true);
+    write('#gl-design-variable', 'oxygen'); click('Keep only this difference');
+    act(() => vi.runOnlyPendingTimers());
+    expect(designState()).toBe('single');
+    expect(button('Run comparison').disabled).toBe(true);
+    expect(book()).toEqual(before);
+    expect(book().trials).toHaveLength(12);
+  });
+
+  it('keeps the optional selector valid after manual and external setup changes without applying them to saved evidence', () => {
+    mount(setup());
+    const before = book();
+    write('#gl-design-variable', 'oxygen');
+    act(() => mounted.setData(data => ({ ...data, microbiology: { ...data.microbiology, growthLab: { ...data.microbiology.growthLab, oxygen: 100 } } })));
+    expect(designState()).toBe('confounded');
+    expect(mounted.container.querySelector('#gl-design-variable').value).toBe('profile');
+    expect([...design().querySelectorAll('option')].map(option => option.value)).toEqual(['profile', 'tempC', 'pH']);
+    expect(row('oxygen').cells[3].textContent).toBe('Held constant');
+    write('#gl-profile', 'ecoli');
+    expect(mounted.container.querySelector('#gl-design-variable').value).toBe('tempC');
+    write('#gl-tempC', '37');
+    expect(designState()).toBe('single');
+    expect(status().textContent).toBe('One difference: pH.');
+    expect(mounted.container.querySelector('#gl-design-variable')).toBeNull();
+    expect(book()).toEqual(before);
+    act(() => mounted.setData(data => ({ ...data, microbiology: { ...data.microbiology, growthInvestigation: { ...data.microbiology.growthInvestigation, control: { ...baseConditions, pH: 6 } } } })));
+    expect(designState()).toBe('none');
+    expect(row('pH').cells[1].textContent).toBe('6');
+    expect(book().trials).toEqual(before.trials);
+  });
+
+  it('continues to preview the next working setup while a different saved trial is reviewed and after JSON reload', () => {
+    mount(setup());
+    const before = design().textContent, working = JSON.parse(JSON.stringify(mounted.state.growthLab));
+    click(mounted.container.querySelector('#gl-trial-9'));
+    expect(book().selectedId).toBe(9);
+    expect(design().textContent).toBe(before);
+    expect(mounted.state.growthLab).toEqual(working);
+    reloadDesign();
+    expect(design().textContent).toBe(before);
+    expect(book().selectedId).toBe(9);
+    expect(mounted.state.growthLab).toEqual(working);
+  });
+
+  it('provides native labeled controls and focuses the stable design heading after preparation removes the action', () => {
+    vi.useFakeTimers();
+    mount(setup());
+    const select = mounted.container.querySelector('#gl-design-variable'), prepare = mounted.container.querySelector('#gl-design-prepare');
+    expect(select.tagName).toBe('SELECT'); expect(prepare.tagName).toBe('BUTTON'); expect(prepare.type).toBe('button');
+    expect(mounted.container.querySelector('label[for="gl-design-variable"]').textContent).toBe('Difference to keep');
+    expect(select.getAttribute('aria-describedby')).toBe('gl-design-prepare-note');
+    expect(prepare.getAttribute('aria-describedby')).toBe('gl-design-prepare-note');
+    select.focus(); write('#gl-design-variable', 'pH');
+    expect(document.activeElement).toBe(select);
+    prepare.focus(); click(prepare);
+    expect(mounted.container.querySelector('#gl-design-prepare')).toBeNull();
+    act(() => vi.runOnlyPendingTimers());
+    expect(document.activeElement).toBe(mounted.container.querySelector('#gl-design-heading'));
+    expect(status().textContent).toBe('One difference: pH.');
+    expect(design().querySelector('[role="region"]').getAttribute('tabindex')).toBe('0');
+  });
+
+  it.each(['#gl-hypothesis', '#micro-tab-quiz', '.micro-library-toggle'])('keeps a newer focus-only action at %s after preparing one difference', selector => {
+    vi.useFakeTimers();
+    mount(setup());
+    const prepare = mounted.container.querySelector('#gl-design-prepare'); prepare.focus(); click(prepare);
+    const before = JSON.parse(JSON.stringify(mounted.state)), target = mounted.container.querySelector(selector);
+    act(() => target.focus());
+    act(() => vi.runOnlyPendingTimers());
+    expect(document.activeElement).toBe(target);
+    expect(mounted.state).toEqual(before);
+    expect(mounted.state.tab).toBe('growthLab');
+  });
+
+  it('cancels a queued preparation focus when an external update replaces the proposed settings', () => {
+    vi.useFakeTimers();
+    mount(setup());
+    const prepare = mounted.container.querySelector('#gl-design-prepare'); prepare.focus(); click(prepare);
+    act(() => mounted.setData(data => ({ ...data, microbiology: { ...data.microbiology, growthLab: { ...data.microbiology.growthLab, tempC: 20, pH: 5 } } })));
+    const beforeFocus = document.activeElement, before = JSON.parse(JSON.stringify(mounted.state));
+    act(() => vi.runOnlyPendingTimers());
+    expect(document.activeElement).toBe(beforeFocus);
+    expect(document.activeElement).not.toBe(mounted.container.querySelector('#gl-design-heading'));
+    expect(designState()).toBe('confounded');
+    expect(mounted.state).toEqual(before);
   });
 });

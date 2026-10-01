@@ -634,6 +634,69 @@ describe('Mounted resistance controls', { timeout: 60000 }, () => {
     return [...container.querySelectorAll('[data-resistance-current-history] tbody tr')].map(row => [...row.cells].map(cell => cell.textContent));
   }
 
+  it('associates model definitions with the unchanged controls and uses explicit shape labels', () => {
+    const awardXP = vi.fn();
+    mount({}, awardXP);
+    const workspace = container.querySelector('[data-micro-resistance-workspace]');
+    expect(workspace).not.toBeNull();
+    const before = JSON.stringify(latestData);
+    Math.random.mockClear();
+    for (const [label, id, meaning] of [
+      ['Antibiotic exposure strength in the teaching model', 'micro-resistance-exposure-help', 'relative teaching scale from 0 to 100'],
+      ['Number of exposure rounds in the teaching model', 'micro-resistance-rounds-help', 'not a fixed amount of real time'],
+      ['Initial resistance', 'micro-resistance-initial-help', 'rounds it to whole cells in a dish of 80']
+    ]) {
+      const control = workspace.querySelector('input[aria-label="' + label + '"]');
+      expect(control.getAttribute('aria-describedby')).toBe(id);
+      const help = workspace.querySelector('#' + id);
+      expect(help.textContent).toContain(meaning);
+      expect(container.querySelectorAll('#' + id)).toHaveLength(1);
+      expect(control.disabled).toBe(false);
+      control.focus();
+      expect(document.activeElement).toBe(control);
+    }
+    const shareHelp = workspace.querySelector('#micro-resistance-share-help');
+    expect(shareHelp.textContent).toContain('resistant cells ÷ all living cells × 100');
+    expect(shareHelp.textContent).toContain('With no survivors, the share is undefined');
+    expect(workspace.querySelector('input[name="micro-resistance-prediction"]').closest('fieldset').getAttribute('aria-describedby')).toBe(shareHelp.id);
+    const chart = workspace.querySelector('[data-resistance-trend] svg');
+    expect(chart.getAttribute('aria-describedby')).toBe(shareHelp.id);
+    expect(workspace.querySelector('[data-resistance-current-history]').getAttribute('aria-describedby')).toBe(shareHelp.id);
+    const legend = workspace.querySelector('[data-resistance-shape-legend]');
+    expect(legend.textContent).toContain('sensitive circles');
+    expect(legend.textContent).toContain('resistant diamonds');
+    expect([...legend.querySelectorAll('[data-resistance-marker]')].map(node => node.getAttribute('aria-hidden'))).toEqual(['true', 'true']);
+    expect(JSON.stringify(latestData)).toBe(before);
+    expect(Math.random).not.toHaveBeenCalled();
+    expect(awardXP).not.toHaveBeenCalled();
+  });
+
+  it.each(['partial', 'extinct'])('keeps %s evidence and playback paused while reviewing the readable chart and counts', status => {
+    const notebook = comparisonNotebook(), awardXP = vi.fn();
+    const run = status === 'partial' ? notebook.records[1].evidence : { dose: 100, duration: 3, initRes: 0, prediction: 'extinct', notes: 'No survivors',
+      history: [{ day: 0, sensitive: 80, resistant: 0 }, { day: 1, sensitive: 0, resistant: 0 }] };
+    mount({ resistanceInvestigation: run, resistanceNotebook: notebook, resistanceComparison: { aId: 4, bId: 9 } }, awardXP);
+    const before = JSON.stringify(latestData), beforeCounts = counts();
+    Math.random.mockClear();
+    const workspace = container.querySelector('[data-micro-resistance-workspace]');
+    const chart = workspace.querySelector('[data-resistance-trend] svg');
+    expect(chart.getAttribute('role')).toBe('img');
+    expect(chart.getAttribute('aria-label')).toContain(status === 'extinct' ? 'undefined' : '100%');
+    expect(workspace.querySelector('[data-resistance-trend]').textContent).toContain('exposure rounds');
+    const table = workspace.querySelector('[data-resistance-current-history]');
+    const disclosure = table.closest('details');
+    act(() => disclosure.querySelector('summary').click());
+    expect(disclosure.open).toBe(true);
+    expect([...table.querySelectorAll('thead th')].every(th => th.getAttribute('scope') === 'col')).toBe(true);
+    expect([...table.querySelectorAll('tbody th')].every(th => th.getAttribute('scope') === 'row')).toBe(true);
+    expect([...workspace.querySelectorAll('input[type="range"]')].every(control => control.disabled)).toBe(true);
+    act(() => vi.advanceTimersByTime(3000));
+    expect(counts()).toEqual(beforeCounts);
+    expect(JSON.stringify(latestData)).toBe(before);
+    expect(Math.random).not.toHaveBeenCalled();
+    expect(awardXP).not.toHaveBeenCalled();
+  });
+
   function openComparison() {
     const details = container.querySelector('#micro-resistance-comparison');
     expect(details).not.toBe(null);

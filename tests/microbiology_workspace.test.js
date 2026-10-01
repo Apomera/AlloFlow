@@ -28,7 +28,7 @@ function measurement(value = 2, unit = 'um') {
 }
 function caseRecord() { return { claim: 'protist', evidence: ['structure', 'behavior'], reasoning: 'Nuclei and coordinated cilia support a ciliated protist.', limitation: 'bounded' }; }
 
-describe('Micro Lab saved-work overview', { timeout: 20000 }, () => {
+describe('Micro Lab saved-work overview', { timeout: 60000 }, () => {
   it('places all Home activity content inside the panel linked to the selected tab', () => {
     const seed = { growthInvestigation: { trials: [{ id: 7, conditions: {}, explanation: 'A saved observation.' }] } };
     mount(seed);

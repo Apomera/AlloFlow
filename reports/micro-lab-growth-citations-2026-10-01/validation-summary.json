@@ -1,0 +1,43 @@
+{
+  "date": "2026-10-01",
+  "sourceFile": "stem_lab/stem_tool_microbiology.js",
+  "sourceSha256": "4e78deb9632d492cfc58ee5f59c7784c0bc1af5f8c2002c59c16151a6298abfe",
+  "unit": {
+    "passed": 587,
+    "failed": 0,
+    "files": 17,
+    "report": "unit-results.json",
+    "priorRuns": [
+      "unit-initial-results.json"
+    ],
+    "note": "The final consolidated focused regression run passes. Earlier attempt reports, if any, are retained."
+  },
+  "browser": {
+    "passed": 36,
+    "failed": 0,
+    "skipped": 0,
+    "flaky": 0,
+    "project": "chromium",
+    "report": "browser-results.json",
+    "priorRuns": [
+      "browser-initial-results.json",
+      "browser-layout-results.json"
+    ],
+    "scope": "Optional Growth evidence citations from original saved trial snapshots, annotation persistence and exports, guarded keyboard focus, and retained portfolio, design, evidence, and navigation workflows, served from the local working tree."
+  },
+  "interface": {
+    "keys": 1869,
+    "missing": 0,
+    "changedFallbacks": 0,
+    "runtimeMirrored": true,
+    "microbiologyNamespacesMatch": true,
+    "syntaxChecksPassed": true
+  },
+  "visualReview": [
+    "growth-citations-desktop.png",
+    "growth-citations-phone.png",
+    "growth-citations-zoom.png",
+    "growth-citations-missing-control.png"
+  ],
+  "scope": "Micro Lab source, desktop mirror, Micro Lab translation entries, focused tests, and validation artifacts."
+}

@@ -771,3 +771,62 @@ describe('Microbiology saved sweep history', () => {
     }
   });
 });
+
+describe('Microbiology proposed experiment design', () => {
+  it('keeps a missing or invalid control unavailable without fabricating a baseline', () => {
+    for (const control of [undefined, null, false, 'ecoli', []]) {
+      expect(growth.designPreview(control, optimum('thermus'))).toEqual({
+        control: null, trial: optimum('thermus'), changed: [], held: [], design: 'unavailable'
+      });
+    }
+  });
+
+  it('identifies no, one, or several differences and lists every held condition', () => {
+    const control = optimum('ecoli');
+    expect(growth.designPreview(control, control)).toMatchObject({ design: 'none', changed: [], held: ['profile', 'tempC', 'pH', 'oxygen'] });
+    expect(growth.designPreview(control, { ...control, tempC: 25 })).toMatchObject({ design: 'single', changed: ['tempC'], held: ['profile', 'pH', 'oxygen'] });
+    expect(growth.designPreview(control, { ...control, tempC: 25, oxygen: 0 })).toMatchObject({ design: 'confounded', changed: ['tempC', 'oxygen'], held: ['profile', 'pH'] });
+    expect(growth.designPreview(control, { profile: 'thermus', tempC: 70, pH: 7.5, oxygen: 0 })).toMatchObject({ design: 'confounded', changed: ['profile', 'tempC', 'pH', 'oxygen'], held: [] });
+  });
+
+  it('treats a profile-only difference as a comparison in the same normalized environment', () => {
+    const control = optimum('ecoli'), proposed = { ...control, profile: 'thermus' };
+    const preview = growth.designPreview(control, proposed);
+    expect(preview).toEqual({ control, trial: proposed, changed: ['profile'], held: ['tempC', 'pH', 'oxygen'], design: 'single' });
+    expect(Object.keys(preview)).toEqual(['control', 'trial', 'changed', 'held', 'design']);
+    expect(Object.keys(preview.trial)).toEqual(['profile', 'tempC', 'pH', 'oxygen']);
+  });
+
+  it('normalizes bounded settings without mutating inputs or exposing outcomes, rates or populations', () => {
+    const control = Object.freeze({ profile: '__proto__', tempC: '37', pH: NaN, oxygen: Infinity });
+    const trial = Object.freeze({ profile: 'ecoli', tempC: 200, pH: -1, oxygen: -10 });
+    const preview = growth.designPreview(control, trial);
+    expect(preview.control).toEqual({ profile: 'ecoli', tempC: 37, pH: 7, oxygen: 50 });
+    expect(preview.trial).toEqual({ profile: 'ecoli', tempC: 90, pH: 3, oxygen: 0 });
+    expect(preview.changed).toEqual(['tempC', 'pH', 'oxygen']);
+    expect(preview.held).toEqual(['profile']);
+    expect(JSON.stringify(preview)).not.toMatch(/population|outcome|prediction|ratePerHour|score|lagHours|points/);
+    for (const value of [preview, preview.control, preview.trial, preview.changed, preview.held]) expect(Object.isFrozen(value)).toBe(true);
+    expect(growth.designPreview(JSON.parse(JSON.stringify(preview.control)), JSON.parse(JSON.stringify(preview.trial)))).toEqual(preview);
+    expect(control.tempC).toBe('37'); expect(Number.isNaN(control.pH)).toBe(true); expect(trial.tempC).toBe(200);
+  });
+
+  it.each(['profile', 'tempC', 'pH', 'oxygen'])('prepares only the chosen %s difference and preserves every other control setting', key => {
+    const control = Object.freeze(optimum('ecoli'));
+    const trial = Object.freeze({ profile: 'thermus', tempC: 70, pH: 6, oxygen: 0 });
+    const before = JSON.stringify([control, trial]);
+    const prepared = growth.prepareSingleVariable(control, trial, key);
+    expect(prepared).toEqual({ ...control, [key]: trial[key] });
+    expect(growth.designPreview(control, prepared)).toMatchObject({ design: 'single', changed: [key] });
+    expect(Object.isFrozen(prepared)).toBe(true);
+    expect(JSON.stringify([control, trial])).toBe(before);
+  });
+
+  it('rejects unsupported preparation keys or absent controls without guessing a setting', () => {
+    for (const key of [undefined, null, '', '__proto__', 'prediction', 'temperature', 0, ['pH'], {}]) {
+      expect(growth.prepareSingleVariable(optimum('ecoli'), optimum('thermus'), key)).toBeNull();
+    }
+    for (const control of [undefined, null, [], false]) expect(growth.prepareSingleVariable(control, optimum('thermus'), 'profile')).toBeNull();
+    expect(growth.prepareSingleVariable(optimum('ecoli'), optimum('ecoli'), 'tempC')).toEqual(optimum('ecoli'));
+  });
+});
