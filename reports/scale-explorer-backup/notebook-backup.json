@@ -1,0 +1,133 @@
+{
+  "format": "alloflow.scale-explorer.notebook",
+  "version": 1,
+  "notebook": {
+    "observations": [
+      {
+        "itemId": "human",
+        "detailId": "",
+        "size": 1.23,
+        "you": true,
+        "note": "My recorded height.",
+        "zoom": 1,
+        "yaw": 0.29999999999999993,
+        "pitch": 0.2,
+        "sunAngle": 45,
+        "nebulaReveal": false,
+        "riverKm": 0,
+        "terrainPoint": {
+          "east": 0,
+          "north": 900
+        },
+        "terrainFlight": null,
+        "terrainFlightSpeed": 180,
+        "terrainRelief": 8,
+        "cutaway": true,
+        "view": "atlas"
+      },
+      {
+        "itemId": "earth",
+        "detailId": "sahara",
+        "size": 12742000,
+        "you": false,
+        "note": "Look for contrasting terrain.",
+        "zoom": 1,
+        "yaw": 0,
+        "pitch": 0.12,
+        "sunAngle": 135,
+        "nebulaReveal": false,
+        "riverKm": 0,
+        "terrainPoint": {
+          "east": 0,
+          "north": 900
+        },
+        "terrainFlight": null,
+        "terrainFlightSpeed": 180,
+        "terrainRelief": 8,
+        "cutaway": true,
+        "view": "atlas"
+      }
+    ],
+    "investigations": [
+      {
+        "id": "inquiry-backup-1",
+        "theme": "home",
+        "small": {
+          "id": "human",
+          "size": 1.23,
+          "you": true
+        },
+        "big": {
+          "id": "earth",
+          "size": 12742000,
+          "you": false
+        },
+        "guess": "6.5",
+        "revealed": true,
+        "question": "How can my height anchor a drawing of Earth?",
+        "reflection": "The length ratio does not establish a volume ratio.",
+        "comparison": {
+          "small": {
+            "id": "human",
+            "size": 1.23,
+            "you": true
+          },
+          "big": {
+            "id": "earth",
+            "size": 12742000,
+            "you": false
+          }
+        },
+        "drawing": {
+          "reference": {
+            "id": "earth",
+            "size": 12742000,
+            "you": false
+          },
+          "target": {
+            "id": "human",
+            "size": 1.23,
+            "you": true
+          },
+          "extras": [
+            {
+              "id": "moon",
+              "size": 3475000,
+              "you": false
+            }
+          ],
+          "size": "16",
+          "unit": "cm",
+          "note": "<b>Keep my recorded height.</b>"
+        }
+      }
+    ],
+    "scalingRecord": {
+      "factor": "2",
+      "reflection": "Every edge doubled; each face has four times the area.",
+      "reference": null
+    },
+    "drawingRecord": {
+      "reference": {
+        "id": "earth",
+        "size": 12742000,
+        "you": false
+      },
+      "target": {
+        "id": "human",
+        "size": 1.23,
+        "you": true
+      },
+      "extras": [
+        {
+          "id": "moon",
+          "size": 3475000,
+          "you": false
+        }
+      ],
+      "size": "16",
+      "unit": "cm",
+      "note": "<b>Keep my recorded height.</b>"
+    }
+  }
+}

@@ -941,6 +941,98 @@
       small: inquirySnapshot(pair.small), big: inquirySnapshot(pair.big), guess: '', revealed: false, question: '', reflection: '', comparison: null, drawing: null };
   }
 
+  var NOTEBOOK_BACKUP_FORMAT = 'alloflow.scale-explorer.notebook', NOTEBOOK_BACKUP_BYTES = 512 * 1024;
+  function savedNotebook(raw) {
+    raw = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+    return { observations: readObservations(raw.observations), investigations: readInvestigations(raw.investigations),
+      scalingRecord: readScaling(raw.scalingRecord, true), drawingRecord: readDrawing(raw.drawingRecord, true) };
+  }
+  function savedNotebookCount(notebook) {
+    return notebook.observations.length + notebook.investigations.length + (notebook.scalingRecord ? 1 : 0) + (notebook.drawingRecord ? 1 : 0);
+  }
+  function notebookSignature(value, ignoreInquiryId) {
+    if (ignoreInquiryId) { value = Object.assign({}, value); delete value.id; }
+    return JSON.stringify(value, function (key, entry) {
+      // Camera angle normalization can differ by an ulp after reopening.
+      // Measurement sizes stay exact; this tolerance only identifies copies.
+      if ((key === 'yaw' || key === 'pitch') && typeof entry === 'number') return Number(entry.toPrecision(12));
+      if (entry && typeof entry === 'object' && !Array.isArray(entry)) {
+        var ordered = Object.create(null);
+        Object.keys(entry).sort().forEach(function (name) { ordered[name] = entry[name]; });
+        return ordered;
+      }
+      return entry;
+    });
+  }
+  function notebookBackup(raw) {
+    return JSON.stringify({ format: NOTEBOOK_BACKUP_FORMAT, version: 1, notebook: savedNotebook(raw) }, null, 2) + '\n';
+  }
+  function readNotebookBackup(text) {
+    if (typeof text !== 'string') return { error: 'invalid' };
+    if (text.length > NOTEBOOK_BACKUP_BYTES) return { error: 'size' };
+    var raw;
+    try { raw = JSON.parse(text); } catch (_) { return { error: 'invalid' }; }
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw) || raw.format !== NOTEBOOK_BACKUP_FORMAT) return { error: 'format' };
+    if (raw.version !== 1) return { error: 'version' };
+    var data = raw.notebook;
+    if (!data || typeof data !== 'object' || Array.isArray(data) || !Array.isArray(data.observations) || !Array.isArray(data.investigations)) return { error: 'invalid' };
+    if (data.observations.length > NOTEBOOK_LIMIT || data.investigations.length > INQUIRY_LIMIT) return { error: 'limits' };
+    var notebook = savedNotebook(data);
+    if (!savedNotebookCount(notebook)) return { error: 'empty' };
+    try { return { notebook: notebook, recovered: notebookSignature(data) !== notebookSignature(notebook) }; }
+    catch (_) { return { error: 'invalid' }; }
+  }
+  function notebookImportPlan(rawCurrent, rawIncoming, choices) {
+    var current = savedNotebook(rawCurrent), incoming = savedNotebook(rawIncoming), rows = [], next = savedNotebook(current);
+    var freeNotes = NOTEBOOK_LIMIT - current.observations.length, freeInquiries = INQUIRY_LIMIT - current.investigations.length;
+    function row(kind, index, record, previous, duplicate) {
+      var status = duplicate ? 'duplicate' : previous ? (kind === 'investigation' ? 'copy' : 'replace') : 'add';
+      var room = kind === 'observation' ? freeNotes : kind === 'investigation' ? freeInquiries : 1;
+      var selected = status === 'add' && room > 0;
+      if (selected && kind === 'observation') freeNotes--;
+      if (selected && kind === 'investigation') freeInquiries--;
+      var key = kind + ':' + index;
+      if (choices && Object.prototype.hasOwnProperty.call(choices, key)) selected = choices[key] === true;
+      if (duplicate) selected = false;
+      rows.push({ key: key, kind: kind, record: record, status: status, selected: selected });
+    }
+    incoming.observations.forEach(function (record, index) {
+      var previous = current.observations.filter(function (entry) { return observationKey(entry.itemId, entry.detailId) === observationKey(record.itemId, record.detailId); })[0];
+      row('observation', index, record, previous, !!previous && notebookSignature(previous) === notebookSignature(record));
+    });
+    incoming.investigations.forEach(function (record, index) {
+      var previous = current.investigations.filter(function (entry) { return entry.id === record.id; })[0];
+      var duplicate = current.investigations.some(function (entry) { return notebookSignature(entry, true) === notebookSignature(record, true); });
+      row('investigation', index, record, previous, duplicate);
+    });
+    ['scalingRecord', 'drawingRecord'].forEach(function (kind) {
+      if (incoming[kind]) row(kind, 0, incoming[kind], current[kind], !!current[kind] && notebookSignature(current[kind]) === notebookSignature(incoming[kind]));
+    });
+    var imported = 0, blocked = 0, nextId = 1;
+    rows.forEach(function (entry) {
+      if (!entry.selected) return;
+      if (entry.kind === 'observation') {
+        var key = observationKey(entry.record.itemId, entry.record.detailId), found = next.observations.some(function (old) { return observationKey(old.itemId, old.detailId) === key; });
+        if (!found && next.observations.length >= NOTEBOOK_LIMIT) { entry.status = 'full'; blocked++; return; }
+        if (found) next.observations = next.observations.map(function (old) { return observationKey(old.itemId, old.detailId) === key ? entry.record : old; });
+        else next.observations.push(entry.record);
+      } else if (entry.kind === 'investigation') {
+        if (next.investigations.some(function (old) { return notebookSignature(old, true) === notebookSignature(entry.record, true); })) { entry.status = 'duplicate'; entry.selected = false; return; }
+        if (next.investigations.length >= INQUIRY_LIMIT) { entry.status = 'full'; blocked++; return; }
+        var record = entry.record;
+        if (next.investigations.some(function (old) { return old.id === record.id; })) {
+          var id;
+          do { id = 'inquiry-import-' + (nextId++).toString(36); } while (next.investigations.some(function (old) { return old.id === id; }));
+          record = Object.assign({}, record, { id: id });
+        }
+        next.investigations.push(record);
+      } else next[entry.kind] = entry.record;
+      imported++;
+    });
+    return { rows: rows, notebook: savedNotebook(next), imported: imported, blocked: blocked,
+      freeObservations: NOTEBOOK_LIMIT - current.observations.length, freeInvestigations: INQUIRY_LIMIT - current.investigations.length };
+  }
+
   function createScaleAtlas(T, canvas, read, pick, fail, inspect, markers, comparisonLabels, onImagery, hoverCard, flightLabels, airHud) {
     var renderer = new T.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false, powerPreference: 'low-power' });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.7));
@@ -2745,6 +2837,17 @@
       var _observationDrafts = React.useState(function () { return readObservationDrafts(slice.observationDrafts); });
       var observationDrafts = _observationDrafts[0], setObservationDrafts = _observationDrafts[1];
       var _notebookMessage = React.useState(''); var notebookMessage = _notebookMessage[0], setNotebookMessage = _notebookMessage[1];
+      var _backupPreview = React.useState(null); var backupPreview = _backupPreview[0], setBackupPreview = _backupPreview[1];
+      var _backupChoices = React.useState({}); var backupChoices = _backupChoices[0], setBackupChoices = _backupChoices[1];
+      var _backupReading = React.useState(false); var backupReading = _backupReading[0], setBackupReading = _backupReading[1];
+      var _backupMessage = React.useState(''); var backupMessage = _backupMessage[0], setBackupMessage = _backupMessage[1];
+      var _backupUndo = React.useState(null); var backupUndo = _backupUndo[0], setBackupUndo = _backupUndo[1];
+      var backupReadRef = React.useRef(0), backupFileRef = React.useRef(null), backupPreviewRef = React.useRef(null);
+      React.useEffect(function () { return function () { backupReadRef.current++; }; }, []);
+      var currentNotebook = React.useMemo(function () { return savedNotebook({ observations: observations, investigations: investigations, scalingRecord: scalingRecord, drawingRecord: drawingRecord }); }, [observations, investigations, scalingRecord, drawingRecord]);
+      var backupPlan = React.useMemo(function () { return backupPreview ? notebookImportPlan(currentNotebook, backupPreview.notebook, backupChoices) : null; }, [currentNotebook, backupPreview, backupChoices]);
+      var canUndoBackup = React.useMemo(function () { return !!backupUndo && notebookSignature(currentNotebook) === notebookSignature(backupUndo.after); }, [currentNotebook, backupUndo]);
+
       var _pendingObservation = React.useState(null); var pendingObservation = _pendingObservation[0], setPendingObservation = _pendingObservation[1];
       var savedObservationsRef = React.useRef(null);
       React.useEffect(function(){if(!pendingObservation){setInspectionZoom(1);setDetailId('');}},[focusId]);
@@ -2977,6 +3080,123 @@
         }
         finally { if (anchor) anchor.remove(); if (url) setTimeout(function () { URL.revokeObjectURL(url); }, 1000); }
       }
+      function downloadNotebookBackup() {
+        if (!savedNotebookCount(currentNotebook)) return;
+        var url, anchor;
+        try {
+          url = URL.createObjectURL(new Blob([notebookBackup(currentNotebook)], { type: 'application/json;charset=utf-8' }));
+          anchor = document.createElement('a'); anchor.href = url; anchor.download = 'scale-explorer-notebook.json';
+          document.body.appendChild(anchor); anchor.click();
+          setBackupMessage(S('atlas_backup_downloaded', 'Notebook backup downloaded. Keep this file to restore your saved evidence.'));
+        } catch (_) { setBackupMessage(S('atlas_backup_download_failed', 'The backup download could not start. Your saved notebook is still available here.')); }
+        finally { if (anchor) anchor.remove(); if (url) setTimeout(function () { URL.revokeObjectURL(url); }, 1000); }
+      }
+      function backupError(code) {
+        if (code === 'size') return S('atlas_backup_error_size', 'Choose a notebook backup smaller than 512 KB.');
+        if (code === 'format') return S('atlas_backup_error_format', 'Choose a Scale Explorer notebook backup created with Download notebook backup.');
+        if (code === 'version') return S('atlas_backup_error_version', 'This backup version is not supported here. Keep the original file.');
+        if (code === 'limits') return S('atlas_backup_error_limits', 'This backup exceeds the limit of 24 observations or 12 investigations.');
+        if (code === 'empty') return S('atlas_backup_error_empty', 'This backup contains no recoverable saved records.');
+        return S('atlas_backup_error_invalid', 'This file could not be read as a notebook backup. Your saved notebook is still available here.');
+      }
+      function previewNotebookBackup(event) {
+        var file = event.target.files && event.target.files[0], request = ++backupReadRef.current;
+        event.target.value = '';
+        setBackupPreview(null); setBackupChoices({}); setBackupReading(false); setBackupMessage('');
+        if (!file) return;
+        if (file.size > NOTEBOOK_BACKUP_BYTES) { setBackupMessage(backupError('size')); return; }
+        setBackupReading(true); setBackupMessage(S('atlas_backup_reading', 'Reading your notebook backup…'));
+        Promise.resolve().then(function () { return file.text(); }).then(function (text) {
+          if (backupReadRef.current !== request) return;
+          setBackupReading(false);
+          var result = readNotebookBackup(text);
+          if (result.error) { setBackupMessage(backupError(result.error)); return; }
+          setBackupPreview({ name: file.name.slice(0, 250), notebook: result.notebook, recovered: result.recovered });
+          setBackupMessage(S('atlas_backup_review_ready', 'Backup ready to review. Select the records you want to restore.'));
+          setTimeout(function () { if (backupReadRef.current === request && backupPreviewRef.current) backupPreviewRef.current.focus(); }, 0);
+        }).catch(function () {
+          if (backupReadRef.current !== request) return;
+          setBackupReading(false); setBackupMessage(backupError('invalid'));
+        });
+      }
+      function cancelNotebookBackup() {
+        backupReadRef.current++; setBackupPreview(null); setBackupChoices({}); setBackupReading(false);
+        setBackupMessage(S('atlas_backup_cancelled', 'Backup review cancelled.'));
+        if (backupFileRef.current) backupFileRef.current.focus({ preventScroll: true });
+      }
+      function applySavedNotebook(notebook) {
+        setObservations(notebook.observations); setInvestigations(notebook.investigations);
+        setScalingRecord(notebook.scalingRecord); setDrawingRecord(notebook.drawingRecord);
+        updateSlice(function (cur) {
+          cur.observations = notebook.observations; cur.investigations = notebook.investigations;
+          cur.scalingRecord = notebook.scalingRecord; cur.drawingRecord = notebook.drawingRecord;
+        });
+      }
+      function restoreNotebookBackup() {
+        if (!backupPlan || !backupPlan.imported || backupPlan.blocked) return;
+        setBackupUndo({ before: savedNotebook(currentNotebook), after: savedNotebook(backupPlan.notebook) });
+        applySavedNotebook(backupPlan.notebook);
+        setBackupMessage(S('atlas_backup_restored', '{n} records restored to your notebook.', { n: backupPlan.imported }));
+        backupReadRef.current++; setBackupPreview(null); setBackupChoices({});
+        if (savedObservationsRef.current) savedObservationsRef.current.open = true;
+        if (inquiryHistoryRef.current) inquiryHistoryRef.current.open = true;
+        if (backupFileRef.current) backupFileRef.current.focus({ preventScroll: true });
+      }
+      function undoNotebookBackup() {
+        if (!canUndoBackup) return;
+        applySavedNotebook(savedNotebook(backupUndo.before)); setBackupUndo(null);
+        setBackupMessage(S('atlas_backup_undone', 'Restore undone. Your previous saved notebook is back.'));
+        if (backupFileRef.current) backupFileRef.current.focus({ preventScroll: true });
+      }
+      function notebookBackupTools() {
+        function rowTitle(row) {
+          if (row.kind === 'observation') return observationTitle(row.record);
+          if (row.kind === 'investigation') return investigationQuestion(row.record);
+          if (row.kind === 'scalingRecord') return S('atlas_backup_model', 'Similar-shape model · edge factor {factor}', { factor: row.record.factor });
+          return S('atlas_backup_drawing', 'Drawing plan · {name}', { name: itemText(inquiryMeasurement(row.record.reference), 'name') });
+        }
+        function rowStatus(row) {
+          if (row.status === 'duplicate') return S('atlas_backup_duplicate', 'Already saved');
+          if (row.status === 'replace') return S('atlas_backup_replace', 'Replace this saved record if selected');
+          if (row.status === 'copy') return S('atlas_backup_copy', 'Save as a separate investigation if selected');
+          if (row.status === 'full') return S('atlas_backup_full', 'No free slot. Adjust your selection or remove a saved record.');
+          return S('atlas_backup_add', 'Add to notebook');
+        }
+        return h('section', { className: 'sx-backup', 'aria-label': S('atlas_backup_heading', 'Notebook backup'), style: Object.assign({}, card, { display: 'flex', flexDirection: 'column', gap: 8, overflowWrap: 'anywhere' }) },
+          h('h3', { style: { fontSize: '.875rem', margin: 0 } }, S('atlas_backup_heading', 'Notebook backup')),
+          h('p', { style: { margin: 0, fontSize: '.75rem', color: P.dim } }, S('atlas_backup_scope', 'Keep your saved observations, linked investigations, model explanations and drawing plans in a file you can reopen.')),
+          h('button', { type: 'button', style: btn, disabled: !savedNotebookCount(currentNotebook), onClick: downloadNotebookBackup }, S('atlas_backup_download', 'Download notebook backup')),
+          h('label', { style: { fontSize: '.75rem' } }, S('atlas_backup_choose', 'Choose a notebook backup'),
+            h('input', { ref: backupFileRef, type: 'file', accept: '.json,application/json', onChange: previewNotebookBackup,
+              style: { display: 'block', width: '100%', maxWidth: '100%', boxSizing: 'border-box', fontSize: '.75rem', color: P.text, marginTop: 6 } })),
+          h('p', { style: { margin: 0, fontSize: '.6875rem', color: P.dim } }, S('atlas_backup_drafts', 'Save your current drafts before making a backup.')),
+          backupPreview ? h('div', { className: 'sx-backup-review', 'aria-labelledby': descId + '-backup-review' },
+            h('h4', { ref: backupPreviewRef, id: descId + '-backup-review', tabIndex: -1, style: { margin: '6px 0', fontSize: '.875rem' } }, S('atlas_backup_review', 'Review backup')),
+            h('p', { style: { margin: '6px 0', fontSize: '.75rem' } }, backupPreview.name),
+            h('p', { style: { margin: '6px 0', fontSize: '.75rem' } }, S('atlas_backup_capacity', '{observations} observation slots and {investigations} investigation slots available.', { observations: backupPlan.freeObservations, investigations: backupPlan.freeInvestigations })),
+            backupPreview.recovered ? h('p', { style: { fontSize: '.75rem', color: P.warn } }, S('atlas_backup_recovered', 'Some records were adjusted or omitted during recovery. Review them before restoring.')) : null,
+            h('ul', { style: { listStyle: 'none', padding: 0, margin: '8px 0', maxHeight: 340, overflowY: 'auto' } }, backupPlan.rows.map(function (row) {
+              var title = rowTitle(row), note = row.record.note || row.record.reflection || '';
+              return h('li', { key: row.key, 'data-backup-row': row.key, 'data-backup-status': row.status, style: { borderTop: '1px solid ' + P.line, padding: '9px 0', fontSize: '.75rem' } },
+                h('label', { style: { display: 'flex', gap: 8, alignItems: 'flex-start', cursor: row.status === 'duplicate' ? 'default' : 'pointer' } },
+                  h('input', { type: 'checkbox', checked: row.selected, disabled: row.status === 'duplicate', 'aria-label': S('atlas_backup_select', 'Import {name}', { name: title }), style: { flexShrink: 0, width: 20, height: 20, margin: '1px 0' },
+                    onChange: function (event) { var checked = event.target.checked; setBackupChoices(function (previous) { var next = Object.assign({}, previous); next[row.key] = checked; return next; }); } }),
+                  h('span', { style: { minWidth: 0 } }, h('strong', null, title), h('span', { style: { display: 'block', color: row.status === 'full' ? P.warn : P.dim } }, rowStatus(row)),
+                    row.kind === 'investigation' ? h('span', { style: { display: 'block', color: P.dim } }, humanLength(row.record.small.size) + ' / ' + humanLength(row.record.big.size)) : null,
+                    row.kind === 'observation' ? h('span', { style: { display: 'block', color: P.dim } }, S('atlas_observation_size', 'Recorded size: {len} {dim}', { len: humanLength(row.record.size), dim: S('dim_' + byId[row.record.itemId].dim.replace(/\s+/g, '_'), byId[row.record.itemId].dim) })) : null,
+                    row.kind === 'drawingRecord' ? h('span', { style: { display: 'block', color: P.dim } }, drawingReal(inquiryMeasurement(row.record.reference)) + ' / ' + drawingReal(inquiryMeasurement(row.record.target))) : null,
+                    note ? h('span', { style: { display: 'block', marginTop: 4, whiteSpace: 'pre-wrap' } }, note.slice(0, 180) + (note.length > 180 ? '…' : '')) : null)));
+            })),
+            h('p', { 'data-backup-selected': backupPlan.imported, style: { margin: '6px 0', fontSize: '.75rem' } }, S('atlas_backup_selected', '{n} selected records ready to restore.', { n: backupPlan.imported })),
+            backupPlan.blocked ? h('p', { style: { fontSize: '.75rem', color: P.warn } }, S('atlas_backup_blocked', 'Your selection exceeds the notebook capacity. Uncheck a record or make room in your notebook.')) : null,
+            h('button', { type: 'button', style: goBtn, disabled: !backupPlan.imported || !!backupPlan.blocked, onClick: restoreNotebookBackup }, S('atlas_backup_restore', 'Restore selected records'))) : null,
+          backupPreview || backupReading ? h('button', { type: 'button', style: btn, onClick: cancelNotebookBackup }, S('atlas_backup_cancel', 'Cancel backup review')) : null,
+          backupUndo ? h(React.Fragment, null,
+            h('button', { type: 'button', style: btn, disabled: !canUndoBackup, onClick: undoNotebookBackup }, S('atlas_backup_undo', 'Undo last restore')),
+            h('p', { style: { margin: 0, fontSize: '.6875rem', color: P.dim } }, canUndoBackup ? S('atlas_backup_undo_hint', 'You can undo this restore until another saved record changes.') : S('atlas_backup_undo_changed', 'Saved work has changed since the restore. Undo is no longer available.'))) : null,
+          h('p', { role: 'status', 'aria-atomic': 'true', style: { margin: 0, minHeight: '1.5em', fontSize: '.75rem' } }, backupMessage));
+      }
+
       function chooseDetail(detail,force){
         if((detail.surface||detail.terrain)&&(planetImagery.id!==focusId||planetImagery.status!=='ready'))return;
         stopJourney();
@@ -4482,7 +4702,7 @@
         h('p', { style: { margin: 0, fontSize: '0.8125rem', color: P.dim, lineHeight: 1.55 } },
           S('atlas_blurb', 'Travel from the familiar to the almost unimaginable. Orbit a world, find your next destination, and feel what a power of ten changes.')),
 
-        h('style', null, '.sx-panel{align-self:flex-start;flex-basis:420px}@media(min-width:701px){.sx-panel.sx-workspace-all{flex-basis:310px}}.sx-panel [hidden]{display:none!important}.sx-workspace-navigation{display:flex;flex-direction:column;gap:7px}.sx-workspace-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.sx-workspace-tabs button{font-size:.8125rem!important;padding:8px 5px!important;overflow-wrap:anywhere}.sx-workspace-panel{min-width:0}.sx-workspace-panel:focus-visible{outline:3px solid #67d8f5;outline-offset:3px}.sx-workspace-eyebrow{font-size:.6875rem;letter-spacing:.07em;text-transform:uppercase;margin:0 0 5px}.sx-workspace-question{font-size:.8125rem;line-height:1.5;margin:7px 0;overflow-wrap:anywhere}.sx-workspace-count{font-size:.75rem;margin:7px 0}.sx-workspace-steps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.sx-workspace-steps button{text-align:left;font-size:.75rem!important;padding:8px!important}.sx-workspace-save-state{font-size:.6875rem;line-height:1.5;margin:9px 0}.sx-workspace-actions{display:flex;gap:6px;flex-wrap:wrap}.sx-workspace-actions button{font-size:.75rem!important;flex:1 1 145px}.sx-investigation-workspace{overflow-wrap:anywhere}@media(max-width:700px){.sx-panel{flex-basis:100%}.sx-workspace-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}}.sx-stage:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(3,9,17,.38),transparent 29%,transparent 82%,rgba(3,9,17,.45))}.sx-hud,.sx-stage-note{z-index:1}.sx-hud h3{letter-spacing:-.025em}.sx-stage canvas:active{cursor:grabbing!important}.sx-markers{position:absolute;inset:0;pointer-events:none;z-index:2}.sx-marker{position:absolute;left:0;top:0;width:44px;height:44px;padding:6px;background:transparent;border:0;pointer-events:auto;cursor:pointer;color:#f2f8ec;font:600 12px system-ui}.sx-marker[hidden]{display:none}.sx-marker span{display:grid;place-items:center;width:30px;height:30px;border:1px solid #d0dec2;border-radius:50%;background:rgba(11,27,23,.88);box-shadow:0 0 0 4px rgba(180,215,162,.10),0 3px 12px #0005}.sx-marker:hover span,.sx-marker[aria-pressed="true"] span{background:#deebbe;color:#172819;border-color:#eff5de}.sx-detail-choices{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}.sx-detail-choices button{flex:1 1 130px;text-align:left}.sx-detail-note a:focus-visible{outline:3px solid #67d8f5;outline-offset:3px}'),
+        h('style', null, '.sx-panel{align-self:flex-start;flex-basis:420px}@media(min-width:701px){.sx-panel.sx-workspace-all{flex-basis:310px}}.sx-panel [hidden]{display:none!important}.sx-workspace-navigation{display:flex;flex-direction:column;gap:7px}.sx-workspace-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.sx-workspace-tabs button{font-size:.8125rem!important;padding:8px 5px!important;overflow-wrap:anywhere}.sx-workspace-panel{min-width:0}.sx-backup input:focus-visible,.sx-backup button:focus-visible,.sx-backup-review h4:focus-visible{outline:3px solid #67d8f5;outline-offset:3px}.sx-workspace-panel:focus-visible{outline:3px solid #67d8f5;outline-offset:3px}.sx-workspace-eyebrow{font-size:.6875rem;letter-spacing:.07em;text-transform:uppercase;margin:0 0 5px}.sx-workspace-question{font-size:.8125rem;line-height:1.5;margin:7px 0;overflow-wrap:anywhere}.sx-workspace-count{font-size:.75rem;margin:7px 0}.sx-workspace-steps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.sx-workspace-steps button{text-align:left;font-size:.75rem!important;padding:8px!important}.sx-workspace-save-state{font-size:.6875rem;line-height:1.5;margin:9px 0}.sx-workspace-actions{display:flex;gap:6px;flex-wrap:wrap}.sx-workspace-actions button{font-size:.75rem!important;flex:1 1 145px}.sx-investigation-workspace{overflow-wrap:anywhere}@media(max-width:700px){.sx-panel{flex-basis:100%}.sx-workspace-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}}.sx-stage:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(3,9,17,.38),transparent 29%,transparent 82%,rgba(3,9,17,.45))}.sx-hud,.sx-stage-note{z-index:1}.sx-hud h3{letter-spacing:-.025em}.sx-stage canvas:active{cursor:grabbing!important}.sx-markers{position:absolute;inset:0;pointer-events:none;z-index:2}.sx-marker{position:absolute;left:0;top:0;width:44px;height:44px;padding:6px;background:transparent;border:0;pointer-events:auto;cursor:pointer;color:#f2f8ec;font:600 12px system-ui}.sx-marker[hidden]{display:none}.sx-marker span{display:grid;place-items:center;width:30px;height:30px;border:1px solid #d0dec2;border-radius:50%;background:rgba(11,27,23,.88);box-shadow:0 0 0 4px rgba(180,215,162,.10),0 3px 12px #0005}.sx-marker:hover span,.sx-marker[aria-pressed="true"] span{background:#deebbe;color:#172819;border-color:#eff5de}.sx-detail-choices{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}.sx-detail-choices button{flex:1 1 130px;text-align:left}.sx-detail-note a:focus-visible{outline:3px solid #67d8f5;outline-offset:3px}'),
         h('style', null, '.sx-comparison-points{position:absolute;inset:0;pointer-events:none;z-index:2}.sx-comparison-point{position:absolute;left:0;top:0;pointer-events:auto;width:172px;border:1px dashed #bed3de;border-radius:8px;padding:7px 9px;color:#eef6fc;background:rgba(9,22,32,.93);font:12px system-ui;cursor:pointer}.sx-comparison-point:before{content:"+";display:block;font-size:20px;line-height:22px}.sx-comparison-point[hidden]{display:none}.sx-comparison-pair{display:flex;gap:8px;flex-wrap:wrap}.sx-comparison-pair article{flex:1 1 200px;min-width:0;overflow-wrap:anywhere}.sx-scale-bridge button{text-align:left;max-width:100%}.sx-explorer textarea:focus-visible,.sx-explorer .sx-comparison-diagram:focus-visible{outline:3px solid #67d8f5;outline-offset:3px}'),
         h('style', null, '@media(max-width:700px){.sx-comparison-diagram text{font-size:30px}.sx-comparison-diagram .sx-diagram-size{font-size:26px}}'),
         h('style',null,'.sx-marker[data-offset="true"]:before{content:"";position:absolute;left:21px;top:-22px;width:1px;height:28px;background:#d7e9bd;pointer-events:none}.sx-marker[data-offset="true"]:after{content:"";position:absolute;left:19px;top:-24px;width:5px;height:5px;border-radius:50%;background:#d7e9bd;pointer-events:none}'),
@@ -4816,6 +5036,7 @@
                 })) : h('p', { style: { color: P.dim, fontSize: '0.75rem' } }, S('atlas_notebook_empty', 'Saved observations will appear here.')),
                 h('button', { type: 'button', style: btn, disabled: !observations.length && !investigations.length && !scalingRecord && !drawingRecord, onClick: downloadObservations }, S('atlas_notebook_download', 'Download notes'))),
               h('p', { role: 'status', style: { margin: 0, fontSize: '0.75rem', minHeight: '1.5em' } }, notebookMessage)),
+              notebookBackupTools(),
               workspace !== 'all' ? investigationHistory() : null)),
 
             // Estimate first, then check: the house Predict → Explore → Explain
