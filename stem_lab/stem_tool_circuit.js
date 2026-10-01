@@ -3244,7 +3244,7 @@ function CircuitActiveLearningEntry(props) {
 
 // Compare the fixed before/after circuits of the tested lesson.
 function CircuitActiveLessonTrace(props) {
-  var h=props.React.createElement,t=circuitToolT(props);
+  var React=props.React,h=React.createElement,t=circuitToolT(props);
   var lesson=props.lesson,before=props.before,after=props.after;
   if(!lesson||!before||!after)return null;
   var rows=[
@@ -3258,15 +3258,20 @@ function CircuitActiveLessonTrace(props) {
     limit:t('stem.circuit.trace_limit_question','Base current rises while lamp current stays the same. What sets the lamp-current limit in these two readings?'),
     sensor:t('stem.circuit.trace_sensor_question','How does the connected divider junction voltage help explain the changes in base current and lamp current?')
   };
+  var reading=function(row,value,signed){
+    var text=(signed&&value>0?'+':'')+row.format(value),parts=text.match(/^(.*?)( ?)([µm]?[AV])$/);
+    return parts?h(React.Fragment,null,h('span',{className:'circuit-trace-reading-magnitude'},parts[1]),parts[2],h('span',{className:'circuit-trace-reading-unit'},parts[3])):text;
+  };
   return h('details',{className:'circuit-active-lesson-trace'},
     h('summary',null,t('stem.circuit.trace_change','Trace the change')),
     h('div',{className:'circuit-lesson-trace-body'},
-      h('p',{className:'circuit-lesson-trace-context'},t('stem.circuit.trace_saved_context','Readings from this experiment’s saved before and after circuits. Displayed values are rounded.')),
+      h('p',{className:'circuit-lesson-trace-context'},t('stem.circuit.trace_saved_context','Readings from this experiment’s saved before and after circuits. Displayed values are rounded.')+' '+t('stem.circuit.trace_difference_definition','Change = After − Before, using the unrounded readings.')),
       h('dl',{className:'circuit-lesson-trace-readings','aria-label':t('stem.circuit.trace_saved_measurements','Saved experiment measurements')},rows.map(function(row){
         return h('div',{key:row.key,className:'circuit-lesson-trace-row','data-lesson-trace-metric':row.key},
           h('dt',null,row.label),
-          h('dd',{'data-stage':'before'},h('span',null,t('stem.circuit.trace_before','Before')),h('strong',null,row.format(before[row.key]))),
-          h('dd',{'data-stage':'after'},h('span',null,t('stem.circuit.trace_after','After')),h('strong',null,row.format(after[row.key]))));
+          h('dd',{'data-stage':'before'},h('span',null,t('stem.circuit.trace_before','Before')),h('strong',{className:'circuit-trace-reading-value'},reading(row,before[row.key],false))),
+          h('dd',{'data-stage':'after'},h('span',null,t('stem.circuit.trace_after','After')),h('strong',{className:'circuit-trace-reading-value'},reading(row,after[row.key],false))),
+          h('dd',{'data-stage':'change'},h('span',null,t('stem.circuit.trace_difference','Change')),h('strong',{className:'circuit-trace-reading-value'},reading(row,after[row.key]-before[row.key],true))));
       })),
       h('p',{className:'circuit-lesson-trace-question'},prompts[lesson.id]||t('stem.circuit.trace_reasoning_question','Which readings support or revise your prediction?'))));
 }
@@ -4994,16 +4999,20 @@ function CircuitActiveLessonLab(props) {
 .circuit-active-root .circuit-lesson-trace-body{min-width:0;padding:12px 14px 14px}
 .circuit-active-root .circuit-lesson-trace-context{margin:0 0 12px;color:#c4d8df;font-size:12px;line-height:1.75}
 .circuit-active-root .circuit-lesson-trace-readings{min-width:0;margin:0}
-.circuit-active-root .circuit-lesson-trace-row{display:grid;grid-template-columns:minmax(0,1.35fr) repeat(2,minmax(0,1fr));align-items:start;gap:10px 14px;padding:13px 0;border-top:1px solid #3e5e69;min-width:0}
+.circuit-active-root .circuit-lesson-trace-row{display:grid;grid-template-columns:minmax(0,1.35fr) repeat(3,minmax(0,1fr));align-items:start;gap:10px 14px;padding:13px 0;border-top:1px solid #3e5e69;min-width:0}
 .circuit-active-root .circuit-lesson-trace-row:first-child{border-top:0;padding-top:0}
 .circuit-active-root .circuit-lesson-trace-row>dt{min-width:0;font-size:13px;line-height:1.65;font-weight:600;color:#d7e7eb}
 .circuit-active-root .circuit-lesson-trace-row>dd{display:grid;gap:3px;min-width:0;margin:0;padding:0}
 .circuit-active-root .circuit-lesson-trace-row>dd>span{font-size:12px;line-height:1.6;color:#bed2dc}
 .circuit-active-root .circuit-lesson-trace-row>dd>strong{font-size:16px;line-height:1.6;font-weight:650;font-variant-numeric:tabular-nums;white-space:normal;overflow-wrap:anywhere;color:#e0f0ed}
 .circuit-active-root .circuit-lesson-trace-row>dd[data-stage=after]>strong{color:#bce9d9}
+.circuit-active-root .circuit-lesson-trace-row>dd[data-stage=change]{padding:8px 10px;border:1px solid #4d6d79;border-radius:8px;background:#173340}
+.circuit-active-root .circuit-lesson-trace-row>dd>strong.circuit-trace-reading-value{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 .2em;direction:ltr;unicode-bidi:isolate}
+.circuit-active-root .circuit-trace-reading-magnitude,.circuit-active-root .circuit-trace-reading-unit{white-space:nowrap;overflow-wrap:normal}
+.circuit-active-root .circuit-trace-reading-unit{font-size:.8em;color:inherit}
 .circuit-active-root .circuit-lesson-trace-question{margin:12px 0 0;padding:12px 13px;border-left:3px solid #a0d5c4;border-radius:0 8px 8px 0;background:#173c35;color:#d9ede4;font-size:13px;line-height:1.75}
-@media(max-width:640px){.circuit-active-root .circuit-lesson-trace-body{padding:11px 12px 13px}.circuit-active-root .circuit-lesson-trace-row{grid-template-columns:repeat(auto-fit,minmax(min(100%,7em),1fr));gap:7px 12px}.circuit-active-root .circuit-lesson-trace-row>dt{grid-column:1/-1}}
-@media(forced-colors:active){.circuit-active-root .circuit-active-lesson-trace,.circuit-active-root .circuit-active-lesson-trace>summary,.circuit-active-root .circuit-lesson-trace-question{background:Canvas;color:CanvasText;border-color:CanvasText}.circuit-active-root .circuit-active-lesson-trace>summary:hover{background:Canvas}.circuit-active-root .circuit-active-lesson-trace>summary:focus-visible{outline-color:Highlight}.circuit-active-root .circuit-lesson-trace-row{border-color:CanvasText}.circuit-active-root .circuit-lesson-trace-context,.circuit-active-root .circuit-lesson-trace-row>dt,.circuit-active-root .circuit-lesson-trace-row>dd>span,.circuit-active-root .circuit-lesson-trace-row>dd>strong,.circuit-active-root .circuit-lesson-trace-row>dd[data-stage=after]>strong{color:CanvasText}}
+@media(max-width:640px){.circuit-active-root .circuit-lesson-trace-body{padding:11px 12px 13px}.circuit-active-root .circuit-lesson-trace-row{grid-template-columns:repeat(auto-fit,minmax(min(100%,7em),1fr));gap:7px 12px}.circuit-active-root .circuit-lesson-trace-row>dt,.circuit-active-root .circuit-lesson-trace-row>dd[data-stage=change]{grid-column:1/-1}}
+@media(forced-colors:active){.circuit-active-root .circuit-active-lesson-trace,.circuit-active-root .circuit-active-lesson-trace>summary,.circuit-active-root .circuit-lesson-trace-question,.circuit-active-root .circuit-lesson-trace-row>dd[data-stage=change]{background:Canvas;color:CanvasText;border-color:CanvasText}.circuit-active-root .circuit-active-lesson-trace>summary:hover{background:Canvas}.circuit-active-root .circuit-active-lesson-trace>summary:focus-visible{outline-color:Highlight}.circuit-active-root .circuit-lesson-trace-row{border-color:CanvasText}.circuit-active-root .circuit-lesson-trace-context,.circuit-active-root .circuit-lesson-trace-row>dt,.circuit-active-root .circuit-lesson-trace-row>dd>span,.circuit-active-root .circuit-lesson-trace-row>dd>strong,.circuit-active-root .circuit-lesson-trace-row>dd[data-stage=after]>strong{color:CanvasText}}
 `;
   circStyle.textContent += `
 /* A planned input change uses blue/gold styling, separate from observed results. */

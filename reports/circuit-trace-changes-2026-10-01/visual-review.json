@@ -1,0 +1,25 @@
+{
+  "passed": true,
+  "sourceSha256": "324026179f177a92b0c87817991a2fc2c425cdac8cfef80740bf4479e4fe1a28",
+  "rootInspected": [
+    "saved-trace-limit-1280.png",
+    "saved-trace-sensor-390.png",
+    "saved-trace-sensor-200pct-text-320.png",
+    "forced-colors-saved-trace-gain-320.png",
+    "rtl-saved-trace-sensor-320.png"
+  ],
+  "screenshotsReviewedByCircuitUI": 14,
+  "observations": [
+    "Desktop rows associate each metric with Before, After and a distinct neutral Change cell.",
+    "The sensor phone view keeps its mixed-unit endpoints and signed voltage differences readable, with Change below each pair.",
+    "At 200% text, Before and After stack without clipping; magnitudes and signs remain intact and the Change cells stay within the trace.",
+    "Forced colors retain row separators, reading text, Change-cell borders, the reasoning prompt and the disclosure control.",
+    "The RTL phone fixture preserves numeric magnitude/unit order while surrounding labels follow document direction."
+  ],
+  "independentSourceReview": {
+    "reviewer": "circuit_journey",
+    "passed": true,
+    "scope": "Raw-value subtraction, signs and zeros, exact original reading text, localized definition, native disclosure identity, definition-list associations and scoped responsive styles.",
+    "materialIssues": []
+  }
+}
