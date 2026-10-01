@@ -8,9 +8,10 @@ const windows = [];
 const activeKey = 'alloflow-life-outing-active:v1';
 const flush = async () => { await Promise.resolve(); await Promise.resolve(); await Promise.resolve(); };
 
-function mount({ saved = [], provider, noScene = false, noStorage = false, reducedMotion = false } = {}) {
+function mount({ saved = [], provider, noScene = false, noStorage = false, reducedMotion = false, voice } = {}) {
   const dom = new JSDOM(html, { url: 'http://localhost:3000/life_skills_outing/life_skills_outing.html', runScripts: 'outside-only', pretendToBeVisual: true });
   const w = dom.window; windows.push(w);
+  if (voice) { w.speechSynthesis=voice; w.SpeechSynthesisUtterance=class { constructor(text) { this.text=text; } }; }
   const motion = new w.EventTarget(); motion.matches = reducedMotion; w.matchMedia = () => motion;
   if (noStorage) Object.defineProperty(w, 'localStorage', { get() { throw Error('Storage blocked'); } });
   else for (const [key, value] of saved) w.localStorage.setItem(key, value);
@@ -46,6 +47,13 @@ function addPlan(h,id) {
   h.$('#planAction').value=id;
   h.$('#planForm').dispatchEvent(new h.w.Event('submit',{bubbles:true,cancelable:true}));
 }
+function speechStub({autoStart=true,fail=false,busy=false}={}) {
+  return {spoken:[],cancelled:0,speaking:busy,pending:false,
+    getVoices:()=>[{lang:'en-US',localService:true,name:'English'}],
+    speak(utterance){this.spoken.push(utterance);if(fail)throw Error('Voice unavailable');this.speaking=true;if(autoStart)utterance.onstart();},
+    cancel(){this.cancelled++;this.speaking=false;this.pending=false;}
+  };
+}
 async function openBackup(h, source) {
   const file=new h.w.File([source], 'practice.json', {type:'application/json'});
   Object.defineProperty(h.$('#restoreFile'),'files',{configurable:true,value:[file]});
@@ -54,6 +62,119 @@ async function openBackup(h, source) {
 }
 
 describe('Life Skills outing interaction', () => {
+  it.each([['rain','raincoat','bus','09:30'],['warm','hat','bus','09:30'],['bus-delay','raincoat','walk','09:25']])('follows the %s next-step flow through real workbenches and completes without extra decisions', (variation,weather,route,arrival) => {
+    const h=mount(); h.$('#scenarioSelect').value=variation; h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));
+    h.$('#simpleViewToggle').click(); const initial=h.save();
+    expect(h.$('#nextGuide').dataset.target).toBe('outfit'); h.$('#nextGuideOpen').click();
+    expect(h.w.document.activeElement.dataset.outfit).toBe('wear_ready'); expect(h.save()).toEqual(initial);
+    h.$('[data-outfit="wear_ready"]').click(); h.$('#prepareOutfit').click(); expect(h.$('#nextGuide').dataset.target).toBe('bottle');
+    h.$('#continueGuide').click(); expect(h.w.document.activeElement.id).toBe('fillAtTap'); h.$('#fillAtTap').click();
+    expect(h.$('#nextGuideTitle').textContent).toBe('Bring your filled bottle'); expect(h.$('#continueGuide').hidden).toBe(true);
+    h.$('#packAtTap').click(); expect(h.$('#nextGuide').dataset.target).toBe('update'); h.$('#continueGuide').click();
+    expect(h.$('#updateWorkbench').open).toBe(true); h.$('#readUpdateNote').click(); expect(h.$('#nextGuide').dataset.target).toBe('card');
+    h.$('#continueGuide').click(); expect(h.w.document.activeElement.dataset.packItem).toBe('card');
+    h.$('[data-pack-item="card"]').click(); h.$('#packingPlace').click(); expect(h.$('#nextGuide').dataset.target).toBe('weather');
+    h.$('#continueGuide').click(); expect(h.w.document.activeElement.id).toBe('updateTopicTitle'); h.$('#updateTopicAction').click();
+    h.$('[data-pack-item="'+weather+'"]').click(); h.$('#packingPlace').click(); expect(h.$('#nextGuide').dataset.target).toBe('route');
+    h.$('#continueGuide').click(); h.$('[data-route-option="'+route+'"]').click(); h.$('#confirmRoute').click();
+    expect(h.$('#nextGuide').dataset.target).toBe('departure'); h.$('#continueGuide').click(); h.$('#checkDeparture').click(); h.$('#departFromCheck').click();
+    expect(h.$('#nextGuideSource').textContent).toBe('Practice complete'); expect(h.$('#clock').textContent).toBe(arrival);
+    expect(h.$('#nextGuideProgress').textContent).toContain('5 of 5 preparation checks ready');
+    expect(h.run().commands.map(c=>c.actionId)).toEqual(['wear_ready','fill_water','pack_water','inspect_forecast','pack_document','pack_'+weather,'choose_'+route,'depart']);
+    const saved=h.save(); h.$('#nextGuideOpen').click(); expect(h.w.document.activeElement.id).toBe('debriefTitle'); expect(h.save()).toEqual(saved);
+  });
+  it.each(['try','independent'])('keeps %s guidance optional and records a requested next-step cue through the original hint action', support => {
+    const h=mount(); h.$('#supportSelect').value=support; h.$('#scenarioSelect').value='bus-delay'; h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));
+    expect(h.$('#nextGuide').dataset.target).toBe('explore'); expect(h.$('#nextGuideCue').hidden).toBe(false);
+    expect(h.$('#nextGuideInstruction').textContent).not.toMatch(/rain|09:45|delay/i);
+    const saved=h.save(); h.$('#nextGuideOpen').click(); expect(h.w.document.activeElement.id).toBe('fillAtTap'); expect(h.save()).toEqual(saved);
+    h.$('#nextGuideCue').click(); expect(h.run().commands.map(c=>c.actionId)).toEqual(['hint']);
+    expect(h.$('#clock').textContent).toBe('09:00'); expect(h.$('#nextGuide').dataset.target).toBe('outfit'); expect(h.w.document.activeElement.id).toBe('nextGuideTitle');
+    h.$('#nextGuideCue').dispatchEvent(new h.w.MouseEvent('click')); expect(h.run().commands).toHaveLength(1);
+    h.$('#nextGuideOpen').click(); h.$('[data-outfit="wear_ready"]').click(); h.$('#prepareOutfit').click();
+    expect(h.E.view(h.run()).observations[0].support).toBe(support+' · requested clue');
+  });
+  it('follows the learner’s plan and opens a blocked preparation step without taking or replacing it', () => {
+    const h=mount(); h.$('#supportSelect').value='independent'; h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));
+    addPlan(h,'pack_water'); addPlan(h,'pack_document'); h.$('#simpleViewToggle').click();
+    expect(h.$('#nextGuideSource').textContent).toBe('Your plan'); expect(h.$('#nextGuideInstruction').textContent).toContain('Fill the bottle before packing it');
+    const saved=h.save(); h.$('#nextGuideOpen').click(); expect(h.w.document.activeElement.id).toBe('fillAtTap'); expect(h.save()).toEqual(saved);
+    h.$('#fillAtTap').click(); h.$('#packAtTap').click(); expect(h.$('#nextGuideInstruction').textContent).toContain('Pack the booking card');
+    h.$('#nextGuideOpen').click(); expect(h.w.document.activeElement.dataset.packItem).toBe('card'); expect(h.run().commands.some(c=>c.actionId==='hint')).toBe(false);
+    h.$('#moreToolsToggle').click(); h.$('#editPlanButton').click(); expect(h.$('#planner').open).toBe(true); expect(h.w.document.activeElement).toBe(h.$('#planner summary'));
+  });
+  it('focuses the route named in a learner-made plan without selecting it or exposing a future delay', () => {
+    const h=mount(); h.$('#supportSelect').value='independent'; h.$('#scenarioSelect').value='bus-delay'; h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));
+    addPlan(h,'choose_late_bus'); h.$('#simpleViewToggle').click(); const saved=h.save(); h.$('#nextGuideOpen').click();
+    expect(h.w.document.activeElement.dataset.routeOption).toBe('late_bus'); expect(h.$('#routePreviewResult').hidden).toBe(true);
+    expect(h.$('#nextGuideInstruction').textContent).toContain('09:40 bus'); expect(h.$('#nextGuideInstruction').textContent).not.toContain('09:45'); expect(h.save()).toEqual(saved);
+  });
+  it('stores only the simpler-view preference, preserves previews and restores the presentation separately from practice settings', () => {
+    const h=mount(); h.$('#openWardrobe').click(); h.$('[data-outfit="prepare_clothes"]').click(); const before=h.run(), saved=h.save();
+    h.$('#simpleViewToggle').click(); expect(h.w.document.body.classList.contains('simple-view')).toBe(true);
+    expect(h.$('#wardrobePreviewResult').hidden).toBe(false); expect(h.$('#moreToolsToggle').hidden).toBe(false);
+    expect(h.run()).toEqual(before); expect(h.save().filter(([key])=>key!=='alloflow-life-outing-view:v1')).toEqual(saved);
+    expect(h.$('#sceneActionButtons').getAttribute('visible')).toBe('false');
+    h.$('#moreToolsToggle').click(); expect(h.$('#moreToolsToggle').getAttribute('aria-expanded')).toBe('true'); expect(h.w.document.body.classList.contains('tools-expanded')).toBe(true);
+    h.$('#moreToolsToggle').click(); expect(h.w.document.activeElement.id).toBe('moreToolsToggle');
+    const resumed=mount({saved:h.save()}); expect(resumed.w.document.body.classList.contains('simple-view')).toBe(true); expect(resumed.run()).toEqual(before);
+    resumed.$('#simpleViewToggle').click(); expect(resumed.w.document.body.classList.contains('simple-view')).toBe(false); expect(resumed.$('#moreToolsToggle').hidden).toBe(true); expect(resumed.run()).toEqual(before);
+  });
+  it('keeps raw forecast actions, comparison tools and debrief review reachable in the simpler view', () => {
+    const h=mount(); h.$('#simpleViewToggle').click(); h.$('#forecastObject').dispatchEvent(new h.w.MouseEvent('click',{bubbles:true}));
+    expect(h.$('#stationActions').classList.contains('simple-raw-actions')).toBe(true); expect(h.$('#actionList [data-action="inspect_forecast"]').disabled).toBe(false);
+    h.$('#exploreTravel').dispatchEvent(new h.w.MouseEvent('click')); expect(h.w.document.body.classList.contains('tools-expanded')).toBe(true); expect(h.w.document.activeElement.id).toBe('departureTime');
+    h.$('#moreToolsToggle').click(); complete(h); h.$('#reviewButton').click();
+    expect(h.w.document.body.classList.contains('tools-expanded')).toBe(true); expect(h.w.document.activeElement.id).toBe('reviewChoice');
+  });
+  it('uses the browser voice for current displayed text without changing time, evidence, saved practice or generation', () => {
+    let calls=0; const voice=speechStub(),h=mount({voice,provider:()=>{calls++;return Promise.resolve({text:'Hello.',status:'generated'});}}),saved=h.save();
+    expect(voice.spoken).toEqual([]); h.$('#readNextStep').click(); const first=voice.spoken[0];
+    expect(first.text).toContain('Get your clothes ready'); expect(first.text).not.toMatch(/09:45|rain/i); expect(first.voice.localService).toBe(true);
+    expect(h.$('#stopReadAloud').hidden).toBe(false); expect(h.$('#readAloudStatus').textContent).toBe('Reading the next step.');
+    h.$('#stopReadAloud').focus(); h.$('#stopReadAloud').click(); expect(voice.cancelled).toBe(1); expect(h.w.document.activeElement.id).toBe('readNextStep');
+    first.onend(); expect(h.$('#readAloudStatus').textContent).toBe('Reading stopped.');
+    h.$('#nextGuideOpen').click(); h.$('#readActivity').click(); expect(voice.spoken[1].text).toContain('Compare the time');
+    voice.speaking=false; voice.spoken[1].onend(); expect(voice.cancelled).toBe(1); expect(h.$('#readAloudStatus').textContent).toBe('Reading finished.');
+    expect(h.save()).toEqual(saved); expect(h.run().commands).toEqual([]); expect(h.E.view(h.run()).observations).toEqual([]); expect(calls).toBe(0);
+  });
+  it('stops old speech on actions, navigation, preview changes, replay and page visibility without late callbacks taking over', async () => {
+    const voice=speechStub(),h=mount({voice}); h.$('#openWardrobe').click(); h.$('#readActivity').click(); const first=voice.spoken[0];
+    h.$('[data-outfit="wear_ready"]').click(); await flush(); expect(voice.cancelled).toBe(1); expect(h.$('#stopReadAloud').hidden).toBe(true);
+    h.$('#readActivity').click(); const second=voice.spoken[1]; first.onerror(); expect(h.$('#stopReadAloud').hidden).toBe(false);
+    h.$('#prepareOutfit').click(); expect(voice.cancelled).toBe(2); second.onend(); expect(h.$('#readAloudStatus').textContent).toBe('Reading stopped.');
+    h.$('#readNextStep').click(); h.station('Kitchen'); expect(voice.cancelled).toBe(3);
+    h.$('#readNextStep').click(); h.$('#sameReplayButton').click(); expect(voice.cancelled).toBe(4);
+    h.$('#readNextStep').click(); Object.defineProperty(h.w.document,'hidden',{configurable:true,value:true}); h.w.document.dispatchEvent(new h.w.Event('visibilitychange')); expect(voice.cancelled).toBe(5);
+    h.w.dispatchEvent(new h.w.Event('pagehide')); expect(voice.cancelled).toBe(5); expect(h.$('#stopReadAloud').hidden).toBe(true);
+  });
+  it('lets the reading button stop its own voice and restores the controls after returning to a cached page', () => {
+    const voice=speechStub(),h=mount({voice}); h.$('#readNextStep').focus(); h.$('#readNextStep').click();
+    expect(h.$('#readNextStep').textContent).toBe('Stop reading this step'); h.$('#readNextStep').click();
+    expect(voice.cancelled).toBe(1); expect(h.$('#readNextStep').textContent).toBe('Read this step aloud'); expect(h.w.document.activeElement.id).toBe('readNextStep');
+    h.$('#readNextStep').click(); h.w.dispatchEvent(new h.w.Event('pagehide')); h.w.dispatchEvent(new h.w.Event('pageshow'));
+    expect(h.$('#stopReadAloud').hidden).toBe(true); h.$('#readNextStep').click(); expect(voice.spoken).toHaveLength(3);
+  });
+  it('reads only the visible activity facts and leaves learner writing and unrelated result panels out', () => {
+    const voice=speechStub(),h=mount({voice}); h.$('#reflection').value='PRIVATE REFLECTION'; h.$('#prediction').value='PRIVATE PREDICTION';
+    h.$('#openPacking').click(); h.$('[data-pack-item="hat"]').click(); h.$('#packingPreviewResult').hidden=true;
+    h.$('#packingPreviewWeather').textContent='HIDDEN PREVIEW'; h.$('#readActivity').click();
+    const spoken=voice.spoken[0].text; expect(spoken).toContain('Choose an item'); expect(spoken).not.toMatch(/PRIVATE|HIDDEN PREVIEW/); expect(spoken.length).toBeLessThanOrEqual(3000);
+  });
+  it('handles unsupported, busy, failing and non-starting voices while preserving the practice', () => {
+    const unsupported=mount(); expect(unsupported.$('#readNextStep').disabled).toBe(true); expect(unsupported.$('#readActivity').disabled).toBe(true); expect(unsupported.$('#readAloudStatus').textContent).toContain('unavailable');
+    const busy=speechStub({busy:true}), occupied=mount({voice:busy}); occupied.$('#readNextStep').click(); expect(busy.spoken).toEqual([]); expect(busy.cancelled).toBe(0);
+    const broken=speechStub({fail:true}), failing=mount({voice:broken}), saved=failing.save(); failing.$('#readNextStep').click(); expect(failing.$('#stopReadAloud').hidden).toBe(true); expect(failing.$('#readAloudStatus').textContent).toContain('could not start'); expect(failing.save()).toEqual(saved);
+    const silent=speechStub({autoStart:false}),waiting=mount({voice:silent}); const timers=[]; waiting.w.setTimeout=fn=>{timers.push(fn);return timers.length;};
+    waiting.$('#readNextStep').click(); const first=silent.spoken[0]; timers[0](); expect(silent.cancelled).toBe(1); expect(waiting.$('#readAloudStatus').textContent).toContain('could not start');
+    first.onstart(); expect(waiting.$('#stopReadAloud').hidden).toBe(true);
+  });
+  it('supports the guided simpler flow without 3D or storage and rebuilds it from legacy journals', () => {
+    const offline=mount({noScene:true,noStorage:true,reducedMotion:true}); offline.$('#simpleViewToggle').click(); offline.$('#nextGuideOpen').click(); expect(offline.w.document.activeElement.dataset.outfit).toBe('wear_ready');
+    offline.$('[data-outfit="wear_ready"]').click(); offline.$('#prepareOutfit').click(); expect(offline.$('#nextGuide').dataset.target).toBe('bottle');
+    const first=mount(),legacy=first.run(); legacy.manifestVersion=1; const key=first.E.saveKey(legacy),h=mount({saved:[[key,JSON.stringify(legacy)],[activeKey,key],['alloflow-life-outing-view:v1','simple']]});
+    h.$('#nextGuideOpen').click(); h.$('[data-outfit="wear_ready"]').click(); h.$('#prepareOutfit').click(); expect(h.run().manifestVersion).toBe(1); expect(h.$('#nextGuide').dataset.target).toBe('bottle');
+  });
   it('restores native focus after a 3D pointer event without stealing a later choice or text input', async () => {
     function sceneCanvas(h) { const canvas=h.w.document.createElement('canvas'); canvas.tabIndex=-1; h.$('#outingScene').appendChild(canvas); h.$('#outingScene').canvas=canvas; return canvas; }
     const h=mount(), canvas=sceneCanvas(h); h.$('#bagSign').dispatchEvent(new h.w.MouseEvent('click',{bubbles:true})); canvas.focus();

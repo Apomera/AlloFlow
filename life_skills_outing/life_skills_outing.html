@@ -34,8 +34,15 @@
 <div><p class="eyebrow">A little practice for everyday life</p><h1 id="missionTitle">Get ready for an outing</h1><p id="missionIntro" class="lead">Prepare your things, make a travel plan, and adapt when something changes.</p></div>
 <div class="clock-card"><span class="eyebrow">Practice clock</span><strong id="clock">9:00 am</strong><span>Moves with your choices. No real-time limit.</span></div>
 </section>
+<section class="practice-access" aria-label="Practice display and reading options">
+<div class="button-row"><button id="simpleViewToggle" class="quiet-button" type="button" aria-pressed="false" aria-describedby="presentationNote">Simpler view</button><button id="moreToolsToggle" class="quiet-button" type="button" aria-expanded="false" aria-controls="planner travelLab choiceHistory practiceCompanion" hidden>Show more tools</button><button id="stopReadAloud" class="quiet-button" type="button" hidden>Stop reading</button></div>
+<p id="presentationNote" class="muted small">Choose how much is shown. You can explore any station.</p><p id="readAloudStatus" class="muted small" role="status" aria-live="polite" aria-atomic="true"></p>
+</section>
 <div class="practice-layout">
 <div class="world-column">
+<section id="nextGuide" class="card next-guide" aria-labelledby="nextGuideTitle">
+<div id="nextGuidePicture" class="next-guide-picture" aria-hidden="true"></div><div class="next-guide-copy"><p id="nextGuideSource" class="eyebrow"></p><h2 id="nextGuideTitle" tabindex="-1">What’s next?</h2><p id="nextGuideInstruction"></p><p id="nextGuideProgress" class="muted small"></p><div class="button-row"><button id="nextGuideOpen" class="primary-button" type="button">Go to this step</button><button id="nextGuideCue" class="quiet-button" type="button" hidden>Show a next-step cue</button><button id="readNextStep" class="quiet-button" type="button" aria-describedby="readAloudStatus">Read this step aloud</button></div><p class="next-guide-freedom muted small">You can choose another station or change your plan at any time.</p></div>
+</section>
 <details id="planner" class="card planner-card">
 <summary><span>Make a plan before you act</span><span class="planner-optional">Optional</span></summary>
 <div class="planner-body"><p class="muted">Choose a few steps, put them in an order, then try your plan in the room. Planning takes no practice time.</p>
@@ -63,7 +70,7 @@
 <section id="eventCard" class="event-card event-inline" aria-labelledby="eventTitle" hidden><p class="eyebrow">A change to consider</p><h2 id="eventTitle"></h2><p id="eventBody"></p><button id="reviewUpdate" class="quiet-button" type="button" aria-controls="updateWorkbench">Review what changed</button></section>
 <div id="planGuide" class="plan-guide" hidden><p id="planGuideText"></p><div class="button-row"><button id="followPlanButton" class="quiet-button" type="button">Go to planned step</button><button id="editPlanButton" class="quiet-button" type="button">Review plan</button></div></div>
 <div class="action-panel" id="stationActions" tabindex="-1">
-<div class="section-header"><div><p class="eyebrow">Your next choice</p><h3 id="stationTitle">Kitchen</h3></div><span class="step-tag" id="stepTag">Step 1</span></div>
+<div class="section-header"><div><p class="eyebrow">Your next choice</p><h3 id="stationTitle">Kitchen</h3></div><div class="activity-heading-tools"><span class="step-tag" id="stepTag">Step 1</span><button id="readActivity" class="quiet-button" type="button" aria-describedby="readAloudStatus">Read activity instructions</button></div></div>
 <p id="stationDescription" class="muted"></p>
 <button id="openWater" class="quiet-button water-entry" type="button" aria-controls="waterWorkbench" hidden>Prepare water at the tap</button>
 <button id="openPacking" class="quiet-button packing-entry" type="button" aria-controls="packingWorkbench" hidden>Open bag table</button>
@@ -158,6 +165,7 @@
 <p id="rehearsalStatus" class="muted small" role="status" aria-live="polite"></p></details>
 <div id="actionList" class="action-list"></div>
 <p id="feedback" class="feedback" role="status" aria-live="polite" aria-atomic="true"></p>
+<button id="continueGuide" class="quiet-button continue-guide" type="button" hidden>Go to the next step</button>
 <details id="choiceHistory" class="history-panel"><summary>Review a choice · try another way</summary>
 <p class="muted">Choose a step to see what happened. You can go back to just before that choice in a new practice.</p>
 <label for="reviewChoice">Which choice would you like to revisit?</label><select id="reviewChoice"></select>
@@ -195,7 +203,7 @@
 <div class="button-row"><button id="reviewButton" class="primary-button">Revisit a choice</button><button id="replayButton" class="quiet-button">Practice with a different forecast</button><button id="sameReplayButton" class="quiet-button">Try this outing again</button><button id="delayReplayButton" class="quiet-button">Try a bus delay</button></div>
 </section>
 </div>
-<aside class="companion-column" aria-label="Mission plan and practice support">
+<aside id="practiceCompanion" class="companion-column" aria-label="Mission plan and practice support">
 <section class="card plan-card" aria-labelledby="planTitle"><div class="section-header"><h2 id="planTitle">The plan</h2><span id="progressCount" class="progress-count">0 ready</span></div><p id="goal"></p><ul id="objectives" class="objective-list"></ul><div class="progress-track" aria-hidden="true"><span id="progressBar"></span></div><p id="summary" class="muted"></p><details class="mission-facts"><summary>Check the outing details</summary><ul id="missionFacts"></ul></details></section>
 <section class="card travel-card" aria-labelledby="travelTitle"><p class="eyebrow">Timing your plan</p><h2 id="travelTitle">Will you arrive in time?</h2><button id="travelPreview" class="travel-preview" type="button"></button><details class="route-details"><summary>Compare current arrival times</summary><ul id="routeComparison"></ul></details><button id="openTravelLab" class="quiet-button travel-entry" type="button" aria-controls="travelLab">Explore departure times</button><p class="muted small">Times update as you prepare. The outing begins at 09:35.</p></section>
 <section class="card bag-card" aria-labelledby="bagTitle"><h2 id="bagTitle">In your bag</h2><ul id="inventory" class="inventory-list"></ul></section>

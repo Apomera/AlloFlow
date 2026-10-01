@@ -19,6 +19,10 @@
   var REFLECTION_PREFIX = 'alloflow-life-outing-reflection:v1:';
   var COMPARISON_PREFIX = 'alloflow-life-outing-comparison:v1:';
   var PLAN_PREFIX = 'alloflow-life-outing-plan:v1:';
+  var VIEW_KEY = 'alloflow-life-outing-view:v1';
+  var simpleView = false, extraTools = false, presentationDisposed = false, readService = null, readUtterance = null, readScope = null, readText = '', readSerial = 0, readStartTimer = null, readButtonId = null;
+  try { simpleView = !!storage && storage.getItem(VIEW_KEY) === 'simple'; } catch (_) {}
+  try { if (window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') readService = window.speechSynthesis; } catch (_) {}
   var plan = null;
   var rehearsalPreview = null;
   var exploredDeparture = null;
@@ -95,6 +99,7 @@
     busy = false;
   }
   function changeRun(run, extras) {
+    stopReading();
     abortStory();
     clearRoute(true);
     clearWater(true);
@@ -145,6 +150,7 @@
   }
   function selectStation(id, moveFocus) {
     if (!latestView.stations.some(function (s) { return s.id === id; })) return;
+    stopReading();
     clearRoute(true);
     clearWater(true);
     clearRehearsal(true);
@@ -161,6 +167,7 @@
   function selectObject(id, moveFocus) {
     var object = latestView.objects.find(function (item) { return item.id === id; });
     if (!object) return;
+    stopReading();
     clearRoute(true);
     clearWater(true);
     clearRehearsal(true);
@@ -177,10 +184,12 @@
     if (id === 'outfit' && !latestView.completed) byId('wardrobeWorkbench').open = true;
     if (id === 'forecast' && latestView.event && !latestView.completed) byId('updateWorkbench').open = true;
     if (id === 'route' && !latestView.completed) byId('departureWorkbench').open = true;
+    renderPresentation();
     if (moveFocus) byId('stationActions').focus();
     announce(object.label + '. ' + object.status + '. ' + object.description);
   }
   function act(id, source) {
+    stopReading();
     var focusedAction = document.activeElement && document.activeElement.dataset.action;
     var wasComplete = latestView.completed, oldEvent = latestView.event && latestView.event.title;
     var bottlePosition = byId('bottleObject') && byId('bottleObject').getAttribute('position');
@@ -201,7 +210,7 @@
       render();
       if (id === 'fill_water' || id === 'pack_water') playWaterMoment(id, bottleFrom);
       persist();
-      if (id === 'hint') byId('hintButton').focus({ preventScroll: true });
+      if (id === 'hint') byId(source === 'guide' ? 'nextGuideTitle' : 'hintButton').focus({ preventScroll: true });
       else if (source === 'route') {
         text('routeStatus', latestView.feedback + ' Choosing a route takes no practice time.');
         byId('routeChosenTitle').focus();
@@ -300,6 +309,138 @@
     updateSceneActions(visibleActions);
     highlightObjects();
     if (closeView) fitScene();
+    renderNextGuide(); renderPresentation(); refreshReading();
+  }
+  var workbenchIds = ['waterWorkbench','wardrobeWorkbench','packingWorkbench','updateWorkbench','routeWorkbench','departureWorkbench'];
+  function guideStep() {
+    var v = latestView, next = E.planView(current, plan).next;
+    if (v.completed) return {target:'complete', source:'Practice complete', title:'Pause and look back', instruction:v.summary + ' Think about what you would check for your next outing.', button:'Review this practice'};
+    if (next) return {target:'plan', actionId:next.actionId, source:'Your plan', title:'Next in your plan', instruction:next.label + '. ' + (next.available ? 'Open the controls, then choose when you are ready.' : next.reason), button:'Go to my planned step'};
+    if (current.config.support !== 'guided' && !shownHint) return {target:'explore', source:'Explore at your pace', title:'Choose your next step', instruction:'Explore the room or follow a plan you made. You can ask for a next-step cue.', button:'Explore this station'};
+    function step(target, title, instruction, button) { return {target:target, source:'Next-step cue', title:title, instruction:instruction, button:button}; }
+    var read = v.stations.reduce(function (all, station) { return all.concat(station.actions); }, []).find(function (action) { return action.id === 'inspect_forecast'; });
+    if (v.event && read && !read.disabled) return step('update','Notice the received update','The forecast changed. Review the note and think about your bag and route.','Review the update');
+    if (!v.scene.clothingReady) return step('outfit','Get your clothes ready','Compare the two outfits and the time each needs. Choose the one that fits your plan.','Compare the outfits');
+    if (!v.scene.bottlePacked) return step('bottle',v.scene.bottleFilled ? 'Bring your filled bottle' : 'Prepare your water',v.scene.bottleFilled ? 'The filled bottle is on the counter. Put it in your bag when you are ready.' : 'Visit the tap. Fill the bottle before putting it in your bag.','Go to the tap');
+    if (!v.scene.documentPacked) return step('card','Bring your outing card','Your card is on the bench. Open the bag table to prepare it.','Find the outing card');
+    if (!v.objectives.find(function (objective) { return objective.id === 'weather'; }).complete) return step(v.event ? 'weather' : 'bag','Recheck your weather item',v.event ? 'Compare the received forecast with the weather item in your bag.' : 'Compare weather items at the bag table. Watch for an update as you prepare.',v.event ? 'Review weather and bag' : 'Open the bag table');
+    if (!v.objectives.find(function (objective) { return objective.id === 'travel'; }).complete) return step('route','Compare your travel plan','Compare arrival times with the 09:35 start. Choose a route that fits your preparation.','Compare travel choices');
+    return step('departure','Check before leaving','Your clothes, bag and route checks are ready. Review them at the door before you leave.','Go to the departure check');
+  }
+  function guidePicture(step) {
+    var action = step.actionId || '', target = step.target;
+    if (target === 'plan') target = /water/.test(action) ? 'bottle' : /clothes|wear_ready/.test(action) ? 'outfit' : /document/.test(action) ? 'card' : /raincoat|hat/.test(action) ? 'bag' : /forecast/.test(action) ? 'update' : action === 'depart' ? 'departure' : 'route';
+    if (target === 'outfit') return wardrobeIcon(false);
+    if (target === 'bottle' || target === 'card') return packingIcon(target);
+    if (target === 'update' || target === 'weather') return updateWeatherIcon(latestView.scene.weather);
+    if (target === 'bag') return packingBagPicture(packingPictureItems());
+    if (target === 'route') return routeIcon(latestView.travel ? latestView.travel.id : 'bus');
+    if (target === 'complete') return departureMark(true);
+    var svg = document.createElementNS('http://www.w3.org/2000/svg','svg'); svg.setAttribute('viewBox','0 0 80 80'); svg.setAttribute('aria-hidden','true'); svg.setAttribute('focusable','false');
+    var outline = document.createElementNS(svg.namespaceURI,'path');
+    outline.setAttribute('d',target === 'departure' ? 'M23 71V10H58V71ZM47 41H49' : 'M8 34L40 8L72 34M17 28V70H63V28M31 70V46H49V70');
+    outline.setAttribute('fill','none'); outline.setAttribute('stroke','#346959'); outline.setAttribute('stroke-width','4'); outline.setAttribute('stroke-linecap','round'); outline.setAttribute('stroke-linejoin','round'); svg.appendChild(outline); return svg;
+  }
+  function renderNextGuide() {
+    var step = guideStep(); byId('nextGuide').dataset.target = step.target;
+    text('nextGuideSource',step.source); text('nextGuideTitle',step.title); text('nextGuideInstruction',step.instruction); text('nextGuideOpen',step.button);
+    var checks = latestView.objectives.filter(function (objective) { return objective.id !== 'depart'; });
+    text('nextGuideProgress',checks.filter(function (objective) { return objective.complete; }).length + ' of ' + checks.length + ' preparation checks ready · practice clock ' + latestView.clock);
+    byId('nextGuidePicture').replaceChildren(guidePicture(step));
+    byId('nextGuideCue').hidden = step.target !== 'explore';
+  }
+  function openGuideAction(action) {
+    if (/water/.test(action)) openWaterWorkbench();
+    else if (/clothes|wear_ready/.test(action)) openWardrobeWorkbench();
+    else if (/document|raincoat|hat/.test(action)) {
+      openPackingWorkbench(); var item = byId('packingItems').querySelector('[data-pack-item="' + ({pack_document:'card',pack_raincoat:'raincoat',pack_hat:'hat'})[action] + '"]');
+      if (item && !item.disabled) item.focus();
+    } else if (/forecast/.test(action)) {
+      if (latestView.event) openUpdateWorkbench();
+      else { selectObject('forecast',false); var read = byId('actionList').querySelector('button:not(:disabled)'); (read || byId('stationActions')).focus(); }
+    } else if (action === 'depart') openDepartureWorkbench();
+    else {
+      openRouteWorkbench(); var routeId = Object.keys(routeActions).find(function (id) { return routeActions[id] === action; });
+      var option = routeId && byId('routeOptions').querySelector('[data-route-option="' + routeId + '"]'); if (option) option.focus();
+    }
+  }
+  function openNextGuide() {
+    var step = guideStep();
+    if (step.target === 'complete') { focusOutcome(); return; }
+    if (step.target === 'plan') { openGuideAction(step.actionId); return; }
+    if (step.target === 'explore') { if (activeStation === 'kitchen') openWaterWorkbench(); else if (activeStation === 'wardrobe') openWardrobeWorkbench(); else if (activeStation === 'entry') openPackingWorkbench(); else openRouteWorkbench(); return; }
+    if (step.target === 'bottle') openWaterWorkbench();
+    else if (step.target === 'outfit') openWardrobeWorkbench();
+    else if (step.target === 'card') openGuideAction('pack_document');
+    else if (step.target === 'bag') openPackingWorkbench();
+    else if (step.target === 'update' || step.target === 'weather') { openUpdateWorkbench(); if (step.target === 'weather') chooseUpdateTopic('weather'); }
+    else if (step.target === 'route') openRouteWorkbench();
+    else openDepartureWorkbench();
+  }
+  function activeWorkbench() { return workbenchIds.map(byId).find(function (panel) { return !panel.hidden && panel.open; }); }
+  function renderPresentation() {
+    if (presentationDisposed) return;
+    document.body.classList.toggle('simple-view',simpleView); document.body.classList.toggle('tools-expanded',extraTools);
+    byId('simpleViewToggle').setAttribute('aria-pressed',String(simpleView)); byId('moreToolsToggle').hidden = !simpleView;
+    byId('moreToolsToggle').setAttribute('aria-expanded',String(extraTools)); text('moreToolsToggle',extraTools ? 'Hide extra tools' : 'Show more tools');
+    var panel = activeWorkbench(); byId('stationActions').classList.toggle('has-workbench',!!panel);
+    byId('stationActions').classList.toggle('simple-raw-actions',!!selectedObject && !panel && !latestView.completed);
+    byId('sceneActionButtons').setAttribute('visible',!closeView && !(simpleView && !extraTools));
+    byId('readNextStep').disabled = !readService; byId('readActivity').disabled = !readService;
+    if (!readService) text('readAloudStatus','Read aloud is unavailable in this browser. You can use the pictures and text.');
+    var step = guideStep(), targetPanel = {bottle:'waterWorkbench',outfit:'wardrobeWorkbench',card:'packingWorkbench',bag:'packingWorkbench',weather:'updateWorkbench',update:'updateWorkbench',route:'routeWorkbench',departure:'departureWorkbench'}[step.target];
+    byId('continueGuide').hidden = !panel || latestView.completed || panel.id === targetPanel;
+    text('continueGuide',step.target === 'explore' ? 'Choose another station' : 'Go to the next step');
+  }
+  function revealExtraTools() { if (simpleView) { extraTools = true; renderPresentation(); } }
+  function guideReadingText() { return [byId('nextGuideTitle').textContent,byId('nextGuideInstruction').textContent,byId('nextGuideProgress').textContent].join('. '); }
+  function activityReadingText() {
+    var panel = activeWorkbench();
+    if (!panel) { var object = latestView.objects.find(function (item) { return item.id === selectedObject; }); return object ? object.label + '. ' + object.status + '. ' + object.description : byId('stationTitle').textContent + '. ' + byId('stationDescription').textContent; }
+    var values = [];
+    panel.querySelectorAll('h4,h5,p,figcaption,dt,dd,.water-steps strong,.water-steps div>span').forEach(function (el) {
+      if (el.closest('[hidden],.sr-only,[role="status"]')) return;
+      var content = el.textContent.trim(); if (content && values.indexOf(content) === -1) values.push(content);
+    });
+    // Read displayed instructions and facts, never optional learner writing or other panels.
+    return values.join('. ').slice(0,3000);
+  }
+  function stopReading(message, restoreFocus, finished) {
+    var owned = readUtterance, button = readButtonId; readSerial++; readUtterance = null; readScope = null; readText = ''; readButtonId = null;
+    if (readStartTimer !== null) window.clearTimeout(readStartTimer); readStartTimer = null;
+    if (owned && readService && !finished) { try { readService.cancel(); } catch (_) {} }
+    var stopFocused = document.activeElement === byId('stopReadAloud'); byId('stopReadAloud').hidden = true;
+    renderReadingControls();
+    if (owned || message) text('readAloudStatus',message || 'Reading stopped.');
+    if (restoreFocus && stopFocused && button) byId(button).focus();
+  }
+  function refreshReading() {
+    if (readUtterance && readText !== (readScope === 'guide' ? guideReadingText() : activityReadingText())) stopReading('The instructions changed. Choose read aloud to hear the current step.');
+  }
+  function renderReadingControls() {
+    text('readNextStep',readUtterance && readScope === 'guide' ? 'Stop reading this step' : 'Read this step aloud');
+    text('readActivity',readUtterance && readScope === 'activity' ? 'Stop reading activity instructions' : 'Read activity instructions');
+  }
+  function readAloud(scope) {
+    if (!readService) return;
+    if (readUtterance && readScope === scope) { stopReading('Reading stopped.'); return; }
+    stopReading(); var content = scope === 'guide' ? guideReadingText() : activityReadingText();
+    if (!content) return;
+    if (readService.speaking || readService.pending) { text('readAloudStatus','Another voice is reading. Try again when it finishes.'); return; }
+    try {
+      var utterance = new window.SpeechSynthesisUtterance(content), serial = ++readSerial;
+      utterance.lang = 'en'; utterance.rate = .95;
+      var voices = readService.getVoices ? readService.getVoices() : [], voice = voices.find(function (item) { return /^en(?:-|$)/i.test(item.lang) && item.localService; });
+      if (voice) utterance.voice = voice;
+      readUtterance = utterance; readScope = scope; readText = content; readButtonId = scope === 'guide' ? 'readNextStep' : 'readActivity';
+      renderReadingControls();
+      byId('stopReadAloud').hidden = false; text('readAloudStatus','Starting read aloud. You can stop at any time.');
+      utterance.onstart = function () { if (serial !== readSerial) return; window.clearTimeout(readStartTimer); readStartTimer = null; text('readAloudStatus','Reading ' + (scope === 'guide' ? 'the next step.' : 'the activity instructions.')); };
+      utterance.onend = function () { if (serial === readSerial) stopReading('Reading finished.',true,true); };
+      utterance.onerror = function () { if (serial === readSerial) stopReading('Read aloud could not continue. Try again, or use the text.',true,true); };
+      readStartTimer = window.setTimeout(function () { if (serial === readSerial) stopReading('Read aloud could not start. Try again, or use the text.',true); },15000);
+      readService.speak(utterance);
+    } catch (_) { stopReading('Read aloud could not start. Try again, or use the text.',true); }
   }
   function clearWater(collapse) {
     clearWaterMotion(); text('waterStatus', '');
@@ -380,7 +521,7 @@
   }
   function motionPreferenceChanged(event) { if (event.matches) clearWaterMotion(); }
   if (motionPreference && motionPreference.addEventListener) motionPreference.addEventListener('change', motionPreferenceChanged);
-  document.addEventListener('visibilitychange', function () { if (document.hidden) clearWaterMotion(); });
+  document.addEventListener('visibilitychange', function () { if (document.hidden) { stopReading(); clearWaterMotion(); } });
   function clearPacking(collapse) {
     packingSelection = null; packingPreview = null;
     byId('packingPreviewResult').hidden = true;
@@ -1061,7 +1202,7 @@
     }
   }
   function focusOutcome() {
-    var target = byId(comparison && !byId('outcomeComparison').hidden ? 'comparisonTitle' : 'debriefTitle');
+    var target = byId(comparison && (!simpleView || extraTools) && !byId('outcomeComparison').hidden ? 'comparisonTitle' : 'debriefTitle');
     target.setAttribute('tabindex', '-1'); target.focus();
   }
   function editPlan(steps, focusId, operation, message) {
@@ -1151,6 +1292,7 @@
     return timing;
   }
   function openTravelExplorer() {
+    revealExtraTools();
     byId('travelLab').open=true;
     renderTravelLab();byId('departureTime').focus();
     announce('Travel time explorer. Move the example departure to compare routes. The practice clock stays the same.');
@@ -1366,7 +1508,7 @@
     var center = closeView ? ({kitchen:-2.4,wardrobe:-.3,entry:1.55,travel:3})[activeStation] : 0;
     camera.setAttribute('position', center + ' 6.2 10');
     camera.setAttribute('camera', 'fov', 2 * Math.atan(visibleHeight / (closeView ? 32 : 23)) * 180 / Math.PI);
-    byId('sceneActionButtons').setAttribute('visible', !closeView);
+    byId('sceneActionButtons').setAttribute('visible', !closeView && !(simpleView && !extraTools));
   }
   function buildScene() {
     if (!window.AFRAME) { byId('sceneContainer').hidden = true; byId('sceneUnavailable').hidden = false; byId('sceneToggle').disabled = true; byId('focusView').disabled = true; return; }
@@ -1524,6 +1666,20 @@
     });
   }
 
+  byId('simpleViewToggle').addEventListener('click',function(){
+    stopReading(); simpleView = !simpleView; extraTools = false; renderPresentation(); this.focus();
+    try { if (storage) storage.setItem(VIEW_KEY,simpleView ? 'simple' : 'full'); } catch (_) {}
+    text('presentationNote',simpleView ? 'Simpler view is on. Show more tools whenever you want to explore, plan or ask for support.' : 'Full view is on. You can explore any station and use the optional tools.');
+  });
+  byId('moreToolsToggle').addEventListener('click',function(){stopReading();extraTools=!extraTools;renderPresentation();this.focus();});
+  byId('nextGuideOpen').addEventListener('click',openNextGuide);
+  byId('nextGuideCue').addEventListener('click',function(){if(guideStep().target==='explore')act('hint','guide');});
+  byId('continueGuide').addEventListener('click',function(){if(latestView.completed||this.hidden)return;if(guideStep().target==='explore')byId('stationNavigation').querySelector('button').focus();else openNextGuide();});
+  byId('readNextStep').addEventListener('click',function(){readAloud('guide');});
+  byId('readActivity').addEventListener('click',function(){readAloud('activity');});
+  byId('stopReadAloud').addEventListener('click',function(){stopReading('Reading stopped.',true);});
+  workbenchIds.forEach(function(id){byId(id).addEventListener('toggle',function(){if(latestView&&!presentationDisposed){renderPresentation();refreshReading();}});});
+  byId('stationActions').addEventListener('click',function(){Promise.resolve().then(function(){if(latestView&&!presentationDisposed){renderPresentation();refreshReading();}});});
   byId('settingsToggle').addEventListener('click',function(){
     var panel=byId('settings');panel.hidden=!panel.hidden;
     byId('settingsToggle').setAttribute('aria-expanded',String(!panel.hidden));
@@ -1647,7 +1803,7 @@
   byId('sameReplayButton').addEventListener('click',function(){changeRun(E.forkRun(current,{}));byId('stationActions').focus();});
   byId('delayReplayButton').addEventListener('click',function(){changeRun(E.forkRun(current,{variation:'bus-delay'}));byId('stationActions').focus();});
   byId('reviewChoice').addEventListener('change',function(){reviewRevision=Number(this.value);renderReview();});
-  byId('reviewButton').addEventListener('click',function(){byId('choiceHistory').open=true;byId('reviewChoice').focus();});
+  byId('reviewButton').addEventListener('click',function(){revealExtraTools();byId('choiceHistory').open=true;byId('reviewChoice').focus();});
   byId('planForm').addEventListener('submit',function(event){
     event.preventDefault();if(latestView.completed)return;
     var steps=plan?plan.steps.slice():[];
@@ -1661,6 +1817,7 @@
   });
   function goToPlannedStep(){
     var next=E.planView(current,plan).next;if(!next||latestView.completed)return;
+    if(simpleView&&!extraTools){openGuideAction(next.actionId);return;}
     selectStation(next.station,false);
     var button=Array.from(byId('actionList').querySelectorAll('button')).find(function(item){return item.dataset.action===next.actionId;});
     (button&&!button.disabled?button:byId('stationActions')).focus();
@@ -1668,7 +1825,7 @@
   }
   byId('nextPlanButton').addEventListener('click',goToPlannedStep);
   byId('followPlanButton').addEventListener('click',goToPlannedStep);
-  byId('editPlanButton').addEventListener('click',function(){byId('planner').open=true;byId('planner').querySelector('summary').focus();});
+  byId('editPlanButton').addEventListener('click',function(){revealExtraTools();byId('planner').open=true;byId('planner').querySelector('summary').focus();});
   byId('retryChoiceButton').addEventListener('click',function(){
     try {
       var original=current, revision=Number(byId('reviewChoice').value)-1, choice=E.history(original)[revision];
@@ -1718,7 +1875,9 @@
     reader.onerror=function(){if(serial===importSerial)text('backupStatus','This file could not be opened. Your current practice is unchanged.');};
     reader.readAsText(file);
   });
-  window.addEventListener('beforeunload',function(){abortStory();clearWaterMotion();if(motionPreference&&motionPreference.removeEventListener)motionPreference.removeEventListener('change',motionPreferenceChanged);if(client)client.destroy();});
+  window.addEventListener('pagehide',function(){stopReading();presentationDisposed=true;});
+  window.addEventListener('pageshow',function(){presentationDisposed=false;if(latestView)renderPresentation();});
+  window.addEventListener('beforeunload',function(){stopReading();presentationDisposed=true;abortStory();clearWaterMotion();if(motionPreference&&motionPreference.removeEventListener)motionPreference.removeEventListener('change',motionPreferenceChanged);if(client)client.destroy();});
   var restored;
   try{var key=storage&&storage.getItem(ACTIVE_KEY);if(key)restored=E.readRun(storage,key);}catch(_){}
   if(!restored){var valid=savedRuns().find(function(entry){return entry.run;});if(valid)restored=valid.run;}
