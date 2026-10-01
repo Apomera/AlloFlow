@@ -1,0 +1,1001 @@
+{
+  "pass": 26,
+  "runtimeSHA256": "4f69e86395eb9eaa940e6aeffe84f9fa52fe7af8b51a91e58a826678be6676c6",
+  "status": "validated; requested commit transaction pending",
+  "validatedAt": "2026-10-01T22:53:29.192Z",
+  "source": {
+    "baselineSHA256": "a2c72a41312e97f9d8e35dde908b35476b2158e1b83adc409d4bc0e77cdbe5a2",
+    "initialNativeSHA256": "2ee225d0ee429f958977add3b125bb3d38c5386a370076707939bc8b0d303913",
+    "measuredFactorySourceSHA256": "ab914226985d41cdeaf53e77cc49dfeae64236de5642011dd595bbebfcb83acd",
+    "finalSHA256": "4f69e86395eb9eaa940e6aeffe84f9fa52fe7af8b51a91e58a826678be6676c6",
+    "animalFactorySHA256": "31af4a2d380037ccb02e509a6fec293e49c40ed563dd9430d2000a77b1102eec",
+    "finalFactoryByteExactToMeasuredSource": true,
+    "mirrors": {
+      "stem_lab/stem_tool_cephalopodlab.js": "4f69e86395eb9eaa940e6aeffe84f9fa52fe7af8b51a91e58a826678be6676c6",
+      "desktop/web-app/public/stem_lab/stem_tool_cephalopodlab.js": "4f69e86395eb9eaa940e6aeffe84f9fa52fe7af8b51a91e58a826678be6676c6",
+      "desktop/app-build/stem_lab/stem_tool_cephalopodlab.js": "4f69e86395eb9eaa940e6aeffe84f9fa52fe7af8b51a91e58a826678be6676c6",
+      "desktop/web-app/build/stem_lab/stem_tool_cephalopodlab.js": "4f69e86395eb9eaa940e6aeffe84f9fa52fe7af8b51a91e58a826678be6676c6"
+    },
+    "guardedChanges": 11,
+    "reverseByteExact": true,
+    "rngLines": 150,
+    "rngCalls": 157,
+    "allTwelveGeometryExpectationsExact": true,
+    "elevenOtherSpeciesExact": true,
+    "preExistingWrappersAlreadyCommittedAndPreserved": true
+  },
+  "unit": {
+    "cases": 393,
+    "files": 44,
+    "passed": 393,
+    "failed": 0,
+    "batches": [
+      {
+        "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/unit-final.json",
+        "sha256": "8e1d716fd6a6cb4d75f6a75d6063df360ec3a356a30dfaaf9c432e2ca5ccb5ce",
+        "cases": 273,
+        "files": 38,
+        "passed": 273,
+        "failed": 0,
+        "jsonSuccess": true,
+        "sourceSHA256": "ab914226985d41cdeaf53e77cc49dfeae64236de5642011dd595bbebfcb83acd",
+        "runnerExit": 1
+      },
+      {
+        "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/final.json",
+        "sha256": "4aa63a96754aa134e6caa42eb534c5a58c378709c6f0648296263ddbebe2fe32",
+        "cases": 120,
+        "files": 6,
+        "passed": 120,
+        "failed": 0,
+        "jsonSuccess": true,
+        "sourceSHA256": "4f69e86395eb9eaa940e6aeffe84f9fa52fe7af8b51a91e58a826678be6676c6",
+        "runnerExit": 0
+      }
+    ],
+    "sourceAttribution": "273 cases in 38 reported files passed on ab914226985d41cdeaf53e77cc49dfeae64236de5642011dd595bbebfcb83acd; the missing 120 cases in six files passed on 4f69e86395eb9eaa940e6aeffe84f9fa52fe7af8b51a91e58a826678be6676c6. The animal factory remains byte-exact across these sources. This is 393 distinct passing outcomes, not one complete 44-file run on the final source.",
+    "finalFactorySHA256": "31af4a2d380037ccb02e509a6fec293e49c40ed563dd9430d2000a77b1102eec",
+    "whole44FileSingleRunSucceeded": false,
+    "supplementProvenance": {
+      "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/final-summary.json",
+      "sha256": "ae4626b7a54f592c9b204ebc3bddcbdc2028e7f1cd2a808a1813452ef73c1038",
+      "completed": true,
+      "sourceUnchanged": true
+    },
+    "caseIDs": [
+      "tests/cephalopodlab_bottle_geometry.test.js::Cephalopod Hunter open glass bottle shelter preserves three real actors, ordered spawn draws and original sideways frame with two owned material slots::0",
+      "tests/cephalopodlab_bottle_geometry.test.js::Cephalopod Hunter open glass bottle shelter makes a physically closed combined wall with no overlapping triangles, noncollapsed faces and finite unit normals::0",
+      "tests/cephalopodlab_bottle_geometry.test.js::Cephalopod Hunter open glass bottle shelter joins actual triangle edges at every glass/finish boundary without a gap or duplicated face::0",
+      "tests/cephalopodlab_bottle_geometry.test.js::Cephalopod Hunter open glass bottle shelter leaves a real open neck leading to the deep floor with nonzero body, neck and base thickness::0",
+      "tests/cephalopodlab_bottle_geometry.test.js::Cephalopod Hunter open glass bottle shelter keeps the original envelope and exposed mouth in the unchanged sideways grounding pose::0",
+      "tests/cephalopodlab_bottle_geometry.test.js::Cephalopod Hunter open glass bottle shelter keeps static independently owned resources and the strict two-minute expiry without disposing neighbors::0",
+      "tests/cephalopodlab_canvas_focus_a11y.test.js::Cephalopod Lab canvas and focus accessibility names the gameplay canvas and links keyboard instructions::0",
+      "tests/cephalopodlab_canvas_focus_a11y.test.js::Cephalopod Lab canvas and focus accessibility retains explicit focus styling without suppressing the outline::0",
+      "tests/cephalopodlab_canvas_focus_a11y.test.js::Cephalopod Lab canvas and focus accessibility classifies all four canvas declarations by purpose::0",
+      "tests/cephalopodlab_canvas_focus_a11y.test.js::Cephalopod Lab canvas and focus accessibility preserves byte-for-byte deploy parity::0",
+      "tests/cephalopodlab_clam_geometry.test.js::Cephalopod Hunter hinged clam valves preserves all eight food anchors and drill metadata with two independently owned opaque valves::0",
+      "tests/cephalopodlab_clam_geometry.test.js::Cephalopod Hunter hinged clam valves builds finite outward-wound closed shell walls with unit normals and actual bounded thickness::0",
+      "tests/cephalopodlab_clam_geometry.test.js::Cephalopod Hunter hinged clam valves keeps actual posterior hinge samples fixed while the front opens without crossing the lower valve::0",
+      "tests/cephalopodlab_clam_geometry.test.js::Cephalopod Hunter hinged clam valves keeps the same static geometry and material resources across opening, cancellation and deterministic construction::0",
+      "tests/cephalopodlab_clam_geometry.test.js::Cephalopod Hunter hinged clam valves disposes each eaten valve exactly once without touching a surviving clam::0",
+      "tests/cephalopodlab_coconut_geometry.test.js::Cephalopod Hunter hollow coconut shelter preserves four real free actors, ordered spawn randomness and carry costs with one owned draw each::0",
+      "tests/cephalopodlab_coconut_geometry.test.js::Cephalopod Hunter hollow coconut shelter forms one closed consistently wound surface with finite unit normals and conservative culling bounds::0",
+      "tests/cephalopodlab_coconut_geometry.test.js::Cephalopod Hunter hollow coconut shelter shares rendered triangle boundaries across the cortex, ivory cut edge and bowl::0",
+      "tests/cephalopodlab_coconut_geometry.test.js::Cephalopod Hunter hollow coconut shelter has a genuinely open upward bowl and thick wall above a supported floor::0",
+      "tests/cephalopodlab_coconut_geometry.test.js::Cephalopod Hunter hollow coconut shelter keeps independent static buffers and materials under the actual carry and grounded poses::0",
+      "tests/cephalopodlab_coconut_geometry.test.js::Cephalopod Hunter hollow coconut shelter retains the strict ninety-second dropped lifetime and disposes only the expired coconut::0",
+      "tests/cephalopodlab_conch_geometry.test.js::Cephalopod Hunter continuous conch shelter preserves the two real free shelters, ordered spawn draws and carrying tradeoffs with one owned mesh each::0",
+      "tests/cephalopodlab_conch_geometry.test.js::Cephalopod Hunter continuous conch shelter builds finite unit-normal anatomy with consistently wound noncollapsed triangles and a closed indexed surface::0",
+      "tests/cephalopodlab_conch_geometry.test.js::Cephalopod Hunter continuous conch shelter joins the actual spire, whorl and aperture at shared triangle boundary rings without floating contact pieces::0",
+      "tests/cephalopodlab_conch_geometry.test.js::Cephalopod Hunter continuous conch shelter opens toward +Z with an actual recessed cavity visible through center and offset aperture rays::0",
+      "tests/cephalopodlab_conch_geometry.test.js::Cephalopod Hunter continuous conch shelter keeps the existing shelter envelope and static resources through carrying wobble and drop poses::0",
+      "tests/cephalopodlab_conch_geometry.test.js::Cephalopod Hunter continuous conch shelter uses the actual strict sixty-second placed lifetime and disposes only the expired conch once::0",
+      "tests/cephalopodlab_confirmation_a11y.test.js::Cephalopod Lab abandon-day confirmation accessibility renders a labelled modal alert dialog with safe action order::0",
+      "tests/cephalopodlab_confirmation_a11y.test.js::Cephalopod Lab abandon-day confirmation accessibility implements focus entry, trapping, Escape cancellation, and restoration::0",
+      "tests/cephalopodlab_confirmation_a11y.test.js::Cephalopod Lab abandon-day confirmation accessibility removes the native confirmation API and retains explicit dialog state::0",
+      "tests/cephalopodlab_confirmation_a11y.test.js::Cephalopod Lab abandon-day confirmation accessibility preserves byte-for-byte deploy parity::0",
+      "tests/cephalopodlab_coral_surface.test.js::Cephalopod Hunter coral surface preserves all original geometry and colors while adding finite branch coordinates with sealed cap detail::0",
+      "tests/cephalopodlab_coral_surface.test.js::Cephalopod Hunter coral surface keeps jittered pore cells bounded, continuous at cell edges and periodic only at the wrapped branch seam::0",
+      "tests/cephalopodlab_coral_surface.test.js::Cephalopod Hunter coral surface extends the actual r128 standard shader with one static attribute and a bounded surface-gradient hook::0",
+      "tests/cephalopodlab_coral_surface.test.js::Cephalopod Hunter coral surface keeps the seeded colony layout and palette, with derivative support and the original fallback::0",
+      "tests/cephalopodlab_crab_geometry.test.js::Cephalopod Hunter articulated crab prey preserves the exact four-draw spawn contract, gameplay metadata and eleven/fifteen animated child slots::0",
+      "tests/cephalopodlab_crab_geometry.test.js::Cephalopod Hunter articulated crab prey constructs finite consistently wound indexed anatomy with unit normals, closed part spans and texture-free owned colors::0",
+      "tests/cephalopodlab_crab_geometry.test.js::Cephalopod Hunter articulated crab prey joins eyestalks, claws and all walking roots to the real carapace through the full existing leg lift::0",
+      "tests/cephalopodlab_crab_geometry.test.js::Cephalopod Hunter articulated crab prey connects each pincer finger to its palm and leaves a real ray-clear opening between the tapered tips::0",
+      "tests/cephalopodlab_crab_geometry.test.js::Cephalopod Hunter articulated crab prey joins the hermit aperture lip to both shell walls, embeds the spire and leaves the animal visible through the opening::0",
+      "tests/cephalopodlab_crab_geometry.test.js::Cephalopod Hunter articulated crab prey keeps deterministic static buffers and single-owner resources through the existing leg-lift poses and independent capture::0",
+      "tests/cephalopodlab_den_geometry.test.js::Cephalopod Hunter natural den stones builds twelve deterministic angular stones inside the original boxes with exact support heights and bounded finite topology::0",
+      "tests/cephalopodlab_den_geometry.test.js::Cephalopod Hunter natural den stones retains the doorway and footing while keeping the actual lintel triangles in contact with both pillars::0",
+      "tests/cephalopodlab_den_geometry.test.js::Cephalopod Hunter natural den stones keeps the four seeded den anchors, five-child order and exact reusable shelter ring within the fixed resource budget::0",
+      "tests/cephalopodlab_den_geometry.test.js::Cephalopod Hunter natural den stones reuses the accepted rock finish on supported renderers and the existing fallback without mutating any buffers::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab repeated facts agree with each other states one arm-ganglion neuron count, consistent with the stated totals::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab repeated facts agree with each other states one cuttlefish chromatophore density::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab repeated facts agree with each other states one number of hearts, and the same split between them::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab repeated facts agree with each other keeps the two live copies byte-identical::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab species datasets do not contradict each other reads both datasets::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab species datasets do not contradict each other never presents a non-IUCN word as an IUCN category::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab species datasets do not contradict each other agrees with the IUCN record wherever a species has one::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab species join maps only real field-guide species::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab species join every mapped target exists in both of the datasets it joins::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab species join does not silently drop a species that has a record under another key::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab data accents stay readable as text routes every data colour used as heading text through the ink helper::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab data accents stay readable as text lifts a dark accent to a readable ink and leaves a light one alone::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab entry headings never use a raw data colour routes culture entry names through the ink helper::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab entry headings never use a raw data colour does not hardcode slate-500 as body text on the dark ground::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab lesson plans can actually be run tracks the deepest point of a dive and reports it at the end::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab lesson plans can actually be run reports depth in real metres and the pressure that goes with it::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab lesson plans can actually be run warns before pressure damage and signals it while it happens::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab lesson plans can actually be run reports the other quantities its lesson plans ask students to record::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab shows labels, not data keys humanises a multi-word key rather than only capitalising it::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab shows labels, not data keys leaves no camelCase key reaching a table heading::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab shows labels, not data keys applies the same treatment to the sample-data tables, and keeps abbreviations::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab depth model behaves the way its lessons assume declares depth bands that join up, deepest zone to shallowest::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab depth model behaves the way its lessons assume starts the dive on the reef, not in midwater::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab depth model behaves the way its lessons assume agrees with the \"1 atm per 10 m\" rule the warm-up demonstrates::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab depth model behaves the way its lessons assume can actually reach the depths the formative check asks students to compute::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab depth model behaves the way its lessons assume never reports a depth that goes backwards as you descend::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab depth model behaves the way its lessons assume gives the player a readable warning before pressure starts hurting::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab depth model behaves the way its lessons assume leaves the reef and the surface completely safe::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab depth model behaves the way its lessons assume formats deep readouts without implying false precision::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab charges the metabolic cost it teaches uses the multiplier the quiz marks correct::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab charges the metabolic cost it teaches applies the multiplier to locomotion, not to basal metabolism::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab charges the metabolic cost it teaches leaves ordinary crawling balanced exactly as it was::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab charges the metabolic cost it teaches makes holding still cheaper than moving, which is what camo play needs::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab charges the metabolic cost it teaches still leaves a jetting dive survivable::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab charges the metabolic cost it teaches exempts the fin-propelled dumbo octopus, as its own description claims::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab charges the metabolic cost it teaches bills turning as movement, so the two HUD rows cannot disagree::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab charges the metabolic cost it teaches shows the burn rate live and reports the budget at the end::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab charges the metabolic cost it teaches classifies propulsion against the final floor after collision changes horizontal position::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab shelters count as dens for everything, not just some things records shelter cover in its own flag rather than one that gets reset::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab shelters count as dens for everything, not just some things folds shelter cover into the same flag every consumer reads::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab shelters count as dens for everything, not just some things keeps a real den stronger than an improvised shelter::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab shelters count as dens for everything, not just some things regenerates once per frame, never twice::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab ink degrades detection instead of switching it off routes every predator through one shared factor::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab ink degrades detection instead of switching it off no longer gates attack initiation on being inked::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab ink degrades detection instead of switching it off lets ink break off a charge from the hard hitters too::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab ink degrades detection instead of switching it off keeps the two hunters it already models as ink-resistant resistant::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab ink degrades detection instead of switching it off stops telling the player ink makes them unseeable::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab ink labels describe the mechanic that exists never claims a reserve recharges::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab ink labels describe the mechanic that exists still has exactly one place that spends a reserve and none that grants one::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab ink labels describe the mechanic that exists names what the 8s window actually is, and says the sac will not refill::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab ink labels describe the mechanic that exists tells the player up front, on the controls card, that ink is finite::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab ink labels describe the mechanic that exists keeps the two species the tool says do not ink unable to ink::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab background matching needs a background gives full substrate camo to an animal resting on the floor::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab background matching needs a background fades the substrate component out in BOTH directions::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab background matching needs a background multiplies it into camoEff rather than replacing the other factors::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab background matching needs a background leaves counter-illumination working in open water::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab background matching needs a background keeps the reef floor generous enough to still play the camo game::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab background matching needs a background tells the player why camo dropped instead of just sagging the bar::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab sim payouts agree with the Field Guide prey table reads both tables out of the source::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab sim payouts agree with the Field Guide prey table teaches fish > crab > clam by calories, and pays them in that order::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab sim payouts agree with the Field Guide prey table pays hunger as the taught calories halved, for every prey::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab sim payouts agree with the Field Guide prey table scores by how hard the prey is to catch, not by how big it is::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab sim payouts agree with the Field Guide prey table stops advertising the clam as the jackpot::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab deep-time dates agree with each other and with the named period puts every dated fossil and timeline event inside the period it names::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab deep-time dates agree with each other and with the named period dates the first cephalopods the same way everywhere::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab deep-time dates agree with each other and with the named period gives one date range for the octopus/squid split::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab deep-time dates agree with each other and with the named period never calls Pohlsepia the earliest octopus without saying it was reclassified::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab bioluminescence figures agree with themselves states a share of glowing species that matches the counts it gives::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab bioluminescence figures agree with themselves defines quantum yield by photons, and never quotes ~90% as current::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab section headers go through the translation lookup has no raw English title or intro left::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab section headers go through the translation lookup would notice one (the scanner is not blind)::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab Intelligence Lab and sentience-law facts agree does not claim more for Heidi than the evidence rung it files her on::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab Intelligence Lab and sentience-law facts agree credits the optic-gland removal experiment to Wodinsky every time::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab Intelligence Lab and sentience-law facts agree gives the UK law one name and one year::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab species claims agree with their sources and each other describes the GPO face-recognition test as the two-person study it was::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab species claims agree with their sources and each other names the same shark and aquarium every time the GPO shark footage comes up::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab species claims agree with their sources and each other credits the 2012 giant squid video to the team that made it::0",
+      "tests/cephalopodlab_fact_consistency.test.js::Cephalopod Lab species claims agree with their sources and each other calls the Te Papa colossal squid the most complete specimen, and estimates what is estimated::0",
+      "tests/cephalopodlab_fin_membranes.test.js::Cephalopod species fin membranes cuttlefish keeps the fin seam inside the breathing mantle under arbitrary world transforms::0",
+      "tests/cephalopodlab_fin_membranes.test.js::Cephalopod species fin membranes cuttlefish has continuous propulsion, stable owned buffers and static inspection/reduced motion::0",
+      "tests/cephalopodlab_fin_membranes.test.js::Cephalopod species fin membranes bobtailSquid keeps the fin seam inside the breathing mantle under arbitrary world transforms::0",
+      "tests/cephalopodlab_fin_membranes.test.js::Cephalopod species fin membranes bobtailSquid has continuous propulsion, stable owned buffers and static inspection/reduced motion::0",
+      "tests/cephalopodlab_fin_membranes.test.js::Cephalopod species fin membranes dumboOcto keeps the fin seam inside the breathing mantle under arbitrary world transforms::0",
+      "tests/cephalopodlab_fin_membranes.test.js::Cephalopod species fin membranes dumboOcto has continuous propulsion, stable owned buffers and static inspection/reduced motion::0",
+      "tests/cephalopodlab_fin_membranes.test.js::Cephalopod species fin membranes vampireSquid keeps the fin seam inside the breathing mantle under arbitrary world transforms::0",
+      "tests/cephalopodlab_fin_membranes.test.js::Cephalopod species fin membranes vampireSquid has continuous propulsion, stable owned buffers and static inspection/reduced motion::0",
+      "tests/cephalopodlab_fin_membranes.test.js::Cephalopod species fin membranes distinguishes the long low cuttlefish skirt, short bobtail paddle and elevated cirrate ears::0",
+      "tests/cephalopodlab_form_labels_a11y.test.js::Cephalopod Lab form-control accessibility names the pre-dive audio volume and identifies WCAG 2.2 AA::0",
+      "tests/cephalopodlab_form_labels_a11y.test.js::Cephalopod Lab form-control accessibility associates the conditional camouflage explanation with a visible label::0",
+      "tests/cephalopodlab_form_labels_a11y.test.js::Cephalopod Lab form-control accessibility keeps the complete form inventory and repaired names explicit in source::0",
+      "tests/cephalopodlab_form_labels_a11y.test.js::Cephalopod Lab form-control accessibility exposes the dive debrief title as a heading (mission complete: false)::0",
+      "tests/cephalopodlab_form_labels_a11y.test.js::Cephalopod Lab form-control accessibility exposes the dive debrief title as a heading (mission complete: true)::0",
+      "tests/cephalopodlab_form_labels_a11y.test.js::Cephalopod Lab form-control accessibility preserves byte-for-byte deploy parity::0",
+      "tests/cephalopodlab_giant_grounding.test.js::Giant Pacific octopus floor clearance scales only the giant player rest height and uses it at spawn and state initialization::0",
+      "tests/cephalopodlab_giant_grounding.test.js::Giant Pacific octopus floor clearance clears actual reef terrain with all rendered body vertices and sucker instances across sampled idle and walking poses::0",
+      "tests/cephalopodlab_giant_grounding.test.js::Giant Pacific octopus floor clearance shares the floor reference with propulsion and camouflage while preserving ascent, descent and depth clamps::0",
+      "tests/cephalopodlab_grouper_geometry.test.js::Cephalopod Hunter grouper anatomy and visible heading retains the exact spawn metadata and four original owned child frames without advancing world randomness::0",
+      "tests/cephalopodlab_grouper_geometry.test.js::Cephalopod Hunter grouper anatomy and visible heading uses finite bounded indexed surfaces, unit normals, visible winding and complete semantic spans::0",
+      "tests/cephalopodlab_grouper_geometry.test.js::Cephalopod Hunter grouper anatomy and visible heading joins six fins to actual skin triangles and embeds bilateral gills and dark pupils without floating seams::0",
+      "tests/cephalopodlab_grouper_geometry.test.js::Cephalopod Hunter grouper anatomy and visible heading has a genuinely recessed closed mouth and a joined tail waist in the actual preserved child transforms::0",
+      "tests/cephalopodlab_grouper_geometry.test.js::Cephalopod Hunter grouper anatomy and visible heading points its actual nose along the production patrol displacement at every cardinal and oblique heading::0",
+      "tests/cephalopodlab_grouper_geometry.test.js::Cephalopod Hunter grouper anatomy and visible heading keeps deterministic buffers and independent resource ownership through poses and teardown::0",
+      "tests/cephalopodlab_habitat_composition.test.js::Cephalopod Hunter deterministic habitat composition preserves the baseline random call sites, owned plant factories, and original spawn blocks byte-for-byte::0",
+      "tests/cephalopodlab_habitat_composition.test.js::Cephalopod Hunter deterministic habitat composition retains actual plant spawn order and all 525 owned random draws, resource counts, heights, yaw and phase::0",
+      "tests/cephalopodlab_habitat_composition.test.js::Cephalopod Hunter deterministic habitat composition composes the actual settled reef into five rock-rooted groves with clear sand and den paths::0",
+      "tests/cephalopodlab_habitat_composition.test.js::Cephalopod Hunter deterministic habitat composition keeps stable habitat resources and positions without random draws or repeated buffer uploads::0",
+      "tests/cephalopodlab_habitat_composition.test.js::Cephalopod Hunter deterministic habitat composition preserves actual baseline grass recycle eligibility and draw order through several player locations::0",
+      "tests/cephalopodlab_habitat_composition.test.js::Cephalopod Hunter deterministic habitat composition keeps composition outside per-frame animation and leaves grounding, cleanup and resource lifecycle intact::0",
+      "tests/cephalopodlab_kelp_fronds.test.js::Cephalopod Hunter attached kelp fronds preserves every original grass and central-kelp attribute while adding a bounded finite topology::0",
+      "tests/cephalopodlab_kelp_fronds.test.js::Cephalopod Hunter attached kelp fronds attaches four alternating curved leaves, with narrow tips, broad folded middles and a continuous palette at every joint::0",
+      "tests/cephalopodlab_kelp_fronds.test.js::Cephalopod Hunter attached kelp fronds keeps joined vertices together under the existing flex and encloses every bent leaf in the actual expanded bounds::0",
+      "tests/cephalopodlab_moon_jelly.test.js::Cephalopod Hunter moon-jelly anatomy retains five ambient actors and all sixty-five ordered spawn and phase draws::0",
+      "tests/cephalopodlab_moon_jelly.test.js::Cephalopod Hunter moon-jelly anatomy uses eight bounded finite indexed surfaces with an upward crown, trailing anatomy and ordinary alpha ownership::0",
+      "tests/cephalopodlab_moon_jelly.test.js::Cephalopod Hunter moon-jelly anatomy updates bell normals from the actual deformed triangles without reallocating or escaping fixed conservative bounds::0",
+      "tests/cephalopodlab_moon_jelly.test.js::Cephalopod Hunter moon-jelly anatomy keeps deterministic geometry and independently owned resources across all five actors::0",
+      "tests/cephalopodlab_moon_jelly.test.js::Cephalopod Hunter moon-jelly anatomy attaches actual canal tips, four oral roots and all twenty-four margin roots throughout pulse and wave extrema::0",
+      "tests/cephalopodlab_moon_jelly.test.js::Cephalopod Hunter moon-jelly anatomy renders four separate open horseshoes under the bell instead of a single closed glowing ring::0",
+      "tests/cephalopodlab_moray_geometry.test.js::Cephalopod Hunter moray surface anatomy preserves the four original child frames, home and predator metadata with no construction randomness::0",
+      "tests/cephalopodlab_moray_geometry.test.js::Cephalopod Hunter moray surface anatomy constructs finite indexed anatomy with unit visible normals, noncollapsed faces and complete part ranges::0",
+      "tests/cephalopodlab_moray_geometry.test.js::Cephalopod Hunter moray surface anatomy joins the actual neck surface and normals and embeds the continuous median fin along its full root path::0",
+      "tests/cephalopodlab_moray_geometry.test.js::Cephalopod Hunter moray surface anatomy has a ray-open recessed mouth, separated teeth and two real recessed gill openings::0",
+      "tests/cephalopodlab_moray_geometry.test.js::Cephalopod Hunter moray surface anatomy seats dark bilateral pupils on the real cheek triangles and faces anatomy toward lookAt targets::0",
+      "tests/cephalopodlab_moray_geometry.test.js::Cephalopod Hunter moray surface anatomy keeps deterministic static buffers and independent ownership across idle and pursuit poses::0",
+      "tests/cephalopodlab_moray_geometry.test.js::Cephalopod Hunter moray surface anatomy keeps the one-mesh stone crevice behind the real open head and preserves its shader fallback::0",
+      "tests/cephalopodlab_nautilus_eyes.test.js::Nautilus open pinhole eyes uses six finite smooth eye surfaces under the old geometry budget with no lens or painted glint::0",
+      "tests/cephalopodlab_nautilus_eyes.test.js::Nautilus open pinhole eyes mirrors the cups, retains legacy anchors and buries the complete basal ring in the unchanged head::0",
+      "tests/cephalopodlab_nautilus_eyes.test.js::Nautilus open pinhole eyes welds the annular opening to a recessed interior and leaves no front lens or disk across its circular aperture::0",
+      "tests/cephalopodlab_nautilus_eyes.test.js::Nautilus open pinhole eyes keeps actual openings clear of the shell and head through seventeen rocking positions and four animation states::0",
+      "tests/cephalopodlab_nautilus_eyes.test.js::Nautilus open pinhole eyes uses plain opaque tissue materials and independent owned resources that remain static through updates::0",
+      "tests/cephalopodlab_nautilus_eyes.test.js::Nautilus open pinhole eyes preserves the entire accepted shell, head, siphon and filament rig and every other species geometry and shader::0",
+      "tests/cephalopodlab_nautilus_shell.test.js::Nautilus external shell and living-chamber opening replaces raised stripe meshes with three bounded opaque surfaces and finite outward-facing triangles::0",
+      "tests/cephalopodlab_nautilus_shell.test.js::Nautilus external shell and living-chamber opening mirrors both sides, welds lip boundaries, and leaves a genuine open passage to the unbanded interior::0",
+      "tests/cephalopodlab_nautilus_shell.test.js::Nautilus external shell and living-chamber opening clears the unchanged head and both pinhole apertures through the complete existing shell-rocking range::0",
+      "tests/cephalopodlab_nautilus_shell.test.js::Nautilus external shell and living-chamber opening applies fixed surface pigment to the real standard shader with a supported derivative path and fallback::0",
+      "tests/cephalopodlab_nautilus_shell.test.js::Nautilus external shell and living-chamber opening keeps shell buffers and material identity static across live, jet, frozen and reduced-motion updates::0",
+      "tests/cephalopodlab_nautilus_shell.test.js::Nautilus external shell and living-chamber opening preserves pre-change complete other-species rigs and nautilus non-shell/non-eye geometry, materials and shaders::0",
+      "tests/cephalopodlab_octopus_eyes.test.js::Benthic octopus curved eye surfaces uses finite outward cap geometry with bounded eye draw calls and triangles::0",
+      "tests/cephalopodlab_octopus_eyes.test.js::Benthic octopus curved eye surfaces mirrors eyes and preserves socket and aperture anchors across all six species scales::0",
+      "tests/cephalopodlab_octopus_eyes.test.js::Benthic octopus curved eye surfaces seats a horizontal pupil above actual rendered iris triangles with safe edge clearance::0",
+      "tests/cephalopodlab_octopus_eyes.test.js::Benthic octopus curved eye surfaces keeps sockets embedded in the head and actual skin lids clear of each aperture::0",
+      "tests/cephalopodlab_octopus_eyes.test.js::Benthic octopus curved eye surfaces uses shared linear dark pupil materials and a separate clock-free bundled shader hook::0",
+      "tests/cephalopodlab_octopus_eyes.test.js::Benthic octopus curved eye surfaces keeps eye resources static and independently owned through move, jet, strike and frozen updates::0",
+      "tests/cephalopodlab_octopus_eyes.test.js::Benthic octopus curved eye surfaces preserves captured non-eye octopuses, complete squid/four-swimmer rigs and nautilus non-shell/non-eye anatomy::0",
+      "tests/cephalopodlab_plant_flex.test.js::Cephalopod Hunter rooted shader plant flex keeps roots and slopes fixed, bounds every wave, and matches its analytic derivative to finite differences::0",
+      "tests/cephalopodlab_plant_flex.test.js::Cephalopod Hunter rooted shader plant flex corrects normals with the inverse transpose before instance and world transforms::0",
+      "tests/cephalopodlab_plant_flex.test.js::Cephalopod Hunter rooted shader plant flex expands only culled kelp bounds, enclosing posed vertices while every grass instance root stays fixed::0",
+      "tests/cephalopodlab_plant_flex.test.js::Cephalopod Hunter rooted shader plant flex shares one persistent vec4 across material recompiles, retains independent plants, and keeps long-dive phases finite::0",
+      "tests/cephalopodlab_plant_geometry.test.js::Cephalopod Hunter plant geometry builds finite folded ribbons with valid triangles, normals and final bounds across plant variants::0",
+      "tests/cephalopodlab_plant_geometry.test.js::Cephalopod Hunter plant geometry uses deterministic variation without random draws or shared mutable geometry::0",
+      "tests/cephalopodlab_plant_geometry.test.js::Cephalopod Hunter plant geometry preserves all 525 seeded placement, height, yaw and phase draws plus counts and camouflage data::0",
+      "tests/cephalopodlab_plant_geometry.test.js::Cephalopod Hunter plant geometry keeps grass instance base and top heights while preserving their radial layout, yaw and scale::0",
+      "tests/cephalopodlab_plant_geometry.test.js::Cephalopod Hunter plant geometry pivots kelp around its fixed root and bounds grass-root movement by cluster radius rather than height::0",
+      "tests/cephalopodlab_plant_geometry.test.js::Cephalopod Hunter plant geometry retains primary sway frequency, freezes flex under pause, and makes both kinds static under reduced motion::0",
+      "tests/cephalopodlab_prey_fish.test.js::Cephalopod Hunter silver schooling prey builds two finite render surfaces with one owned material and bounded geometry for every school index::0",
+      "tests/cephalopodlab_prey_fish.test.js::Cephalopod Hunter silver schooling prey keeps a forward nose, bilateral eyes and a bright lateral silver band with a darker back::0",
+      "tests/cephalopodlab_prey_fish.test.js::Cephalopod Hunter silver schooling prey joins each visible fin and eye patch to the actual triangulated body without detached ornament::0",
+      "tests/cephalopodlab_prey_fish.test.js::Cephalopod Hunter silver schooling prey keeps the real tail waist inside the body through the full live yaw range and leaves a true caudal fork::0",
+      "tests/cephalopodlab_prey_fish.test.js::Cephalopod Hunter silver schooling prey constructs deterministically without shared buffers and keeps all resources static as the rig turns and swims::0",
+      "tests/cephalopodlab_prey_fish.test.js::Cephalopod Hunter silver schooling prey owns exactly two geometries and one material whose disposal leaves another fish usable::0",
+      "tests/cephalopodlab_prey_memory.test.js::Cephalopod Hunter prey threat memory keeps the existing alarm rates, threshold and cap while reporting early detection::0",
+      "tests/cephalopodlab_prey_memory.test.js::Cephalopod Hunter prey threat memory copies the last visible position and never reads a hidden player position::0",
+      "tests/cephalopodlab_prey_memory.test.js::Cephalopod Hunter prey threat memory steers identically after different unseen movements, then responds to a visible reacquisition::0",
+      "tests/cephalopodlab_prey_memory.test.js::Cephalopod Hunter prey threat memory forgets a threat when calm and clears it immediately during the existing display interruption::0",
+      "tests/cephalopodlab_prey_memory.test.js::Cephalopod Hunter prey threat memory takes the short turn across the heading seam and remains finite at coincident positions::0",
+      "tests/cephalopodlab_prey_memory.test.js::Cephalopod Hunter prey threat memory reports actionable intent without changing crab, distracted or existing fleeing wording::0",
+      "tests/cephalopodlab_reef_placement.test.js::Cephalopod reef placement measures actual rotated and scaled vertices without translating or mutating the mesh::0",
+      "tests/cephalopodlab_reef_placement.test.js::Cephalopod reef placement keeps a clear site stable and relocates a blocked one deterministically without consuming RNG::0",
+      "tests/cephalopodlab_reef_placement.test.js::Cephalopod reef placement keeps resolved recycling sites inside the allowed annulus even when the original candidate is invalid::0",
+      "tests/cephalopodlab_reef_placement.test.js::Cephalopod reef placement uses a bounded area fallback when the nearby search is blocked and returns null when everything is blocked::0",
+      "tests/cephalopodlab_reef_placement.test.js::Cephalopod reef placement moves an obstructed surviving colony without replacing resources or metadata and grounds it immediately::0",
+      "tests/cephalopodlab_reef_placement.test.js::Cephalopod reef placement keeps a fully blocked colony pooled but inactive and restores it when space becomes available::0",
+      "tests/cephalopodlab_rock_surface.test.js::Cephalopod Hunter static rock material extends the actual bundled r128 standard shader at valid stages without new resources::0",
+      "tests/cephalopodlab_rock_surface.test.js::Cephalopod Hunter static rock material samples smooth irregular lattice values with bounded hash arithmetic, shading and filtered grain::0",
+      "tests/cephalopodlab_rock_surface.test.js::Cephalopod Hunter static rock material bounds the live slope limiter including zero and near-degenerate finite magnitudes::0",
+      "tests/cephalopodlab_rock_surface.test.js::Cephalopod Hunter static rock material uses one static cached rock program with a WebGL1 derivative fallback and unchanged seeded layout::0",
+      "tests/cephalopodlab_shelter_feedback.test.js::Cephalopod Hunter actionable shelter guidance reports actual per-type camouflage, carrying speed and finite placed lifetimes::0",
+      "tests/cephalopodlab_shelter_feedback.test.js::Cephalopod Hunter actionable shelter guidance rounds cover countdown upward without inventing a lifetime for an anchored sponge::0",
+      "tests/cephalopodlab_shelter_feedback.test.js::Cephalopod Hunter actionable shelter guidance uses the distinct real den and camouflage height limits with strict horizontal boundaries::0",
+      "tests/cephalopodlab_shelter_feedback.test.js::Cephalopod Hunter actionable shelter guidance selects only the nearest actual placed cover without mutating free, carried or neighboring objects::0",
+      "tests/cephalopodlab_shelter_grounding.test.js::Cephalopod Hunter same-frame placed-shelter grounding grounds each real carriable shelter before the first den scan on both shelf and negative terrain::0",
+      "tests/cephalopodlab_shelter_grounding.test.js::Cephalopod Hunter same-frame placed-shelter grounding preserves the existing strict height and horizontal den boundaries after placement::0",
+      "tests/cephalopodlab_shelter_grounding.test.js::Cephalopod Hunter same-frame placed-shelter grounding retains exact drop poses, metadata, resources, announcements and zero extra randomness::0",
+      "tests/cephalopodlab_sponge_geometry.test.js::Cephalopod Hunter thick-walled barrel sponge keeps three stationary shelters and the original ordered spawn randomness while replacing thirteen mesh draws with one::0",
+      "tests/cephalopodlab_sponge_geometry.test.js::Cephalopod Hunter thick-walled barrel sponge builds finite unit-normal faces and a physically closed shell through its duplicated basal shading seam::0",
+      "tests/cephalopodlab_sponge_geometry.test.js::Cephalopod Hunter thick-walled barrel sponge has a deep ray-open cavity with a substantial real wall and a smoothly joined rolled rim::0",
+      "tests/cephalopodlab_sponge_geometry.test.js::Cephalopod Hunter thick-walled barrel sponge embeds its basal skirt at the existing grounded root and forms real continuous flutes without extra rib meshes::0",
+      "tests/cephalopodlab_sponge_geometry.test.js::Cephalopod Hunter thick-walled barrel sponge keeps static sponges outside the placed-shelter expiry path and disposes only their own stable resources::0",
+      "tests/cephalopodlab_squid_arm_detail.test.js::Cephalopod squid arm and feeding-club detail faces both sucker rows inward around every arm at rest and during a sustained jet::0",
+      "tests/cephalopodlab_squid_arm_detail.test.js::Cephalopod squid arm and feeding-club detail uses opaque open bowls whose bases sit on the measured arm or club skin with separated rows::0",
+      "tests/cephalopodlab_squid_arm_detail.test.js::Cephalopod squid arm and feeding-club detail flattens the feeding clubs while preserving round stalks and correct finite unit normals::0",
+      "tests/cephalopodlab_squid_arm_detail.test.js::Cephalopod squid arm and feeding-club detail updates the same geometry, materials and buffers deterministically without direct rig RNG::0",
+      "tests/cephalopodlab_squid_arm_detail.test.js::Cephalopod squid arm and feeding-club detail keeps every limb, cup matrix and fin static in reduced motion and on repeated frozen-time updates::0",
+      "tests/cephalopodlab_squid_arm_detail.test.js::Cephalopod squid arm and feeding-club detail keeps the two rendered club centers on their directed contact target under full world transforms::0",
+      "tests/cephalopodlab_squid_arm_detail.test.js::Cephalopod squid arm and feeding-club detail preserves all geometry outside the explicitly upgraded eyes and nautilus shell::0",
+      "tests/cephalopodlab_squid_strike_clock.test.js::Cephalopod Hunter squid strike clock finishes one accepted reach without replaying it when a clam meal resets the event clock::0",
+      "tests/cephalopodlab_squid_strike_clock.test.js::Cephalopod Hunter squid strike clock does not start a squid feeding strike from a clam meal alone::0",
+      "tests/cephalopodlab_squid_strike_clock.test.js::Cephalopod Hunter squid strike clock preserves the existing non-squid event animation::0",
+      "tests/cephalopodlab_streamed_den.test.js::Cephalopod Hunter streamed exploration dens uses the actual distance gate, three spawn draws, annulus and twelve-den cap::0",
+      "tests/cephalopodlab_streamed_den.test.js::Cephalopod Hunter streamed exploration dens reuses the accepted stone and cavity geometry with the original five-child shelter contract::0",
+      "tests/cephalopodlab_streamed_den.test.js::Cephalopod Hunter streamed exploration dens preserves derivative fallback, linear mineral finish and independent streamed resource ownership::0",
+      "tests/cephalopodlab_streamed_den.test.js::Cephalopod Hunter streamed exploration dens keeps both actual pillar supports in contact with the roof for every streamed den variant::0",
+      "tests/cephalopodlab_strike_feedback.test.js::Cephalopod Hunter failed strike feedback beside clams shows the same real miss in the free-mode mission brief with or without an untouched reachable clam::0",
+      "tests/cephalopodlab_strike_feedback.test.js::Cephalopod Hunter failed strike feedback beside clams reports actual cover-blocked and uncommitted strikes beside an untouched clam::0",
+      "tests/cephalopodlab_strike_feedback.test.js::Cephalopod Hunter failed strike feedback beside clams suppresses spurious misses only when the unchanged held-E or latched gathering branch actually runs::0",
+      "tests/cephalopodlab_strike_feedback.test.js::Cephalopod Hunter failed strike feedback beside clams leaves eligible selected prey capturable without a false miss or implicit clam gathering::0",
+      "tests/cephalopodlab_strike_feedback.test.js::Cephalopod Hunter failed strike feedback beside clams retains contact timing and hides the actual brief at the unchanged message expiry boundary::0",
+      "tests/cephalopodlab_svg_alternatives_a11y.test.js::Cephalopod Lab SVG alternatives describes current counter-illumination values and verdict::0",
+      "tests/cephalopodlab_svg_alternatives_a11y.test.js::Cephalopod Lab SVG alternatives describes selected anatomy and timeline states with keyboard alternatives::0",
+      "tests/cephalopodlab_svg_alternatives_a11y.test.js::Cephalopod Lab SVG alternatives describes the camouflage inquiry values and discrete visual state::0",
+      "tests/cephalopodlab_svg_alternatives_a11y.test.js::Cephalopod Lab SVG alternatives classifies all fourteen SVG declarations as informative or decorative::0",
+      "tests/cephalopodlab_svg_alternatives_a11y.test.js::Cephalopod Lab SVG alternatives preserves byte-for-byte deploy parity::0",
+      "tests/cephalopodlab_table_semantics_a11y.test.js::Cephalopod Lab table semantics marks matrix and observation-table relationships::0",
+      "tests/cephalopodlab_table_semantics_a11y.test.js::Cephalopod Lab table semantics marks comparison, sample-data, and taxonomy table relationships::0",
+      "tests/cephalopodlab_table_semantics_a11y.test.js::Cephalopod Lab table semantics keeps all eight table declarations captioned in source::0",
+      "tests/cephalopodlab_table_semantics_a11y.test.js::Cephalopod Lab table semantics preserves byte-for-byte deploy parity::0",
+      "tests/cephalopodlab_underwater_lighting.test.js::Cephalopod Hunter underwater lighting finish retains three bounded native lights with clear shallow relief, cool depth, and a visible night transition::0",
+      "tests/cephalopodlab_underwater_lighting.test.js::Cephalopod Hunter underwater lighting finish smooths depth and day transitions in place and freezes exactly for zero blend::0",
+      "tests/cephalopodlab_underwater_lighting.test.js::Cephalopod Hunter underwater lighting finish modifies actual r128 sand and shared shaft shaders without extra textures or broken shader chunks::0",
+      "tests/cephalopodlab_underwater_lighting.test.js::Cephalopod Hunter underwater lighting finish transfers actual terrain tiles into the existing r128 caustic attribute and array with bit-exact positions::0",
+      "tests/cephalopodlab_underwater_lighting.test.js::Cephalopod Hunter underwater lighting finish executes the actual live day, depth, floor and shaft finish while preserving existing resource identities and static bytes::0",
+      "tests/cephalopodlab_underwater_lighting.test.js::Cephalopod Hunter underwater lighting finish uses the actual active gate to freeze paused and finished presentation, and freezes decorative motion under reduced motion::0",
+      "tests/cephalopodlab_water_particles.test.js::Cephalopod Hunter water particle presentation builds a deterministic small irregular floc with finite normals and fewer triangles than the old food sphere::0",
+      "tests/cephalopodlab_water_particles.test.js::Cephalopod Hunter water particle presentation initializes a real three-dimensional field around a deep player without changing legacy data or using RNG::0",
+      "tests/cephalopodlab_water_particles.test.js::Cephalopod Hunter water particle presentation keeps nearby particles in world space and wraps into bounded depth after long horizontal and vertical travel::0",
+      "tests/cephalopodlab_water_particles.test.js::Cephalopod Hunter water particle presentation freezes decorative positions exactly for zero time and reduced motion while permitting travel wrapping::0",
+      "tests/cephalopodlab_water_particles.test.js::Cephalopod Hunter water particle presentation advances drift in place without writing the legacy seed positions or velocities::0",
+      "tests/cephalopodlab_water_particles.test.js::Cephalopod Hunter water particle presentation keeps original seeded recycling on the legacy buffer independently of the visible cloud::0",
+      "tests/cephalopodlab_water_particles.test.js::Cephalopod Hunter water particle presentation modifies the actual r128 point shader with a pixel-ratio-aware size cap, near fade and soft edge::0",
+      "tests/cephalopodlab_cuttle_surface.test.js::Cuttlefish anatomical camouflage surface extends the real bundled shader on every skin clone and preserves the original passing-cloud coordinates::0",
+      "tests/cephalopodlab_cuttle_surface.test.js::Cuttlefish anatomical camouflage surface gates derivative detail on actual renderer support and keeps a grain-free unsupported fallback::0",
+      "tests/cephalopodlab_cuttle_surface.test.js::Cuttlefish anatomical camouflage surface bounds pigment, roughness and anatomical masks while giving cover a stronger organized pattern::0",
+      "tests/cephalopodlab_cuttle_surface.test.js::Cuttlefish anatomical camouflage surface shares and reuses the root inverse frame through transformed parents and independent mantle/fin transforms::0",
+      "tests/cephalopodlab_cuttle_surface.test.js::Cuttlefish anatomical camouflage surface retains shared pattern/display phase semantics and stable resources on repeated frozen updates::0",
+      "tests/cephalopodlab_cuttle_surface.test.js::Cuttlefish anatomical camouflage surface preserves all twelve animated rigs and shader contracts outside later nautilus shell and eye upgrades::0",
+      "tests/cephalopodlab_eye_surfaces.test.js::Cephalopod curved swimmer eyes uses finite unit normals and outward triangles on both curved iris and pupil surfaces::0",
+      "tests/cephalopodlab_eye_surfaces.test.js::Cephalopod curved swimmer eyes mirrors complete eyes across the head and keeps upper skin lids clear of the pupil::0",
+      "tests/cephalopodlab_eye_surfaces.test.js::Cephalopod curved swimmer eyes contains each aperture within the actual iris outline and seats it just above the rendered dome::0",
+      "tests/cephalopodlab_eye_surfaces.test.js::Cephalopod curved swimmer eyes keeps both cuttle apertures clear of the wide mantle and moving front skirt while sockets remain embedded in the head::0",
+      "tests/cephalopodlab_eye_surfaces.test.js::Cephalopod curved swimmer eyes gives cuttlefish a continuous W-shaped aperture while retaining the other pupil silhouettes::0",
+      "tests/cephalopodlab_eye_surfaces.test.js::Cephalopod curved swimmer eyes keeps pupil colors dark in linear space and patches the actual bundled physical shader without a clock::0",
+      "tests/cephalopodlab_eye_surfaces.test.js::Cephalopod curved swimmer eyes keeps static eye buffers and owned resources through swimming, strike, reduced motion and inspection-like updates::0",
+      "tests/cephalopodlab_eye_surfaces.test.js::Cephalopod curved swimmer eyes preserves pre-change non-eye swimmers and protected rigs outside later nautilus shell and eye upgrades::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Hub renders the guided path with the first step as Next when nothing is done::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Hub marks path steps done from viewed flags, hunts, and quiz answers, and moves Next forward::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Hub fact-or-metaphor shows feedback and an evidence link only after a pick, and grades it::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Hub lists every topic area except Start with a section count and explored count::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Hub keeps the hero octopus decorative and respects reduced motion in its stylesheet::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Hub pins light ink on the root so host light themes cannot hide body copy on the dark ground::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Field Guide filters the picker by group and shows the count on every filter chip::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Field Guide asks an observation question built from the species data before the notes::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Field Guide renders prey chips with their sim difficulty and prev/next browsing::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Field Guide shows the comparison table only when a second species is chosen, with labelled select and captioned table::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Field Guide offers onward links that depend on the species: body plan for coleoids, hunt only for playable ones::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Camouflage Lab hides the target slider numbers by default and reveals them on request::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Camouflage Lab coaches the furthest-off layers in words, with direction, and goes quiet when close::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Camouflage Lab shows the predator-eye view only when toggled and tracks the four-scene challenge from camoBest::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Quiz renders one progress dot per question with state labels and marks the current one::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Quiz offers a revisit link to the teaching section only after the question is answered::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Quiz recap groups results by area, weakest first, with a captioned table and a retake-missed button::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Evasion Sim strike lane is one focusable lane whose label narrates the phase: ready, waiting, strike, escaped::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Evasion Sim strike lane animates the predator approach only while armed, and the lunge only on GO::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Evasion Sim strike lane reports false starts and explains the cost; shows the reaction scale with reference bands after an escape::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Jet Lab schematic and Day sky band draws the jet from the computed numbers and names them for screen readers::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Jet Lab schematic and Day sky band gives the nautilus a shell instead of arms::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Jet Lab schematic and Day sky band maps encounter progress onto a dawn-to-night sky with a labelled progressbar::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Skin Anatomy draws a cross-section whose summary names the depth order and the selection::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Skin Anatomy offers every cell type as a pressed-state chip and shows one record at a time::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Skin Anatomy states what each layer cannot do, which is why the stack exists::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Skin Anatomy expands the chromatophore sac with muscle drive, up to the 15x diameter the record claims::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab bacterial symbiosis cycle tracks the stated phase sequence: near-empty after the dawn expulsion, refilled by late day::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab bacterial symbiosis cycle turns the ventral glow on only for the counter-illumination window::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab bacterial symbiosis cycle names the phase in the chart summary and labels the series directly rather than by colour alone::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Life Cycle flow says in its summary that the path forks by sex and then ends::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Life Cycle flow draws every stage as a selectable node and shows one record at a time::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Life Cycle flow states the semelparity terminus and marks the return arrow as the next generation::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Life Cycle flow keeps white node ink on ramp steps dark enough to read::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Intelligence Lab evidence ladder sorts every case onto a rung, strongest at the top of the list order::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Intelligence Lab evidence ladder places the two most famous anecdotes on the weakest rung and the papers on the strongest::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Intelligence Lab evidence ladder badges the open case with its evidence type and says what that type can support::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Intelligence Lab evidence ladder says plainly that weak evidence still has a job, so the ladder is not a dismissal::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Camo Discovery carries no light-theme utility classes, so it cannot render as a white card in the dark tool::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Camo Discovery lets the substrate colour reach the frame around the diagram::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Camo Discovery keeps its accessible summary of the current sliders::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Myth Busters hides every correction until the reader commits to a confidence rating::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Myth Busters reveals only the rated claim, and reflects the rating back::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Myth Busters tallies ratings and states the point: every claim on the page is wrong::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Myth Busters keeps a teacher view that shows every correction without rating::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab comparative cognition matrix no longer advertises a click that does not exist::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab comparative cognition matrix states each rating in words, so the stars are never the only encoding::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab comparative cognition matrix uses one meaning of zero stars, matching its own footnote::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab mass extinction axis places all five events by date and names them in its summary::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab mass extinction axis positions markers by their real dates, not evenly::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab mass extinction axis gives every event an accent that is not the page background::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab mass extinction axis highlights the matching card when an event is selected::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab clickable diagrams have a keyboard path offers a button for every extinction, not just an axis marker::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab clickable diagrams have a keyboard path keeps the same guarantee for the skin cross-section and the life cycle::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab ethogram recorder offers one recording button per catalogued behaviour::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab ethogram recorder shows no budget until something is recorded, then ranks by frequency::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab ethogram recorder tracks progress toward the 20-minute protocol the section describes::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab ethogram recorder warns that a short session makes a shaky budget, and stops warning at 40::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab ethogram recorder writes a field note that reports the sample count alongside the result::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab challenge tracker claims nothing when there is no dive history::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab challenge tracker ticks only the challenges the dive record can actually settle::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab challenge tracker marks the ten it cannot verify as the reader’s to check, never as done::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab ocean sound spectrum plots a band for every entry whose figure is a plain range::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab ocean sound spectrum says which entry it could not plot instead of approximating it::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab ocean sound spectrum places bands on a log axis, so a decade is a constant distance::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab ocean sound spectrum repeats only the claim the section already makes about cephalopod hearing::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab quiz does not reward always picking one position spreads the displayed correct answer across all four positions::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab quiz does not reward always picking one position names options by what they say, not by a letter the quiz never shows::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab reaction verdict agrees with the scale it draws only credits cephalopod speed inside the band it shades::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab reaction verdict agrees with the scale it draws keeps discriminating past the human marker instead of collapsing to one message::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab reaction verdict agrees with the scale it draws grades the judge note on the same references, not a single 200 ms split::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Jet Lab speeds and verdict follow the physics gives the Humboldt squid the top speed this tool's own quiz grades::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Jet Lab speeds and verdict follow the physics agrees with its own octopus FAQ, and keeps the nautilus slow::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Jet Lab speeds and verdict follow the physics never calls a species' own preset unrealistic, and derives efficiency from what it shows::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Jet Lab speeds and verdict follow the physics calls a jet slower than the animal too weak instead of efficient::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Jet Lab speeds and verdict follow the physics lets the pressure slider reach a nautilus and says the value, not the position::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Jet Lab speeds and verdict follow the physics does what the siphon and volume hints now say::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Jet Lab speeds and verdict follow the physics labels a speed with no measurement behind it as an estimate::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Day in the Life outcomes match what they say never pays a reward for a failed attempt::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Day in the Life outcomes match what they say gives every risky choice a failure of its own::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Day in the Life outcomes match what they say states the same calories, health and arms that it applies::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Day in the Life outcomes match what they say says in words, with the applied numbers, whether each choice worked::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Day in the Life outcomes match what they say shows the per-encounter burn it charges::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Camo Discovery shows one state, not a score describes the badge it draws, and announces the same state everywhere::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Camo Discovery shows one state, not a score logs the state the learner saw, never the hidden score, and reads older saves::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab Camo Discovery shows one state, not a score draws the background pattern in colours you can actually see::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab species text is translatable everywhere it appears registers every species field under its key, with the English it localises::0",
+      "tests/cephalopodlab_hub_pedagogy.test.js::Cephalopod Lab species text is translatable everywhere it appears shows the looked-up text in the Field Guide and the Day lobby::0",
+      "tests/cephalopodlab_kelp_bladder.test.js::Cephalopod Hunter attached kelp gas bladders keeps every accepted141 kelp attribute and504indices byte-exact, with all grass buffers and metadata exact::0",
+      "tests/cephalopodlab_kelp_bladder.test.js::Cephalopod Hunter attached kelp gas bladders builds four separate physically closed outward shells with finite unit normals and valid height/footprint bounds::0",
+      "tests/cephalopodlab_kelp_bladder.test.js::Cephalopod Hunter attached kelp gas bladders intersects actual triangle shells twice across radial and axial rays with a visible volumetric silhouette::0",
+      "tests/cephalopodlab_kelp_bladder.test.js::Cephalopod Hunter attached kelp gas bladders uses exact existing blade landmarks and keeps both float poles joined through live shader pulse phases and world transforms::0",
+      "tests/cephalopodlab_kelp_bladder.test.js::Cephalopod Hunter attached kelp gas bladders preserves actual525 spawn draws,25 independent kelp actors, their unchanged material, root frame and camouflage metadata::0",
+      "tests/cephalopodlab_kelp_bladder.test.js::Cephalopod Hunter attached kelp gas bladders freezes actual pause/reduced-motion flex, resumes accepted clocks and keeps every owned buffer/material stable until one disposal::0",
+      "tests/cephalopodlab_squid_siphon.test.js::Humboldt squid continuous muscular funnel retains the existing attachment Group and forward outlet with one owned opaque draw and no unused material::0",
+      "tests/cephalopodlab_squid_siphon.test.js::Humboldt squid continuous muscular funnel has closed consistently wound indexed topology, finite unit visible normals and conservative bounds::0",
+      "tests/cephalopodlab_squid_siphon.test.js::Humboldt squid continuous muscular funnel joins its real outer, rolled and inner surfaces at shared physical triangle boundaries::0",
+      "tests/cephalopodlab_squid_siphon.test.js::Humboldt squid continuous muscular funnel exposes a genuinely open forward cavity and substantial wall instead of a colored front cap::0",
+      "tests/cephalopodlab_squid_siphon.test.js::Humboldt squid continuous muscular funnel embeds its actual basal attachment vertices in the unchanged rendered head/collar through live poses::0",
+      "tests/cephalopodlab_squid_siphon.test.js::Humboldt squid continuous muscular funnel keeps independent static buffers, tint response and actor-owned disposal through motion and frozen updates::0",
+      "tests/cephalopodlab_squid_siphon.test.js::Humboldt squid continuous muscular funnel preserves every non-siphon Humboldt surface and all eleven complete rigs from measured original b34::0",
+      "tests/cephalopodlab_squid_surface_filter.test.js::Humboldt squid stable pigment finish compiles filtered opaque pigment on every existing skin clone while preserving anatomical palette and root coordinates::0",
+      "tests/cephalopodlab_squid_surface_filter.test.js::Humboldt squid stable pigment finish gates actual derivative support and keeps unsupported renderers free of subpixel grain::0",
+      "tests/cephalopodlab_squid_surface_filter.test.js::Humboldt squid stable pigment finish bounds actual polynomial noise hash across positive and negative animal coordinates without short lattice repeats::0",
+      "tests/cephalopodlab_squid_surface_filter.test.js::Humboldt squid stable pigment finish fades detail monotonically and retains the original resolved pigment and roughness coefficients::0",
+      "tests/cephalopodlab_squid_surface_filter.test.js::Humboldt squid stable pigment finish reuses the root inverse frame and every geometry/material buffer across motion, strike and frozen updates::0"
+    ]
+  },
+  "mutation": {
+    "sourceSHA256": "ab914226985d41cdeaf53e77cc49dfeae64236de5642011dd595bbebfcb83acd",
+    "finalFactorySHA256": "31af4a2d380037ccb02e509a6fec293e49c40ed563dd9430d2000a77b1102eec",
+    "equivalentFinalFactoryVerified": true,
+    "productionNeverEdited": true,
+    "negative": {
+      "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/unit-filter-mutation-final.json",
+      "sha256": "1d38c275fb4a4e1241d913cae51b7819cdeddae70de0f8247d4db8f681d1d74f",
+      "cases": 5,
+      "passed": 4,
+      "failed": 1,
+      "rejectedByFilterBehavior": true,
+      "failures": [
+        {
+          "title": "Humboldt squid stable pigment finish fades detail monotonically and retains the original resolved pigment and roughness coefficients",
+          "failureMessages": [
+            "AssertionError: expected 1 to be +0 // Object.is equality\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/cephalopodlab_squid_surface_filter.test.js:72:77\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2955:64"
+          ]
+        }
+      ]
+    },
+    "positive": {
+      "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/unit-filter-restored-final.json",
+      "sha256": "192a74c838373c078143ba8e24c7198e2a76144b39b3a4b65da9db59a115bd46",
+      "cases": 5,
+      "passed": 5,
+      "failed": 0
+    },
+    "evidenceFile": "reports/cephalopod-hunter-enhancement/pass-twenty-six/mutation-evidence-final.json",
+    "evidenceSHA256": "a6eea2bd992d4254e832ada882ce8419bbc57e809dadc755e3b4c3d17aff88ed"
+  },
+  "native": {
+    "distinctCases": 16,
+    "finalPassingDistinctCases": 16,
+    "finalSourcePassingDistinctCases": 6,
+    "automaticRetries": 0,
+    "skipped": 0,
+    "flaky": 0,
+    "gpuWorkers": 1,
+    "batches": [
+      {
+        "name": "native-initial",
+        "sourceSHA256": "2ee225d0ee429f958977add3b125bb3d38c5386a370076707939bc8b0d303913",
+        "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/native-initial.json",
+        "sha256": "257b5f621515dce44f625be6bd9bd67c0feaed4f2c168744ae35f92abd8347a8",
+        "cases": 16,
+        "passed": 10,
+        "failed": 6,
+        "failures": [
+          {
+            "id": "cephalopod-mobile-experience.spec.ts::::touch controls survive landscape rotation and larger text with the same native world",
+            "title": "touch controls survive landscape rotation and larger text with the same native world",
+            "status": "failed",
+            "messages": [
+              "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m845\u001b[39m\nReceived:    \u001b[31m932.78125\u001b[39m\n\n  114 |   const viewport = page.viewportSize()!;\n  115 |   expect(box.x).toBeGreaterThanOrEqual(0); expect(box.y).toBeGreaterThanOrEqual(0);\n> 116 |   expect(box.x + box.width).toBeLessThanOrEqual(viewport.width + 1); expect(box.y + box.height).toBeLessThanOrEqual(viewport.height + 1);\n      |                                                                                                 ^\n  117 |   return { x: box.x + box.width / 2, y: box.y + box.height / 2, id, radiusX: 3, radiusY: 3, force: 1 };\n  118 | }\n  119 | async function touch(page: Page, type: 'touchStart' | 'touchMove' | 'touchEnd' | 'touchCancel', points: any[] = []) {\n    at point (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\cephalopod-mobile-experience.spec.ts:116:97)\n    at tap (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\cephalopod-mobile-experience.spec.ts:122:81)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\cephalopod-mobile-experience.spec.ts:202:131"
+            ]
+          },
+          {
+            "id": "cephalopod-mobile-experience.spec.ts::::Tools, pause, settings, and inspection interrupt an active finger without resuming its old movement",
+            "title": "Tools, pause, settings, and inspection interrupt an active finger without resuming its old movement",
+            "status": "failed",
+            "messages": [
+              "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m845\u001b[39m\nReceived:    \u001b[31m940.78125\u001b[39m\n\n  114 |   const viewport = page.viewportSize()!;\n  115 |   expect(box.x).toBeGreaterThanOrEqual(0); expect(box.y).toBeGreaterThanOrEqual(0);\n> 116 |   expect(box.x + box.width).toBeLessThanOrEqual(viewport.width + 1); expect(box.y + box.height).toBeLessThanOrEqual(viewport.height + 1);\n      |                                                                                                 ^\n  117 |   return { x: box.x + box.width / 2, y: box.y + box.height / 2, id, radiusX: 3, radiusY: 3, force: 1 };\n  118 | }\n  119 | async function touch(page: Page, type: 'touchStart' | 'touchMove' | 'touchEnd' | 'touchCancel', points: any[] = []) {\n    at point (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\cephalopod-mobile-experience.spec.ts:116:97)\n    at tap (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\cephalopod-mobile-experience.spec.ts:122:81)\n    at play (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\cephalopod-mobile-experience.spec.ts:135:100)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\cephalopod-mobile-experience.spec.ts:241:5"
+            ]
+          },
+          {
+            "id": "cephalopod-mobile-experience.spec.ts::::the mobile world has actual GL pixels, and ending through Tools releases the page-created context",
+            "title": "the mobile world has actual GL pixels, and ending through Tools releases the page-created context",
+            "status": "failed",
+            "messages": [
+              "TimeoutError: page.waitForFunction: Timeout 30000ms exceeded.\n\n  57 |     w.__mount({ cephalopodLab: { activeSection: 'hunt', hunt3DActive: true, huntSpeciesId: species, huntMode: mode, huntSeed: 2741, huntQuality: 'low', _threeLoaded: true } });\n  58 |   }, { species, mode });\n> 59 |   await page.waitForFunction(() => (window as any).__glRecorder.records.some((r: any) => r.scene?.getObjectByName('cl-player') && r.canvas.isConnected && r.draws > 0));\n     |              ^\n  60 |   await step(page, 6);\n  61 |   await page.evaluate(() => window.dispatchEvent(new Event('resize')));\n  62 |   await frames(page, 3);\n    at mount (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\cephalopod-mobile-experience.spec.ts:59:14)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\cephalopod-mobile-experience.spec.ts:254:3"
+            ]
+          },
+          {
+            "id": "cephalopod-mobile-experience.spec.ts::::failed Forage replaces Observe with matching visible and spoken advice, then expires without starting a meal",
+            "title": "failed Forage replaces Observe with matching visible and spoken advice, then expires without starting a meal",
+            "status": "timedOut",
+            "messages": [
+              "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m",
+              "Error: locator.boundingBox: Test timeout of 180000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Observe', exact: true })\u001b[22m\n\n\n  110 | async function point(page: Page, name: string, id: number) {\n  111 |   const button = page.getByRole('button', { name, exact: true });\n> 112 |   await expect(button).toBeVisible(); const box = await button.boundingBox();\n      |                                                                ^\n  113 |   if (!box) throw new Error('Missing native touch bounds: ' + name);\n  114 |   const viewport = page.viewportSize()!;\n  115 |   expect(box.x).toBeGreaterThanOrEqual(0); expect(box.y).toBeGreaterThanOrEqual(0);\n    at point (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\cephalopod-mobile-experience.spec.ts:112:64)\n    at tap (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\cephalopod-mobile-experience.spec.ts:122:81)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\cephalopod-mobile-experience.spec.ts:278:28"
+            ]
+          },
+          {
+            "id": "cephalopod-squid-surfaces.spec.ts::::low squid pigment renders through motion, jet, inspection and reduced motion without new resources",
+            "title": "low squid pigment renders through motion, jet, inspection and reduced motion without new resources",
+            "status": "failed",
+            "messages": [
+              "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected substring: \u001b[32m\"clSurfaceFrame * modelMatrix * vec4(position,1.0)\"\u001b[39m\nReceived string:    \u001b[31m\"#version 300 es\u001b[39m\n\u001b[31m#define attribute in\u001b[39m\n\u001b[31m#define varying out\u001b[39m\n\u001b[31m#define texture2D texture\u001b[39m\n\u001b[31mprecision highp float;\u001b[39m\n\u001b[31mprecision highp int;\u001b[39m\n\u001b[31m#define HIGH_PRECISION\u001b[39m\n\u001b[31m#define SHADER_NAME MeshStandardMaterial\u001b[39m\n\u001b[31m#define STANDARD·\u001b[39m\n\u001b[31m#define USE_INSTANCING\u001b[39m\n\u001b[31m#define VERTEX_TEXTURES\u001b[39m\n\u001b[31m#define GAMMA_FACTOR 2\u001b[39m\n\u001b[31m#define MAX_BONES 0\u001b[39m\n\u001b[31m#define USE_FOG\u001b[39m\n\u001b[31m#define USE_COLOR\u001b[39m\n\u001b[31m#define BONE_TEXTURE\u001b[39m\n\u001b[31m#define DOUBLE_SIDED\u001b[39m\n\u001b[31muniform mat4 modelMatrix;\u001b[39m\n\u001b[31muniform mat4 modelViewMatrix;\u001b[39m\n\u001b[31muniform mat4 projectionMatrix;\u001b[39m\n\u001b[31muniform mat4 viewMatrix;\u001b[39m\n\u001b[31muniform mat3 normalMatrix;\u001b[39m\n\u001b[31muniform vec3 cameraPosition;\u001b[39m\n\u001b[31muniform bool isOrthographic;\u001b[39m\n\u001b[31m#ifdef USE_INSTANCING\u001b[39m\n\u001b[31m\tattribute mat4 instanceMatrix;\u001b[39m\n\u001b[31m#endif\u001b[39m\n\u001b[31m#ifdef USE_INSTANCING_COLOR\u001b[39m\n\u001b[31m\tattribute vec3 instanceColor;\u001b[39m\n\u001b[31m#endif\u001b[39m\n\u001b[31mattribute vec3 position;\u001b[39m\n\u001b[31mattribute vec3 normal;\u001b[39m\n\u001b[31mattribute vec2 uv;\u001b[39m\n\u001b[31m#ifdef USE_TANGENT\u001b[39m\n\u001b[31m\tattribute vec4 tangent;\u001b[39m\n\u001b[31m#endif\u001b[39m\n\u001b[31m#if defined( USE_COLOR_ALPHA )\u001b[39m\n\u001b[31m\tattribute vec4 color;\u001b[39m\n\u001b[31m#elif defined( USE_COLOR )\u001b[39m\n\u001b[31m\tattribute vec3 color;\u001b[39m\n\u001b[31m#endif\u001b[39m\n\u001b[31m#ifdef USE_MORPHTARGETS\u001b[39m\n\u001b[31m\tattribu",
+              "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -    1\u001b[39m\n\u001b[31m+ Received  + 2767\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"THREE.WebGLProgram: shader error:  0 35715 false gl.getProgramInfoLog Fragment shader is not compiled.\u001b[39m\n\u001b[31m+ \u0000  THREE.WebGLShader: gl.getShaderInfoLog() fragment\u001b[39m\n\u001b[31m+ ERROR: 0:245: 'patch' : Illegal use of reserved word\u001b[39m\n\u001b[31m+ ERROR: 0:245: 'patch' : syntax error\u001b[39m\n\u001b[31m+ \u00001: #version 300 es\u001b[39m\n\u001b[31m+ 2: #define varying in\u001b[39m\n\u001b[31m+ 3: out highp vec4 pc_fragColor;\u001b[39m\n\u001b[31m+ 4: #define gl_FragColor pc_fragColor\u001b[39m\n\u001b[31m+ 5: #define gl_FragDepthEXT gl_FragDepth\u001b[39m\n\u001b[31m+ 6: #define texture2D texture\u001b[39m\n\u001b[31m+ 7: #define textureCube texture\u001b[39m\n\u001b[31m+ 8: #define texture2DProj textureProj\u001b[39m\n\u001b[31m+ 9: #define texture2DLodEXT textureLod\u001b[39m\n\u001b[31m+ 10: #define texture2DProjLodEXT textureProjLod\u001b[39m\n\u001b[31m+ 11: #define textureCubeLodEXT textureLod\u001b[39m\n\u001b[31m+ 12: #define texture2DGradEXT textureGrad\u001b[39m\n\u001b[31m+ 13: #define texture2DProjGradEXT textureProjGrad\u001b[39m\n\u001b[31m+ 14: #define textureCubeGradEXT textureGrad\u001b[39m\n\u001b[31m+ 15: precision highp float;\u001b[39m\n\u001b[31m+ 16: precision highp int;\u001b[39m\n\u001b[31m+ 17: #define HIGH_PRECISION\u001b[39m\n\u001b[31m+ 18: #define SHADER_NAME MeshStandardMaterial\u001b[39m\n\u001b[31m+ 19: #define STANDARD \u001b[39m\n\u001b[31m+ 20: #define GAMMA_FACTOR 2\u001b[39m\n\u001b[31m+ 21: #define USE_FOG\u001b[39m\n\u001b[31m+ 22: uniform mat4 viewMatrix;\u001b[39m\n\u001b[31m+ 23: uniform vec3 cameraPosition;\u001b[39m\n\u001b[31m+ 24: uniform bool isOrthographic;\u001b[39m\n\u001b[31"
+            ]
+          },
+          {
+            "id": "cephalopod-squid-surfaces.spec.ts::::balanced squid pigment renders through motion, jet, inspection and reduced motion without new resources",
+            "title": "balanced squid pigment renders through motion, jet, inspection and reduced motion without new resources",
+            "status": "failed",
+            "messages": [
+              "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected substring: \u001b[32m\"clSurfaceFrame * modelMatrix * vec4(position,1.0)\"\u001b[39m\nReceived string:    \u001b[31m\"#version 300 es\u001b[39m\n\u001b[31m#define attribute in\u001b[39m\n\u001b[31m#define varying out\u001b[39m\n\u001b[31m#define texture2D texture\u001b[39m\n\u001b[31mprecision highp float;\u001b[39m\n\u001b[31mprecision highp int;\u001b[39m\n\u001b[31m#define HIGH_PRECISION\u001b[39m\n\u001b[31m#define SHADER_NAME MeshStandardMaterial\u001b[39m\n\u001b[31m#define STANDARD·\u001b[39m\n\u001b[31m#define USE_INSTANCING\u001b[39m\n\u001b[31m#define VERTEX_TEXTURES\u001b[39m\n\u001b[31m#define GAMMA_FACTOR 2\u001b[39m\n\u001b[31m#define MAX_BONES 0\u001b[39m\n\u001b[31m#define USE_FOG\u001b[39m\n\u001b[31m#define USE_COLOR\u001b[39m\n\u001b[31m#define BONE_TEXTURE\u001b[39m\n\u001b[31m#define DOUBLE_SIDED\u001b[39m\n\u001b[31m#define USE_SHADOWMAP\u001b[39m\n\u001b[31m#define SHADOWMAP_TYPE_PCF_SOFT\u001b[39m\n\u001b[31muniform mat4 modelMatrix;\u001b[39m\n\u001b[31muniform mat4 modelViewMatrix;\u001b[39m\n\u001b[31muniform mat4 projectionMatrix;\u001b[39m\n\u001b[31muniform mat4 viewMatrix;\u001b[39m\n\u001b[31muniform mat3 normalMatrix;\u001b[39m\n\u001b[31muniform vec3 cameraPosition;\u001b[39m\n\u001b[31muniform bool isOrthographic;\u001b[39m\n\u001b[31m#ifdef USE_INSTANCING\u001b[39m\n\u001b[31m\tattribute mat4 instanceMatrix;\u001b[39m\n\u001b[31m#endif\u001b[39m\n\u001b[31m#ifdef USE_INSTANCING_COLOR\u001b[39m\n\u001b[31m\tattribute vec3 instanceColor;\u001b[39m\n\u001b[31m#endif\u001b[39m\n\u001b[31mattribute vec3 position;\u001b[39m\n\u001b[31mattribute vec3 normal;\u001b[39m\n\u001b[31mattribute vec2 uv;\u001b[39m\n\u001b[31m#ifdef USE_TANGENT\u001b[39m\n\u001b[31m\tattribute vec4 tangent;\u001b[39m\n\u001b[31m#endif\u001b[39m\n\u001b[31m#if defined( USE_COLOR_ALPHA )\u001b[39m\n\u001b[31m\tattribute vec4 color;\u001b[39m\n\u001b[31m#elif defined( USE_COLOR )\u001b[39m\n\u001b[31m\tattribute vec3 co",
+              "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -    1\u001b[39m\n\u001b[31m+ Received  + 2771\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"THREE.WebGLProgram: shader error:  0 35715 false gl.getProgramInfoLog Fragment shader is not compiled.\u001b[39m\n\u001b[31m+ \u0000  THREE.WebGLShader: gl.getShaderInfoLog() fragment\u001b[39m\n\u001b[31m+ ERROR: 0:247: 'patch' : Illegal use of reserved word\u001b[39m\n\u001b[31m+ ERROR: 0:247: 'patch' : syntax error\u001b[39m\n\u001b[31m+ \u00001: #version 300 es\u001b[39m\n\u001b[31m+ 2: #define varying in\u001b[39m\n\u001b[31m+ 3: out highp vec4 pc_fragColor;\u001b[39m\n\u001b[31m+ 4: #define gl_FragColor pc_fragColor\u001b[39m\n\u001b[31m+ 5: #define gl_FragDepthEXT gl_FragDepth\u001b[39m\n\u001b[31m+ 6: #define texture2D texture\u001b[39m\n\u001b[31m+ 7: #define textureCube texture\u001b[39m\n\u001b[31m+ 8: #define texture2DProj textureProj\u001b[39m\n\u001b[31m+ 9: #define texture2DLodEXT textureLod\u001b[39m\n\u001b[31m+ 10: #define texture2DProjLodEXT textureProjLod\u001b[39m\n\u001b[31m+ 11: #define textureCubeLodEXT textureLod\u001b[39m\n\u001b[31m+ 12: #define texture2DGradEXT textureGrad\u001b[39m\n\u001b[31m+ 13: #define texture2DProjGradEXT textureProjGrad\u001b[39m\n\u001b[31m+ 14: #define textureCubeGradEXT textureGrad\u001b[39m\n\u001b[31m+ 15: precision highp float;\u001b[39m\n\u001b[31m+ 16: precision highp int;\u001b[39m\n\u001b[31m+ 17: #define HIGH_PRECISION\u001b[39m\n\u001b[31m+ 18: #define SHADER_NAME MeshStandardMaterial\u001b[39m\n\u001b[31m+ 19: #define STANDARD \u001b[39m\n\u001b[31m+ 20: #define GAMMA_FACTOR 2\u001b[39m\n\u001b[31m+ 21: #define USE_FOG\u001b[39m\n\u001b[31m+ 22: #define USE_SHADOWMAP\u001b[39m\n\u001b[31m+ 23: #define SHADOWMAP_TYPE_PCF_SOFT\u001b[39m\n\u001b[31m+ 24: uniform mat4 viewMatrix;\u001b[39m\n\u001b[31m+ 2"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "native-intermediate",
+        "sourceSHA256": "ab914226985d41cdeaf53e77cc49dfeae64236de5642011dd595bbebfcb83acd",
+        "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/native-intermediate.json",
+        "sha256": "c0c93e0e364265fc15ab42373e581656918ec61a0fcbac36fa64001e9ea286ad",
+        "cases": 6,
+        "passed": 0,
+        "failed": 6,
+        "failures": [
+          {
+            "id": "cephalopod-mobile-experience.spec.ts::::touch controls survive landscape rotation and larger text with the same native world",
+            "title": "touch controls survive landscape rotation and larger text with the same native world",
+            "status": "failed",
+            "messages": [
+              "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m845\u001b[39m\nReceived:    \u001b[31m877.78125\u001b[39m\n\n  114 |   const viewport = page.viewportSize()!;\n  115 |   expect(box.x).toBeGreaterThanOrEqual(0); expect(box.y).toBeGreaterThanOrEqual(0);\n> 116 |   expect(box.x + box.width).toBeLessThanOrEqual(viewport.width + 1); expect(box.y + box.height).toBeLessThanOrEqual(viewport.height + 1);\n      |                                                                                                 ^\n  117 |   return { x: box.x + box.width / 2, y: box.y + box.height / 2, id, radiusX: 3, radiusY: 3, force: 1 };\n  118 | }\n  119 | async function touch(page: Page, type: 'touchStart' | 'touchMove' | 'touchEnd' | 'touchCancel', points: any[] = []) {\n    at point (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\cephalopod-mobile-experience.spec.ts:116:97)\n    at tap (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\cephalopod-mobile-experience.spec.ts:122:81)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\cephalopod-mobile-experience.spec.ts:202:131"
+            ]
+          },
+          {
+            "id": "cephalopod-mobile-experience.spec.ts::::Tools, pause, settings, and inspection interrupt an active finger without resuming its old movement",
+            "title": "Tools, pause, settings, and inspection interrupt an active finger without resuming its old movement",
+            "status": "failed",
+            "messages": [
+              "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m845\u001b[39m\nReceived:    \u001b[31m877.78125\u001b[39m\n\n  114 |   const viewport = page.viewportSize()!;\n  115 |   expect(box.x).toBeGreaterThanOrEqual(0); expect(box.y).toBeGreaterThanOrEqual(0);\n> 116 |   expect(box.x + box.width).toBeLessThanOrEqual(viewport.width + 1); expect(box.y + box.height).toBeLessThanOrEqual(viewport.height + 1);\n      |                                                                                                 ^\n  117 |   return { x: box.x + box.width / 2, y: box.y + box.height / 2, id, radiusX: 3, radiusY: 3, force: 1 };\n  118 | }\n  119 | async function touch(page: Page, type: 'touchStart' | 'touchMove' | 'touchEnd' | 'touchCancel', points: any[] = []) {\n    at point (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\cephalopod-mobile-experience.spec.ts:116:97)\n    at tap (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\cephalopod-mobile-experience.spec.ts:122:81)\n    at play (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\cephalopod-mobile-experience.spec.ts:135:100)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\cephalopod-mobile-experience.spec.ts:241:5"
+            ]
+          },
+          {
+            "id": "cephalopod-mobile-experience.spec.ts::::the mobile world has actual GL pixels, and ending through Tools releases the page-created context",
+            "title": "the mobile world has actual GL pixels, and ending through Tools releases the page-created context",
+            "status": "failed",
+            "messages": [
+              "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m845\u001b[39m\nReceived:    \u001b[31m877.78125\u001b[39m\n\n  114 |   const viewport = page.viewportSize()!;\n  115 |   expect(box.x).toBeGreaterThanOrEqual(0); expect(box.y).toBeGreaterThanOrEqual(0);\n> 116 |   expect(box.x + box.width).toBeLessThanOrEqual(viewport.width + 1); expect(box.y + box.height).toBeLessThanOrEqual(viewport.height + 1);\n      |                                                                                                 ^\n  117 |   return { x: box.x + box.width / 2, y: box.y + box.height / 2, id, radiusX: 3, radiusY: 3, force: 1 };\n  118 | }\n  119 | async function touch(page: Page, type: 'touchStart' | 'touchMove' | 'touchEnd' | 'touchCancel', points: any[] = []) {\n    at point (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\cephalopod-mobile-experience.spec.ts:116:97)\n    at tap (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\cephalopod-mobile-experience.spec.ts:122:81)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\cephalopod-mobile-experience.spec.ts:257:56"
+            ]
+          },
+          {
+            "id": "cephalopod-mobile-experience.spec.ts::::failed Forage replaces Observe with matching visible and spoken advice, then expires without starting a meal",
+            "title": "failed Forage replaces Observe with matching visible and spoken advice, then expires without starting a meal",
+            "status": "failed",
+            "messages": [
+              "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m845\u001b[39m\nReceived:    \u001b[31m877.78125\u001b[39m\n\n  114 |   const viewport = page.viewportSize()!;\n  115 |   expect(box.x).toBeGreaterThanOrEqual(0); expect(box.y).toBeGreaterThanOrEqual(0);\n> 116 |   expect(box.x + box.width).toBeLessThanOrEqual(viewport.width + 1); expect(box.y + box.height).toBeLessThanOrEqual(viewport.height + 1);\n      |                                                                                                 ^\n  117 |   return { x: box.x + box.width / 2, y: box.y + box.height / 2, id, radiusX: 3, radiusY: 3, force: 1 };\n  118 | }\n  119 | async function touch(page: Page, type: 'touchStart' | 'touchMove' | 'touchEnd' | 'touchCancel', points: any[] = []) {\n    at point (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\cephalopod-mobile-experience.spec.ts:116:97)\n    at tap (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\cephalopod-mobile-experience.spec.ts:122:81)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\cephalopod-mobile-experience.spec.ts:313:7"
+            ]
+          },
+          {
+            "id": "cephalopod-squid-surfaces.spec.ts::::low squid pigment renders through motion, jet, inspection and reduced motion without new resources",
+            "title": "low squid pigment renders through motion, jet, inspection and reduced motion without new resources",
+            "status": "failed",
+            "messages": [
+              "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Inspect [F]', exact: true })\u001b[22m\n\n\n  244 |     expect(jet.bodyPose).not.toEqual(moved.bodyPose); expectStable(jet, initial); expectSamples(jetSamples);\n  245 |     await page.keyboard.up('Space'); await page.keyboard.up('KeyW'); await advance(page, 3);\n> 246 |     await page.getByRole('button', { name: 'Inspect [F]', exact: true }).click();\n      |                                                                          ^\n  247 |     const inspected = await state(page), inspectedSamples = await samples(page); await advance(page, 5);\n  248 |     const paused = await state(page); expect(paused.bodyPose).toEqual(inspected.bodyPose); expect(paused.rootWorld).toEqual(inspected.rootWorld);\n  249 |     expect(paused.legacy).toEqual(inspected.legacy); expectStable(paused, initial);\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\cephalopod-squid-surfaces.spec.ts:246:74"
+            ]
+          },
+          {
+            "id": "cephalopod-squid-surfaces.spec.ts::::balanced squid pigment renders through motion, jet, inspection and reduced motion without new resources",
+            "title": "balanced squid pigment renders through motion, jet, inspection and reduced motion without new resources",
+            "status": "failed",
+            "messages": [
+              "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Inspect [F]', exact: true })\u001b[22m\n\n\n  244 |     expect(jet.bodyPose).not.toEqual(moved.bodyPose); expectStable(jet, initial); expectSamples(jetSamples);\n  245 |     await page.keyboard.up('Space'); await page.keyboard.up('KeyW'); await advance(page, 3);\n> 246 |     await page.getByRole('button', { name: 'Inspect [F]', exact: true }).click();\n      |                                                                          ^\n  247 |     const inspected = await state(page), inspectedSamples = await samples(page); await advance(page, 5);\n  248 |     const paused = await state(page); expect(paused.bodyPose).toEqual(inspected.bodyPose); expect(paused.rootWorld).toEqual(inspected.rootWorld);\n  249 |     expect(paused.legacy).toEqual(inspected.legacy); expectStable(paused, initial);\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\cephalopod-squid-surfaces.spec.ts:246:74"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "native-layout-final",
+        "sourceSHA256": "4f69e86395eb9eaa940e6aeffe84f9fa52fe7af8b51a91e58a826678be6676c6",
+        "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/native-layout-final.json",
+        "sha256": "52f29e922af97c747bd024b512e9c21c79ed836cde7357376d9aa4efdc344c6f",
+        "cases": 6,
+        "passed": 4,
+        "failed": 2,
+        "failures": [
+          {
+            "id": "cephalopod-squid-surfaces.spec.ts::::low squid pigment renders through motion, jet, inspection and reduced motion without new resources",
+            "title": "low squid pigment renders through motion, jet, inspection and reduced motion without new resources",
+            "status": "failed",
+            "messages": [
+              "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Inspect [F]', exact: true })\u001b[22m\n\n\n  244 |     expect(jet.bodyPose).not.toEqual(moved.bodyPose); expectStable(jet, initial); expectSamples(jetSamples);\n  245 |     await page.keyboard.up('Space'); await page.keyboard.up('KeyW'); await advance(page, 3);\n> 246 |     await page.getByRole('button', { name: 'Inspect [F]', exact: true }).click();\n      |                                                                          ^\n  247 |     const inspected = await state(page), inspectedSamples = await samples(page); await advance(page, 5);\n  248 |     const paused = await state(page); expect(paused.bodyPose).toEqual(inspected.bodyPose); expect(paused.rootWorld).toEqual(inspected.rootWorld);\n  249 |     expect(paused.legacy).toEqual(inspected.legacy); expectStable(paused, initial);\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\cephalopod-squid-surfaces.spec.ts:246:74"
+            ]
+          },
+          {
+            "id": "cephalopod-squid-surfaces.spec.ts::::balanced squid pigment renders through motion, jet, inspection and reduced motion without new resources",
+            "title": "balanced squid pigment renders through motion, jet, inspection and reduced motion without new resources",
+            "status": "failed",
+            "messages": [
+              "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Inspect [F]', exact: true })\u001b[22m\n\n\n  244 |     expect(jet.bodyPose).not.toEqual(moved.bodyPose); expectStable(jet, initial); expectSamples(jetSamples);\n  245 |     await page.keyboard.up('Space'); await page.keyboard.up('KeyW'); await advance(page, 3);\n> 246 |     await page.getByRole('button', { name: 'Inspect [F]', exact: true }).click();\n      |                                                                          ^\n  247 |     const inspected = await state(page), inspectedSamples = await samples(page); await advance(page, 5);\n  248 |     const paused = await state(page); expect(paused.bodyPose).toEqual(inspected.bodyPose); expect(paused.rootWorld).toEqual(inspected.rootWorld);\n  249 |     expect(paused.legacy).toEqual(inspected.legacy); expectStable(paused, initial);\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\cephalopod-squid-surfaces.spec.ts:246:74"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "native-final",
+        "sourceSHA256": "4f69e86395eb9eaa940e6aeffe84f9fa52fe7af8b51a91e58a826678be6676c6",
+        "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/native-final.json",
+        "sha256": "835981258a88e454b301414aadb0b11865374385ddc337045e12fc0ed6313336",
+        "cases": 2,
+        "passed": 2,
+        "failed": 0
+      }
+    ],
+    "cases": [
+      {
+        "id": "cephalopod-foraging-strike.spec.ts::::R opens exactly one clam without holding a key and exposes its progress",
+        "file": "cephalopod-foraging-strike.spec.ts",
+        "title": "R opens exactly one clam without holding a key and exposes its progress",
+        "status": "passed",
+        "passingSourceSHA256": "2ee225d0ee429f958977add3b125bb3d38c5386a370076707939bc8b0d303913",
+        "passingBatch": "native-initial"
+      },
+      {
+        "id": "cephalopod-foraging-strike.spec.ts::::movement and pausing cancel a latched meal and resume never restarts it",
+        "file": "cephalopod-foraging-strike.spec.ts",
+        "title": "movement and pausing cancel a latched meal and resume never restarts it",
+        "status": "passed",
+        "passingSourceSHA256": "2ee225d0ee429f958977add3b125bb3d38c5386a370076707939bc8b0d303913",
+        "passingBatch": "native-initial"
+      },
+      {
+        "id": "cephalopod-foraging-strike.spec.ts::::the forage button gathers a single marine-snow meal for vampire squid",
+        "file": "cephalopod-foraging-strike.spec.ts",
+        "title": "the forage button gathers a single marine-snow meal for vampire squid",
+        "status": "passed",
+        "passingSourceSHA256": "2ee225d0ee429f958977add3b125bb3d38c5386a370076707939bc8b0d303913",
+        "passingBatch": "native-initial"
+      },
+      {
+        "id": "cephalopod-foraging-strike.spec.ts::::a pending strike waits through pause and captures only after simulation-time contact",
+        "file": "cephalopod-foraging-strike.spec.ts",
+        "title": "a pending strike waits through pause and captures only after simulation-time contact",
+        "status": "passed",
+        "passingSourceSHA256": "2ee225d0ee429f958977add3b125bb3d38c5386a370076707939bc8b0d303913",
+        "passingBatch": "native-initial"
+      },
+      {
+        "id": "cephalopod-foraging-strike.spec.ts::::prey that escapes or gains rock cover during wind-up survives contact",
+        "file": "cephalopod-foraging-strike.spec.ts",
+        "title": "prey that escapes or gains rock cover during wind-up survives contact",
+        "status": "passed",
+        "passingSourceSHA256": "2ee225d0ee429f958977add3b125bb3d38c5386a370076707939bc8b0d303913",
+        "passingBatch": "native-initial"
+      },
+      {
+        "id": "cephalopod-foraging-strike.spec.ts::::crab target readiness and capture agree at the horizontal reach boundary",
+        "file": "cephalopod-foraging-strike.spec.ts",
+        "title": "crab target readiness and capture agree at the horizontal reach boundary",
+        "status": "passed",
+        "passingSourceSHA256": "2ee225d0ee429f958977add3b125bb3d38c5386a370076707939bc8b0d303913",
+        "passingBatch": "native-initial"
+      },
+      {
+        "id": "cephalopod-foraging-strike.spec.ts::::cuttlefish display interrupts a nearby school alarm and fleeing resumes after release",
+        "file": "cephalopod-foraging-strike.spec.ts",
+        "title": "cuttlefish display interrupts a nearby school alarm and fleeing resumes after release",
+        "status": "passed",
+        "passingSourceSHA256": "2ee225d0ee429f958977add3b125bb3d38c5386a370076707939bc8b0d303913",
+        "passingBatch": "native-initial"
+      },
+      {
+        "id": "cephalopod-mobile-experience.spec.ts::::portrait controls fit after one supported whole-stage entry scroll at 320 and 390 without individual action scrolling",
+        "file": "cephalopod-mobile-experience.spec.ts",
+        "title": "portrait controls fit after one supported whole-stage entry scroll at 320 and 390 without individual action scrolling",
+        "status": "passed",
+        "passingSourceSHA256": "2ee225d0ee429f958977add3b125bb3d38c5386a370076707939bc8b0d303913",
+        "passingBatch": "native-initial"
+      },
+      {
+        "id": "cephalopod-mobile-experience.spec.ts::::touch controls survive landscape rotation and larger text with the same native world",
+        "file": "cephalopod-mobile-experience.spec.ts",
+        "title": "touch controls survive landscape rotation and larger text with the same native world",
+        "status": "passed",
+        "passingSourceSHA256": "4f69e86395eb9eaa940e6aeffe84f9fa52fe7af8b51a91e58a826678be6676c6",
+        "passingBatch": "native-layout-final"
+      },
+      {
+        "id": "cephalopod-mobile-experience.spec.ts::::native touch release and cancellation stop movement, while two fingers combine Forward and Jet",
+        "file": "cephalopod-mobile-experience.spec.ts",
+        "title": "native touch release and cancellation stop movement, while two fingers combine Forward and Jet",
+        "status": "passed",
+        "passingSourceSHA256": "2ee225d0ee429f958977add3b125bb3d38c5386a370076707939bc8b0d303913",
+        "passingBatch": "native-initial"
+      },
+      {
+        "id": "cephalopod-mobile-experience.spec.ts::::Tools, pause, settings, and inspection interrupt an active finger without resuming its old movement",
+        "file": "cephalopod-mobile-experience.spec.ts",
+        "title": "Tools, pause, settings, and inspection interrupt an active finger without resuming its old movement",
+        "status": "passed",
+        "passingSourceSHA256": "4f69e86395eb9eaa940e6aeffe84f9fa52fe7af8b51a91e58a826678be6676c6",
+        "passingBatch": "native-layout-final"
+      },
+      {
+        "id": "cephalopod-mobile-experience.spec.ts::::the mobile world has actual GL pixels, and ending through Tools releases the page-created context",
+        "file": "cephalopod-mobile-experience.spec.ts",
+        "title": "the mobile world has actual GL pixels, and ending through Tools releases the page-created context",
+        "status": "passed",
+        "passingSourceSHA256": "4f69e86395eb9eaa940e6aeffe84f9fa52fe7af8b51a91e58a826678be6676c6",
+        "passingBatch": "native-layout-final"
+      },
+      {
+        "id": "cephalopod-mobile-experience.spec.ts::::failed Forage replaces Observe with matching visible and spoken advice, then expires without starting a meal",
+        "file": "cephalopod-mobile-experience.spec.ts",
+        "title": "failed Forage replaces Observe with matching visible and spoken advice, then expires without starting a meal",
+        "status": "passed",
+        "passingSourceSHA256": "4f69e86395eb9eaa940e6aeffe84f9fa52fe7af8b51a91e58a826678be6676c6",
+        "passingBatch": "native-layout-final"
+      },
+      {
+        "id": "cephalopod-mobile-experience.spec.ts::::an uncommitted native touch strike names the visible Target action without feeding or changing score",
+        "file": "cephalopod-mobile-experience.spec.ts",
+        "title": "an uncommitted native touch strike names the visible Target action without feeding or changing score",
+        "status": "passed",
+        "passingSourceSHA256": "2ee225d0ee429f958977add3b125bb3d38c5386a370076707939bc8b0d303913",
+        "passingBatch": "native-initial"
+      },
+      {
+        "id": "cephalopod-squid-surfaces.spec.ts::::low squid pigment renders through motion, jet, inspection and reduced motion without new resources",
+        "file": "cephalopod-squid-surfaces.spec.ts",
+        "title": "low squid pigment renders through motion, jet, inspection and reduced motion without new resources",
+        "status": "passed",
+        "passingSourceSHA256": "4f69e86395eb9eaa940e6aeffe84f9fa52fe7af8b51a91e58a826678be6676c6",
+        "passingBatch": "native-final"
+      },
+      {
+        "id": "cephalopod-squid-surfaces.spec.ts::::balanced squid pigment renders through motion, jet, inspection and reduced motion without new resources",
+        "file": "cephalopod-squid-surfaces.spec.ts",
+        "title": "balanced squid pigment renders through motion, jet, inspection and reduced motion without new resources",
+        "status": "passed",
+        "passingSourceSHA256": "4f69e86395eb9eaa940e6aeffe84f9fa52fe7af8b51a91e58a826678be6676c6",
+        "passingBatch": "native-final"
+      }
+    ],
+    "sourceAttribution": "Ten retained passes belong to the original 2ee source. Four corrected mobile cases pass in native-layout-final and the two corrected skin cases pass in native-final, all six on final 4f69e86395eb9eaa940e6aeffe84f9fa52fe7af8b51a91e58a826678be6676c6. The two earlier skin failures remain recorded. This does not claim a fresh 16-case run on the final source."
+  },
+  "captures": {
+    "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/squid-surface-comparison/mobile-world-comparison.json",
+    "sha256": "d60db6caff218f97a506a27357c0aa406f64947928170f149904aaa124134b37",
+    "pairs": 4,
+    "freshCaptures": 8,
+    "images": 16,
+    "worldCameraStateExactlyMatched": true,
+    "allPixelsNonblank": true,
+    "allProductionContextsReleasedBeforeHarnessCleanup": true,
+    "baselineSHA256": "a2c72a41312e97f9d8e35dde908b35476b2158e1b83adc409d4bc0e77cdbe5a2",
+    "currentSHA256": "4f69e86395eb9eaa940e6aeffe84f9fa52fe7af8b51a91e58a826678be6676c6",
+    "profiles": [
+      "squid-follow",
+      "squid-phone",
+      "squid-inspection",
+      "squid-phone-inspection"
+    ]
+  },
+  "visualReview": {
+    "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/visual-review.json",
+    "sha256": "84bd511dca808e99166075b4693ac8b97969460225d8644f18de61ca2fe77b04",
+    "accepted": true,
+    "rootReviewed": true,
+    "agentReviewed": true,
+    "profiles": [
+      {
+        "name": "squid-follow",
+        "accepted": true,
+        "notes": "Reduced mantle and fin speckle; central highlight, taper, arms, shadow and habitat positions remain preserved. The improvement is restrained."
+      },
+      {
+        "name": "squid-phone",
+        "accepted": true,
+        "notes": "Fine grain resolves more cleanly at low phone resolution. Fin edges and central highlight remain legible; phone controls retain their layout."
+      },
+      {
+        "name": "squid-inspection",
+        "accepted": true,
+        "notes": "Close inspection shows reduced mantle and fin grain while eye rim, sucker rows, feeding tentacles, broad highlights and environmental caustics remain visible."
+      },
+      {
+        "name": "squid-phone-inspection",
+        "accepted": true,
+        "notes": "Narrow inspection retains the outline, eye, suckers and highlight with smoother pigment. Inspection controls remain reachable."
+      }
+    ],
+    "captureEvidence": {
+      "baselineSHA256": "a2c72a41312e97f9d8e35dde908b35476b2158e1b83adc409d4bc0e77cdbe5a2",
+      "currentSHA256": "4f69e86395eb9eaa940e6aeffe84f9fa52fe7af8b51a91e58a826678be6676c6",
+      "reportSHA256": "d60db6caff218f97a506a27357c0aa406f64947928170f149904aaa124134b37",
+      "images": [
+        {
+          "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/squid-surface-comparison/baseline-squid-follow.png",
+          "sha256": "474bf3e53b0aafb0e4e53d26cbf495237053c829e773c3a8adadc5415b8a0976",
+          "bytes": 1194960,
+          "width": 1280,
+          "height": 1000
+        },
+        {
+          "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/squid-surface-comparison/baseline-squid-follow-gl.png",
+          "sha256": "ccaa474bdd09a8347f383722f0fe1c88bf986f6cf7d040b38ec633d96678b202",
+          "bytes": 670310,
+          "width": 1200,
+          "height": 708
+        },
+        {
+          "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/squid-surface-comparison/current-squid-follow.png",
+          "sha256": "23a09301c88c0969b7b32d70c6893afad95a3fa9eb88650ba06f642eae25dc57",
+          "bytes": 1189279,
+          "width": 1280,
+          "height": 1000
+        },
+        {
+          "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/squid-surface-comparison/current-squid-follow-gl.png",
+          "sha256": "065176d2d32d69b81f4cf5be9041b58acf0394e91597107cc0857e4d8da56f91",
+          "bytes": 663832,
+          "width": 1200,
+          "height": 708
+        },
+        {
+          "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/squid-surface-comparison/baseline-squid-phone.png",
+          "sha256": "753a6e5d0921fca240df9851a03e0dbe23fdffb55b15285d3087791a06493db6",
+          "bytes": 332865,
+          "width": 390,
+          "height": 844
+        },
+        {
+          "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/squid-surface-comparison/baseline-squid-phone-gl.png",
+          "sha256": "a81132e8fb684c421b7ae79700f7aed0863ebe67f4bc096fb208e764c2cdb44d",
+          "bytes": 183238,
+          "width": 350,
+          "height": 596
+        },
+        {
+          "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/squid-surface-comparison/current-squid-phone.png",
+          "sha256": "5a2d4d09fd33e0b2e11729f9033d66b29187e22e8543ab2aee353288d2664ba4",
+          "bytes": 327867,
+          "width": 390,
+          "height": 844
+        },
+        {
+          "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/squid-surface-comparison/current-squid-phone-gl.png",
+          "sha256": "695732fbff859786523a4ea22c948e9d31ce9059c95d0f951f5aea0dbe199401",
+          "bytes": 177837,
+          "width": 350,
+          "height": 596
+        },
+        {
+          "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/squid-surface-comparison/baseline-squid-inspection.png",
+          "sha256": "9746a0725ab991ef8ab8aa32bb4f62726718ff96181fad91dcaa3279a5597b2a",
+          "bytes": 1033880,
+          "width": 1280,
+          "height": 1000
+        },
+        {
+          "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/squid-surface-comparison/baseline-squid-inspection-gl.png",
+          "sha256": "599d18d00c298b97336fe6098391e760a772c2ffc07263cae81194704cd3518b",
+          "bytes": 431072,
+          "width": 1200,
+          "height": 708
+        },
+        {
+          "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/squid-surface-comparison/current-squid-inspection.png",
+          "sha256": "cc057fc9e52bdf9ae805c2d2f6d6acd34f0dddbca97effa471f09f8e539bee73",
+          "bytes": 1009687,
+          "width": 1280,
+          "height": 1000
+        },
+        {
+          "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/squid-surface-comparison/current-squid-inspection-gl.png",
+          "sha256": "bc2e6d26ad5ee060d76abd376b6b9a6678937e2a8742721b1e6e4a3c778e81df",
+          "bytes": 406323,
+          "width": 1200,
+          "height": 708
+        },
+        {
+          "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/squid-surface-comparison/baseline-squid-phone-inspection.png",
+          "sha256": "ab3a1b0dc3cc6e8bb00f0137f03db10cafb2688bac117f291d9347201fb6bc35",
+          "bytes": 311837,
+          "width": 390,
+          "height": 844
+        },
+        {
+          "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/squid-surface-comparison/baseline-squid-phone-inspection-gl.png",
+          "sha256": "4ba06109b5cd8d735f4e2816cf46b8c433cf71b991d21ea9fbad0d4a15f552d6",
+          "bytes": 122116,
+          "width": 350,
+          "height": 596
+        },
+        {
+          "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/squid-surface-comparison/current-squid-phone-inspection.png",
+          "sha256": "62cdfcbc6003fb88d65ec7e82812e1a0c7ca29d3fdddb469e061499964cd921e",
+          "bytes": 307478,
+          "width": 390,
+          "height": 844
+        },
+        {
+          "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/squid-surface-comparison/current-squid-phone-inspection-gl.png",
+          "sha256": "1c0ad52b6e90747f71335f92c78cc8e90fe621423e169ee4bf38701144e4b40b",
+          "bytes": 117806,
+          "width": 350,
+          "height": 596
+        }
+      ]
+    }
+  },
+  "history": [
+    "Initial new CPU run: one lower-bound comparison exposed IEEE rounding (0.8119999999999999 versus 0.812); the fixture keeps the actual endpoint expression and original behavior checks.",
+    "The requested 44-file CPU batch exited 1 despite JSON success:true and 273 passing cases across 38 reported files; six collection outputs were missing. A focused supplement supplies the remaining final passing outcomes. Counts merge distinct cases and do not claim a successful whole 44-file single run.",
+    "Initial native batch on 2ee: 10 passes and 6 failures retained. The reserved GLSL parameter patch was renamed pigmentPatch without changing its arithmetic.",
+    "The intermediate ab914 focused native batch retained mobile Help overflow. Shorter copy alone did not resolve the bottom actions at 877px; the final structural layout keeps scrollable Help content above reachable Resume and End actions.",
+    "The final-source layout batch passed all four mobile cases while retaining two skin-case failures in native UI discovery, which assumed an Inspect [F] button despite the adaptive input profile. A focused two-case run uses the real keyboard KeyF and visible Tools flow where appropriate, retaining the original GPU, movement, Jet, ownership and teardown assertions.",
+    "Loaded-system runner/hash timeouts and original failure artifacts are retained. Final timeout budgets changed without deleting samples or weakening behavior assertions; no automatic retries are counted.",
+    "The clean isolated mutation disables screen-footprint filtering in a copied candidate. Exactly its intended filter behavior oracle fails (4 pass, 1 fail); the restored actual production candidate passes all 5 cases, and production files are never edited by that check. Its measured animal factory is byte-exact in the final settings-only source.",
+    "CPU and GPU bookkeeping was not wholly serial. Native batches use one GPU worker and no automatic retries."
+  ],
+  "limits": [
+    "Chromium with DPR1 and software WebGL; no hardware FPS, physical-phone or WebKit claim.",
+    "The shader remains an illustrative pigment finish; its bounded hash changes the exact procedural patches. Palette coefficients, macro sampling scale, root-space attachment and geometry/animation remain protected.",
+    "The unsupported-derivative shader fallback is verified by CPU compiler checks; these native captures use supported derivative programs.",
+    "Native inspection may hide intervening rocks. Only native controls change camera position; paused camera-only ticks retain actor phases/readouts.",
+    "Raw detailed logs and the frozen source snapshot remain local ignored evidence. The committed reversal manifest reconstructs only the exact approved baseline from the matching final source."
+  ],
+  "commit": {
+    "authorized": true,
+    "state": "pending root normal-hook transaction",
+    "requestedPathCount": 83,
+    "manifestSHA256": "5d37c816778f1b6dda61f2ba46937bda765d9e4e4d9f57ce815471c52c3cb11b",
+    "curatedMetadata": [
+      "reports/cephalopod-hunter-enhancement/pass-twenty-six/.gitignore",
+      "reports/cephalopod-hunter-enhancement/pass-twenty-six/README.md",
+      "reports/cephalopod-hunter-enhancement/pass-twenty-six/capture-squid-surface.cjs",
+      "reports/cephalopod-hunter-enhancement/pass-twenty-six/playwright.config.cjs",
+      "reports/cephalopod-hunter-enhancement/pass-twenty-six/baseline-reversal.json",
+      "reports/cephalopod-hunter-enhancement/pass-twenty-six/validation-summary.json",
+      "reports/cephalopod-hunter-enhancement/pass-twenty-six/resource-integrity.json",
+      "reports/cephalopod-hunter-enhancement/pass-twenty-six/visual-review.json"
+    ],
+    "pendingPriorPasses": [
+      24,
+      25
+    ],
+    "alreadyCommittedPriorPasses": [
+      21,
+      22,
+      23
+    ],
+    "translationWrappersAlreadyHEAD": true,
+    "noPushOrDeployment": true
+  }
+}

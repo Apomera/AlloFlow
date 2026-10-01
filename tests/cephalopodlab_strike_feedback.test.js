@@ -11,7 +11,7 @@ const constants = ['DRILL_RANGE', 'FISH_CATCH_RANGE'].map(name => { const match 
 // observes whether that branch was taken; native tests exercise the full meal.
 const drillPrefix = region('var heldE = !!keys.KeyE || !!gameState.forageTarget;', 'gameState.drillingClam = nearestClam;');
 const contactPrefix = region('if(gameState.pendingStrike&&now>=gameState.pendingStrike.at){', "if (nearest && prey === 'crab') {");
-const missionFunction = region('function updateMission(){', "touchPanel=document.createElement('div');");
+const missionFunction = region('function clHuntInputCue(', "touchPanel=document.createElement('div');");
 const run = new Function('THREE', 'document', 'options', `
   var now=options.now==null?1000:options.now,gameNow=now,announcements=[],gathered=false;
   var octopus=new THREE.Group();octopus.position.set(0,.55,0);
@@ -21,6 +21,7 @@ const run = new Function('THREE', 'document', 'options', `
   var gameState={forageTarget:options.latched?clam:null,tookHitAt:1000-(options.hitAge==null?1000:options.hitAge),pendingStrike:{target:options.noTarget?null:target,at:1000},strikeReadyAt:1450,strikeMessage:'',strikeMessageUntil:0,runStats:{crabs:0,clams:0},camoEff:0,targetText:'OUT OF REACH · move closer',targetDetail:'Rock crab · 6.0 m · ahead',announcedStep:-1};
   function rockBlocks(a,b){return b===target.position?!!options.preyCover:!!options.clamCover;}
   function clAnnounce(text){announcements.push(text);}function finishRun(){throw new Error('Free-mode feedback must not end the dive');}
+  var stage=document.createElement('div');if(options.touch)stage.classList.add('cl-hunt-touch-enabled');
   ${constants}
   ${region('function preyReadiness(', 'function forageReady(')}
   ${drillPrefix}gathered=true;}
@@ -43,6 +44,11 @@ describe('Cephalopod Hunter failed strike feedback beside clams', () => {
     const covered = fixture({ eligible: true, preyCover: true }), none = fixture({ noTarget: true });
     assert.equal(covered.capturable, false); assert.equal(covered.gathered, false); assert.equal(covered.brief.hidden, false); assert.match(covered.brief.textContent, /Strike blocked\. Move around the rock\./);
     assert.equal(none.brief.hidden, false); assert.match(none.brief.textContent, /No prey in reach\. T selects a nearby target\./);
+    const touch = fixture({ noTarget: true, touch: true });
+    assert.equal(touch.capturable, false); assert.equal(touch.gathered, false); assert.equal(touch.gameState.pendingStrike, null); assert.equal(touch.gameState.strikeReadyAt, none.gameState.strikeReadyAt);
+    assert.equal(touch.gameState.strikeMessageUntil, none.gameState.strikeMessageUntil); assert.equal(touch.brief.hidden, false);
+    assert.match(touch.brief.textContent, /No prey in reach\. Tap Target to select nearby prey\./); assert.doesNotMatch(touch.brief.textContent, /T selects/);
+    assert.deepEqual(touch.announcements, [touch.gameState.strikeMessage]);
   });
   it('suppresses spurious misses only when the unchanged held-E or latched gathering branch actually runs', () => {
     for (const options of [{ heldE: true }, { latched: true }]) { const row = fixture(options); assert.equal(row.gathered, true); assert.equal(row.gameState.strikeMessage, ''); assert.equal(row.brief.hidden, true); assert.deepEqual(row.announcements, []); }

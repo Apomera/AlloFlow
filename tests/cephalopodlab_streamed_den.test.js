@@ -7,8 +7,11 @@ const require = createRequire(import.meta.url), THREE = require('../vendor/three
 const source = readFileSync(process.env.CEPHALOPOD_MODEL_SOURCE || 'stem_lab/stem_tool_cephalopodlab.js', 'utf8').replace(/\r\n/g, '\n');
 function region(start, end) { const a = source.indexOf(start), b = source.indexOf(end, a); assert.ok(a >= 0 && b > a, start); return source.slice(a, b); }
 const helpers = region('function shadeCLHuntRockSurface(', 'function shadeCLHuntCoralSurface(') + region('function reefSurface(shader){', '// ─── Reef rocks') + region('function createCLHuntDenRockGeometry(', '// ─── Dens (4 rock arches');
+// The streamed production block now settles habitat after den creation. Execute
+// its real helper against this den-only fixture's empty original plant/reef pools.
+const habitat = source.includes('        // Five rock-rooted groves') ? region('        // Five rock-rooted groves', '        function updateGround(){') + region('        function terrainHeight(', '        function distance3(') : '';
 const initial = region('var DEN_RADIUS = 2.0;', '// ─── Clams'), recycle = region('var RECYCLE_DIST = 120;', '// Rocks'), stream = region('var nearestDenD = Infinity;', '// Recycling changes X/Z');
-const construct = new Function('THREE', 'Math', 'renderer', 'var scene=new THREE.Scene(),octopus={position:new THREE.Vector3()};' + helpers + initial + recycle + ';return{scene,dens,octopus,step:function(){' + stream + '},rock:createCLHuntDenRockGeometry,shadow:createCLHuntDenShadowGeometry,shader:shadeCLHuntRockSurface,fallback:reefSurface};');
+const construct = new Function('THREE', 'Math', 'renderer', 'var scene=new THREE.Scene(),octopus={position:new THREE.Vector3()},rocks=[],corals=[],grass=[],kelpStrands=[],shelters=[];' + helpers + habitat + initial + recycle + ';return{scene,dens,octopus,step:function(){' + stream + '},rock:createCLHuntDenRockGeometry,shadow:createCLHuntDenShadowGeometry,shader:shadeCLHuntRockSurface,fallback:reefSurface};');
 const fixtures = [];
 function fixture(derivatives = true) {
   const draws = [], math = Object.assign(Object.create(Math), { random() { const value = ((draws.length * 37 + 17) % 97) / 97; draws.push(value); return value; } });

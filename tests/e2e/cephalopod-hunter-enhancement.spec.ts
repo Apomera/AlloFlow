@@ -28,11 +28,14 @@ test('the seabed is solid and the home den only protects at its actual height',a
   await expect(page.locator('[data-hud=status]')).not.toContainText('IN DEN');expect((await player(page))[1]).toBeGreaterThan(2);
 });
 test('target selection never catches a different nearby animal, and repeated catches persist',async({page})=>{
+  // Retain the original single-strike cooldown oracle even when the compact
+  // layout hides it in favor of the held Strike / hold control.
+
   await mount(page);await placeCrab(page);await page.locator(sel).focus();await page.keyboard.press('KeyT');
   await page.evaluate(()=>{const w=window as any,all=w.__scene.children.filter((o:any)=>o.userData.alive&&o.userData.cfg);all[0].position.set(18,0.18,18);all[1].position.copy(w.__player.position);all[1].userData.speed=0;});
-  await page.keyboard.press('KeyE');await expect(page.locator('.cl-hunt-mission')).toContainText(/Missed\.|Strike blocked\./);await expect(page.getByRole('button',{name:'Strike [E]',exact:true})).toBeEnabled();expect(await page.locator('[data-hud=score]').innerText()).toBe('0');
+  await page.keyboard.press('KeyE');await expect(page.locator('.cl-hunt-mission')).toContainText(/Missed\.|Strike blocked\./);await expect(page.getByRole('button',{name:'Strike [E]',exact:true,includeHidden:true})).toBeEnabled();expect(await page.locator('[data-hud=score]').innerText()).toBe('0');
   await page.keyboard.press('KeyT');await page.keyboard.press('KeyE');await expect.poll(()=>page.evaluate(()=>(window as any).__toolData.cephalopodLab.huntsSuccessful)).toBe(1);
-  await expect(page.getByRole('button',{name:'Strike [E]',exact:true})).toBeEnabled();
+  await expect(page.getByRole('button',{name:'Strike [E]',exact:true,includeHidden:true})).toBeEnabled();
   await placeCrab(page);await page.keyboard.press('KeyT');await page.keyboard.press('KeyE');await expect.poll(()=>page.evaluate(()=>(window as any).__toolData.cephalopodLab.huntsSuccessful)).toBe(2);
 });
 test('reef mission requires both foods and a return home, then writes one debrief',async({page})=>{
@@ -54,7 +57,7 @@ test('touch buttons move and release cleanly; settings can be changed during a d
   await page.setViewportSize({width:390,height:844});await mount(page);await page.evaluate(()=>{document.getElementById('wrap')!.style.width='100%';window.dispatchEvent(new Event('resize'));});
   const forward=page.getByRole('button',{name:'Forward',exact:true});await expect(forward).toBeVisible();await forward.scrollIntoViewIfNeeded();const pos=await player(page);const b=await forward.boundingBox();await page.mouse.move(b!.x+b!.width/2,b!.y+b!.height/2);await page.mouse.down();await page.waitForTimeout(500);await page.mouse.up();
   const moved=await player(page);expect(moved[2]).toBeGreaterThan(pos[2]+0.3);await page.waitForTimeout(300);expect((await player(page))[2]).toBeCloseTo(moved[2],4);
-  await page.getByRole('button',{name:'Help / settings'}).click();await page.getByLabel('Larger text',{exact:true}).check();await page.getByLabel('Reduced motion',{exact:true}).check();await page.getByRole('button',{name:'Resume dive'}).click();await expect(page.locator('.cl-hunt-stage')).toHaveClass(/cl-large-text/);
+  await page.getByRole('button',{name:'Tools',exact:true}).click();await page.getByRole('button',{name:'Help / settings'}).click();await page.getByLabel('Larger text',{exact:true}).check();await page.getByLabel('Reduced motion',{exact:true}).check();await page.getByRole('button',{name:'Resume dive'}).click();await expect(page.locator('.cl-hunt-stage')).toHaveClass(/cl-large-text/);
   const hud=await page.locator('.cl-hunt-hud').boundingBox(),mission=await page.locator('.cl-hunt-mission').boundingBox(),controls=await page.locator('.cl-hunt-controls').boundingBox(),touch=await page.locator('.cl-hunt-touch').boundingBox();expect(hud!.y+hud!.height).toBeLessThanOrEqual(mission!.y);expect(controls!.y+controls!.height).toBeLessThanOrEqual(touch!.y);
 });
 test('new rigs have distinct anatomy, render without shader errors and release every context',async({page})=>{
@@ -122,7 +125,7 @@ test('inspection preserves a paused dive and releases movement keys',async({page
 
 test('mobile inspection controls fit the stage and return to touch movement',async({page})=>{
   await page.setViewportSize({width:390,height:844});await mount(page,'humboldtSquid','observe');await page.evaluate(()=>{document.getElementById('wrap')!.style.width='100%';window.dispatchEvent(new Event('resize'));});
-  await page.getByRole('button',{name:'Inspect [F]',exact:true}).click();
+  await page.getByRole('button',{name:'Tools',exact:true}).click();await page.getByRole('button',{name:'Inspect',exact:true}).click();
   const bounds=await page.locator(sel).boundingBox();
   for(const name of ['Orbit left','Orbit right','Higher','Lower','Closer','Farther','Anatomy labels','Return to dive']){const button=page.getByRole('button',{name,exact:true});await expect(button).toBeVisible();const box=await button.boundingBox();expect(box!.x).toBeGreaterThanOrEqual(bounds!.x);expect(box!.x+box!.width).toBeLessThanOrEqual(bounds!.x+bounds!.width+1);expect(box!.y+box!.height).toBeLessThanOrEqual(bounds!.y+bounds!.height);}
   await page.getByRole('button',{name:'Return to dive',exact:true}).click();await expect(page.getByRole('button',{name:'Forward',exact:true})).toBeVisible();

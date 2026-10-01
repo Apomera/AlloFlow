@@ -1,0 +1,154 @@
+{
+  "accepted": true,
+  "rootReviewed": true,
+  "agentReviewed": true,
+  "reviewedAt": "2026-10-01T22:50:49.995Z",
+  "reviewMethod": "Root reviewed all eight GL images and current phone DOM images; independent reviewer viewed all sixteen saved PNGs. Static comparisons use matched production actor and camera state.",
+  "profiles": [
+    {
+      "name": "squid-follow",
+      "accepted": true,
+      "notes": "Reduced mantle and fin speckle; central highlight, taper, arms, shadow and habitat positions remain preserved. The improvement is restrained."
+    },
+    {
+      "name": "squid-phone",
+      "accepted": true,
+      "notes": "Fine grain resolves more cleanly at low phone resolution. Fin edges and central highlight remain legible; phone controls retain their layout."
+    },
+    {
+      "name": "squid-inspection",
+      "accepted": true,
+      "notes": "Close inspection shows reduced mantle and fin grain while eye rim, sucker rows, feeding tentacles, broad highlights and environmental caustics remain visible."
+    },
+    {
+      "name": "squid-phone-inspection",
+      "accepted": true,
+      "notes": "Narrow inspection retains the outline, eye, suckers and highlight with smoother pigment. Inspection controls remain reachable."
+    }
+  ],
+  "limits": [
+    "Static images establish visible speckle reduction, not temporal shimmer, physical realism or FPS.",
+    "Current red finish still reads somewhat uniform and glossy; broader biological mottling is a future opportunity.",
+    "Existing phone Fin/Mantle anatomy label overlap is present in both versions and remains unresolved by this pass.",
+    "Chromium DPR1 with software WebGL; no physical-phone or WebKit validation."
+  ],
+  "captureEvidence": {
+    "baselineSHA256": "a2c72a41312e97f9d8e35dde908b35476b2158e1b83adc409d4bc0e77cdbe5a2",
+    "currentSHA256": "4f69e86395eb9eaa940e6aeffe84f9fa52fe7af8b51a91e58a826678be6676c6",
+    "reportSHA256": "d60db6caff218f97a506a27357c0aa406f64947928170f149904aaa124134b37",
+    "images": [
+      {
+        "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/squid-surface-comparison/baseline-squid-follow.png",
+        "sha256": "474bf3e53b0aafb0e4e53d26cbf495237053c829e773c3a8adadc5415b8a0976",
+        "bytes": 1194960,
+        "width": 1280,
+        "height": 1000
+      },
+      {
+        "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/squid-surface-comparison/baseline-squid-follow-gl.png",
+        "sha256": "ccaa474bdd09a8347f383722f0fe1c88bf986f6cf7d040b38ec633d96678b202",
+        "bytes": 670310,
+        "width": 1200,
+        "height": 708
+      },
+      {
+        "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/squid-surface-comparison/current-squid-follow.png",
+        "sha256": "23a09301c88c0969b7b32d70c6893afad95a3fa9eb88650ba06f642eae25dc57",
+        "bytes": 1189279,
+        "width": 1280,
+        "height": 1000
+      },
+      {
+        "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/squid-surface-comparison/current-squid-follow-gl.png",
+        "sha256": "065176d2d32d69b81f4cf5be9041b58acf0394e91597107cc0857e4d8da56f91",
+        "bytes": 663832,
+        "width": 1200,
+        "height": 708
+      },
+      {
+        "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/squid-surface-comparison/baseline-squid-phone.png",
+        "sha256": "753a6e5d0921fca240df9851a03e0dbe23fdffb55b15285d3087791a06493db6",
+        "bytes": 332865,
+        "width": 390,
+        "height": 844
+      },
+      {
+        "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/squid-surface-comparison/baseline-squid-phone-gl.png",
+        "sha256": "a81132e8fb684c421b7ae79700f7aed0863ebe67f4bc096fb208e764c2cdb44d",
+        "bytes": 183238,
+        "width": 350,
+        "height": 596
+      },
+      {
+        "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/squid-surface-comparison/current-squid-phone.png",
+        "sha256": "5a2d4d09fd33e0b2e11729f9033d66b29187e22e8543ab2aee353288d2664ba4",
+        "bytes": 327867,
+        "width": 390,
+        "height": 844
+      },
+      {
+        "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/squid-surface-comparison/current-squid-phone-gl.png",
+        "sha256": "695732fbff859786523a4ea22c948e9d31ce9059c95d0f951f5aea0dbe199401",
+        "bytes": 177837,
+        "width": 350,
+        "height": 596
+      },
+      {
+        "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/squid-surface-comparison/baseline-squid-inspection.png",
+        "sha256": "9746a0725ab991ef8ab8aa32bb4f62726718ff96181fad91dcaa3279a5597b2a",
+        "bytes": 1033880,
+        "width": 1280,
+        "height": 1000
+      },
+      {
+        "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/squid-surface-comparison/baseline-squid-inspection-gl.png",
+        "sha256": "599d18d00c298b97336fe6098391e760a772c2ffc07263cae81194704cd3518b",
+        "bytes": 431072,
+        "width": 1200,
+        "height": 708
+      },
+      {
+        "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/squid-surface-comparison/current-squid-inspection.png",
+        "sha256": "cc057fc9e52bdf9ae805c2d2f6d6acd34f0dddbca97effa471f09f8e539bee73",
+        "bytes": 1009687,
+        "width": 1280,
+        "height": 1000
+      },
+      {
+        "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/squid-surface-comparison/current-squid-inspection-gl.png",
+        "sha256": "bc2e6d26ad5ee060d76abd376b6b9a6678937e2a8742721b1e6e4a3c778e81df",
+        "bytes": 406323,
+        "width": 1200,
+        "height": 708
+      },
+      {
+        "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/squid-surface-comparison/baseline-squid-phone-inspection.png",
+        "sha256": "ab3a1b0dc3cc6e8bb00f0137f03db10cafb2688bac117f291d9347201fb6bc35",
+        "bytes": 311837,
+        "width": 390,
+        "height": 844
+      },
+      {
+        "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/squid-surface-comparison/baseline-squid-phone-inspection-gl.png",
+        "sha256": "4ba06109b5cd8d735f4e2816cf46b8c433cf71b991d21ea9fbad0d4a15f552d6",
+        "bytes": 122116,
+        "width": 350,
+        "height": 596
+      },
+      {
+        "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/squid-surface-comparison/current-squid-phone-inspection.png",
+        "sha256": "62cdfcbc6003fb88d65ec7e82812e1a0c7ca29d3fdddb469e061499964cd921e",
+        "bytes": 307478,
+        "width": 390,
+        "height": 844
+      },
+      {
+        "file": "reports/cephalopod-hunter-enhancement/pass-twenty-six/squid-surface-comparison/current-squid-phone-inspection-gl.png",
+        "sha256": "1c0ad52b6e90747f71335f92c78cc8e90fe621423e169ee4bf38701144e4b40b",
+        "bytes": 117806,
+        "width": 350,
+        "height": 596
+      }
+    ]
+  }
+}

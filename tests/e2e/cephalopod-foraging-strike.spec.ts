@@ -9,7 +9,8 @@ const harness = new GlHarness({
   layout: 'document',
 });
 const canvas = 'canvas[role=application]';
-const forage = (page: Page) => page.getByRole('button', { name: 'Forage [R]', exact: true });
+// Compact stages display the same latched action without its keyboard suffix.
+const forage = (page: Page) => page.getByRole('button', { name: /^Forage(?: \[R\])?$/, exact: true });
 const progress = (page: Page) => page.locator('progress[aria-label="Foraging progress"]');
 
 async function mount(page: Page, species = 'commonOcto') {
@@ -123,9 +124,14 @@ test('movement and pausing cancel a latched meal and resume never restarts it', 
   await page.keyboard.up('KeyW');
   await expect(forage(page)).toHaveAttribute('aria-pressed', 'false');
   expect(await forageProgress(page)).toBe(0);
+  await advance(page, 3);
+  await expect(page.locator('.cl-mission-brief')).toBeVisible();
+  await expect(page.locator('.cl-mission-brief')).toContainText('Foraging stopped. Stay still and within reach to gather food.');
+  await expect(page.locator('#allo-live-cl')).toHaveText('Foraging stopped. Stay still and within reach to gather food.');
 
   await page.keyboard.press('KeyR');
   await advance(page, 8);
+  await expect(page.locator('.cl-mission-brief')).not.toContainText('Foraging stopped.');
   expect(await forageProgress(page)).toBeGreaterThan(0);
   await page.keyboard.press('Escape');
   await expect(forage(page)).toHaveAttribute('aria-pressed', 'false');

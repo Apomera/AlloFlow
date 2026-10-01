@@ -1,0 +1,56 @@
+{
+  "finalRuntimeSha256": "3f8aa5f3215d33df0f7dbccc60fc495f71f2b5754a482cd3d482bd8446e28937",
+  "unit": {
+    "distinct": 67,
+    "files": 13,
+    "finalCanonicalCases": 16
+  },
+  "native": {
+    "distinct": 14,
+    "retries": 0,
+    "skips": 0,
+    "flaky": 0,
+    "candidateCases": 5,
+    "legacyCases": 9
+  },
+  "naturalPairedViews": 7,
+  "diagnosticDayDepthViews": 3,
+  "benchmarkAudit": "benchmark-audit-amended.json",
+  "preview": {
+    "url": "http://127.0.0.1:59304/__harness?species=humboldtSquid&mode=observe&pass=24",
+    "sourceStatus": 200,
+    "harnessStatus": 200,
+    "servedSHA": "3f8aa5f3215d33df0f7dbccc60fc495f71f2b5754a482cd3d482bd8446e28937",
+    "harnessHasMount": true,
+    "openInCodex": "queued"
+  },
+  "integrity": {
+    "runtime": [
+      {
+        "file": "stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "3f8aa5f3215d33df0f7dbccc60fc495f71f2b5754a482cd3d482bd8446e28937"
+      },
+      {
+        "file": "desktop/web-app/public/stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "3f8aa5f3215d33df0f7dbccc60fc495f71f2b5754a482cd3d482bd8446e28937"
+      },
+      {
+        "file": "desktop/app-build/stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "3f8aa5f3215d33df0f7dbccc60fc495f71f2b5754a482cd3d482bd8446e28937"
+      },
+      {
+        "file": "desktop/web-app/build/stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "3f8aa5f3215d33df0f7dbccc60fc495f71f2b5754a482cd3d482bd8446e28937"
+      }
+    ],
+    "twelveWrappersPreserved": true,
+    "allOriginalRngLinesExact": 150,
+    "priorPass21To23PreservedByReverseByteProof": true,
+    "ownedIndexEmpty": true,
+    "ownedCommitsSinceSetup": 0,
+    "initialHead": "407f36e2dbb1b7c0990d5365c96731e34378756d",
+    "currentHead": "1bce28945b84b84299a462c3d32209be18f3c4e6",
+    "noStagingCommitPushOrDeployment": true
+  },
+  "status": "complete; uncommitted"
+}

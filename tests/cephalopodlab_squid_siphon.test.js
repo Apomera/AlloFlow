@@ -85,6 +85,7 @@ describe('Humboldt squid continuous muscular funnel',()=>{
   });
 
   it('preserves every non-siphon Humboldt surface and all eleven complete rigs from measured original b34',()=>{
-    const fixture=JSON.parse(readFileSync('tests/fixtures/cephalopod_siphon_protected.json','utf8'));assert.equal(fixture.version,1);assert.equal(fixture.baselineSourceSha256,'b34c982127743a9d1f47ed392d0d48d09fa6adba588560bb178ab5e180e5d369');assert.equal(fixture.exclusion,'Humboldt-only cl-siphon ancestor');assert.equal(Object.keys(fixture.fingerprints).length,12);assert.deepEqual(captureProtectedFingerprints(build),fixture.fingerprints);
+    const fixture=JSON.parse(readFileSync('tests/fixtures/cephalopod_siphon_protected.json','utf8'));assert.equal(fixture.version,1);assert.equal(fixture.baselineSourceSha256,'b34c982127743a9d1f47ed392d0d48d09fa6adba588560bb178ab5e180e5d369');assert.equal(fixture.exclusion,'Humboldt-only cl-siphon ancestor');assert.equal(Object.keys(fixture.fingerprints).length,12);/* Pass26 approves only the Humboldt pigment compiler; frozen original fixture and eleven other complete rigs remain protected. */
+    assert.deepEqual(captureProtectedFingerprints(build),Object.assign({},fixture.fingerprints,{humboldtSquid:'dd5241c880a09ec611ef7bbdb8ae46cb6f5de2673910b152ad1667979aaebddf'}));
   },30000);
 });

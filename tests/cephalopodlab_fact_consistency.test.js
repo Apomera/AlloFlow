@@ -25,6 +25,30 @@ const SOURCE = 'stem_lab/stem_tool_cephalopodlab.js';
 const DEPLOY = 'desktop/web-app/public/stem_lab/stem_tool_cephalopodlab.js';
 const src = readFileSync(SOURCE, 'utf8');
 
+// Lift the accepted species scale, resting offset, spawn expression and camo
+// contact calculation. These science fixtures use the actual grounding model,
+// including the giant Pacific octopus, rather than assume every animal is 0.55 high.
+function sourceGroundingFixture(speciesId = 'commonOcto') {
+  const animalStart = src.indexOf('function createCLHuntAnimal(T, species) {');
+  const scaleStart = src.indexOf(String.fromCharCode(10), animalStart) + 1;
+  const scaleEnd = src.indexOf('  var root = new T.Group();', scaleStart);
+  expect(animalStart).toBeGreaterThan(-1); expect(scaleEnd).toBeGreaterThan(scaleStart);
+  const floor = /var FLOOR_REST_Y = [\d.]+;/.exec(src);
+  const fade = /var SUBSTRATE_CAMO_FADE_M = [\d.]+;/.exec(src);
+  const rest = /var floorRestY=[^;\n]+;/.exec(src);
+  const spawn = /verticalY: ([^,\n]+),/.exec(src);
+  const contact = /var distFromFloor = [^\n]+\r?\n\s*var substrateContact = [^\n]+/.exec(src);
+  [floor, fade, rest, spawn, contact].forEach((match) => expect(match).not.toBeNull());
+  const actual = src.slice(scaleStart, scaleEnd) + floor[0] + '\n' + fade[0]
+    + '\nvar speciesId=species.id,bodyScale=scale;\n' + rest[0]
+    + '\nreturn {floorRestY:floorRestY,spawnY:' + spawn[1]
+    + ',contact:function(y){var gameState={verticalY:y},octopus={position:{x:0,z:0}};var terrainHeight=function(){return 0;};'
+    + contact[0] + ';return substrateContact;}};';
+  // eslint-disable-next-line no-new-func
+  return new Function('species', actual)({id:speciesId});
+}
+
+
 describe('Cephalopod Lab repeated facts agree with each other', () => {
   it('states one arm-ganglion neuron count, consistent with the stated totals', () => {
     // every mention of neurons in a single arm ganglion
@@ -338,13 +362,16 @@ describe('Cephalopod Lab depth model behaves the way its lessons assume', () => 
   });
 
   it('starts the dive on the reef, not in midwater', () => {
-    // The octopus rests at y = 0.55 just above a seafloor at y ~ 0, and
-    // gameState declares currentDepthZone: 'reef' at that altitude.
-    const spawnY = Number(/verticalY: ([\d.]+),/.exec(src)[1]);
-    expect(model.depthZoneFor(spawnY)).toBe('reef');
+    // Both the common octopus and the larger giant Pacific octopus start at
+    // their actual resting altitude, in the declared shallow reef zone.
+    for (const speciesId of ['commonOcto', 'giantPacific']) {
+      const { spawnY, floorRestY } = sourceGroundingFixture(speciesId);
+      expect(spawnY).toBe(floorRestY);
+      expect(model.depthZoneFor(spawnY)).toBe('reef');
+      // The reef remains a shallow, safe, breathable-looking number.
+      expect(model.realDepthFor(spawnY)).toBeLessThan(50);
+    }
     expect(src).toMatch(/currentDepthZone: 'reef'/);
-    // and the reef is a shallow, safe, breathable-looking number.
-    expect(model.realDepthFor(spawnY)).toBeLessThan(50);
   });
 
   it('agrees with the "1 atm per 10 m" rule the warm-up demonstrates', () => {
@@ -503,8 +530,7 @@ describe('Cephalopod Lab charges the metabolic cost it teaches', () => {
     const formatterEnd = src.indexOf('function initHuntSim3D(', formatterStart);
     expect(assignmentStart).toBeGreaterThan(-1); expect(assignmentEnd).toBeGreaterThan(assignmentStart);
     expect(formatterStart).toBeGreaterThan(-1); expect(formatterEnd).toBeGreaterThan(formatterStart);
-    const floorRest = Number(/var FLOOR_REST_Y = ([\d.]+);/.exec(src)[1]);
-    const readActualState = new Function('fixture', 'terrainHeight', 'FLOOR_REST_Y', `
+    const readActualState = new Function('fixture', 'terrainHeight', 'floorRestY', `
       var gameState={verticalY:fixture.y,hungerRate:1.6,stamina:100},octopus={position:fixture.position};
       var bottomY=fixture.staleBottomY,isJetting=false,species={specialAbility:''},capabilities={swimming:false};
       var moveFwd=1,turn=0,vertInput=0,propulsionYBefore=gameState.verticalY,keys={};
@@ -514,12 +540,15 @@ describe('Cephalopod Lab charges the metabolic cost it teaches', () => {
     `);
     const terrain = (x, z) => x * .4 + z * .2;
     // A rock push can leave the pre-collision floor either above or below the
-    // final floor. Execute the actual state assignment and actual HUD formatter.
-    for (const [position, clearance, mode] of [[{ x: 4, z: -2 }, 2, 'Swimming'], [{ x: 2, z: 3 }, 0, 'Crawling']]) {
-      const y = terrain(position.x, position.z) + floorRest + clearance;
-      const result = readActualState({ position, y, staleBottomY: clearance ? y : y - 2 }, terrain, floorRest);
-      expect(result.aboveFloor).toBeCloseTo(clearance, 8);
-      expect(result.text).toBe(mode + ' · 1.6 energy/s');
+    // final floor. Execute the actual assignment and formatter for both rests.
+    for (const speciesId of ['commonOcto', 'giantPacific']) {
+      const { floorRestY } = sourceGroundingFixture(speciesId);
+      for (const [position, clearance, mode] of [[{ x: 4, z: -2 }, 2, 'Swimming'], [{ x: 2, z: 3 }, 0, 'Crawling']]) {
+        const y = terrain(position.x, position.z) + floorRestY + clearance;
+        const result = readActualState({ position, y, staleBottomY: clearance ? y : y - 2 }, terrain, floorRestY);
+        expect(result.aboveFloor).toBeCloseTo(clearance, 8);
+        expect(result.text).toBe(mode + ' · 1.6 energy/s');
+      }
     }
   });
 });
@@ -656,21 +685,33 @@ describe('Cephalopod Lab background matching needs a background', () => {
   const contact = (y) => Math.max(0, 1 - Math.abs(y - FLOOR) / FADE);
 
   it('gives full substrate camo to an animal resting on the floor', () => {
-    // The spawn altitude is the resting altitude; normal seafloor play must
-    // be completely unaffected by this rule.
-    const spawnY = Number(/verticalY: ([\d.]+),/.exec(src)[1]);
-    expect(spawnY).toBe(FLOOR);
-    expect(contact(spawnY)).toBe(1);
+    // The unscaled common-octopus spawn still equals the stated floor offset.
+    const common = sourceGroundingFixture('commonOcto');
+    expect(common.spawnY).toBe(FLOOR);
+    expect(contact(common.spawnY)).toBe(1);
+    // The accepted giant Pacific grounding uses its own physical rest, and
+    // the actual substrate-contact calculation must still give full camo.
+    for (const speciesId of ['commonOcto', 'giantPacific']) {
+      const grounding = sourceGroundingFixture(speciesId);
+      expect(grounding.spawnY).toBe(grounding.floorRestY);
+      expect(grounding.contact(grounding.spawnY)).toBe(1);
+    }
   });
 
   it('fades the substrate component out in BOTH directions', () => {
     // Descending into open water leaves the substrate behind just as surely
     // as rising above it. A one-sided clamp would keep full camo all the way
     // down to the abyssal floor.
-    expect(src).toContain('var distFromFloor = Math.abs(gameState.verticalY - terrainHeight(octopus.position.x,octopus.position.z) - FLOOR_REST_Y);');
+    expect(src).toContain('var distFromFloor = Math.abs(gameState.verticalY - terrainHeight(octopus.position.x,octopus.position.z) - floorRestY);');
     expect(contact(FLOOR + FADE)).toBe(0);
     expect(contact(FLOOR - FADE)).toBe(0);
     expect(contact(-20)).toBe(0);
+    for (const speciesId of ['commonOcto', 'giantPacific']) {
+      const grounding = sourceGroundingFixture(speciesId);
+      expect(grounding.contact(grounding.floorRestY + FADE)).toBe(0);
+      expect(grounding.contact(grounding.floorRestY - FADE)).toBe(0);
+      expect(grounding.contact(-20)).toBe(0);
+    }
   });
 
   it('multiplies it into camoEff rather than replacing the other factors', () => {

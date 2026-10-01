@@ -11334,13 +11334,17 @@ function createCLHuntAnimal(T, species) {
   var squidSurfaceFrame=squid?{value:new T.Matrix4()}:null;
   if(squid){
     var squidBaseCompiler=skin.onBeforeCompile;skin.roughness=0.39;
-    skin.onBeforeCompile=function(shader){
+    skin.onBeforeCompile=function(shader,renderer){
       squidBaseCompiler(shader);shader.uniforms.clSurfaceFrame=squidSurfaceFrame;
       shader.vertexShader=shader.vertexShader.replace('varying vec3 clSkinPos;','uniform mat4 clSurfaceFrame; varying vec3 clSkinPos;').replace('clSkinPos = position;','clSkinPos = (clSurfaceFrame * modelMatrix * vec4(position,1.0)).xyz;');
-      shader.fragmentShader=shader.fragmentShader.replace("float mottling=clNoise(clSkinPos*13.0+vec3(0.0,clNoise(clSkinPos*5.0),0.0)); float grain=clNoise(clSkinPos*105.0); float cells=smoothstep(0.56,0.78,grain); float belly=1.0-smoothstep(-0.18,0.10,clSkinPos.y); float bands=0.5+0.5*sin(clSkinPos.z*15.0-clPhase*4.0); diffuseColor.rgb *= 0.87 + mottling*0.25 - cells*0.20 - smoothstep(0.38,0.74,mottling)*clPattern*0.26 - bands*clDisplay*0.32; diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*0.65+vec3(0.36,0.27,0.18),belly*0.30);","float clMacro=clNoise(clSkinPos*vec3(4.5,7.0,3.0)); float clFine=clNoise(clSkinPos*vec3(112.0,128.0,104.0)); float clGrain=clNoise(clSkinPos*218.0); float clDorsal=smoothstep(-0.08,0.25,clSkinPos.y); float clVentral=1.0-smoothstep(-0.22,0.025,clSkinPos.y); float clPatch=smoothstep(0.24,0.80,clMacro); float clPigment=smoothstep(0.60+clPatch*0.045,0.82,clFine); vec3 clPale=diffuseColor.rgb*0.22+vec3(0.29,0.23,0.20); vec3 clRed=diffuseColor.rgb*(0.91+0.20*clPatch); float clLightPatch=clamp(clVentral*0.69+(1.0-clDorsal)*(0.06+(1.0-clPatch)*0.08),0.0,0.80); diffuseColor.rgb=mix(clRed,clPale,clLightPatch); diffuseColor.rgb*=1.0-clPigment*(0.07+0.09*clDorsal)-smoothstep(0.67,0.84,clGrain)*0.028;");
-      shader.fragmentShader=shader.fragmentShader.replace('#include <roughnessmap_fragment>','#include <roughnessmap_fragment>\nroughnessFactor=clamp(roughnessFactor*(0.93+clFine*0.16),0.28,0.62);');
+      // Bounded pigment cells fade only when their animal-space footprint is subpixel.
+      shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\n'+"float clSqHash(float x,float y,float z){float h=mod(x*7.0+19.0,127.0);h=mod(h*mod(h,13.0)+y*5.0+23.0,127.0);h=mod(h*mod(h,11.0)+z*3.0+31.0,127.0);return mod(h*mod(h,7.0)+17.0,127.0)/126.0;}\nfloat clSqDetailFilter(float footprint){return 1.0-smoothstep(0.35,1.10,footprint);}\nfloat clSqPigmentTone(float fine,float grain,float pigmentPatch,float dorsal,float fineAA,float grainAA){float pigment=smoothstep(0.60+pigmentPatch*0.045,0.82,fine);return 1.0-pigment*(0.07+0.09*dorsal)*fineAA-smoothstep(0.67,0.84,grain)*0.028*grainAA;}\nfloat clSqRoughness(float base,float fine,float fineAA){return clamp(base*(0.93+(0.5+(fine-0.5)*fineAA)*0.16),0.28,0.62);}").replace("float clHash(vec3 p){return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453);}",'float clHash(vec3 p){return clSqHash(p.x,p.y,p.z);}');
+      // Three r128's physical shader prefix enables derivatives for Standard/Physical materials.
+      var squidDerivatives=!!(renderer&&renderer.capabilities&&(renderer.capabilities.isWebGL2||(renderer.extensions&&renderer.extensions.has('OES_standard_derivatives'))));
+      shader.fragmentShader=shader.fragmentShader.replace("float mottling=clNoise(clSkinPos*13.0+vec3(0.0,clNoise(clSkinPos*5.0),0.0)); float grain=clNoise(clSkinPos*105.0); float cells=smoothstep(0.56,0.78,grain); float belly=1.0-smoothstep(-0.18,0.10,clSkinPos.y); float bands=0.5+0.5*sin(clSkinPos.z*15.0-clPhase*4.0); diffuseColor.rgb *= 0.87 + mottling*0.25 - cells*0.20 - smoothstep(0.38,0.74,mottling)*clPattern*0.26 - bands*clDisplay*0.32; diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*0.65+vec3(0.36,0.27,0.18),belly*0.30);","float clMacro=clNoise(clSkinPos*vec3(4.5,7.0,3.0)); vec3 clSqFinePos=clSkinPos*vec3(112.0,128.0,104.0); vec3 clSqGrainPos=clSkinPos*218.0; float clFine=clNoise(clSqFinePos); float clGrain=clNoise(clSqGrainPos);"+' '+(squidDerivatives?"float clSqFineAA=clSqDetailFilter(length(fwidth(clSqFinePos))); float clSqGrainAA=clSqDetailFilter(length(fwidth(clSqGrainPos)));":"float clSqFineAA=0.0; float clSqGrainAA=0.0;")+' '+"float clDorsal=smoothstep(-0.08,0.25,clSkinPos.y); float clVentral=1.0-smoothstep(-0.22,0.025,clSkinPos.y); float clPatch=smoothstep(0.24,0.80,clMacro); vec3 clPale=diffuseColor.rgb*0.22+vec3(0.29,0.23,0.20); vec3 clRed=diffuseColor.rgb*(0.91+0.20*clPatch); float clLightPatch=clamp(clVentral*0.69+(1.0-clDorsal)*(0.06+(1.0-clPatch)*0.08),0.0,0.80); diffuseColor.rgb=mix(clRed,clPale,clLightPatch); diffuseColor.rgb*=clSqPigmentTone(clFine,clGrain,clPatch,clDorsal,clSqFineAA,clSqGrainAA);");
+      shader.fragmentShader=shader.fragmentShader.replace('#include <roughnessmap_fragment>','#include <roughnessmap_fragment>\nroughnessFactor=clSqRoughness(roughnessFactor,clFine,clSqFineAA);');
     };
-    skin.customProgramCacheKey=function(){return 'cl-squid-surface-v6-soft';};
+    skin.customProgramCacheKey=function(){return 'cl-squid-surface-v26-filtered';};
   }
   // Sepia-like mantle patches and fine pigment retain the simulation's camouflage tint.
   // The old mesh-local coordinate remains dedicated to the unchanged passing-cloud phase.
@@ -12351,14 +12355,35 @@ function createCLHuntFish(T,index){
         })();
 
         // ─── Lighting (downwelling sunlight + cool ambient) ───
-        var ambient = new THREE.AmbientLight(0x3a5876, 0.6);
+        // Radiance uses the renderer's linear working space. Keep the existing
+        // three lights: a clear key reveals relief while cool fill preserves depth.
+        function updateCLHuntWaterLighting(sun,ambient,fillLight,dayMix,depthLight,waterBlend){
+          var lightDay=Math.max(0,Math.min(1,dayMix)),lightDepth=Math.max(0,Math.min(1,depthLight)),blend=Math.max(0,Math.min(1,waterBlend));
+          var downwelling=lightDay*lightDepth;
+          sun.intensity+=((0.10+lightDay*1.04)*lightDepth-sun.intensity)*blend;
+          ambient.intensity+=(0.16+0.15*downwelling-ambient.intensity)*blend;
+          fillLight.intensity+=(0.18+0.24*lightDepth*(0.65+0.35*lightDay)-fillLight.intensity)*blend;
+          sun.color.r+=(0.32+0.62*downwelling-sun.color.r)*blend;
+          sun.color.g+=(0.52+0.46*downwelling-sun.color.g)*blend;
+          sun.color.b+=(0.75+0.17*downwelling-sun.color.b)*blend;
+          ambient.color.r+=(0.09+0.06*downwelling-ambient.color.r)*blend;
+          ambient.color.g+=(0.19+0.08*downwelling-ambient.color.g)*blend;
+          ambient.color.b+=(0.33+0.09*downwelling-ambient.color.b)*blend;
+          fillLight.color.r+=(0.20+0.16*downwelling-fillLight.color.r)*blend;
+          fillLight.color.g+=(0.40+0.25*downwelling-fillLight.color.g)*blend;
+          fillLight.color.b+=(0.61+0.20*downwelling-fillLight.color.b)*blend;
+          fillLight.groundColor.r+=(0.065+0.125*downwelling-fillLight.groundColor.r)*blend;
+          fillLight.groundColor.g+=(0.09+0.07*downwelling-fillLight.groundColor.g)*blend;
+          fillLight.groundColor.b+=(0.16-0.045*downwelling-fillLight.groundColor.b)*blend;
+        }
+        var ambient = new THREE.AmbientLight(0xffffff,0.31);ambient.color.setRGB(0.15,0.27,0.42);
         scene.add(ambient);
-        var sun = new THREE.DirectionalLight(0xb8e6f0, 0.85);
-        sun.position.set(20, 40, 10);
+        var sun = new THREE.DirectionalLight(0xffffff,1.14);sun.color.setRGB(0.94,0.98,0.92);
+        sun.position.set(12,34,8);
         scene.add(sun);sun.castShadow=quality!=='low';sun.shadow.mapSize.set(1024,1024);
         sun.shadow.camera.left=-14;sun.shadow.camera.right=14;sun.shadow.camera.top=14;sun.shadow.camera.bottom=-14;
         sun.shadow.camera.near=1;sun.shadow.camera.far=70;sun.shadow.bias=-0.0007;sun.shadow.normalBias=0.03;scene.add(sun.target);
-        var fillLight=new THREE.HemisphereLight(0x9cded9,0x554737,0.55);scene.add(fillLight);
+        var fillLight=new THREE.HemisphereLight(0xffffff,0xffffff,0.42);fillLight.color.setRGB(0.36,0.65,0.81);fillLight.groundColor.setRGB(0.19,0.16,0.115);scene.add(fillLight);
 
         // ─── Water column backdrop ───
         // A flat clear colour reads as a wall. This inverted sphere paints a
@@ -12369,7 +12394,7 @@ function createCLHuntFish(T,index){
           side: THREE.BackSide, depthWrite: false, fog: false,
           uniforms: { topColor: { value: new THREE.Color(0x1d6f96) }, bottomColor: { value: new THREE.Color(0x03101f) } },
           vertexShader: 'varying float vY; void main(){ vY = normalize(position).y; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
-          fragmentShader: 'uniform vec3 topColor; uniform vec3 bottomColor; varying float vY; void main(){ float t = smoothstep(-0.08, 0.85, vY); gl_FragColor = vec4(mix(bottomColor, topColor, t), 1.0);}'
+          fragmentShader: 'uniform vec3 topColor; uniform vec3 bottomColor; varying float vY; void main(){ float t = smoothstep(0.0, 0.78, vY); gl_FragColor = vec4(mix(bottomColor, topColor, t), 1.0);}'
         });
         var backdrop = new THREE.Mesh(new THREE.SphereGeometry(150, 24, 16), backdropMat);
         backdrop.renderOrder = -10;
@@ -12393,7 +12418,10 @@ function createCLHuntFish(T,index){
         // (same rule the bloom pass uses) and under a software rasteriser.
         var shaftLowPower = !window.__alloForceFX && (shaftReducedMotion || (!!navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) ||
           (function() { try { var gl = renderer.getContext(); var dbg = gl.getExtension('WEBGL_debug_renderer_info'); var rn = dbg ? String(gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL)) : ''; return /SwiftShader|llvmpipe|Software/i.test(rn); } catch (e) { return false; } })());
-        function softenLightShaft(shader){shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nvarying vec2 clShaftUv;').replace('#include <begin_vertex>','#include <begin_vertex>\nclShaftUv=uv;');shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying vec2 clShaftUv;').replace('#include <color_fragment>','#include <color_fragment>\ndiffuseColor.a*=pow(sin(clShaftUv.x*3.14159265),2.0)*smoothstep(0.0,0.22,clShaftUv.y)*(1.0-smoothstep(0.64,1.0,clShaftUv.y));');}
+        function softenLightShaft(shader){
+          shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nvarying vec2 clShaftUv;').replace('#include <begin_vertex>','#include <begin_vertex>\nclShaftUv=uv;');
+          shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying vec2 clShaftUv;').replace('#include <color_fragment>','#include <color_fragment>\nfloat clShaftAcross=abs(clShaftUv.x-0.5)*2.0/(0.42+0.58*clShaftUv.y); float clShaftFeather=1.0-smoothstep(0.0,1.0,clShaftAcross); float clShaftFalloff=smoothstep(0.0,0.14,clShaftUv.y)*(1.0-smoothstep(0.70,1.0,clShaftUv.y)); diffuseColor.a*=clShaftFeather*clShaftFeather*clShaftFalloff*(0.58+0.42*clShaftUv.y);');
+        }
         var shaftGroup = new THREE.Group();
         var shafts = [];
         for (var shI = 0; shI < (shaftLowPower ? 0 : 7); shI++) {
@@ -12444,12 +12472,16 @@ function createCLHuntFish(T,index){
           new THREE.MeshStandardMaterial({ map: sandTex, roughness: 0.94, metalness: 0 }));
         floor.name='cl-seafloor';floor.material.extensions={derivatives:true};floor.rotation.x = -Math.PI / 2;
         scene.add(floor);floor.receiveShadow=true;
-        floor.material.onBeforeCompile=function(shader){
+        var sandDownwelling={value:1};
+        function shadeCLHuntSandLight(shader,downwelling){
+          shader.uniforms.clSandDownwelling=downwelling;
           shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 clSandWorld;').replace('#include <begin_vertex>','#include <begin_vertex>\nclSandWorld=(modelMatrix*vec4(position,1.0)).xyz;');
-          shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying vec3 clSandWorld;')
-            .replace('#include <color_fragment>','#include <color_fragment>\nfloat clRipplePhase=clSandWorld.z*9.0+sin(clSandWorld.x*0.85)*1.35; float clRippleAA=1.0-smoothstep(0.4,1.8,fwidth(clRipplePhase)); float clPatches=sin(clSandWorld.x*0.43+sin(clSandWorld.z*0.3))*sin(clSandWorld.z*0.52); diffuseColor.rgb*=0.87+0.028*sin(clRipplePhase)*clRippleAA+0.045*clPatches;')
-            .replace('#include <normal_fragment_maps>','#include <normal_fragment_maps>\nvec3 clSlope=vec3(cos(clSandWorld.x*0.85)*1.1475,0.0,9.0)*cos(clRipplePhase)*0.015*clRippleAA; vec3 clViewSlope=mat3(viewMatrix)*clSlope; normal=normalize(normal-clViewSlope+normal*dot(normal,clViewSlope));');
-        };
+          shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying vec3 clSandWorld;\nuniform float clSandDownwelling;')
+            .replace('#include <color_fragment>','#include <color_fragment>\nfloat clRipplePhase=clSandWorld.z*9.0+sin(clSandWorld.x*0.85)*1.35; float clRippleAA=1.0-smoothstep(0.4,1.8,fwidth(clRipplePhase)); float clPatches=sin(clSandWorld.x*0.43+sin(clSandWorld.z*0.3))*sin(clSandWorld.z*0.52); diffuseColor.rgb*=(0.87+0.036*sin(clRipplePhase)*clRippleAA+0.032*clPatches)*mix(vec3(0.80,0.91,1.0),vec3(1.02,1.0,0.95),clSandDownwelling);')
+            .replace('#include <normal_fragment_maps>','#include <normal_fragment_maps>\nvec3 clSlope=vec3(cos(clSandWorld.x*0.85)*1.1475,0.0,9.0)*cos(clRipplePhase)*0.020*clRippleAA; vec3 clViewSlope=mat3(viewMatrix)*clSlope; normal=normalize(normal-clViewSlope+normal*dot(normal,clViewSlope));');
+        }
+        floor.material.onBeforeCompile=function(shader){shadeCLHuntSandLight(shader,sandDownwelling);};
+        floor.material.customProgramCacheKey=function(){return 'cl-sand-downwelling-v24';};
         // Fine rough mineral variation makes reef forms readable without new maps or draw calls.
         function reefSurface(shader){
           shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 clReefPos;').replace('#include <begin_vertex>','#include <begin_vertex>\nclReefPos=position;');
@@ -12643,7 +12675,7 @@ function createCLHuntFish(T,index){
           }
           cx.putImageData(pixels,0,0);var texture=new THREE.CanvasTexture(cv);texture.wrapS=texture.wrapT=THREE.RepeatWrapping;texture.repeat.set(16,16);return texture;
         })();
-        var causticsMat=new THREE.MeshBasicMaterial({map:causticsTex,transparent:true,opacity:0.04,blending:THREE.AdditiveBlending,depthWrite:false});
+        var causticsMat=new THREE.MeshBasicMaterial({map:causticsTex,color:0xdff4ef,transparent:true,opacity:0.065,blending:THREE.AdditiveBlending,depthWrite:false});
         var caustics=new THREE.Mesh(causticsGeo,causticsMat);caustics.name='cl-caustics';caustics.rotation.x=-Math.PI/2;caustics.position.y=0.025;scene.add(caustics);
         var causticPhase=0;
 
@@ -14719,14 +14751,14 @@ function createCLHuntFish(T,index){
         var keys = {};
         var clickRequested = false;
         var inkRequested = false;
-        function clearInput(){keys={};clickRequested=false;inkRequested=false;gKeyDownPrev=false;if(typeof gameState!=='undefined'&&gameState&&gameState.forageTarget)cancelForage();}
+        function clearInput(){if(typeof releaseTouchInputs==='function')releaseTouchInputs();keys={};clickRequested=false;inkRequested=false;gKeyDownPrev=false;if(typeof gameState!=='undefined'&&gameState&&gameState.forageTarget)cancelForage();}
         function setPaused(value){
           if(!gameState || gameState.gameOver)return;
           clearInput();gameState.paused=value;pauseOverlay.style.display=value?'flex':'none';
           if(value)recordEvent('Pause','Dive paused');
           clAnnounce(value?'Paused':'Resumed');
         }
-        function onWindowBlur(){if(inspection.active){inspection.wasPaused=true;inspection.drag=null;clearInput();return;}setPaused(true);}
+        function onWindowBlur(){if(mobileToolsPanel&&!mobileToolsPanel.hidden){mobileToolsWasPaused=true;clearInput();return;}if(settingsPanel&&!settingsPanel.hidden)settingsWasPaused=true;if(inspection.active){inspection.wasPaused=true;inspection.drag=null;clearInput();return;}setPaused(true);}
         function onVisibility(){if(document.hidden)onWindowBlur();}
         function onKeyDown(e){
           if(e.ctrlKey||e.metaKey||e.altKey)return;
@@ -14773,15 +14805,24 @@ function createCLHuntFish(T,index){
         hud.setAttribute('aria-label', 'Hunter Sim status: health, stamina, hunger, camouflage, score');
         canvasEl.parentElement.appendChild(hud);
         hud.style.width='222px';hud.style.minWidth='0';hud.style.fontFamily='system-ui,sans-serif';hud.style.borderColor='#497985';
-        hud.innerHTML='<div style="display:flex;justify-content:space-between;gap:8px;font-weight:700"><span data-hud="species"></span><span data-hud="phase"></span></div><div data-hud="depth" data-detail data-sub style="font-size:11px;color:#c5dcde;margin:5px 0"></div><div style="display:flex;gap:10px;flex-wrap:wrap"><span>HEALTH <b data-hud="health"></b></span><span>ENERGY <b data-hud="energy"></b></span><span>STAMINA <b data-hud="stamina"></b></span></div><div style="display:flex;gap:12px;flex-wrap:wrap"><span>CAMO <b data-hud="camo"></b></span><span>SCORE <b data-hud="score"></b></span><span>TIME <b data-hud="time"></b></span></div><div data-hud="substrate" data-detail data-sub style="color:#c3ded4;font-size:11px"></div><div data-hud="burn" data-sub style="font-size:11px;overflow-wrap:anywhere"></div><div data-hud="ink" data-sub style="color:#dbcafc;font-size:11px"></div><div data-hud="status" data-sub style="color:#ffe6ab;font-size:12px;line-height:1.4"></div>';
-        var forageRow=document.createElement('div');forageRow.hidden=true;
+        hud.innerHTML='<div class="cl-hud-identity" style="display:flex;justify-content:space-between;gap:8px;font-weight:700"><span data-hud="species"></span><span data-hud="phase"></span></div><div class="cl-hud-context" data-hud="depth" data-detail data-sub style="font-size:11px;color:#c5dcde;margin:5px 0"></div><div class="cl-hud-vitals" style="display:flex;gap:10px;flex-wrap:wrap"><span>HEALTH <b data-hud="health"></b></span><span>ENERGY <b data-hud="energy"></b></span><span>STAMINA <b data-hud="stamina"></b></span></div><div class="cl-hud-summary" style="display:flex;gap:12px;flex-wrap:wrap"><span>CAMO <b data-hud="camo"></b></span><span>SCORE <b data-hud="score"></b></span><span>TIME <b data-hud="time"></b></span></div><div class="cl-hud-context" data-hud="substrate" data-detail data-sub style="color:#c3ded4;font-size:11px"></div><div data-hud="burn" data-sub style="font-size:11px;overflow-wrap:anywhere"></div><div data-hud="ink" data-sub style="color:#dbcafc;font-size:11px"></div><div data-hud="status" data-sub style="color:#ffe6ab;font-size:12px;line-height:1.4"></div>';
+        var forageRow=document.createElement('div');forageRow.className='cl-hud-activity-row';forageRow.hidden=true;
         var forageActivity=document.createElement('div');forageActivity.setAttribute('data-hud','activity');forageActivity.style.cssText='color:#baf3d6;font-size:12px;margin-top:5px';forageRow.appendChild(forageActivity);
         var forageProgress=document.createElement('progress');forageProgress.max=1;forageProgress.value=0;forageProgress.setAttribute('aria-label','Foraging progress');forageProgress.style.cssText='width:100%;height:7px;accent-color:#80e0b2';forageRow.appendChild(forageProgress);hud.appendChild(forageRow);
-        var threatRow=document.createElement('div');threatRow.hidden=true;threatRow.style.cssText='border-top:1px solid #55727c;margin-top:5px;padding-top:5px';
+        var threatRow=document.createElement('div');threatRow.className='cl-hud-threat-row';threatRow.hidden=true;threatRow.style.cssText='border-top:1px solid #55727c;margin-top:5px;padding-top:5px';
         var threatLabel=document.createElement('div');threatLabel.setAttribute('data-hud','threat');threatLabel.style.cssText='color:#ffcf91;font-size:12px';threatRow.appendChild(threatLabel);
         var threatMeter=document.createElement('progress');threatMeter.max=1;threatMeter.value=0;threatMeter.setAttribute('aria-label','Predator awareness');threatMeter.style.cssText='width:100%;height:6px;accent-color:#f5b578';threatRow.appendChild(threatMeter);hud.appendChild(threatRow);
         var hudNodes={};hud.querySelectorAll('[data-hud]').forEach(function(n){hudNodes[n.getAttribute('data-hud')]=n;});
-        function hudText(key,value){if(hudNodes[key].textContent!==value)hudNodes[key].textContent=value;}
+        function hudText(key,value){
+          if(hudNodes[key].textContent!==value)hudNodes[key].textContent=value;
+          if(mobileCriticalDetails&&mobileCriticalDetails[key]){var detail=mobileCriticalDetails[key],detailText=detail.label+value;if(detail.node.textContent!==detailText)detail.node.textContent=detailText;if(detail.node.hidden!==!value)detail.node.hidden=!value;}
+          if(key==='ink'&&touchInkButton){
+            var inkState=gameState.inkReserves===0?'Empty':gameNow<gameState.inkCooldownUntil?'Refill '+Math.ceil((gameState.inkCooldownUntil-gameNow)/1000)+'s':'Ready';
+            var inkLabel='Ink '+gameState.inkReserves+'/'+gameState.inkMaxReserves+'\n'+inkState;
+            if(touchInkButton.textContent!==inkLabel)touchInkButton.textContent=inkLabel;
+            touchInkButton.setAttribute('aria-label','Ink defense, '+gameState.inkReserves+' of '+gameState.inkMaxReserves+' reserves, '+inkState);
+          }
+        }
 
         var vignette = document.createElement('div');
         vignette.setAttribute('aria-hidden', 'true');
@@ -15171,19 +15212,21 @@ function createCLHuntFish(T,index){
         // Readable controls share the keyboard action paths; no pointer-lock is needed.
         var stage=canvasEl.parentElement;stage.classList.add('cl-hunt-stage');
         var uiStyle=document.createElement('style');
-        uiStyle.textContent='.cl-hunt-stage{font-family:system-ui,sans-serif;isolation:isolate}.cl-hunt-stage button,.cl-hunt-stage select{font:600 12px system-ui;color:#e6f6f4;background:#112f40;border:1px solid #507a83;border-radius:8px;padding:9px 12px;min-height:38px;cursor:pointer}.cl-hunt-stage button:focus-visible,.cl-hunt-stage select:focus-visible{outline:3px solid #fde68a;outline-offset:2px}.cl-hunt-stage button:active{background:#32626c}.cl-hunt-controls{position:absolute;bottom:10px;left:12px;right:12px;display:flex;gap:6px;justify-content:center;flex-wrap:wrap;z-index:6}.cl-hunt-touch{display:none;position:absolute;bottom:12px;left:12px;right:12px;justify-content:space-between;align-items:end;gap:8px;z-index:7;pointer-events:none}.cl-hunt-touch button{min-width:42px;min-height:44px;touch-action:none;pointer-events:auto}.cl-hunt-pad{display:grid;grid-template-columns:repeat(3,44px);gap:4px}.cl-hunt-actions{display:grid;grid-template-columns:repeat(2,auto);gap:4px}.cl-hunt-dialog{position:absolute;inset:12px;background:#0a2232f5;color:#ecf9f8;border:1px solid #64888f;border-radius:14px;padding:20px;z-index:12;overflow:auto}.cl-hunt-dialog[hidden]{display:none}.cl-hunt-dialog label{display:flex;gap:10px;align-items:center;margin:12px 0;font-size:14px}.cl-hunt-small .cl-hunt-touch{display:flex}.cl-hunt-small .cl-hunt-controls{bottom:172px;justify-content:start;right:95px}.cl-hunt-small .cl-hunt-controls button{padding:6px 9px;font-size:11px;min-height:34px}.cl-hunt-small .cl-hunt-desktop{display:none}.cl-hunt-small .cl-hunt-mission{top:var(--cl-mission-top,112px)!important;left:12px!important;right:12px!important;max-width:none!important;font-size:12px!important}.cl-hunt-small .cl-hunt-hud{width:calc(100% - 24px)!important;box-sizing:border-box;font-size:11px!important;padding:8px!important;left:12px!important;top:10px!important;min-width:0!important}.cl-hunt-small .cl-hunt-hud [data-detail]{display:none}.cl-hunt-small .cl-hunt-map{width:76px!important;height:76px!important;top:auto!important;bottom:174px!important}.cl-hunt-stage.cl-large-text .cl-hunt-hud{font-size:16px!important}.cl-hunt-stage.cl-large-text [data-sub]{font-size:14px!important}.cl-hunt-stage.cl-high-contrast .cl-hunt-hud{background:#000!important;border-color:#fff!important}';
+        uiStyle.textContent='.cl-hunt-stage{font-family:system-ui,sans-serif;isolation:isolate}.cl-hunt-stage button,.cl-hunt-stage select{font:600 12px system-ui;color:#e6f6f4;background:#112f40;border:1px solid #507a83;border-radius:8px;padding:9px 12px;min-height:38px;cursor:pointer}.cl-hunt-stage button:focus-visible,.cl-hunt-stage select:focus-visible{outline:3px solid #fde68a;outline-offset:2px}.cl-hunt-stage button:active{background:#32626c}.cl-hunt-controls{position:absolute;bottom:10px;left:12px;right:12px;display:flex;gap:6px;justify-content:center;flex-wrap:wrap;z-index:6}.cl-hunt-touch{display:none;position:absolute;bottom:12px;left:12px;right:12px;justify-content:space-between;align-items:end;gap:8px;z-index:7;pointer-events:none}.cl-hunt-touch button{min-width:42px;min-height:44px;touch-action:none;pointer-events:auto}.cl-hunt-pad{display:grid;grid-template-columns:repeat(3,44px);gap:4px}.cl-hunt-actions{display:grid;grid-template-columns:repeat(2,auto);gap:4px}.cl-hunt-dialog{position:absolute;inset:12px;background:#0a2232f5;color:#ecf9f8;border:1px solid #64888f;border-radius:14px;padding:20px;z-index:12;overflow:auto}.cl-hunt-dialog[hidden]{display:none}.cl-hunt-dialog label{display:flex;gap:10px;align-items:center;margin:12px 0;font-size:14px}.cl-hunt-stage.cl-large-text .cl-hunt-hud{font-size:16px!important}.cl-hunt-stage.cl-large-text [data-sub]{font-size:14px!important}.cl-hunt-stage.cl-high-contrast .cl-hunt-hud{background:#000!important;border-color:#fff!important}';
+        uiStyle.textContent+=".cl-hunt-tools-toggle{display:none}.cl-hunt-mobile-tools[hidden]{display:none}.cl-hunt-mobile-tools:not([hidden]){display:block}.cl-hunt-touch-enabled{height:var(--cl-touch-stage-height,72vh)!important;min-height:0!important}.cl-hunt-touch-enabled button,.cl-hunt-touch-enabled select{min-height:44px;min-width:44px;box-sizing:border-box}.cl-hunt-touch-enabled .cl-hunt-touch{display:flex;bottom:8px;left:8px;right:8px;gap:8px}.cl-hunt-touch-enabled .cl-hunt-touch button{padding:3px 2px;font-size:11px;line-height:1.2;overflow-wrap:anywhere;white-space:pre-line}.cl-hunt-touch-enabled .cl-hunt-pad{grid-template-columns:repeat(3,44px);gap:4px;flex:0 0 140px}.cl-hunt-touch-enabled .cl-hunt-pad button:first-child{padding-inline:0;white-space:nowrap;letter-spacing:-.15px}.cl-hunt-touch-enabled .cl-hunt-actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;flex:1;min-width:0;max-width:240px}.cl-hunt-touch-enabled .cl-hunt-controls{left:8px;right:8px;bottom:var(--cl-primary-bottom,156px);gap:6px;justify-content:flex-end;flex-wrap:nowrap}.cl-hunt-touch-enabled .cl-hunt-controls button{padding:6px 10px;font-size:12px;flex:1;max-width:120px}.cl-hunt-touch-enabled .cl-hunt-controls .cl-hunt-desktop{display:none}.cl-hunt-touch-enabled .cl-hunt-tools-toggle{display:block}.cl-hunt-touch-enabled .cl-hunt-hud{width:calc(100% - 16px)!important;box-sizing:border-box;left:8px!important;top:8px!important;min-width:0!important;font-size:11px!important;padding:6px 8px!important;line-height:1.3!important;max-height:var(--cl-hud-max,160px);overflow:auto;overscroll-behavior:contain;pointer-events:auto;display:flex;flex-wrap:wrap;align-content:start}.cl-hunt-touch-enabled .cl-hud-vitals,.cl-hunt-touch-enabled .cl-hud-summary{display:inline-flex!important;flex-wrap:nowrap!important;gap:7px!important;margin-right:7px}.cl-hunt-touch-enabled .cl-hud-identity{order:0;flex-basis:100%}.cl-hunt-touch-enabled .cl-hud-vitals,.cl-hunt-touch-enabled .cl-hud-summary{order:1}.cl-hunt-touch-enabled [data-hud=status]{order:2;flex-basis:100%}.cl-hunt-touch-enabled .cl-hud-activity-row{order:3;flex-basis:100%}.cl-hunt-touch-enabled .cl-hud-threat-row{order:4;flex-basis:100%}.cl-hunt-touch-enabled [data-hud=depth]{order:5;flex-basis:100%}.cl-hunt-touch-enabled [data-hud=substrate]{order:6;flex-basis:100%}.cl-hunt-touch-enabled .cl-hud-context{display:block!important;font-size:11px!important;margin:2px 0!important;line-height:1.3}.cl-hunt-touch-enabled .cl-hunt-hud [data-hud=status]:empty{display:none}.cl-hunt-touch-enabled .cl-hunt-hud [data-hud=status],.cl-hunt-touch-enabled .cl-hunt-hud [data-hud=activity],.cl-hunt-touch-enabled .cl-hunt-hud [data-hud=threat]{font-size:11px!important;line-height:1.3!important}.cl-hunt-touch-enabled .cl-hunt-mission{top:var(--cl-mission-top,120px)!important;left:8px!important;right:8px!important;max-width:none!important;font-size:12px!important;padding:6px 8px!important;line-height:1.3;max-height:var(--cl-mission-max,100px);overflow:auto;overscroll-behavior:contain;pointer-events:auto;display:flex;flex-direction:column}.cl-hunt-touch-enabled .cl-target-readout{order:0;display:flex;flex-direction:column;border-top:0;margin-top:0;padding-top:0}.cl-hunt-touch-enabled .cl-target-readout[hidden]{display:none}.cl-hunt-touch-enabled .cl-target-readout [data-target=action]{order:0}.cl-hunt-touch-enabled .cl-target-readout [data-target=detail]{order:1;margin:3px 0 0}.cl-hunt-touch-enabled .cl-mission-brief{order:1}.cl-hunt-touch-enabled .cl-mission-brief:not([hidden])+.cl-target-readout{margin-bottom:5px}.cl-hunt-touch-enabled.cl-large-text .cl-hunt-hud,.cl-hunt-touch-enabled.cl-large-text .cl-hunt-mission{font-size:14px!important}.cl-hunt-touch-enabled.cl-large-text .cl-hud-context,.cl-hunt-touch-enabled.cl-large-text .cl-hunt-hud [data-sub]{font-size:14px!important}.cl-hunt-touch-enabled .cl-hunt-caption{top:var(--cl-feedback-top,180px)!important;left:8px;right:8px!important;width:auto!important;max-height:var(--cl-feedback-height,60px)!important}.cl-hunt-touch-enabled .cl-hunt-dialog{inset:8px;padding:12px;box-sizing:border-box;overscroll-behavior:contain}.cl-hunt-touch-enabled .cl-hunt-dialog input{min-width:24px;min-height:24px}.cl-hunt-touch-enabled .cl-hunt-dialog label{min-height:44px;margin:6px 0}.cl-hunt-mobile-tools-header{display:flex;align-items:center;justify-content:space-between;gap:10px;position:sticky;top:-12px;background:#0a2232;padding:8px 0;z-index:1}.cl-hunt-mobile-tools-header h2{font-size:17px;margin:0}.cl-hunt-mobile-tools-header p{font-size:12px;color:#bddbdf;margin:3px 0 0}.cl-hunt-mobile-secondary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0 14px}.cl-hunt-mobile-details{display:grid;gap:7px;border-top:1px solid #64888f;padding-top:12px;font-size:13px;line-height:1.4;overflow-wrap:anywhere}.cl-hunt-mobile-details h3{font-size:14px;margin:0}.cl-hunt-mobile-details .cl-hunt-map{position:static!important;width:110px!important;height:110px!important;justify-self:start}.cl-hunt-mobile-details [data-target=detail]{font-size:13px;color:#bed8df}.cl-hunt-wide-touch .cl-hunt-hud{width:calc(50% - 12px)!important}.cl-hunt-wide-touch .cl-hunt-mission{top:8px!important;left:calc(50% + 4px)!important;max-height:var(--cl-hud-max,140px)}.cl-hunt-wide-touch .cl-hunt-actions{grid-template-columns:repeat(3,minmax(0,1fr));max-width:440px}.cl-hunt-wide-touch .cl-hunt-controls{left:160px;bottom:calc(14px + var(--cl-touch-actions-height,92px))}.cl-hunt-wide-touch .cl-hunt-controls button{flex:0 1 120px}.cl-hunt-touch-enabled .cl-inspection-tools button{min-height:44px;min-width:44px}.cl-hunt-touch-enabled .cl-inspection-tools{max-height:45%;overflow:auto}.cl-hunt-touch-enabled .cl-inspection-title{top:8px;left:10px;right:10px}.cl-high-contrast .cl-hunt-mobile-tools{background:#000;border-color:#fff}.cl-large-text .cl-hunt-mobile-details{font-size:15px}.cl-large-text .cl-hunt-mobile-details [data-tool-detail]{font-size:15px!important}";
+        uiStyle.textContent+=".cl-hunt-touch-enabled .cl-hunt-settings:not([hidden]){display:flex;flex-direction:column;overflow:hidden}.cl-hunt-touch-enabled .cl-hunt-settings-content{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain}.cl-hunt-touch-enabled .cl-hunt-settings-actions{display:flex;gap:8px;flex:0 0 auto;padding-top:12px;border-top:1px solid #64888f}.cl-hunt-touch-enabled .cl-hunt-settings-actions button{flex:1}";
         stage.appendChild(uiStyle);
         controlPanel=document.createElement('div');controlPanel.className='cl-hunt-controls';stage.appendChild(controlPanel);
         function uiButton(label,fn,parent){var b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=fn;(parent||controlPanel).appendChild(b);return b;}
-        uiButton('Pause',function(){setPaused(!gameState.paused);canvasEl.focus();});
-        uiButton('View',cycleCamera);
-        uiButton('Inspect [F]',toggleInspection);
+        var pauseButton=uiButton('Pause',function(){setPaused(!gameState.paused);canvasEl.focus();});
+        var viewButton=uiButton('View',function(){closeMobileTools(false);cycleCamera();});
+        var inspectButton=uiButton('Inspect [F]',function(){closeMobileTools(false);toggleInspection();});
         var forageButton=uiButton('Forage [R]',toggleForage);forageButton.setAttribute('aria-pressed','false');forageButton.onpointerdown=function(e){e.preventDefault();};
-        uiButton('Help / settings',openSettings);
+        var helpButton=uiButton('Help / settings',function(){closeMobileTools(false);openSettings();});
         var targetButton=uiButton('Next target [T]',cycleTarget);targetButton.className='cl-hunt-desktop';
         var huntButton=uiButton('Strike [E]',function(){clickRequested=true;canvasEl.focus();});huntButton.className='cl-hunt-desktop';
         var descendButton=uiButton('Explore depths',function(){
-          if(gameState.gameOver)return;octopus.position.x=42;gameState.verticalY=Math.max(0.55,gameState.verticalY);
+          if(gameState.gameOver)return;closeMobileTools(false);octopus.position.x=42;gameState.verticalY=Math.max(0.55,gameState.verticalY);
           recordEvent('Habitat','Moved to the drop-off; Q rises and Z descends');clAnnounce(__alloT('stem.cephalopodlab.sr_at_the_reef_drop_off_q_rises_z_descends_return_to', 'At the reef drop-off. Q rises; Z descends. Return toward the reef to shelter.'));canvasEl.focus();
         });descendButton.className='cl-hunt-desktop';
         missionHud=document.createElement('div');missionHud.className='cl-hunt-mission';missionHud.setAttribute('role','status');missionHud.setAttribute('aria-live','off');
@@ -15194,15 +15237,16 @@ function createCLHuntFish(T,index){
         var targetAction=document.createElement('div');targetAction.setAttribute('data-target','action');targetReadout.appendChild(targetAction);
         uiStyle.textContent+='.cl-target-readout{border-top:1px solid #426674;margin-top:8px;padding-top:8px}.cl-target-readout[hidden],.cl-mission-brief[hidden]{display:none}.cl-mission-brief[hidden]+.cl-target-readout{border-top:0;margin-top:0;padding-top:0}.cl-target-readout [data-target=detail]{color:#bed8df;font-size:11px;letter-spacing:.02em;margin-bottom:3px}.cl-target-readout [data-target=action]{font-weight:650;color:#ffe0a1}.cl-target-readout[data-state=ready] [data-target=action]{color:#b0f6cb}.cl-target-readout[data-state=blocked] [data-target=action]{color:#ffc1a2}.cl-target-readout[data-state=recovering] [data-target=action]{color:#cbdcec}.cl-large-text .cl-target-readout{font-size:14px}.cl-large-text .cl-target-readout [data-target=detail]{font-size:14px}.cl-high-contrast .cl-hunt-mission{background:#000!important;border-color:#fff!important}.cl-high-contrast .cl-target-readout [data-target]{color:#fff!important}';
         var lastMissionText='';
+        function clHuntInputCue(key,touchLabel){return stage.classList.contains('cl-hunt-touch-enabled')?touchLabel:key;}
         function updateMission(){
           var text,rs=gameState.runStats,homeDistance=Math.hypot(octopus.position.x,octopus.position.z+8);
           if(mission){
-            text=rs.crabs===0?'Dusk on the reef · Find a crab beside the rocky reef. [T] selects prey; [E] strikes.':rs.clams===0?'One meal found · Open a clam in the sand channel. Tap Forage [R] nearby, or hold [E].':'Both meals collected · Return to the HOME den ('+homeDistance.toFixed(0)+' m away).';
+            text=rs.crabs===0?clHuntInputCue('Dusk on the reef · Find a crab beside the rocky reef. [T] selects prey; [E] strikes.','Dusk on the reef · Find a crab beside the rocky reef. Tap Target, then Strike / hold.'):rs.clams===0?clHuntInputCue('One meal found · Open a clam in the sand channel. Tap Forage [R] nearby, or hold [E].','One meal found · Open a clam in the sand channel. Tap Forage nearby and stay still.'):'Both meals collected · Return to the HOME den ('+homeDistance.toFixed(0)+' m away).';
             if(gameState.camoEff<0.25 && rs.crabs===0)text+=' Settle beside cover to blend.';
             if(rs.crabs>0&&rs.clams>0&&homeDistance<2&&Math.abs(gameState.verticalY-0.55)<1.1){gameState.missionComplete=true;finishRun('mission',true);text='Reef mission complete · Both meals, safely home.';}
-          }else if(capabilities.diet==='detritus')text='Marine snow · Tap Forage [R] near drifting food, or hold [E]. [B] is your defensive display.';
+          }else if(capabilities.diet==='detritus')text=clHuntInputCue('Marine snow · Tap Forage [R] near drifting food, or hold [E]. [B] is your defensive display.','Marine snow · Tap Forage near drifting food and stay still. Flash is your defensive display.');
           else if(observation)text='Field study · Explore freely, without hunger or injury.';
-          else text=gameState.targetText ? '' : 'Explore the reef · [T] selects prey · [E] strikes or opens a nearby clam · [V] changes view';
+          else text=gameState.targetText ? '' : clHuntInputCue('Explore the reef · [T] selects prey · [E] strikes or opens a nearby clam · [V] changes view','Explore the reef · Target selects prey · Strike / hold hunts or opens clams · View changes view');
           if(gameState.strikeMessage&&gameNow<gameState.strikeMessageUntil)text+=' '+gameState.strikeMessage;
           if(gameState.threatText)text+=' '+gameState.threatText;
           var step=mission?(rs.crabs===0?0:rs.clams===0?1:2):-1;if(step!==gameState.announcedStep){gameState.announcedStep=step;if(mission)clAnnounce(text);}if(text!==lastMissionText){missionBrief.textContent=text;lastMissionText=text;}
@@ -15215,36 +15259,88 @@ function createCLHuntFish(T,index){
           }
         }
         touchPanel=document.createElement('div');touchPanel.className='cl-hunt-touch';stage.appendChild(touchPanel);
-        var pad=document.createElement('div');pad.className='cl-hunt-pad';touchPanel.appendChild(pad);
-        var actions=document.createElement('div');actions.className='cl-hunt-actions';touchPanel.appendChild(actions);
+        var pad=document.createElement('div');pad.className='cl-hunt-pad';pad.setAttribute('role','group');pad.setAttribute('aria-label','Movement and depth');touchPanel.appendChild(pad);
+        var actions=document.createElement('div');actions.className='cl-hunt-actions';actions.setAttribute('role','group');actions.setAttribute('aria-label','Dive actions');touchPanel.appendChild(actions);
+        var touchHeldButtons=[],touchInkButton=null;
+        function releaseTouchInputs(){
+          (touchHeldButtons||[]).forEach(function(b){var pointer=b._clPointer;b._clPointer=null;if(pointer!=null&&b.hasPointerCapture&&b.hasPointerCapture(pointer))try{b.releasePointerCapture(pointer);}catch(e){}});
+        }
         function holdButton(label,code,parent,col){
-          var b=uiButton(label,function(){},parent);if(col)b.style.gridColumn=col;
-          function down(e){if(gameState.paused||gameState.gameOver)return;e.preventDefault();if(e.pointerId!=null){canvasEl.focus();b.setPointerCapture(e.pointerId);}keys[code]=true;if(code==='KeyE')clickRequested=true;if(code==='KeyI')inkRequested=true;}
-          function up(){keys[code]=false;}
+          var b=uiButton(label,function(){},parent);if(col)b.style.gridColumn=col;touchHeldButtons.push(b);
+          function down(e){if(gameState.paused||gameState.gameOver)return;e.preventDefault();if(e.pointerId!=null){canvasEl.focus();b._clPointer=e.pointerId;b.setPointerCapture(e.pointerId);}keys[code]=true;if(code==='KeyE')clickRequested=true;if(code==='KeyI')inkRequested=true;}
+          function up(){keys[code]=false;var pointer=b._clPointer;b._clPointer=null;if(pointer!=null&&b.hasPointerCapture&&b.hasPointerCapture(pointer))try{b.releasePointerCapture(pointer);}catch(e){}}
           b.onpointerdown=down;b.onpointerup=up;b.onpointercancel=up;b.onlostpointercapture=up;
           b.onblur=up;b.onkeydown=function(e){if((e.key===' '||e.key==='Enter')&&!e.repeat)down(e);};b.onkeyup=up;
           return b;
         }
         holdButton('Forward','KeyW',pad,'2');holdButton('Left','KeyA',pad,'1');holdButton('Back','KeyS',pad,'2');holdButton('Right','KeyD',pad,'3');
         holdButton('Rise','KeyQ',pad,'1');holdButton('Dive','KeyZ',pad,'3');
-        holdButton('Jet','Space',actions);holdButton('Hunt / hold','KeyE',actions);
-        if(capabilities.ink)holdButton('Ink','KeyI',actions);
-        holdButton('Shelter','KeyG',actions);
+        holdButton('Jet','Space',actions);holdButton('Strike / hold','KeyE',actions);
+        if(capabilities.ink)touchInkButton=holdButton('Ink','KeyI',actions);
+        holdButton('Interact','KeyG',actions);
         if(species.specialAbility==='mimicry')holdButton('Mimic','KeyM',actions);
         if(species.specialAbility==='passingCloud')holdButton('Display','KeyH',actions);
         if(species.specialAbility==='burglarAlarm')holdButton('Flash','KeyB',actions);
         uiButton('Target',cycleTarget,actions);
-        settingsPanel=document.createElement('div');settingsPanel.className='cl-hunt-dialog';settingsPanel.hidden=true;
+        var desktopControlOrder=Array.prototype.slice.call(controlPanel.children),mobileSecondaryButtons=[viewButton,inspectButton,helpButton,descendButton];
+        var mobileToolsPanel=document.createElement('div');mobileToolsPanel.className='cl-hunt-dialog cl-hunt-mobile-tools';mobileToolsPanel.id='cl-hunt-tools-dialog';mobileToolsPanel.hidden=true;mobileToolsPanel.setAttribute('role','dialog');mobileToolsPanel.setAttribute('aria-modal','true');mobileToolsPanel.setAttribute('aria-label','Dive tools and details');stage.appendChild(mobileToolsPanel);
+        var mobileToolsHeader=document.createElement('div');mobileToolsHeader.className='cl-hunt-mobile-tools-header';mobileToolsPanel.appendChild(mobileToolsHeader);
+        var mobileToolsHeading=document.createElement('div'),mobileToolsTitle=document.createElement('h2'),mobileToolsHint=document.createElement('p');mobileToolsTitle.textContent='Dive tools';mobileToolsHint.textContent='Dive paused while tools are open';mobileToolsHeading.appendChild(mobileToolsTitle);mobileToolsHeading.appendChild(mobileToolsHint);mobileToolsHeader.appendChild(mobileToolsHeading);
+        var mobileToolsClose=uiButton('Return to dive',function(){closeMobileTools(true);},mobileToolsHeader);
+        var mobileSecondary=document.createElement('div');mobileSecondary.className='cl-hunt-mobile-secondary';mobileToolsPanel.appendChild(mobileSecondary);
+        var mobileDetails=document.createElement('div');mobileDetails.className='cl-hunt-mobile-details';mobileToolsPanel.appendChild(mobileDetails);
+        var mobileDetailsTitle=document.createElement('h3');mobileDetailsTitle.textContent='Status and navigation';mobileDetails.appendChild(mobileDetailsTitle);
+        var mobileCriticalDetails={};
+        [['status','Status: '],['activity','Activity: '],['threat','Predator: '],['depth','Depth: '],['substrate','Camouflage: ']].forEach(function(spec){var node=document.createElement('div');node.setAttribute('data-tool-detail',spec[0]);node.hidden=true;mobileDetails.appendChild(node);mobileCriticalDetails[spec[0]]={node:node,label:spec[1]};});
+        var mobileTargetDetail=document.createElement('div');mobileTargetDetail.setAttribute('data-tool-detail','target');mobileTargetDetail.hidden=true;mobileDetails.appendChild(mobileTargetDetail);
+        var mobileDetailSlots=[];
+        [hudNodes.score.parentElement,hudNodes.time.parentElement,hudNodes.burn,hudNodes.ink,minimap].forEach(function(node){var slot=document.createComment('Hunter detail position');node.parentNode.insertBefore(slot,node);mobileDetailSlots.push({node:node,slot:slot});});
+        var mobileToolsWasPaused=false,usingTouchLayout=false;
+        var mobileToolsButton=uiButton('Tools',openMobileTools);mobileToolsButton.className='cl-hunt-tools-toggle';mobileToolsButton.setAttribute('aria-controls',mobileToolsPanel.id);mobileToolsButton.setAttribute('aria-expanded','false');
+        function moveMobileDetails(touch){
+          if(usingTouchLayout===touch)return;usingTouchLayout=touch;
+          if(!touch){var toolsWereOpen=!mobileToolsPanel.hidden;closeMobileTools(false);if(toolsWereOpen)canvasEl.focus();}
+          mobileSecondaryButtons.forEach(function(button){if(touch)mobileSecondary.appendChild(button);});
+          if(!touch)desktopControlOrder.forEach(function(button){controlPanel.insertBefore(button,mobileToolsButton);});
+          mobileDetailSlots.forEach(function(entry){if(touch)mobileDetails.appendChild(entry.node);else entry.slot.parentNode.insertBefore(entry.node,entry.slot.nextSibling);});
+          forageButton.textContent=touch?'Forage':'Forage [R]';inspectButton.textContent=touch?'Inspect':'Inspect [F]';
+          if(touch){hud.tabIndex=0;missionHud.tabIndex=0;}else{hud.removeAttribute('tabindex');missionHud.removeAttribute('tabindex');}
+        }
+        function openMobileTools(){
+          if(!usingTouchLayout||gameState.gameOver||inspection.active)return;
+          mobileToolsWasPaused=gameState.paused;
+          setPaused(true);clearInput();pauseOverlay.style.display='none';mobileToolsPanel.hidden=false;mobileToolsButton.setAttribute('aria-expanded','true');mobileToolsClose.focus();scheduleHuntLayout();
+          clAnnounce('Dive tools opened. Dive paused.');
+        }
+        function closeMobileTools(returnFocus){
+          if(!mobileToolsPanel||mobileToolsPanel.hidden)return;
+          mobileToolsPanel.hidden=true;mobileToolsButton.setAttribute('aria-expanded','false');clearInput();setPaused(mobileToolsWasPaused);
+          if(returnFocus!==false){canvasEl.focus();clAnnounce(mobileToolsWasPaused?'Tools closed. Dive remains paused.':'Tools closed. Dive resumed.');}
+          scheduleHuntLayout();
+        }
+        mobileToolsPanel.onkeydown=function(e){
+          if(e.key==='Escape'){e.preventDefault();e.stopPropagation();closeMobileTools(true);return;}
+          if(e.key==='Tab'){var nodes=mobileToolsPanel.querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled]),[tabindex="0"]'),first=nodes[0],last=nodes[nodes.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}
+        };
+        settingsPanel=document.createElement('div');settingsPanel.className='cl-hunt-dialog cl-hunt-settings';settingsPanel.hidden=true;
         settingsPanel.setAttribute('role','dialog');settingsPanel.setAttribute('aria-modal','true');settingsPanel.setAttribute('aria-label','Dive help and settings');stage.appendChild(settingsPanel);
-        var help=document.createElement('p');help.textContent='Move with W/S; turn with A/D. Space + forward jets. Q/Z changes depth. T selects a target; E strikes or drills a clam while held. R / Forage gathers one nearby meal without holding a key; moving, pausing or taking damage cancels it. I inks; G carries a shelter. V changes the camera. F opens a paused inspection view; drag or use its orbit buttons. Escape pauses. Energy and cooldown values are simplified game rules.';settingsPanel.appendChild(help);
-        function setting(label,key){var l=document.createElement('label'),input=document.createElement('input');input.type='checkbox';input.checked=!!gameState.a11y[key];input.onchange=function(){gameState.a11y[key]=input.checked;saveA11ySettings(gameState.a11y);applyLiveAccess();};l.appendChild(input);l.appendChild(document.createTextNode(label));settingsPanel.appendChild(l);}
-        function applyLiveAccess(){requestAnimationFrame(function(){if(!disposed)stage.style.setProperty('--cl-mission-top',(hud.offsetHeight+22)+'px');});stage.classList.toggle('cl-large-text',!!gameState.a11y.largeText);stage.classList.toggle('cl-high-contrast',!!gameState.a11y.highContrast);captions.style.display=gameState.a11y.captionMode?'flex':'none';gameState.runStats.captionsOn=!!gameState.a11y.captionMode;gameState.runStats.reducedMotionOn=!!gameState.a11y.reducedMotion;gameState.runStats.largeTextOn=!!gameState.a11y.largeText;gameState.runStats.highContrastOn=!!gameState.a11y.highContrast;}
+        var settingsContent=document.createElement('div');settingsContent.className='cl-hunt-settings-content';settingsPanel.appendChild(settingsContent);
+        var help=document.createElement('p');settingsContent.appendChild(help);
+        function updateHuntHelp(){
+          var defense=(capabilities.ink?'Ink spends a finite charge; reserves/cooldown shown. ':'This species has no ink. ')+(species.specialAbility==='mimicry'?'Hold Mimic for a defensive disguise. ':species.specialAbility==='passingCloud'?'Hold Display to distract nearby fish. ':species.specialAbility==='burglarAlarm'?'Hold Flash for your defensive display. ':'');
+          help.textContent=clHuntInputCue('Move with W/S; turn with A/D. Space + forward jets. Q/Z changes depth. T selects a target; E strikes or drills a clam while held. R / Forage gathers one nearby meal without holding a key; moving, pausing or taking damage cancels it. I inks; G carries a shelter. V changes the camera. F opens a paused inspection view; drag or use its orbit buttons. Escape pauses. Energy and cooldown values are simplified game rules.','Hold Forward/Back to move; Left/Right turns. Hold Jet together with Forward. Rise/Dive change depth. Target selects prey. Tap Strike / hold to hunt; hold to gather. Forage: one nearby meal; again stops. Stay still. Movement, pause, damage, leaving reach cancel. Interact carries/drops shelters. '+defense+'Tools pauses the dive and opens View, Inspect, Observe and the minimap. View: camera. Inspect pauses: drag/orbit; Closer/Farther zoom. Pause stops/resumes. Energy/cooldowns: game rules.');
+        }
+        updateHuntHelp();
+        function setting(label,key){var l=document.createElement('label'),input=document.createElement('input');input.type='checkbox';input.checked=!!gameState.a11y[key];input.onchange=function(){gameState.a11y[key]=input.checked;saveA11ySettings(gameState.a11y);applyLiveAccess();};l.appendChild(input);l.appendChild(document.createTextNode(label));settingsContent.appendChild(l);}
+        function applyLiveAccess(){scheduleHuntLayout();stage.classList.toggle('cl-large-text',!!gameState.a11y.largeText);stage.classList.toggle('cl-high-contrast',!!gameState.a11y.highContrast);captions.style.display=gameState.a11y.captionMode?'flex':'none';gameState.runStats.captionsOn=!!gameState.a11y.captionMode;gameState.runStats.reducedMotionOn=!!gameState.a11y.reducedMotion;gameState.runStats.largeTextOn=!!gameState.a11y.largeText;gameState.runStats.highContrastOn=!!gameState.a11y.highContrast;}
         setting('Captions','captionMode');setting('Reduced motion','reducedMotion');setting('Larger text','largeText');setting('High contrast','highContrast');
-        var audioLabel=document.createElement('label'),audioToggle=document.createElement('input');audioToggle.type='checkbox';audioToggle.checked=!!cachedAudio.muted;audioToggle.onchange=function(){cachedAudio.muted=audioToggle.checked;saveAudioSettings(cachedAudio);};audioLabel.appendChild(audioToggle);audioLabel.appendChild(document.createTextNode('Mute sounds'));settingsPanel.appendChild(audioLabel);
-        uiButton('Resume dive',closeSettings,settingsPanel);
-        uiButton('End run',function(){finishRun('surfaced',false);setCL({hunt3DActive:false});},settingsPanel);
-        function openSettings(){if(gameState.gameOver)return;setPaused(true);settingsPanel.hidden=false;settingsPanel.querySelector('input').focus();}
-        function closeSettings(){settingsPanel.hidden=true;setPaused(false);canvasEl.focus();}
+        var audioLabel=document.createElement('label'),audioToggle=document.createElement('input');audioToggle.type='checkbox';audioToggle.checked=!!cachedAudio.muted;audioToggle.onchange=function(){cachedAudio.muted=audioToggle.checked;saveAudioSettings(cachedAudio);};audioLabel.appendChild(audioToggle);audioLabel.appendChild(document.createTextNode('Mute sounds'));settingsContent.appendChild(audioLabel);
+        var settingsActions=document.createElement('div');settingsActions.className='cl-hunt-settings-actions';settingsPanel.appendChild(settingsActions);
+        uiButton('Resume dive',closeSettings,settingsActions);
+        uiButton('End run',function(){finishRun('surfaced',false);setCL({hunt3DActive:false});},settingsActions);
+        var settingsWasPaused=false;
+        function openSettings(){if(gameState.gameOver)return;updateHuntHelp();settingsWasPaused=gameState.paused;setPaused(true);settingsPanel.hidden=false;settingsPanel.querySelector('input').focus();}
+        function closeSettings(){settingsPanel.hidden=true;clearInput();setPaused(settingsWasPaused);canvasEl.focus();}
         settingsPanel.onkeydown=function(e){if(e.key==='Escape'){e.preventDefault();closeSettings();}if(e.key==='Tab'){var nodes=settingsPanel.querySelectorAll('button,input,select'),first=nodes[0],last=nodes[nodes.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}};
         function cycleCamera(){gameState.cameraMode=((gameState.cameraMode||0)+1)%3;clAnnounce(['Follow view','Side view','Tactical view'][gameState.cameraMode]);canvasEl.focus();}
         // Inspection freezes the simulation, including hunger, cooldowns and predator movement.
@@ -15394,8 +15490,8 @@ function createCLHuntFish(T,index){
           }
         }
         function preyCandidates(){var list=crabs.filter(function(c){return c.userData.alive;});fishSchools.forEach(function(s){s.fish.forEach(function(f){if(f.userData.alive)list.push(f);});});return list;}
-        function cycleTarget(){gameState.observationUntil=0;var list=preyCandidates().filter(function(p){return p.position.distanceTo(octopus.position)<28;}).sort(function(a,b){return a.position.distanceToSquared(octopus.position)-b.position.distanceToSquared(octopus.position);});targetCycle=explicitTarget&&selectedPrey?list.indexOf(selectedPrey)+1:0;selectedPrey=list.length?list[targetCycle%list.length]:null;explicitTarget=!!selectedPrey;clAnnounce(selectedPrey?'Target selected. Move into range and press E.':'No prey nearby. Follow the reef toward the yellow map markers.');canvasEl.focus();}
-        uiButton('Observe',function(){var nearest=preyCandidates().sort(function(a,b){return a.position.distanceToSquared(octopus.position)-b.position.distanceToSquared(octopus.position);})[0];var msg=species.name+'. '+(gameState.inDen?'Sheltered in a den. ':'In open water. ')+(nearest?'Nearest prey '+nearest.position.distanceTo(octopus.position).toFixed(0)+' metres away. ':'No prey nearby. ')+Math.round(gameState.camoEff*100)+' percent camouflage. '+(gameState.threatText||'No predator has detected you.');clAnnounce(msg);pushCaption(msg,'observation');missionBrief.textContent=msg;missionBrief.hidden=false;targetReadout.hidden=true;lastMissionText=msg;gameState.observationUntil=gameNow+6000;});
+        function cycleTarget(){gameState.observationUntil=0;var list=preyCandidates().filter(function(p){return p.position.distanceTo(octopus.position)<28;}).sort(function(a,b){return a.position.distanceToSquared(octopus.position)-b.position.distanceToSquared(octopus.position);});targetCycle=explicitTarget&&selectedPrey?list.indexOf(selectedPrey)+1:0;selectedPrey=list.length?list[targetCycle%list.length]:null;explicitTarget=!!selectedPrey;clAnnounce(selectedPrey?clHuntInputCue('Target selected. Move into range and press E.','Target selected. Move into range and tap Strike / hold.'):'No prey nearby. Follow the reef toward the yellow map markers.');canvasEl.focus();}
+        var observeButton=uiButton('Observe',function(){closeMobileTools(false);var nearest=preyCandidates().sort(function(a,b){return a.position.distanceToSquared(octopus.position)-b.position.distanceToSquared(octopus.position);})[0];var msg=species.name+'. '+(gameState.inDen?'Sheltered in a den. ':'In open water. ')+(nearest?'Nearest prey '+nearest.position.distanceTo(octopus.position).toFixed(0)+' metres away. ':'No prey nearby. ')+Math.round(gameState.camoEff*100)+' percent camouflage. '+(gameState.threatText||'No predator has detected you.');clAnnounce(msg);pushCaption(msg,'observation');missionBrief.textContent=msg;missionBrief.hidden=false;targetReadout.hidden=true;lastMissionText=msg;gameState.observationUntil=gameNow+6000;canvasEl.focus();});desktopControlOrder.push(observeButton);mobileSecondaryButtons.push(observeButton);
         applyLiveAccess();
 
         // Spatial cover and readable prey intent. All thresholds are game rules.
@@ -15421,6 +15517,130 @@ function createCLHuntFish(T,index){
             blockers.push({minX:site.x+f.minX,maxX:site.x+f.maxX,minZ:site.z+f.minZ,maxZ:site.z+f.maxZ});
           });
         }
+        // Five rock-rooted groves frame open sand. Reuse the 105 accepted actors and their draw stream.
+        var clHabitatGroves=[
+          {targetX:-12,targetZ:8,phase:3.35,rockIndex:-1},
+          {targetX:-8,targetZ:23,phase:1.95,rockIndex:-1},
+          {targetX:14,targetZ:17,phase:0.70,rockIndex:-1},
+          {targetX:-22,targetZ:-13,phase:3.80,rockIndex:-1},
+          {targetX:14,targetZ:-19,phase:5.35,rockIndex:-1}
+        ],clHabitatReady=false;
+        function clHabitatSiteClear(x,z,radius,near,minDistance,maxDistance){
+          var centerX=near?near.x:0,centerZ=near?near.z:0,dx=x-centerX,dz=z-centerZ,distanceSq=dx*dx+dz*dz;
+          if(!Number.isFinite(distanceSq)||distanceSq<minDistance*minDistance||distanceSq>maxDistance*maxDistance)return false;
+          // Plant roots remain on the shallow shelf; the existing steep drop-off stays open water.
+          if(x+radius>24)return false;
+          if(x+radius>-4.5&&x-radius<4.5&&z+radius>-5&&z-radius<4.5)return false;
+          if(x+radius>0&&x-radius<7&&z+radius>-5&&z-radius<10)return false;
+          for(var di=0;di<dens.length;di++){
+            var den=dens[di],ddx=x-den.x,ddz=z-den.z,yaw=den.group.rotation.y;
+            var forward=ddx*Math.sin(yaw)+ddz*Math.cos(yaw),side=ddx*Math.cos(yaw)-ddz*Math.sin(yaw);
+            if(ddx*ddx+ddz*ddz<(3+radius)*(3+radius))return false;
+            if(Math.abs(side)<1.85+radius&&forward>-1.1-radius&&forward<7+radius)return false;
+          }
+          for(var si=0;si<shelters.length;si++){
+            var shelter=shelters[si];if(shelter.userData.state==='carried')continue;
+            var sdx=x-shelter.position.x,sdz=z-shelter.position.z;
+            if(sdx*sdx+sdz*sdz<(1.5+radius)*(1.5+radius))return false;
+          }
+          for(var pool=0;pool<2;pool++){
+            var obstacles=pool?corals:rocks;
+            for(var oi=0;oi<obstacles.length;oi++){
+              var obstacle=obstacles[oi],f=obstacle.userData.reefFootprint;
+              if(!f||obstacle.userData.reefPlacementValid===false)continue;
+              var margin=radius+0.12;
+              if(x+margin>obstacle.position.x+f.minX&&x-margin<obstacle.position.x+f.maxX&&z+margin>obstacle.position.z+f.minZ&&z-margin<obstacle.position.z+f.maxZ)return false;
+            }
+          }
+          return true;
+        }
+        function settleCLHuntHabitatPlants(near,refresh){
+          var first=!clHabitatReady,centerX=near?near.x:0,centerZ=near?near.z:0;
+          if(first||refresh){
+            for(var groveIndex=0;groveIndex<clHabitatGroves.length;groveIndex++){
+              var grove=clHabitatGroves[groveIndex],best=-1,bestScore=Infinity;
+              for(var rockIndex=0;rockIndex<rocks.length;rockIndex++){
+                var candidateRock=rocks[rockIndex],f=candidateRock.userData.reefFootprint;
+                if(!f||candidateRock.position.x+f.maxX>21)continue;
+                var cx=candidateRock.position.x,cz=candidateRock.position.z,allowed=true;
+                if(Math.hypot(cx-centerX,cz-centerZ)>(near?110:60))continue;
+                for(var previous=0;previous<groveIndex;previous++){
+                  var previousRock=rocks[clHabitatGroves[previous].rockIndex];
+                  if(previousRock&&Math.hypot(cx-previousRock.position.x,cz-previousRock.position.z)<9){allowed=false;break;}
+                }
+                if(!allowed)continue;
+                var tx=cx-(centerX+grove.targetX),tz=cz-(centerZ+grove.targetZ),score=tx*tx+tz*tz;
+                if(score<bestScore){bestScore=score;best=rockIndex;}
+              }
+              grove.rockIndex=best;
+            }
+          }
+          // Iterate persistent arrays directly: no mesh, buffer, material, vector or scratch-array churn.
+          for(var habitatPool=0;habitatPool<2;habitatPool++){
+            var plants=habitatPool?grass:kelpStrands,kind=habitatPool?'grass':'kelp',perGrove=habitatPool?16:5;
+            for(var plantIndex=0;plantIndex<plants.length;plantIndex++){
+              var plant=plants[plantIndex],mesh=plant.mesh,data=mesh.userData.clHabitat;
+              if(!data){
+                var box=mesh.geometry.boundingBox,height=mesh.geometry.userData.clPlantHeight;
+                var bx=Math.max(Math.abs(box.min.x),Math.abs(box.max.x)),bz=Math.max(Math.abs(box.min.z),Math.abs(box.max.z));
+                var plantRadius=Math.hypot(bx,bz)+(habitatPool?0.24+height*0.125:0);
+                data=mesh.userData.clHabitat={kind:kind,index:plantIndex,grove:Math.floor(plantIndex/perGrove),seedX:mesh.position.x,seedZ:mesh.position.z,radius:plantRadius,anchorIndex:-1,valid:false,dirty:false};
+              }
+              var minDistance=data.dirty?55:0,maxDistance=near?(data.dirty?95:119):78;
+              if(!first&&!refresh&&!data.dirty&&clHabitatSiteClear(mesh.position.x,mesh.position.z,data.radius,near,minDistance,maxDistance)){data.valid=true;mesh.visible=true;continue;}
+              var patch=clHabitatGroves[data.grove],anchor=rocks[patch.rockIndex],anchorX=anchor?anchor.position.x:centerX+patch.targetX,anchorZ=anchor?anchor.position.z:centerZ+patch.targetZ;
+              var footprint=anchor?anchor.userData.reefFootprint:null,rockRadius=footprint?Math.hypot(Math.max(Math.abs(footprint.minX),Math.abs(footprint.maxX)),Math.max(Math.abs(footprint.minZ),Math.abs(footprint.maxZ))):1;
+              var slot=plantIndex%perGrove,jitter=data.seedX*0.017+data.seedZ*0.013;jitter-=Math.floor(jitter);
+              // Existing height draws place shorter kelp at the crescent edge and taller stems closer to rock.
+              var baseRadius=rockRadius+data.radius+0.45+(habitatPool?0.55+(slot%3)*0.75:(9-plant.baseHeight)*0.25);
+              var angle=patch.phase+(habitatPool?(slot-7.5)*0.19:(slot-2)*0.43)+(jitter-0.5)*0.16;
+              var placed=false;
+              // Bounded local search keeps roots near their rock while avoiding actual coral and shelter footprints.
+              for(var ring=0;ring<7&&!placed;ring++)for(var sample=0;sample<16;sample++){
+                var offset=sample===0?0:(sample%2?1:-1)*Math.ceil(sample/2)*0.21;
+                var probeAngle=angle+offset,probeRadius=baseRadius+ring*0.65;
+                var x=anchorX+Math.cos(probeAngle)*probeRadius,z=anchorZ+Math.sin(probeAngle)*probeRadius;
+                if(!clHabitatSiteClear(x,z,data.radius,near,minDistance,maxDistance))continue;
+                if(!habitatPool){
+                  var spaced=true;
+                  for(var earlier=0;earlier<plantIndex;earlier++){
+                    var neighbor=kelpStrands[earlier].mesh;if(!neighbor.visible)continue;
+                    if(Math.hypot(x-neighbor.position.x,z-neighbor.position.z)<1.35){spaced=false;break;}
+                  }
+                  if(!spaced)continue;
+                }
+                mesh.position.x=x;mesh.position.z=z;placed=true;break;
+              }
+              // Real shelter and coral placement can close the preferred crescent completely.
+              // Search the full local rock perimeter before declaring an opening slot unavailable.
+              // The same clearance predicate and seven-unit grove bound remain authoritative.
+              if(!placed)for(var perimeterRing=0;perimeterRing<12&&!placed;perimeterRing++)for(var perimeterSample=0;perimeterSample<40;perimeterSample++){
+                var perimeterAngle=angle+perimeterSample*Math.PI*2/40,perimeterRadius=rockRadius+data.radius+1.05+perimeterRing*0.5;
+                var px=anchorX+Math.cos(perimeterAngle)*perimeterRadius,pz=anchorZ+Math.sin(perimeterAngle)*perimeterRadius;
+                if(!clHabitatSiteClear(px,pz,data.radius,near,minDistance,maxDistance))continue;
+                if(!habitatPool){
+                  var perimeterSpaced=true;
+                  for(var previousPlant=0;previousPlant<plantIndex;previousPlant++){
+                    var previousMesh=kelpStrands[previousPlant].mesh;if(!previousMesh.visible)continue;
+                    if(Math.hypot(px-previousMesh.position.x,pz-previousMesh.position.z)<1.35){perimeterSpaced=false;break;}
+                  }
+                  if(!perimeterSpaced)continue;
+                }
+                mesh.position.x=px;mesh.position.z=pz;placed=true;break;
+              }
+              // A streamed seed may belong to a different side of the annulus. Resolve locally without new draws.
+              if(!placed&&near)for(var recoveryRing=0;recoveryRing<5&&!placed;recoveryRing++)for(var recoverySample=0;recoverySample<24;recoverySample++){
+                var recoveryAngle=plantIndex*2.3999632297+recoverySample*Math.PI*2/24,recoveryRadius=recoveryRing*1.25;
+                var rx=data.seedX+Math.cos(recoveryAngle)*recoveryRadius,rz=data.seedZ+Math.sin(recoveryAngle)*recoveryRadius;
+                if(clHabitatSiteClear(rx,rz,data.radius,near,minDistance,maxDistance)){mesh.position.x=rx;mesh.position.z=rz;placed=true;break;}
+              }
+              // Saturated or deep areas retain pooled resources invisibly until a valid shelf site is available.
+              data.anchorIndex=patch.rockIndex;data.valid=placed;data.dirty=false;mesh.visible=placed;
+              if(placed)mesh.position.y=terrainHeight(mesh.position.x,mesh.position.z)+mesh.userData.groundOffset;
+            }
+          }
+          clHabitatReady=true;
+        }
         function updateGround(){
           grounded.forEach(function(o){if(o)o.position.y=terrainHeight(o.position.x,o.position.z)+o.userData.groundOffset;});
           crabs.forEach(function(o){o.position.y=terrainHeight(o.position.x,o.position.z)+0.18;});
@@ -15437,6 +15657,7 @@ function createCLHuntFish(T,index){
         rocks.slice(10).forEach(function(r){if(Math.hypot(r.position.x,r.position.z)<5 || (r.position.x>0&&r.position.x<7&&r.position.z>-5&&r.position.z<10))r.position.x-=16;});
         corals.slice(0,10).forEach(function(r,i){r.position.x=-8+(i%3)*1.1;r.position.z=2+i*1.5;});
         settleReefCorals(null,[]);
+        settleCLHuntHabitatPlants(null,true);
         if(isDeepSpecies(speciesId)){var spawnDepth=speciesId==='vampireSquid'?-6:-12;octopus.position.set(42,spawnDepth,0);gameState.verticalY=spawnDepth;gameState.runStats.deepestY=spawnDepth;}
         if(speciesId==='humboldtSquid'){gameState.verticalY=4;octopus.position.y=4;fishSchools[0].center.set(0,4,9);fishSchools[0].fish.forEach(function(f){f.position.copy(fishSchools[0].center).add(f.userData.offset);});}
         if(mission)gameState.dayTime=0.18;
@@ -15501,14 +15722,14 @@ function createCLHuntFish(T,index){
           var food=gameState.forageTarget;food.userData.gather=0;
           if(gameState.drillingClam&&gameState.drillingClam.userData.alive)gameState.drillingClam.children[1].rotation.x=0;
           gameState.forageTarget=null;gameState.forageProgress=0;gameState.drillProgress=0;gameState.drillingClam=null;
-          if(forageButton)forageButton.setAttribute('aria-pressed','false');if(forageProgress)forageProgress.value=0;if(forageRow)forageRow.hidden=true;if(message)clAnnounce(message);
+          if(forageButton)forageButton.setAttribute('aria-pressed','false');if(forageProgress)forageProgress.value=0;if(forageRow)forageRow.hidden=true;if(message){gameState.strikeMessage=message;gameState.strikeMessageUntil=gameNow+3500;gameState.observationUntil=0;clAnnounce(message);}
         }
         function toggleForage(){
           if(gameState.paused||gameState.gameOver)return;
           if(gameState.forageTarget){cancelForage('Foraging stopped.');canvasEl.focus();return;}
           var food=(capabilities.diet==='detritus'?marineSnow:clams).filter(forageReady).sort(function(a,b){return a.position.distanceToSquared(octopus.position)-b.position.distanceToSquared(octopus.position);})[0];
-          if(!food){clAnnounce(capabilities.diet==='detritus'?'Move within reach of marine snow, then tap Forage.':'Settle beside a clam, then tap Forage.');canvasEl.focus();return;}
-          gameState.forageTarget=food;gameState.forageStartedAt=gameNow;gameState.forageProgress=0;
+          if(!food){gameState.strikeMessage=capabilities.diet==='detritus'?'Move within reach of marine snow, then tap Forage.':'Settle beside a clam, then tap Forage.';gameState.strikeMessageUntil=gameNow+3500;gameState.observationUntil=0;clAnnounce(gameState.strikeMessage);canvasEl.focus();return;}
+          gameState.strikeMessage='';gameState.strikeMessageUntil=0;gameState.forageTarget=food;gameState.forageStartedAt=gameNow;gameState.forageProgress=0;
           forageButton.setAttribute('aria-pressed','true');clAnnounce(__alloT('stem.cephalopodlab.sr_foraging_started_stay_still_r_or_forage_stops', 'Foraging started. Stay still; R or Forage stops.'));canvasEl.focus();
         }
         function updateForaging(){
@@ -15554,7 +15775,7 @@ function createCLHuntFish(T,index){
           if(trackedAlive){
             var readiness=preyReadiness(trackedPrey),recovering=gameNow<gameState.strikeReadyAt;
             targetHalo.position.copy(trackedPrey.position);targetHalo.position.y+=0.06;targetHalo.material.color.setHex(recovering?0x9eb3c7:readiness.reason==='cover'?0xf4a782:readiness.ready?0x94f4bf:0xffdf91);
-            gameState.targetText=committedStrike?'STRIKING · keep your target within reach':recovering?'RECOVERING · ready in '+((gameState.strikeReadyAt-gameNow)/1000).toFixed(1)+'s':readiness.reason==='cover'?'COVER BLOCKS STRIKE · move around the rock':readiness.reason==='depth'?'MATCH DEPTH · Q rises / Z descends':readiness.ready?'IN RANGE · E to strike':'OUT OF REACH · move closer';
+            gameState.targetText=committedStrike?'STRIKING · keep your target within reach':recovering?'RECOVERING · ready in '+((gameState.strikeReadyAt-gameNow)/1000).toFixed(1)+'s':readiness.reason==='cover'?'COVER BLOCKS STRIKE · move around the rock':readiness.reason==='depth'?'MATCH DEPTH · '+clHuntInputCue('Q rises / Z descends','Rise / Dive'):readiness.ready?'IN RANGE · '+clHuntInputCue('E to strike','tap Strike / hold'):'OUT OF REACH · move closer';
             gameState.targetText+=' · '+clHuntPreyIntentText(trackedPrey);
           }else gameState.targetText=committedStrike?(trackedPrey?'STRIKING · target unavailable':'STRIKING · no prey selected'):'';
         }
@@ -15665,9 +15886,7 @@ function createCLHuntFish(T,index){
             scene.background.b+=(zoneB*lightMix-scene.background.b)*waterBlend;
             scene.fog.color.copy(scene.background);
             scene.fog.far+=(Math.min(zone.fogFar,24+dayMix*18)-scene.fog.far)*waterBlend;
-            sun.intensity+=( (0.15+dayMix*0.8)*depthLight-sun.intensity)*waterBlend;
-            ambient.intensity+=(0.14+dayMix*0.48*depthLight-ambient.intensity)*waterBlend;
-            fillLight.intensity+=(0.16+0.39*depthLight-fillLight.intensity)*waterBlend;
+            updateCLHuntWaterLighting(sun,ambient,fillLight,dayMix,depthLight,waterBlend);
             // ─── Pressure strain (graded, and it tells you) ───────
             // This used to be a flat 8 HP/s drain the moment a shallow
             // species crossed into the deep zone, with no flash, no sound,
@@ -16444,35 +16663,36 @@ function createCLHuntFish(T,index){
               floor.position.set(groundX,0,groundZ);var fp=floorGeo.attributes.position;
               for(var v=0;v<fp.count;v++)fp.setZ(v,terrainHeight(fp.getX(v)+groundX,-fp.getY(v)+groundZ));
               fp.needsUpdate=true;floorGeo.computeVertexNormals();
-              causticsGeo.attributes.position.copy(fp);causticsGeo.attributes.position.needsUpdate=true;
+              causticsGeo.attributes.position.array.set(fp.array);causticsGeo.attributes.position.needsUpdate=true;
             }
             sandTex.offset.x=groundX*0.14;sandTex.offset.y=-groundZ*0.14;
-            sun.position.set(octopus.position.x+14,32,octopus.position.z+10);sun.target.position.copy(octopus.position);
+            sun.position.set(octopus.position.x+12,octopus.position.y+34,octopus.position.z+8);sun.target.position.copy(octopus.position);
             updateGround();
             if(!gameState.a11y.reducedMotion)causticPhase+=dt;
             caustics.position.x=groundX;caustics.position.z=groundZ;
             causticsTex.offset.set(groundX*0.08+causticPhase*0.012,-groundZ*0.08+Math.sin(causticPhase*0.16)*0.05);
-            caustics.material.opacity=0.045*dayMix*depthLight;caustics.visible=gameState.verticalY>-1;
+            sandDownwelling.value=dayMix*depthLight;
+            caustics.material.opacity=0.065*dayMix*depthLight;caustics.visible=gameState.verticalY>-1;
             // Backdrop rides on the camera; tints derive from the frame's
             // background so zones and night still own the palette.
             backdrop.position.copy(camera.position);
-            // Keep the column BLUE: the deep end drops toward navy, the top gains
-            // mostly blue/cyan so it never drifts pale green.
+            // Match fog exactly at and below the horizon so the finite floor fades away.
+            // The upper column gains bounded cyan; deep/night surface glow fades.
             backdropMat.uniforms.bottomColor.value.copy(scene.fog.color);
             backdropMat.uniforms.topColor.value.setRGB(
-              Math.min(1, scene.background.r * 0.9 + 0.01 * dayMix),
-              Math.min(1, scene.background.g * 1.05 + 0.06 * dayMix * depthLight),
-              Math.min(1, scene.background.b * 1.15 + 0.14 * dayMix * depthLight));
+              Math.min(1,scene.background.r*0.72+0.035*dayMix*depthLight),
+              Math.min(1,scene.background.g*0.94+0.09*dayMix*depthLight),
+              Math.min(1,scene.background.b*1.06+0.14*dayMix*depthLight));
             surfaceSheet.position.x = octopus.position.x;
             surfaceSheet.position.z = octopus.position.z;
-            surfaceMat.opacity = 0.08 + 0.18 * dayMix;
+            surfaceMat.opacity = (0.035 + 0.13 * dayMix)*depthLight;
             shaftGroup.position.x = octopus.position.x;
             shaftGroup.position.z = octopus.position.z;
             var shaftDepthMix = Math.max(0, Math.min(1, (gameState.verticalY + 30) / 40));
             for (var shU = 0; shU < shafts.length; shU++) {
               var shf = shafts[shU];
               if (!gameState.a11y.reducedMotion) shf.mesh.rotation.z = shf.baseZ + Math.sin(now * 0.00035 + shf.phase) * 0.06;
-              shf.mesh.material.opacity = shf.baseOpacity * (gameState.a11y.reducedMotion?0.7:0.7 + 0.3 * Math.sin(now * 0.0007 + shf.phase)) * dayMix * shaftDepthMix;
+              shf.mesh.material.opacity = shf.baseOpacity * (gameState.a11y.reducedMotion?0.84:0.84 + 0.16 * Math.sin(now * 0.0007 + shf.phase)) * dayMix * shaftDepthMix * depthLight;
             }
 
             // ─── Endless-ocean object recycling ──────────────────
@@ -16519,12 +16739,13 @@ function createCLHuntFish(T,index){
               if(reefRocksMoved||recycledCorals.length)settleReefCorals(octopus.position,recycledCorals);
               // Grass
               for (var gri = 0; gri < grass.length; gri++) {
-                var grx = grass[gri].mesh.position.x - octopus.position.x;
-                var grz = grass[gri].mesh.position.z - octopus.position.z;
+                var grx = grass[gri].mesh.userData.clHabitat.seedX - octopus.position.x;
+                var grz = grass[gri].mesh.userData.clHabitat.seedZ - octopus.position.z;
                 if (grx * grx + grz * grz > RECYCLE_DIST * RECYCLE_DIST) {
                   var ng = recyclePos(octopus.position);
                   grass[gri].mesh.position.x = ng.x;
                   grass[gri].mesh.position.z = ng.z;
+                  grass[gri].mesh.userData.clHabitat.seedX=ng.x;grass[gri].mesh.userData.clHabitat.seedZ=ng.z;grass[gri].mesh.userData.clHabitat.dirty=true;
                   grass[gri].mesh.rotation.y = Math.random() * Math.PI;
                 }
               }
@@ -16630,6 +16851,8 @@ function createCLHuntFish(T,index){
                 scene.add(newDen);
                 dens.push({ group: newDen, x: ndp.x, z: ndp.z, glow: nglow });
               }
+              // Recompose only pooled plants; original recycle RNG and logical grass coordinates remain intact.
+              settleCLHuntHabitatPlants(octopus.position,reefRocksMoved);
               // Recycling changes X/Z after the regular grounding pass; render the new terrain height immediately.
               updateGround();
             }
@@ -16978,8 +17201,8 @@ function createCLHuntFish(T,index){
 
             // ─── Light ray shimmer ───────────────────────────────
             lightRays.forEach(function(r) {
-              r.mesh.material.opacity = (0.04 + Math.sin(now * 0.0008 + r.basePhase) * 0.04) * dayMix;
-              r.mesh.rotation.y += dt * 0.05;
+              r.mesh.material.opacity = (gameState.a11y.reducedMotion?0.028:0.028 + Math.sin(now * 0.0008 + r.basePhase) * 0.012) * dayMix * depthLight * shaftDepthMix;
+              if(!gameState.a11y.reducedMotion)r.mesh.rotation.y += dt * 0.05;
             });
 
             // ─── Eye glance toward nearest threat ────────────────
@@ -17034,7 +17257,7 @@ function createCLHuntFish(T,index){
               var attemptedPrey=gameState.pendingStrike.target;gameState.pendingStrike=null;
               var readiness=preyReadiness(attemptedPrey),nearest=readiness.ready?attemptedPrey:null,prey=readiness.kind;
               if(!nearest&&!clamGatheringThisFrame){
-                gameState.strikeMessage=readiness.reason==='cover'?'Strike blocked. Move around the rock.':attemptedPrey?'Missed. Move closer and match the target depth.':'No prey in reach. T selects a nearby target.';
+                gameState.strikeMessage=readiness.reason==='cover'?'Strike blocked. Move around the rock.':attemptedPrey?'Missed. Move closer and match the target depth.':clHuntInputCue('No prey in reach. T selects a nearby target.','No prey in reach. Tap Target to select nearby prey.');
                 gameState.strikeMessageUntil=now+1800;clAnnounce(gameState.strikeMessage);
               }else gameState.strikeMessage='';
               if (nearest && prey === 'crab') {
@@ -17206,21 +17429,21 @@ function createCLHuntFish(T,index){
             hudText('camo',Math.round(gameState.camoEff*100)+'%');hudText('score',String(gameState.score));hudText('time',Math.floor(now/1000)+'s');
             hudText('substrate',species.camoQualityMul === 0?'shell — no chromatophores, camo cannot rise':gameState.substrateContact<0.99?'off the bottom — nothing behind you to match':'on '+gameState.currentSubstrate.replace('_',' ')+' · '+(gameState.stationaryTime>0.5?'still':'moving'));
             hudText('burn',clHuntPropulsionText(gameState,observation));
-            hudText('ink',capabilities.ink?'INK '+gameState.inkReserves+'/'+gameState.inkMaxReserves+(gameState.inkReserves===0?' · sac empty — no refill this dive':now<gameState.inkCooldownUntil?' · refilling siphon '+Math.ceil((gameState.inkCooldownUntil-now)/1000)+'s':''):'No ink · '+(capabilities.diet==='detritus'?'B: defensive display':speciesId==='nautilus'?'shell defense':'fin propulsion'));
+            hudText('ink',capabilities.ink?'INK '+gameState.inkReserves+'/'+gameState.inkMaxReserves+(gameState.inkReserves===0?' · sac empty — no refill this dive':now<gameState.inkCooldownUntil?' · refilling siphon '+Math.ceil((gameState.inkCooldownUntil-now)/1000)+'s':''):'No ink · '+(capabilities.diet==='detritus'?clHuntInputCue('B: defensive display','Flash: defensive display'):speciesId==='nautilus'?'shell defense':'fin propulsion'));
             var status=[];
-            if(gameState.pressureStrain===-1)status.push('PRESSURE BUILDING — Q to rise');else if(gameState.pressureStrain>0)status.push('CRUSHING PRESSURE — Q to rise');
+            if(gameState.pressureStrain===-1)status.push('PRESSURE BUILDING — '+clHuntInputCue('Q to rise','hold Rise'));else if(gameState.pressureStrain>0)status.push('CRUSHING PRESSURE — '+clHuntInputCue('Q to rise','hold Rise'));
             if(gameState.inDen)status.push('IN DEN — safe, regenerating');
             if(gameState.isInked)status.push('INKED — harder to track');
-            if(carriedShelter){var carryInfo=SHELTER_TYPES[carriedShelter.userData.shelterType];status.push('Carrying '+carryInfo.label+' · '+clHuntShelterCarryText(carryInfo,capabilities.carryCost)+' · G drops');}
+            if(carriedShelter){var carryInfo=SHELTER_TYPES[carriedShelter.userData.shelterType];status.push('Carrying '+carryInfo.label+' · '+clHuntShelterCarryText(carryInfo,capabilities.carryCost)+' · '+clHuntInputCue('G drops','Interact drops'));}
             else if(gameState.inShelterDen){var activeCover=clHuntNearestPlacedShelter(shelters,octopus.position,SHELTER_DEN_RADIUS,1.0);if(activeCover)status.push(clHuntPlacedShelterText(SHELTER_TYPES[activeCover.userData.shelterType],activeCover.userData,now));}
             if(gameState.isMimicking)status.push('Mimicking · predators wary');
             hudText('status',status.join(' · '));
             huntButton.disabled=gameState.paused||gameState.gameOver||now<gameState.strikeReadyAt;
             var activeGather=gameState.forageTarget||gameState.drillProgress>0||(capabilities.diet==='detritus'&&gameState.forageProgress>0);
             forageRow.hidden=!activeGather;forageProgress.value=activeGather?gameState.forageProgress:0;
-            hudText('activity',activeGather?(capabilities.diet==='detritus'?'Gathering marine snow':'Opening clam')+' · '+Math.round(gameState.forageProgress*100)+'%'+(gameState.forageTarget?' · R stops':''):'');
+            hudText('activity',activeGather?(capabilities.diet==='detritus'?'Gathering marine snow':'Opening clam')+' · '+Math.round(gameState.forageProgress*100)+'%'+(gameState.forageTarget?' · '+clHuntInputCue('R stops','Forage stops'):''):'');
             updateThreatHud();
-            var nextHudHeight=hud.offsetHeight;if(gameState.hudHeight!==nextHudHeight){gameState.hudHeight=nextHudHeight;stage.style.setProperty('--cl-mission-top',(nextHudHeight+22)+'px');}
+            var nextHudHeight=hud.offsetHeight;if(gameState.hudHeight!==nextHudHeight){gameState.hudHeight=nextHudHeight;scheduleHuntLayout();}
             drawMinimap();if(!gameState.observationUntil || now>gameState.observationUntil)updateMission();
           }
 
@@ -17233,7 +17456,7 @@ function createCLHuntFish(T,index){
             var pColor = 'rgba(167,139,250,0.5)';
             if (carriedShelter) {
               var carriedInfo=SHELTER_TYPES[carriedShelter.userData.shelterType];
-              prompt = '<span style="color:#fbbf24">[G]</span> drop ' + carriedInfo.label + ' <span style="color:#94a3b8;font-weight:400">(' + Math.round(carriedInfo.dropLifeMs/1000) + 's cover)</span>';
+              prompt = '<span style="color:#fbbf24">'+clHuntInputCue('[G]','Interact')+'</span> drop ' + carriedInfo.label + ' <span style="color:#94a3b8;font-weight:400">(' + Math.round(carriedInfo.dropLifeMs/1000) + 's cover)</span>';
               pColor = 'rgba(160,120,64,0.7)';
             } else {
               // Pearl pickup hint takes priority over shelter/clam/crab
@@ -17246,7 +17469,7 @@ function createCLHuntFish(T,index){
                 if (Math.abs(octopus.position.y-pearls[ppi].position.y)<1.5 && ppd < pPearlD) { pNearestPearl = pearls[ppi]; pPearlD = ppd; }
               }
               if (pNearestPearl) {
-                prompt = '<span style="color:#fff0aa">[G]</span> collect pearl <span style="color:#94a3b8;font-weight:400">(treasure)</span>';
+                prompt = '<span style="color:#fff0aa">'+clHuntInputCue('[G]','Interact')+'</span> collect pearl <span style="color:#94a3b8;font-weight:400">(treasure)</span>';
                 pColor = 'rgba(255,240,170,0.7)';
               } else {
               // Nearest carriable shelter
@@ -17273,14 +17496,14 @@ function createCLHuntFish(T,index){
               var pStrikeReady=capabilities.diet!=='detritus'&&!gameState.pendingStrike&&now>=gameState.strikeReadyAt&&preyReadiness(pTrackedPrey).ready;
               if (pNearestSh) {
                 var sht2 = SHELTER_TYPES[pNearestSh.userData.shelterType];
-                prompt = '<span style="color:#fbbf24">[G]</span> pick up ' + sht2.label + ' <span style="color:#94a3b8;font-weight:400">(' + clHuntShelterTradeoffText(sht2,capabilities.carryCost) + ')</span>';
+                prompt = '<span style="color:#fbbf24">'+clHuntInputCue('[G]','Interact')+'</span> pick up ' + sht2.label + ' <span style="color:#94a3b8;font-weight:400">(' + clHuntShelterTradeoffText(sht2,capabilities.carryCost) + ')</span>';
                 pColor = 'rgba(160,120,64,0.7)';
               } else if (pNearestCl) {
-                prompt = '<span style="color:#fbbf24">[R]</span> forage clam <span style="font-weight:400">or hold E</span>';
+                prompt = clHuntInputCue('<span style="color:#fbbf24">[R]</span> forage clam <span style="font-weight:400">or hold E</span>','<span style="color:#fbbf24">Forage</span> clam <span style="font-weight:400">or hold Strike</span>');
                 pColor = 'rgba(251,191,36,0.5)';
               } else if (pStrikeReady) {
                 var pStrikeLabel=pTrackedPrey.userData.cfg?(pTrackedPrey.userData.type||'rock')+' crab':'silverside';
-                prompt = '<span style="color:#fbbf24">[E]</span> strike '+pStrikeLabel;
+                prompt = '<span style="color:#fbbf24">'+clHuntInputCue('[E]</span> strike ','Strike / hold</span> ')+pStrikeLabel;
                 pColor = 'rgba(252,146,60,0.6)';
               } else {
                 var nearbyPlaced=clHuntNearestPlacedShelter(shelters,octopus.position,SHELTER_DEN_RADIUS,1.2);
@@ -17326,30 +17549,45 @@ function createCLHuntFish(T,index){
         }
         loop();
 
-        // ─── Resize ───
-        function onResize() {
-          var nW = canvasEl.clientWidth || 800;
-          var nH = canvasEl.clientHeight || 500;
-          stage.classList.toggle('cl-hunt-small',nW<600);stage.style.setProperty('--cl-mission-top',(hud.offsetHeight+22)+'px');
-          actionPrompt.style.bottom=((nW<600?172:10)+controlPanel.offsetHeight+12)+'px';
-          actionPrompt.style.width=nW<600?'calc(100% - 48px)':'auto';actionPrompt.style.boxSizing='border-box';actionPrompt.style.textAlign='center';
-          bioPopup.style.display=nW<600?'none':'block';tutorial.style.display='none';
-          camera.aspect = nW / nH;
-          camera.updateProjectionMatrix();
-          if(inspection.active)frameInspection(false);
-          renderer.setSize(nW, nH, false);
-          try{ if(renderer._alloComposer){ renderer._alloComposer.setSize(nW, nH); } }catch(e){}
-        }
-        window.addEventListener('resize', onResize);onResize();
-        // The container can change size without a window resize (sidebar,
-        // fullscreen, orientation). Watch it directly.
-        var resizeObs = null;
-        try {
-          if (typeof ResizeObserver !== 'undefined' && canvasEl.parentElement) {
-            resizeObs = new ResizeObserver(function() { onResize(); });
-            resizeObs.observe(canvasEl.parentElement);
+        // ─── Resize and responsive Hunter layout ───
+        var huntLayoutFrame=null,huntLayoutWidth=0,huntLayoutHeight=0,resizeObs=null,hudMutationObs=null;
+        var huntViewport=window.visualViewport||null;
+        captions.classList.add('cl-hunt-caption');
+        function layoutVar(name,value){if(stage.style.getPropertyValue(name)!==value)stage.style.setProperty(name,value);}
+        function scheduleHuntLayout(){if(disposed||huntLayoutFrame!==null)return;huntLayoutFrame=requestAnimationFrame(function(){huntLayoutFrame=null;if(!disposed)onResize();});}
+        function onResize(){
+          if(disposed)return;
+          var nW=canvasEl.clientWidth||800,viewHeight=huntViewport&&huntViewport.height||window.innerHeight||720;
+          var coarse=!!(window.matchMedia&&(window.matchMedia('(pointer: coarse)').matches||window.matchMedia('(any-pointer: coarse)').matches));
+          var touch=nW<600||coarse||!!navigator.maxTouchPoints;
+          stage.classList.toggle('cl-hunt-small',nW<600);stage.classList.toggle('cl-hunt-touch-enabled',touch);stage.classList.toggle('cl-hunt-wide-touch',touch&&nW>=600);
+          if(touch){var rect=stage.getBoundingClientRect(),intersects=rect.top<viewHeight&&rect.bottom>0,available=intersects?viewHeight-Math.max(0,rect.top)-12:viewHeight-24;layoutVar('--cl-touch-stage-height',Math.max(1,Math.min(720,Math.floor(available)))+'px');}
+          else stage.style.removeProperty('--cl-touch-stage-height');
+          moveMobileDetails(touch);
+          var nH=canvasEl.clientHeight||500;
+          if(touch){
+            layoutVar('--cl-primary-bottom',(touchPanel.offsetHeight+14)+'px');layoutVar('--cl-touch-actions-height',actions.offsetHeight+'px');
+            var stageRect=stage.getBoundingClientRect(),dockTop=Math.min(controlPanel.getBoundingClientRect().top,touchPanel.getBoundingClientRect().top),dockHeight=Math.ceil(stageRect.bottom-dockTop)+8;
+            var topBudget=Math.max(76,Math.floor(nH-dockHeight-90)),wide=nW>=600;
+            layoutVar('--cl-hud-max',(wide?topBudget:Math.max(58,Math.floor(topBudget*0.70)))+'px');
+            var hudBottom=hud.offsetTop+hud.offsetHeight;
+            layoutVar('--cl-mission-top',(hudBottom+6)+'px');layoutVar('--cl-mission-max',Math.max(38,topBudget-hud.offsetHeight-6)+'px');
+            if(mobileTargetDetail.hidden!==targetReadout.hidden)mobileTargetDetail.hidden=targetReadout.hidden;if(mobileTargetDetail.textContent!==targetDetail.textContent)mobileTargetDetail.textContent=targetDetail.textContent;
+            var topBottom=wide?Math.max(hudBottom,missionHud.offsetTop+missionHud.offsetHeight):missionHud.offsetTop+missionHud.offsetHeight;
+            actionPrompt.style.bottom=(dockHeight+4)+'px';actionPrompt.style.width='calc(100% - 32px)';
+            layoutVar('--cl-feedback-top',(topBottom+6)+'px');layoutVar('--cl-feedback-height',Math.max(24,Math.min(76,nH-dockHeight-topBottom-actionPrompt.offsetHeight-14))+'px');
+          }else{
+            layoutVar('--cl-mission-top',(hud.offsetHeight+22)+'px');actionPrompt.style.bottom=(10+controlPanel.offsetHeight+12)+'px';actionPrompt.style.width='auto';
           }
-        } catch (e) { resizeObs = null; }
+          actionPrompt.style.boxSizing='border-box';actionPrompt.style.textAlign='center';bioPopup.style.display=touch?'none':'block';tutorial.style.display='none';
+          if(mobileToolsPanel&&!mobileToolsPanel.hidden)pauseOverlay.style.display='none';
+          if(nW!==huntLayoutWidth||nH!==huntLayoutHeight){huntLayoutWidth=nW;huntLayoutHeight=nH;camera.aspect=nW/nH;camera.updateProjectionMatrix();if(inspection.active)frameInspection(false);renderer.setSize(nW,nH,false);try{if(renderer._alloComposer)renderer._alloComposer.setSize(nW,nH);}catch(e){}}
+        }
+        window.addEventListener('resize',scheduleHuntLayout);window.addEventListener('scroll',scheduleHuntLayout,{passive:true});
+        if(huntViewport){huntViewport.addEventListener('resize',scheduleHuntLayout);huntViewport.addEventListener('scroll',scheduleHuntLayout);}
+        onResize();
+        try{if(typeof ResizeObserver!=='undefined'){resizeObs=new ResizeObserver(scheduleHuntLayout);[stage,hud,missionHud,controlPanel,touchPanel,actions].forEach(function(el){resizeObs.observe(el);});}}catch(e){resizeObs=null;}
+        try{if(typeof MutationObserver!=='undefined'){hudMutationObs=new MutationObserver(scheduleHuntLayout);[hud,missionHud,mobileDetails].forEach(function(el){hudMutationObs.observe(el,{childList:true,characterData:true,subtree:true,attributes:true,attributeFilter:['hidden']});});}}catch(e){hudMutationObs=null;}
 
         // ─── Cleanup ───
         canvasEl._clCleanup = function() {
@@ -17366,6 +17604,12 @@ function createCLHuntFish(T,index){
           if(controlPanel && controlPanel.parentElement) controlPanel.remove();
           if(missionHud && missionHud.parentElement) missionHud.remove();
           if(touchPanel && touchPanel.parentElement) touchPanel.remove();
+          if(mobileToolsPanel&&mobileToolsPanel.parentElement)mobileToolsPanel.remove();
+          releaseTouchInputs();stage.classList.remove('cl-hunt-touch-enabled','cl-hunt-wide-touch','cl-hunt-small');
+          ['--cl-touch-stage-height','--cl-primary-bottom','--cl-touch-actions-height','--cl-hud-max','--cl-mission-max','--cl-feedback-top','--cl-feedback-height'].forEach(function(name){stage.style.removeProperty(name);});
+          if(huntLayoutFrame!==null){cancelAnimationFrame(huntLayoutFrame);huntLayoutFrame=null;}
+          if(hudMutationObs)hudMutationObs.disconnect();
+          window.removeEventListener('scroll',scheduleHuntLayout);if(huntViewport){huntViewport.removeEventListener('resize',scheduleHuntLayout);huntViewport.removeEventListener('scroll',scheduleHuntLayout);}
           if(settingsPanel && settingsPanel.parentElement) settingsPanel.remove();
           if(inspectionPanel)inspectionPanel.remove();stage.classList.remove('cl-inspecting');stage.removeEventListener('keydown',inspectKey,true);
           canvasEl.removeEventListener('pointerdown',inspectPointerDown);canvasEl.removeEventListener('pointermove',inspectPointerMove);canvasEl.removeEventListener('pointerup',inspectPointerUp);canvasEl.removeEventListener('pointercancel',inspectPointerUp);canvasEl.removeEventListener('lostpointercapture',inspectPointerUp);canvasEl.removeEventListener('wheel',inspectWheel);
@@ -17375,7 +17619,7 @@ function createCLHuntFish(T,index){
           canvasEl.removeEventListener('keydown', onKeyDown);
           canvasEl.removeEventListener('keyup', onKeyUp);
           canvasEl.removeEventListener('click', onClick);
-          window.removeEventListener('resize', onResize);
+          window.removeEventListener('resize', scheduleHuntLayout);
           if (hud.parentElement) hud.parentElement.removeChild(hud);
           if (tutorial.parentElement) tutorial.parentElement.removeChild(tutorial);
           if (damageFlash.parentElement) damageFlash.parentElement.removeChild(damageFlash);
