@@ -3336,7 +3336,7 @@ function CircuitActiveLessonMap(props) {
         explain: t('stem.circuit.map_result_saved', 'Result saved · explanation needed'),
         review: t('stem.circuit.map_explanation_saved', 'Explanation saved')
     };
-    return h('details', { className: 'circuit-active-lesson-map' },
+    return h('details', { className: 'circuit-active-lesson-map', ref: props.disclosureRef, id: props.id },
         h('summary', { className: 'circuit-lesson-map-summary' },
             h('span', { className: 'circuit-map-summary-label' }, t('stem.circuit.map_title', 'Experiment map')),
             h('span', { className: 'circuit-map-summary-count' }, t('stem.circuit.map_count', '{count} experiments').replace('{count}', String(map.length)))),
@@ -3375,6 +3375,44 @@ function CircuitActiveLessonMap(props) {
         })));
 }
 
+function CircuitActiveLessonContinuation(props) {
+    var React = props.React, h = React.createElement, t = circuitToolT(props), row = props.row;
+    var title = row ? t('stem.circuit.active_lesson_' + row.id + '_title', circuitActiveLesson(row.id).title) : '';
+    var light = !!(row && row.change.key === 'light');
+    var action = row && row.phase === 'start'
+        ? t('stem.circuit.map_open_experiment', 'Open experiment')
+        : t('stem.circuit.map_resume_prediction', 'Resume prediction');
+    var project = row && (row.project === 'manual'
+        ? t('stem.circuit.plan_manual', 'Manual control')
+        : row.project === 'dark'
+            ? t('stem.circuit.plan_dark', 'Dark sensor')
+            : t('stem.circuit.plan_light', 'Light sensor'));
+    return h('section', { className: 'circuit-active-lesson-continuation', 'data-continuation-mode': row ? 'next' : 'all-tested', 'data-next-lesson-id': row ? row.id : undefined },
+        h('div', { className: 'circuit-continuation-content' },
+            h('div', { className: 'circuit-continuation-copy' },
+                h('h5', { className: 'circuit-continuation-heading' }, t('stem.circuit.active_keep_investigating', 'Keep investigating')),
+                row
+                    ? h(React.Fragment, null,
+                        h('p', { className: 'circuit-continuation-title' }, h('strong', null, title)),
+                        h('p', { className: 'circuit-continuation-project' }, project))
+                    : h('p', { className: 'circuit-continuation-saved' }, t('stem.circuit.active_all_tested', 'All three experiments tested. Your evidence stays saved.'))),
+            row && h('div', { className: 'circuit-continuation-plan' },
+                h('p', { className: 'circuit-continuation-control' }, light ? t('stem.circuit.plan_relative_light', 'Relative light') : t('stem.circuit.plan_input_voltage', 'Input voltage')),
+                h('dl', { className: 'circuit-continuation-values' }, ['before', 'after'].map(function (stage) {
+                    var value = row.change[stage];
+                    return h('div', { key: stage, className: 'circuit-continuation-reading' },
+                        h('dt', null, stage === 'before' ? t('stem.circuit.plan_from', 'From') : t('stem.circuit.plan_to', 'To')),
+                        h('dd', { className: 'circuit-continuation-value', 'data-continuation-stage': stage },
+                            h('span', { className: 'circuit-continuation-value-number' }, light ? String(value) : value.toFixed(2)),
+                            h('span', { className: 'circuit-continuation-value-unit' }, light ? '/100' : 'V')));
+                })))),
+        h('div', { className: 'circuit-continuation-footer' },
+            h('p', { className: 'circuit-continuation-help' }, t('stem.circuit.continuation_open_help', 'Opening an experiment keeps your live circuit and saved work.')),
+            row
+                ? h('button', { type: 'button', className: 'circuit-continuation-action', 'aria-label': t('stem.circuit.map_action_title', '{action}: {title}').replace('{action}', action).replace('{title}', title), disabled: typeof props.onSelect !== 'function', onClick: function () { if (typeof props.onSelect === 'function') props.onSelect(row.id); } }, action)
+                : h('button', { type: 'button', className: 'circuit-continuation-action circuit-continuation-review-map', 'aria-controls': props.mapId, disabled: typeof props.onReviewMap !== 'function', onClick: function () { if (typeof props.onReviewMap === 'function') props.onReviewMap(); } }, t('stem.circuit.continuation_review_map', 'Review experiment map'))));
+}
+
 // Lesson changes are owned by onAction(id, action, value).
 function CircuitActiveLessonLab(props) {
   var React=props.React,h=React.createElement,state=props.state||{},t=circuitToolT(props);
@@ -3390,7 +3428,7 @@ function CircuitActiveLessonLab(props) {
   var baselineMatch=circuitActiveComparison({version:1,design:before.design},state).unchanged;
   var resultMatch=circuitActiveComparison({version:1,design:after.design},state).unchanged;
   var scale=Math.max(before.collectorCurrent,after.collectorCurrent),delta=after.collectorCurrent-before.collectorCurrent;
-  var uid=React.useId(),questionRef=React.useRef(null),resultRef=React.useRef(null),explanationRef=React.useRef(null),pendingFocus=React.useRef(null);
+  var uid=React.useId(),questionRef=React.useRef(null),resultRef=React.useRef(null),explanationRef=React.useRef(null),mapRef=React.useRef(null),pendingFocus=React.useRef(null);
   var entrySeen=React.useRef(props.entryVersion||0);
   var focusState=React.useState(0),focusVersion=focusState[0];
   React.useEffect(function(){
@@ -3425,7 +3463,7 @@ function CircuitActiveLessonLab(props) {
     h('div',{className:'circuit-active-lesson-progress'},h('p',{role:'status'},t('stem.circuit.active_lesson_count','{count} of 3 experiments tested').replace('{count}',String(done))),h('progress',{max:3,value:done,'aria-label':t('stem.circuit.active_tested_count','Transistor experiments tested')})),
     h('label',{className:'circuit-active-lesson-picker',htmlFor:uid+'-select'},t('stem.circuit.active_choose_experiment','Choose an experiment'),h('select',{id:uid+'-select','aria-label':t('stem.circuit.transistor_prediction_experiment','Transistor prediction experiment'),value:selected,onChange:function(e){select(e.target.value);}},ids.map(function(id){var item=circuitActiveLesson(id);return h('option',{key:id,value:id},t('stem.circuit.active_lesson_'+id+'_title',item.title));}))),
     h('p',{className:'circuit-active-lesson-help'},t('stem.circuit.active_lesson_switch_help','Switching experiments keeps your live circuit and saved work.')),
-    h(CircuitActiveLessonMap,{React:React,t:props.t,map:map,selected:selected,onSelect:select}),
+    h(CircuitActiveLessonMap,{React:React,t:props.t,map:map,selected:selected,onSelect:select,disclosureRef:mapRef,id:uid+'-map'}),
     h(CircuitActiveLessonJourney,{React:React,t:props.t,journey:journey}),
     h('div',{className:'circuit-active-lesson-question-block'},h('span',{className:'circuit-eyebrow'},title),h('h5',{ref:questionRef,tabIndex:-1,'data-active-lesson-question':true,'aria-describedby':!record?uid+'-start-help':undefined},t('stem.circuit.active_lesson_'+selected+'_question',lesson.question))),
     h(CircuitActiveExperimentPlan,{React:React,t:props.t,plan:circuitActiveLessonPlan(selected)}),
@@ -3447,8 +3485,8 @@ function CircuitActiveLessonLab(props) {
       h('label',{className:'circuit-active-lesson-explanation',htmlFor:uid+'-explanation'},t('stem.circuit.active_my_lesson_explanation','My explanation for this experiment')),
       h('p',{id:uid+'-explanation-help',className:'circuit-active-lesson-help'},t('stem.circuit.active_explanation_help','Use the lamp current and operating regions to explain the change. This response stays with this experiment; your investigation notebook has its own explanation.')),
       h('textarea',{id:uid+'-explanation',ref:explanationRef,'aria-label':t('stem.circuit.transistor_experiment_explanation','Transistor experiment explanation'),'aria-describedby':uid+'-explanation-help',maxLength:4000,rows:3,value:record.explanation||'',placeholder:t('stem.circuit.active_lesson_explanation_placeholder','I observed… The readings show…'),onChange:function(e){act(selected,'explain',e.target.value);}}),
-      tested&&h('div',{className:'circuit-active-lesson-next'},next?h(React.Fragment,null,h('strong',null,t('stem.circuit.active_keep_investigating','Keep investigating')),h('button',{type:'button',onClick:function(){select(next);}},t('stem.circuit.active_next_experiment','Next: {title}').replace('{title}',t('stem.circuit.active_lesson_'+next+'_title',circuitActiveLesson(next).title)))):h('strong',null,t('stem.circuit.active_all_tested','All three experiments tested. Your evidence stays saved.'))),
-      h('div',{className:'circuit-active-lesson-retry'},h('p',{className:'circuit-active-lesson-help'},t('stem.circuit.active_retry_help','Starting again replaces this experiment’s saved prediction, result, and explanation, and loads its baseline. Your investigation notebook stays saved.')),h('button',{type:'button',onClick:function(){act(selected,'start',undefined,'question');}},t('stem.circuit.start_transistor_prediction','Start transistor prediction')))));
+      tested&&h(CircuitActiveLessonContinuation,{React:React,t:props.t,row:map.find(function(row){return row.id===next;})||null,onSelect:select,mapId:uid+'-map',onReviewMap:function(){var element=mapRef.current;if(element){element.open=true;var summary=element.querySelector('summary');if(summary){summary.focus({preventScroll:true});if(typeof summary.scrollIntoView==='function')summary.scrollIntoView({block:'start',behavior:'instant'});}}}}),
+      h('details',{className:'circuit-active-lesson-retry'},h('summary',null,t('stem.circuit.active_retry_disclosure','Start this experiment again')),h('div',{className:'circuit-active-lesson-retry-body'},h('p',{className:'circuit-active-lesson-help'},t('stem.circuit.active_retry_help','Starting again replaces this experiment’s saved prediction, result, and explanation, and loads its baseline. Your investigation notebook stays saved.')),h('button',{type:'button',onClick:function(){act(selected,'start',undefined,'question');}},t('stem.circuit.start_transistor_prediction','Start transistor prediction'))))));
 }
 
   function CircuitActiveVoltageExplorer(props) {
@@ -5226,6 +5264,248 @@ function CircuitActiveLessonLab(props) {
     }
     .circuit-active-root .circuit-lesson-map-summary:focus-visible,
     .circuit-active-root button.circuit-map-open:focus-visible {
+        outline-color: Highlight;
+    }
+}
+.circuit-active-root .circuit-active-lesson-continuation {
+    min-width: 0;
+    margin: 22px 0 14px;
+    padding: 14px;
+    border: 1px solid #6e9c90;
+    border-inline-start: 3px solid #a8deca;
+    border-radius: 10px;
+    background: #193c37;
+    color: #e6f1ed;
+    font-size: 13px;
+}
+.circuit-active-root .circuit-continuation-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14em), 1fr));
+    align-items: start;
+    gap: 14px 20px;
+    min-width: 0;
+}
+.circuit-active-root .circuit-continuation-copy,
+.circuit-active-root .circuit-continuation-plan {
+    min-width: 0;
+}
+.circuit-active-root h5.circuit-continuation-heading {
+    margin: 0 0 7px;
+    color: #d9f0e6;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+.circuit-active-root p.circuit-continuation-title {
+    margin: 0 0 3px;
+    color: #f2f8f5;
+    font-size: 14px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+.circuit-active-root p.circuit-continuation-project {
+    margin: 0;
+    color: #c1dcd3;
+    font-size: 12px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+.circuit-active-root p.circuit-continuation-saved {
+    margin: 0;
+    color: #d6e9e0;
+    font-size: 13px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+.circuit-active-root p.circuit-continuation-control {
+    margin: 0 0 5px;
+    color: #d7e9e2;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+.circuit-active-root .circuit-continuation-values {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 6.5em), 1fr));
+    gap: 8px 14px;
+    min-width: 0;
+    margin: 0;
+    font-size: 13px;
+}
+.circuit-active-root .circuit-continuation-reading {
+    min-width: 0;
+}
+.circuit-active-root .circuit-continuation-reading dt {
+    margin: 0 0 2px;
+    color: #bed8cf;
+    font-size: 12px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+.circuit-active-root .circuit-continuation-value {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: flex-start;
+    gap: 1px 5px;
+    min-width: 0;
+    margin: 0;
+    direction: ltr;
+    unicode-bidi: isolate;
+    color: #f4dda5;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.5;
+}
+.circuit-active-root .circuit-continuation-value-number {
+    font-size: 18px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+.circuit-active-root .circuit-continuation-value-unit {
+    color: #d4e8df;
+    font-size: 12px;
+    white-space: nowrap;
+}
+.circuit-active-root .circuit-continuation-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 20px;
+    min-width: 0;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid #608d80;
+}
+.circuit-active-root p.circuit-continuation-help {
+    flex: 1 1 16em;
+    min-width: 0;
+    margin: 0;
+    color: #c5dfd5;
+    font-size: 12px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+.circuit-active-root button.circuit-continuation-action {
+    flex: 0 1 auto;
+    min-width: 0;
+    min-height: 44px;
+    max-width: 100%;
+    padding: 10px 13px;
+    border: 1px solid #a1d7c4;
+    border-radius: 9px;
+    background: #bde8d9;
+    color: #102d27;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.6;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    cursor: pointer;
+    transition: none;
+}
+.circuit-active-root button.circuit-continuation-action:focus-visible {
+    outline: 3px solid #f6d894;
+    outline-offset: 3px;
+}
+.circuit-active-root details.circuit-active-lesson-retry {
+    min-width: 0;
+    margin: 14px 0 0;
+    padding: 0;
+    border: 1px solid #526e79;
+    border-radius: 9px;
+    background: #112b36;
+}
+.circuit-active-root details.circuit-active-lesson-retry > summary {
+    min-height: 44px;
+    box-sizing: border-box;
+    padding: 12px;
+    color: #cddfe7;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+    cursor: pointer;
+}
+.circuit-active-root .circuit-active-lesson-retry-body {
+    min-width: 0;
+    padding: 0 12px 12px;
+}
+.circuit-active-root .circuit-active-lesson-retry-body > p {
+    margin: 0 0 12px;
+    color: #cddfe7;
+    font-size: 12px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+.circuit-active-root .circuit-active-lesson-retry-body > button {
+    min-width: 0;
+    min-height: 44px;
+    max-width: 100%;
+    padding: 10px 12px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    transition: none;
+}
+.circuit-active-root details.circuit-active-lesson-retry > summary:focus-visible,
+.circuit-active-root .circuit-active-lesson-retry-body > button:focus-visible {
+    outline: 3px solid #f6d894;
+    outline-offset: 3px;
+}
+@media (max-width: 480px) {
+    .circuit-active-root .circuit-active-lesson-continuation {
+        padding: 12px;
+    }
+    .circuit-active-root .circuit-continuation-content {
+        grid-template-columns: 1fr;
+    }
+    .circuit-active-root button.circuit-continuation-action {
+        width: 100%;
+    }
+    .circuit-active-root .circuit-active-lesson-retry-body > button {
+        width: 100%;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .circuit-active-root button.circuit-continuation-action,
+    .circuit-active-root details.circuit-active-lesson-retry > summary,
+    .circuit-active-root .circuit-active-lesson-retry-body > button {
+        animation: none;
+        transition: none;
+    }
+}
+@media (forced-colors: active) {
+    .circuit-active-root .circuit-active-lesson-continuation,
+    .circuit-active-root .circuit-continuation-footer,
+    .circuit-active-root details.circuit-active-lesson-retry {
+        border-color: CanvasText;
+        background: Canvas;
+        color: CanvasText;
+    }
+    .circuit-active-root h5.circuit-continuation-heading,
+    .circuit-active-root p.circuit-continuation-title,
+    .circuit-active-root p.circuit-continuation-project,
+    .circuit-active-root p.circuit-continuation-saved,
+    .circuit-active-root p.circuit-continuation-control,
+    .circuit-active-root .circuit-continuation-reading dt,
+    .circuit-active-root .circuit-continuation-value,
+    .circuit-active-root .circuit-continuation-value-unit,
+    .circuit-active-root p.circuit-continuation-help,
+    .circuit-active-root details.circuit-active-lesson-retry > summary,
+    .circuit-active-root .circuit-active-lesson-retry-body > p {
+        color: CanvasText;
+    }
+    .circuit-active-root button.circuit-continuation-action,
+    .circuit-active-root .circuit-active-lesson-retry-body > button {
+        border-color: ButtonText;
+        background: ButtonFace;
+        color: ButtonText;
+    }
+    .circuit-active-root button.circuit-continuation-action:focus-visible,
+    .circuit-active-root details.circuit-active-lesson-retry > summary:focus-visible,
+    .circuit-active-root .circuit-active-lesson-retry-body > button:focus-visible {
         outline-color: Highlight;
     }
 }

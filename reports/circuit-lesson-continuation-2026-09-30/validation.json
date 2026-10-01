@@ -1,0 +1,60 @@
+{
+  "passed": true,
+  "validatedAt": "2026-10-01T00:19:24.868Z",
+  "sourceSha256": "524b5034918c848c5b5ecaa4f976a75feeccb3b6b23d288270ad3f672b568948",
+  "mirrored": true,
+  "sourceCompiles": true,
+  "regression": {
+    "passedTests": 429,
+    "files": 26,
+    "startedAt": "2026-09-30T23:59:03.615Z",
+    "finishedAt": "2026-10-01T00:14:00.424Z"
+  },
+  "browser": {
+    "axeScans": 16,
+    "fullContrastScans": 14,
+    "forcedColorsScans": 2,
+    "numericReadings": 14,
+    "focusChecks": 16,
+    "focusTransitions": 9,
+    "textResizeCases": 2,
+    "textResizeElements": 28,
+    "screenshots": 17,
+    "visualIssues": 0
+  },
+  "reportHashes": {
+    "README.md": "6326674c81505685f7682592a565f608a89f18203ca9d0d2e1615cf4364e87e1",
+    "run-regression.cjs": "cbe97d235cb38c4431e3c4b9386342bad949ba0d654b351cc3bf075a2e524e17",
+    "browser-check.cjs": "d48be8484615f59b180f93abaf30e02fff56577cf33f02a6527a0217c6769a1a",
+    "validate.cjs": "04b7156bbc00e2224c02de07d1c2a0ab077b1421bd3034cb62fa28cdc1c9deb8",
+    "regression.json": "25554a5952d753eb3082f8511521f1ef4325e6f60f8154c19ccb116c729d2a6b",
+    "regression-receipt.json": "8e1749af3ced5d946230211b7101ff9a50b03201051064c0bfdd649d11758ffc",
+    "regression-attempt-1.json": "30308a3714280d7da6a0bf6c74f1aab08797842be7521ff8b4aaea0139bd638a",
+    "regression-attempt-1-receipt.json": "b6fe04f33e7b6d33f40e6cc138b8f69b31ac735d5fbf38410be1ec2762c82c20",
+    "regression-attempt-2.json": "9a346d163c8c5ee31f1f30738ec8ce9afc8a47036fcd560cf5880cf846ffacec",
+    "regression-attempt-2-receipt.json": "38640f15c06eb37171de842991df32140a86d7bc95153af6caacd8c395fa542f",
+    "regression-recovery.json": "df8baf5024ec6fba3629d809d9cf277d2b25e0bed0c82c5a631683e10c0b9be0",
+    "browser-results.json": "bdd7723df14a13c482a9b9d572999edb51e7c580b049702d8e590f05674789a5",
+    "forced-colors-diagnostic.json": "211de59d56f77fdc793293b7bf74730196b3c21d386fd35a6d95387022fbe8d5"
+  },
+  "screenshotHashes": {
+    "continuation-fresh-next-1280.png": "d346d26425faaf414e2cf2a82f8bbebbd069352bee9a911e434e6ae89c6e5d02",
+    "continuation-fresh-next-390.png": "d9d2e299cba65595980afaac6c400739b93e855e6a0ccbbd67e8a5c52715d894",
+    "continuation-fresh-next-320.png": "f45b5cdc31fb4d831c5f4f5e5c44d54b637bc3ecf30e05cabc32bd7dc4798e8f",
+    "continuation-resumable-next-1280.png": "f26dcd71e9eebda53c2bef3075e9f7c1dfbab6cb420475417d2c999f4e04ff14",
+    "continuation-resumable-next-390.png": "7fb08f78d58a799c55bf0381cc39a1bf125b358b12c7a5d4817fe4d5fdd78195",
+    "continuation-resumable-next-320.png": "79f4db8d08b2c766b71e494363cfcdc13d2eb77e7e861bbb376e17b759867931",
+    "continuation-all-tested-1280.png": "58496384782c1c4c1c1b6c8a2aedf4a6b5a1f56ff4616bda9b6b018ce4fa0523",
+    "continuation-all-tested-390.png": "eda057f68df695638f43f31540432dfd6e9514ea4a41ecdadef6a14a25195641",
+    "continuation-all-tested-320.png": "90e2f1c8f2db592a7ca574e3c2492a32f3b3875ddcec32f67794d786d011848b",
+    "retry-open-1280.png": "5fc5fa251a30773cc2c6ec68166a0b792fca51cce197e062dc192c3494204cea",
+    "retry-open-390.png": "ebe74268b1bc7f8e92f681561a745553fe45ed7655da7d20127bf398049f8e64",
+    "retry-open-320.png": "547d7d7c6d280550ed063ce429b1836f03ca07b4ac9a0aa7ca3908752b1ddd48",
+    "lesson-ending-context-320.png": "2e17da0c680a5eb019df886aa7a33ed6ac71ab52e973897dd5f072deee8e56ce",
+    "continuation-next-200pct-text-320.png": "e39084c88740090bdc336523252947c4ee420c2db4a8466c15726a800937680a",
+    "retry-200pct-text-320.png": "3c7e363ce18fb4c96f6e64621a6225c88d2fe40af873a2b9f4a5746cae745423",
+    "forced-colors-continuation-all-tested-320.png": "f4a9d89bfec1755f3bc951739f5ebb4836f9033e05934b7485c991d280a89109",
+    "forced-colors-retry-320.png": "7ac778fac459d40e63d3bb4b751139768573ecf5aef21138a59b36d9efd56a14"
+  },
+  "whitespaceCheck": true
+}
