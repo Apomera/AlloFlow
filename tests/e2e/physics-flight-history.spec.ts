@@ -7,6 +7,15 @@ test.beforeAll(async () => harness.start());
 test.afterAll(async () => harness.stop());
 test.afterEach(async ({ page }) => harness.destroy(page));
 
+type AnalysisView = 'motion' | 'forces' | 'energy' | 'data';
+
+async function selectAnalysisView(page: Page, view: AnalysisView) {
+  const tab = page.locator('[data-physics-analysis-tab="' + view + '"]');
+  if (await tab.getAttribute('aria-selected') !== 'true') await tab.click();
+  await expect(tab).toHaveAttribute('aria-selected', 'true');
+  await expect(page.locator('[data-physics-analysis-panel="' + view + '"]')).toBeVisible();
+}
+
 async function mount(page: Page) {
   await page.addInitScript(() => {
     const w = window as any;
@@ -63,10 +72,16 @@ async function evidence(page: Page) {
   });
 }
 async function copyCsv(page: Page) {
-  const before = await page.evaluate(() => (window as any).__historyCsv.length);
-  await page.getByRole('button', { name: 'Copy the flight data as CSV for a spreadsheet', exact: true }).click();
-  await expect.poll(() => page.evaluate(() => (window as any).__historyCsv.length)).toBe(before + 1);
-  return page.evaluate(() => (window as any).__historyCsv.at(-1) as string);
+  const previousView = await page.locator('[data-physics-analysis-workspace]').getAttribute('data-physics-analysis-view') as AnalysisView;
+  await selectAnalysisView(page, 'data');
+  try {
+    const before = await page.evaluate(() => (window as any).__historyCsv.length);
+    await page.getByRole('button', { name: 'Copy the flight data as CSV for a spreadsheet', exact: true }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__historyCsv.length)).toBe(before + 1);
+    return await page.evaluate(() => (window as any).__historyCsv.at(-1) as string);
+  } finally {
+    await selectAnalysisView(page, previousView);
+  }
 }
 async function assertRun(page: Page, run: number, landmarks = true) {
   await redraw(page);

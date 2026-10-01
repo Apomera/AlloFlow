@@ -18,6 +18,15 @@ type DrawnText = {
   left: number; right: number; top: number; bottom: number;
 };
 
+type AnalysisView = 'motion' | 'forces' | 'energy' | 'data';
+
+async function selectAnalysisView(page: Page, view: AnalysisView) {
+  const tab = page.locator('[data-physics-analysis-tab="' + view + '"]');
+  if (await tab.getAttribute('aria-selected') !== 'true') await tab.click();
+  await expect(tab).toHaveAttribute('aria-selected', 'true');
+  await expect(page.locator('[data-physics-analysis-panel="' + view + '"]')).toBeVisible();
+}
+
 async function mount(page: Page) {
   await page.addInitScript(() => {
     const w = window as any;
@@ -171,6 +180,7 @@ test('mobile guidance and sticky time cells keep launch and recorded measurement
   await launch.click();
   await finish(page);
 
+  await selectAnalysisView(page, 'data');
   const table = page.locator('[data-physics-flight-table]');
   const wrap = page.locator('[data-physics-flight-table-wrap]');
   const hint = page.locator('[data-physics-flight-scroll-hint]');
@@ -243,6 +253,7 @@ test('near-apex canvas precision agrees with the selected record after launch co
   await page.getByRole('button', { name: 'Launch!', exact: true }).click();
   await finish(page);
   const before = await evidence(page);
+  await selectAnalysisView(page, 'data');
   await page.locator('[data-physics-flight-table] [data-physics-sample-index]').first().click();
   await page.locator('[data-physics-sample-jump="highest"]').click();
   const exactApex = (await readDraw(page)).selected;

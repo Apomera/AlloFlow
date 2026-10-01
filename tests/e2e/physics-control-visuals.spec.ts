@@ -87,7 +87,7 @@ async function finish(page: Page) {
   await setState(page, { simSpeed: 0 });
 }
 
-test('all seven view cards expose their state and support native keyboard toggles without changing recorded flight evidence', async ({ page }) => {
+test('view cards support keyboard display toggles and analysis navigation without changing recorded flight evidence', async ({ page }) => {
   const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
   await mount(page);
   await setState(page, {
@@ -102,34 +102,63 @@ test('all seven view cards expose their state and support native keyboard toggle
     const w = window as any, cv = document.getElementById('physicsCanvas') as any;
     w.__controlCanvas = cv; w.__controlBody = cv._ball;
   });
-  await expect(page.locator('[data-physics-view]')).toHaveCount(7);
-  for (const [view, field] of views) {
-    const button = page.locator(`[data-physics-view="${view}"]`);
-    await expect(button).toHaveAttribute('type', 'button');
-    await expect(button.locator('.phys-view-title svg')).toBeVisible();
-    await expect(button.locator('.phys-view-title')).not.toHaveText('');
-    await expect(button).toHaveAttribute('aria-pressed', 'false');
-    await expect(button).toHaveAttribute('aria-label', /currently off\. Click to toggle\./);
-    await expect(button.locator('.phys-view-state')).toContainText('OFF');
-    await button.focus(); await button.press('Space');
-    await expect(button).toBeFocused();
-    await expect(button).toHaveAttribute('aria-pressed', 'true');
-    await expect(button).toHaveAttribute('aria-label', /currently on\. Click to toggle\./);
-    await expect(button.locator('.phys-view-state')).toContainText('ON');
-    expect(await page.evaluate(key => (window as any).__toolData.physics[key], field)).toBe(true);
-    await redraw(page);
-    expect(await evidence(page)).toEqual(before);
-    await button.press('Enter');
-    await expect(button).toBeFocused();
-    await expect(button).toHaveAttribute('aria-pressed', 'false');
-    await expect(button.locator('.phys-view-state')).toContainText('OFF');
-    expect(await page.evaluate(key => (window as any).__toolData.physics[key], field)).toBe(false);
+  const assertEvidence = async () => {
     await redraw(page);
     expect(await evidence(page)).toEqual(before);
     expect(await page.evaluate(() => {
       const w = window as any, cv = document.getElementById('physicsCanvas') as any;
       return cv === w.__controlCanvas && cv._ball === w.__controlBody;
     })).toBe(true);
+  };
+  await expect(page.locator('[data-physics-view]')).toHaveCount(7);
+  for (const [view, field] of views) {
+    const button = page.locator(`[data-physics-view="${view}"]`);
+    const analysisEntry = view === 'data' || view === 'graphs';
+    const targetView = view === 'data' ? 'data' : 'motion';
+    await expect(button).toHaveAttribute('type', 'button');
+    await expect(button.locator('.phys-view-title svg')).toBeVisible();
+    await expect(button.locator('.phys-view-title')).not.toHaveText('');
+    await expect(button).toHaveAttribute('aria-pressed', 'false');
+    await expect(button).toHaveAttribute('aria-label', analysisEntry ? /Open analysis view/ : /currently off\. Click to toggle\./);
+    await expect(button.locator('.phys-view-state')).toContainText('OFF');
+    await button.focus(); await button.press('Space');
+    await expect(button).toBeFocused();
+    await expect(button).toHaveAttribute('aria-pressed', 'true');
+    await expect(button).toHaveAttribute('aria-label', analysisEntry ? /Current analysis view/ : /currently on\. Click to toggle\./);
+    await expect(button.locator('.phys-view-state')).toContainText('ON');
+    expect(await page.evaluate(key => (window as any).__toolData.physics[key], field)).toBe(true);
+    if (analysisEntry) {
+      await expect(page.locator('[data-physics-analysis-workspace]')).toHaveAttribute('data-physics-analysis-view', targetView);
+      await expect(page.locator(`[data-physics-analysis-tab="${targetView}"]`)).toHaveAttribute('aria-selected', 'true');
+      await expect(page.locator(`[data-physics-analysis-panel="${targetView}"]`)).toBeVisible();
+      await expect(page.locator(`[data-physics-view="${view === 'data' ? 'graphs' : 'data'}"]`)).toHaveAttribute('aria-pressed', 'false');
+    }
+    await assertEvidence();
+    await button.press('Enter');
+    await expect(button).toBeFocused();
+    await expect(button).toHaveAttribute('aria-pressed', String(analysisEntry));
+    await expect(button.locator('.phys-view-state')).toContainText(analysisEntry ? 'ON' : 'OFF');
+    expect(await page.evaluate(key => (window as any).__toolData.physics[key], field)).toBe(analysisEntry);
+    if (analysisEntry) {
+      await expect(page.locator('[data-physics-analysis-workspace]')).toHaveAttribute('data-physics-analysis-view', targetView);
+      await expect(page.locator(`[data-physics-analysis-panel="${targetView}"]`)).toBeVisible();
+    }
+    await assertEvidence();
+  }
+  for (const [entry, targetView, key] of [
+    ['data', 'data', 'Space'], ['graphs', 'motion', 'Enter'], ['data', 'data', 'Enter'],
+  ] as const) {
+    const button = page.locator(`[data-physics-view="${entry}"]`);
+    await button.focus(); await button.press(key);
+    await expect(button).toBeFocused();
+    await expect(button).toHaveAttribute('aria-pressed', 'true');
+    await expect(button).toHaveAttribute('aria-label', /Current analysis view/);
+    await expect(page.locator(`[data-physics-view="${entry === 'data' ? 'graphs' : 'data'}"]`)).toHaveAttribute('aria-pressed', 'false');
+    await expect(page.locator('[data-physics-analysis-workspace]')).toHaveAttribute('data-physics-analysis-view', targetView);
+    await expect(page.locator(`[data-physics-analysis-tab="${targetView}"]`)).toHaveAttribute('aria-selected', 'true');
+    await expect(page.locator(`[data-physics-analysis-panel="${targetView}"]`)).toBeVisible();
+    await expect(page.locator(`[data-physics-analysis-panel="${targetView === 'data' ? 'motion' : 'data'}"]`)).toBeHidden();
+    await assertEvidence();
   }
   expect(errors).toEqual([]);
 });

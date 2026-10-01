@@ -10,6 +10,15 @@ test.beforeAll(async () => harness.start());
 test.afterAll(async () => harness.stop());
 test.afterEach(async ({ page }) => harness.destroy(page));
 
+type AnalysisView = 'motion' | 'forces' | 'energy' | 'data';
+
+async function selectAnalysisView(page: Page, view: AnalysisView) {
+  const tab = page.locator('[data-physics-analysis-tab="' + view + '"]');
+  if (await tab.getAttribute('aria-selected') !== 'true') await tab.click();
+  await expect(tab).toHaveAttribute('aria-selected', 'true');
+  await expect(page.locator('[data-physics-analysis-panel="' + view + '"]')).toBeVisible();
+}
+
 async function mount(page: Page) {
   await page.addInitScript(() => {
     const w = window as any;
@@ -90,10 +99,16 @@ async function evidence(page: Page) {
 }
 
 async function copyCsv(page: Page) {
-  const before = await page.evaluate(() => (window as any).__graphLandmarkCsv.length);
-  await page.getByRole('button', { name: 'Copy the flight data as CSV for a spreadsheet', exact: true }).click();
-  await expect.poll(() => page.evaluate(() => (window as any).__graphLandmarkCsv.length)).toBe(before + 1);
-  return page.evaluate(() => (window as any).__graphLandmarkCsv.at(-1) as string);
+  const previousView = await page.locator('[data-physics-analysis-workspace]').getAttribute('data-physics-analysis-view') as AnalysisView;
+  await selectAnalysisView(page, 'data');
+  try {
+    const before = await page.evaluate(() => (window as any).__graphLandmarkCsv.length);
+    await page.getByRole('button', { name: 'Copy the flight data as CSV for a spreadsheet', exact: true }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__graphLandmarkCsv.length)).toBe(before + 1);
+    return await page.evaluate(() => (window as any).__graphLandmarkCsv.at(-1) as string);
+  } finally {
+    await selectAnalysisView(page, previousView);
+  }
 }
 
 function apexIndex(trail: any) {
@@ -257,11 +272,13 @@ test('the representative path and table retain exact apex and arbitrary selected
   await expect(page.locator(`[data-physics-flight-table] [data-physics-sample-index="${apex}"]`)).toHaveCount(1);
   expect(await page.locator('[data-physics-flight-table] [data-physics-sample-index]').count()).toBeLessThanOrEqual(13);
   for (let attempt = 0; attempt < 2; attempt++) {
-    await setState(page, { showFlightData: false });
-    await expect(page.locator('[data-physics-flight-data]')).toHaveCount(0);
+    await selectAnalysisView(page, 'motion');
+    await expect(page.locator('[data-physics-flight-data]')).toHaveCount(1);
+    await expect(page.locator('[data-physics-flight-data]')).toBeHidden();
     const open = page.locator('[data-physics-graph-open-data]');
     await open.focus(); await open.press('Enter');
     const table = page.locator('[data-physics-flight-data]');
+    await expect(page.locator('[data-physics-analysis-tab="data"]')).toHaveAttribute('aria-selected', 'true');
     await expect(table).toBeVisible(); await expect(table).toHaveAttribute('tabindex', '-1'); await expect(table).toBeFocused();
     expect(await page.evaluate(() => {
       const rect = document.querySelector('[data-physics-flight-data]')!.getBoundingClientRect(); return rect.top < innerHeight && rect.bottom > 0;
@@ -342,7 +359,8 @@ test('graph landmarks, readings, and data reveal stay readable and usable in nin
     await page.setViewportSize({ width, height: 900 });
     await page.evaluate(t => (window as any).__setGraphLandmarkTheme(t), theme);
     await page.waitForTimeout(40); await redraw(page);
-    const result = await page.locator('[data-physics-motion-panel]').evaluate(panel => {
+    await selectAnalysisView(page, 'motion');
+    const result = await page.locator('[data-physics-analysis-workspace]').evaluate(panel => {
       const rgb = (color: string) => {
         const match = color.match(/^rgba?\(([^)]+)\)$/); if (!match) throw Error('Unresolved graph color: ' + color);
         return match[1].split(',').map(Number);

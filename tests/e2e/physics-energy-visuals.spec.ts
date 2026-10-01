@@ -7,6 +7,15 @@ test.beforeAll(async () => harness.start());
 test.afterAll(async () => harness.stop());
 test.afterEach(async ({ page }) => harness.destroy(page));
 
+type AnalysisView = 'motion' | 'forces' | 'energy' | 'data';
+
+async function selectAnalysisView(page: Page, view: AnalysisView) {
+  const tab = page.locator('[data-physics-analysis-tab="' + view + '"]');
+  if (await tab.getAttribute('aria-selected') !== 'true') await tab.click();
+  await expect(tab).toHaveAttribute('aria-selected', 'true');
+  await expect(page.locator('[data-physics-analysis-panel="' + view + '"]')).toBeVisible();
+}
+
 async function mount(page: Page) {
   await page.addInitScript(() => {
     const w = window as any; let id = 0, now = 1000; const frames = new Map<number, FrameRequestCallback>();
@@ -31,6 +40,7 @@ async function launch(page: Page, values = {}) {
     if (cv._launched) throw Error('Energy test flight did not land');
   });
   await page.waitForFunction(n => (window as any).__toolData.physics.runLog.length === n + 1, count, { polling: 20 });
+  await selectAnalysisView(page, 'energy');
   await expect(page.locator('[data-physics-energy-panel]')).toBeVisible();
 }
 async function evidence(page: Page) {
@@ -148,6 +158,7 @@ test('selecting an older flight switches the entire energy budget to its capture
 test('paused launch has a truthful single-sample budget and a short flight keeps its exact impact time', async ({ page }) => {
   await mount(page); await patch(page, { angle: 0, velocity: 15, gravity: 9.8, mass: 2, launchHeight: 10, simSpeed: 0, showGraphs: true, showFlightData: true });
   await page.getByRole('button', { name: 'Launch!', exact: true }).click();
+  await selectAnalysisView(page, 'energy');
   await expect(page.locator('[data-physics-energy-single-sample]')).toBeVisible(); await expect(page.locator('[data-physics-energy-graph]')).toHaveCount(0);
   const current = await page.locator('[data-physics-energy-value="initialEnergy"]').getAttribute('data-value'); expect(Number(current)).toBe(421);
   await page.getByRole('button', { name: 'Advance 0.035 seconds (available when paused)', exact: true }).click();

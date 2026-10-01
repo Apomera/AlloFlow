@@ -11,6 +11,15 @@ test.beforeAll(async () => harness.start());
 test.afterAll(async () => harness.stop());
 test.afterEach(async ({ page }) => harness.destroy(page));
 
+type AnalysisView = 'motion' | 'forces' | 'energy' | 'data';
+
+async function selectAnalysisView(page: Page, view: AnalysisView) {
+  const tab = page.locator('[data-physics-analysis-tab="' + view + '"]');
+  if (await tab.getAttribute('aria-selected') !== 'true') await tab.click();
+  await expect(tab).toHaveAttribute('aria-selected', 'true');
+  await expect(page.locator('[data-physics-analysis-panel="' + view + '"]')).toBeVisible();
+}
+
 async function mount(page: Page) {
   await page.addInitScript(() => {
     const w = window as any;
@@ -85,10 +94,16 @@ async function evidence(page: Page) {
 }
 
 async function copyCsv(page: Page) {
-  const before = await page.evaluate(() => (window as any).__apexCsvCopies.length);
-  await page.getByRole('button', { name: 'Copy the flight data as CSV for a spreadsheet', exact: true }).click();
-  await expect.poll(() => page.evaluate(() => (window as any).__apexCsvCopies.length)).toBe(before + 1);
-  return page.evaluate(() => (window as any).__apexCsvCopies.at(-1) as string);
+  const previousView = await page.locator('[data-physics-analysis-workspace]').getAttribute('data-physics-analysis-view') as AnalysisView;
+  await selectAnalysisView(page, 'data');
+  try {
+    const before = await page.evaluate(() => (window as any).__apexCsvCopies.length);
+    await page.getByRole('button', { name: 'Copy the flight data as CSV for a spreadsheet', exact: true }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__apexCsvCopies.length)).toBe(before + 1);
+    return await page.evaluate(() => (window as any).__apexCsvCopies.at(-1) as string);
+  } finally {
+    await selectAnalysisView(page, previousView);
+  }
 }
 
 function canonicalApex(trail: any) {
@@ -362,68 +377,73 @@ test('phase and landmarks remain readable and operable across nine width and the
   await finish(page);
   await page.locator('[data-physics-inspect]').click();
   await page.locator('[data-physics-sample-landmark="apex"]').click();
-  await page.locator('[data-physics-sample-forces] summary').click();
+  await selectAnalysisView(page, 'motion');
   for (const width of [1100, 375, 320]) {
     await page.setViewportSize({ width, height: 900 });
     for (const theme of ['default', 'dark', 'contrast']) {
       await page.evaluate(t => (window as any).__setApexTheme(t), theme);
       await expect(page.locator('#physics-fs-outer')).toHaveAttribute('data-physics-theme', theme === 'default' ? 'light' : theme);
-      await redraw(page);
-      const layout = await page.evaluate(() => {
-        const panel = document.querySelector('[data-physics-sample-inspector]')!;
-        const visible = (node: Element) => node.getClientRects().length > 0;
-        const texts = [...panel.querySelectorAll<HTMLElement>('dt,dd,label,summary,h3,h4,button,p,strong,span')]
-          .filter(node => visible(node) && !!node.textContent?.trim() && !node.classList.contains('sr-only'));
-        const rgb = (value: string) => {
-          const match = value.match(/^rgba?\(([^)]+)\)$/);
-          if (!match) throw new Error('Cannot resolve inspector color: ' + value);
-          return match[1].split(',').map(Number);
-        };
-        const luminance = (channels: number[]) => {
-          const linear = channels.slice(0, 3).map(value => {
-            const unit = value / 255;
-            return unit <= .04045 ? unit / 12.92 : ((unit + .055) / 1.055) ** 2.4;
+      for (const view of ['motion', 'forces', 'energy', 'data'] as const) {
+        await selectAnalysisView(page, view);
+        await redraw(page);
+        const layout = await page.evaluate(() => {
+          const panel = document.querySelector('[data-physics-sample-inspector]')!;
+          const visible = (node: Element) => node.getClientRects().length > 0;
+          const texts = [...panel.querySelectorAll<HTMLElement>('dt,dd,label,summary,h3,h4,button,p,strong,span')]
+            .filter(node => visible(node) && !!node.textContent?.trim() && !node.classList.contains('sr-only'));
+          const rgb = (value: string) => {
+            const match = value.match(/^rgba?\(([^)]+)\)$/);
+            if (!match) throw new Error('Cannot resolve inspector color: ' + value);
+            return match[1].split(',').map(Number);
+          };
+          const luminance = (channels: number[]) => {
+            const linear = channels.slice(0, 3).map(value => {
+              const unit = value / 255;
+              return unit <= .04045 ? unit / 12.92 : ((unit + .055) / 1.055) ** 2.4;
+            });
+            return linear[0] * .2126 + linear[1] * .7152 + linear[2] * .0722;
+          };
+          const contrasts = texts.map(node => {
+            let ancestor: Element | null = node, background: number[] | null = null;
+            while (ancestor) {
+              const paint = rgb(getComputedStyle(ancestor).backgroundColor);
+              if (paint.length === 3 || paint[3] >= .99) { background = paint; break; }
+              ancestor = ancestor.parentElement;
+            }
+            if (!background) throw new Error('Inspector text has no resolved surface');
+            const foreground = luminance(rgb(getComputedStyle(node).color)), surface = luminance(background);
+            return { text: node.textContent, ratio: (Math.max(foreground, surface) + .05) / (Math.min(foreground, surface) + .05) };
           });
-          return linear[0] * .2126 + linear[1] * .7152 + linear[2] * .0722;
-        };
-        const contrasts = texts.map(node => {
-          let ancestor: Element | null = node, background: number[] | null = null;
-          while (ancestor) {
-            const paint = rgb(getComputedStyle(ancestor).backgroundColor);
-            if (paint.length === 3 || paint[3] >= .99) { background = paint; break; }
-            ancestor = ancestor.parentElement;
-          }
-          if (!background) throw new Error('Inspector text has no resolved surface');
-          const foreground = luminance(rgb(getComputedStyle(node).color)), surface = luminance(background);
-          return { text: node.textContent, ratio: (Math.max(foreground, surface) + .05) / (Math.min(foreground, surface) + .05) };
+          const panelRect = panel.getBoundingClientRect();
+          const phase = document.querySelector('[data-physics-motion-phase]')!;
+          const phaseRect = visible(phase) ? phase.getBoundingClientRect() : null;
+          return {
+            width: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth,
+            panel: { left: panelRect.left, right: panelRect.right },
+            phase: phaseRect ? { left: phaseRect.left, right: phaseRect.right } : null,
+            textSizes: texts.map(node => parseFloat(getComputedStyle(node).fontSize)), contrasts,
+            controls: [...panel.querySelectorAll<HTMLElement>('button,input[type="range"],summary')].filter(visible).map(node => {
+              const box = node.getBoundingClientRect(); return { text: node.textContent, width: box.width, height: box.height };
+            }),
+            landmarks: [...panel.querySelectorAll('[data-physics-sample-landmark]')].filter(visible).length,
+          };
         });
-        const panelRect = panel.getBoundingClientRect();
-        const phaseRect = document.querySelector('[data-physics-motion-phase]')!.getBoundingClientRect();
-        return {
-          width: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth,
-          panel: { left: panelRect.left, right: panelRect.right },
-          phase: { left: phaseRect.left, right: phaseRect.right },
-          textSizes: texts.map(node => parseFloat(getComputedStyle(node).fontSize)), contrasts,
-          controls: [...panel.querySelectorAll<HTMLElement>('button,input[type="range"],summary')].filter(visible).map(node => {
-            const box = node.getBoundingClientRect(); return { text: node.textContent, width: box.width, height: box.height };
-          }),
-          landmarks: [...panel.querySelectorAll('[data-physics-sample-landmark]')].filter(visible).length,
-        };
-      });
-      const context = width + 'px ' + theme;
-      expect(layout.scroll, context + ' page overflow').toBeLessThanOrEqual(layout.width + 1);
-      for (const box of [layout.panel, layout.phase]) {
-        expect(box.left, context).toBeGreaterThanOrEqual(0);
-        expect(box.right, context).toBeLessThanOrEqual(layout.width + 1);
-      }
-      expect(layout.landmarks).toBe(3);
-      expect(layout.textSizes.length).toBeGreaterThan(20);
-      for (const size of layout.textSizes) expect(size, context + ' inspector text').toBeGreaterThanOrEqual(12);
-      for (const mark of layout.contrasts) expect(mark.ratio, context + ': ' + mark.text).toBeGreaterThanOrEqual(theme === 'contrast' ? 7 : 4.5);
-      expect(layout.controls.length).toBeGreaterThan(6);
-      for (const control of layout.controls) {
-        expect(control.width, context + ': ' + control.text).toBeGreaterThanOrEqual(44);
-        expect(control.height, context + ': ' + control.text).toBeGreaterThanOrEqual(44);
+        const context = width + 'px ' + theme + ' ' + view;
+        expect(layout.scroll, context + ' page overflow').toBeLessThanOrEqual(layout.width + 1);
+        expect(!!layout.phase).toBe(view === 'motion');
+        for (const box of [layout.panel, ...(layout.phase ? [layout.phase] : [])]) {
+          expect(box.left, context).toBeGreaterThanOrEqual(0);
+          expect(box.right, context).toBeLessThanOrEqual(layout.width + 1);
+        }
+        expect(layout.landmarks).toBe(3);
+        expect(layout.textSizes.length).toBeGreaterThan(20);
+        for (const size of layout.textSizes) expect(size, context + ' inspector text').toBeGreaterThanOrEqual(12);
+        for (const mark of layout.contrasts) expect(mark.ratio, context + ': ' + mark.text).toBeGreaterThanOrEqual(theme === 'contrast' ? 7 : 4.5);
+        expect(layout.controls.length).toBeGreaterThan(6);
+        for (const control of layout.controls) {
+          expect(control.width, context + ': ' + control.text).toBeGreaterThanOrEqual(44);
+          expect(control.height, context + ': ' + control.text).toBeGreaterThanOrEqual(44);
+        }
       }
     }
   }

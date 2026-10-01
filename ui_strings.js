@@ -71861,6 +71861,17 @@
       "nhu2083": "NH₃"
     },
     "physics": {
+      "analysis_current_view": "Current analysis view",
+      "analysis_open_view": "Open analysis view",
+      "analysis_motion": "Motion",
+      "analysis_forces": "Forces",
+      "analysis_energy": "Energy",
+      "analysis_data": "Data",
+      "analysis_title": "Flight analysis",
+      "analysis_latest": "Latest recorded sample",
+      "analysis_launch_energy": "Launch a projectile to explore its energy.",
+      "analysis_views": "Flight analysis views",
+      "analysis_launch_forces": "Launch a projectile to explore its forces.",
       "plot_gravity_vector_key": "Velocity arrows show m/s; the red dotted arrow shows gravity g in m/s².",
       "force_phase_no_gravity_drag": "With no gravity, air drag alone determines acceleration.",
       "force_phase_no_forces": "With gravity and air drag both absent, velocity stays unchanged.",

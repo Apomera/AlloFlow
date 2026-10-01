@@ -11,6 +11,15 @@ test.beforeAll(async () => harness.start());
 test.afterAll(async () => harness.stop());
 test.afterEach(async ({ page }) => harness.destroy(page));
 
+type AnalysisView = 'motion' | 'forces' | 'energy' | 'data';
+
+async function selectAnalysisView(page: Page, view: AnalysisView) {
+  const tab = page.locator('[data-physics-analysis-tab="' + view + '"]');
+  if (await tab.getAttribute('aria-selected') !== 'true') await tab.click();
+  await expect(tab).toHaveAttribute('aria-selected', 'true');
+  await expect(page.locator('[data-physics-analysis-panel="' + view + '"]')).toBeVisible();
+}
+
 async function mount(page: Page) {
   await page.addInitScript(() => {
     const w = window as any;
@@ -87,13 +96,20 @@ async function evidence(page: Page) {
 }
 
 async function copyCsv(page: Page) {
-  const before = await page.evaluate(() => (window as any).__forceCsv.length);
-  await page.getByRole('button', { name: 'Copy the flight data as CSV for a spreadsheet', exact: true }).click();
-  await expect.poll(() => page.evaluate(() => (window as any).__forceCsv.length)).toBe(before + 1);
-  return page.evaluate(() => (window as any).__forceCsv.at(-1) as string);
+  const previousView = await page.locator('[data-physics-analysis-workspace]').getAttribute('data-physics-analysis-view') as AnalysisView;
+  await selectAnalysisView(page, 'data');
+  try {
+    const before = await page.evaluate(() => (window as any).__forceCsv.length);
+    await page.getByRole('button', { name: 'Copy the flight data as CSV for a spreadsheet', exact: true }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__forceCsv.length)).toBe(before + 1);
+    return await page.evaluate(() => (window as any).__forceCsv.at(-1) as string);
+  } finally {
+    await selectAnalysisView(page, previousView);
+  }
 }
 
 async function openForces(page: Page) {
+  await selectAnalysisView(page, 'forces');
   const details = page.locator('[data-physics-sample-forces]');
   if (!(await details.evaluate(node => (node as HTMLDetailsElement).open))) {
     const summary = details.locator('summary');
@@ -124,14 +140,23 @@ async function assertForces(page: Page, phase?: string) {
     expect(sample[field], field).toBeCloseTo(value, 12);
   }
   expect(sample.vx).toBe(point.mVx); expect(sample.vy).toBe(point.mVy);
-  if (phase) {
-    expect(sample.phase).toBe(phase);
-    await expect(page.locator('[data-physics-motion-phase]')).toHaveAttribute('data-physics-motion-phase', phase);
+  // Check the visible phase in Motion, then restore the focus under test in Forces.
+  const phaseFocus = await page.evaluateHandle(() => document.activeElement as HTMLElement);
+  await selectAnalysisView(page, 'motion');
+  try {
+    if (phase) {
+      expect(sample.phase).toBe(phase);
+      await expect(page.locator('[data-physics-motion-phase]')).toHaveAttribute('data-physics-motion-phase', phase);
+    }
+    await expect(page.locator('[data-physics-phase-help]')).toBeVisible();
+    await expect(page.locator('[data-physics-phase-value="ay"]')).toHaveAttribute('data-value', String(sample.ay));
+    await expect(page.locator('[data-physics-vertical-balance] strong')).toHaveText(
+      formatted(gravity.y) + ' N + (' + formatted(drag.y) + ' N) = ' + formatted(net.y) + ' N');
+  } finally {
+    await selectAnalysisView(page, 'forces');
+    await phaseFocus.evaluate(node => { if (node?.isConnected && node.getClientRects().length) node.focus(); });
+    await phaseFocus.dispose();
   }
-  await expect(page.locator('[data-physics-phase-help]')).toBeVisible();
-  await expect(page.locator('[data-physics-phase-value="ay"]')).toHaveAttribute('data-value', String(sample.ay));
-  await expect(page.locator('[data-physics-vertical-balance] strong')).toHaveText(
-    formatted(gravity.y) + ' N + (' + formatted(drag.y) + ' N) = ' + formatted(net.y) + ' N');
   const balance = page.locator('[data-physics-force-balance]');
   await expect(balance).toHaveAttribute('data-force-scale', String(scale));
   await expect(balance.locator('[data-physics-force-card]')).toHaveCount(3);
@@ -172,6 +197,7 @@ test('vacuum and drag forces follow recorded rising, apex, falling, and impact m
     await launch(page, drag, run);
     const before = await evidence(page);
     await page.locator('[data-physics-inspect]').click();
+    await selectAnalysisView(page, 'motion');
     await expect(page.locator('[data-physics-sample-forces]')).toHaveJSProperty('open', false);
     await openForces(page);
     await page.locator('[data-physics-sample-jump="launch"]').click();
@@ -313,6 +339,7 @@ test('native force details open and close with Enter and Space while retaining f
   await page.locator('[data-physics-inspect]').click();
   const details = page.locator('[data-physics-sample-forces]'), summary = details.locator('summary');
   expect(await details.evaluate(node => node.tagName)).toBe('DETAILS');
+  await selectAnalysisView(page, 'motion');
   await expect(details).toHaveJSProperty('open', false);
   await expect(page.locator('[data-physics-force-balance]')).toBeHidden();
   await page.evaluate(() => {
@@ -320,7 +347,12 @@ test('native force details open and close with Enter and Space while retaining f
     w.__forceDetailsNode = document.querySelector('[data-physics-sample-forces]');
     w.__forceBalanceNode = document.querySelector('[data-physics-force-balance]');
   });
-  await summary.focus(); await summary.press('Enter');
+  await selectAnalysisView(page, 'forces');
+  await expect(details).toHaveJSProperty('open', true);
+  await expect(page.locator('[data-physics-force-balance]')).toBeVisible();
+  await summary.focus(); await summary.press('Space');
+  await expect(details).toHaveJSProperty('open', false); await expect(summary).toBeFocused();
+  await summary.press('Enter');
   await expect(details).toHaveJSProperty('open', true); await expect(summary).toBeFocused();
   await assertForces(page, 'level');
   await expect(page.locator('[data-physics-phase-help]')).toContainText('Vertical velocity is zero at this moment');
@@ -350,72 +382,81 @@ test('force cards and phase explanations retain readable contrast, focus, touch 
     await page.setViewportSize({ width, height: 900 });
     await page.evaluate(t => (window as any).__setForceTheme(t), theme);
     await page.waitForTimeout(40); await openForces(page); await assertForces(page, 'falling');
-    const summary = page.locator('[data-physics-sample-forces] > summary');
-    await summary.focus(); await summary.press('Space'); await summary.press('Enter');
-    await expect(summary).toBeFocused();
-    await expect(page.locator('[data-physics-sample-forces]')).toHaveJSProperty('open', true);
-    const result = await page.locator('[data-physics-sample-inspector]').evaluate(inspector => {
-      const rgb = (color: string) => {
-        const match = color.match(/^rgba?\(([^)]+)\)$/); if (!match) throw Error('Unresolved force color: ' + color);
-        return match[1].split(',').map(Number);
-      };
-      const lum = (color: string) => rgb(color).slice(0, 3).map(value => {
-        const unit = value / 255; return unit <= .04045 ? unit / 12.92 : ((unit + .055) / 1.055) ** 2.4;
-      }).reduce((sum, value, index) => sum + value * [.2126, .7152, .0722][index], 0);
-      const contrast = (ink: string, background: string) => {
-        const a = lum(ink), b = lum(background); return (Math.max(a, b) + .05) / (Math.min(a, b) + .05);
-      };
-      const surface = (element: Element) => {
-        for (let parent: Element | null = element; parent; parent = parent.parentElement) {
-          const color = getComputedStyle(parent).backgroundColor, channels = rgb(color);
-          if (channels.length === 3 || channels[3] >= .99) return color;
-        }
-        throw Error('Force content has no resolved surface');
-      };
-      const box = (node: Element) => {
-        const r = node.getBoundingClientRect(); return { left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width, height: r.height };
-      };
-      const text: Array<{ content: string; font: number; contrast: number }> = [];
-      const regions = inspector.querySelectorAll('[data-physics-force-balance],[data-physics-phase-help],[data-physics-vertical-balance],[data-physics-sample-forces] > summary');
-      for (const region of regions) {
-        const walker = document.createTreeWalker(region, NodeFilter.SHOW_TEXT);
-        for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-          const element = node.parentElement!;
-          if (!node.textContent?.trim() || !element.getClientRects().length || element.closest('.sr-only,svg')) continue;
-          const style = getComputedStyle(element);
-          text.push({ content: node.textContent.trim(), font: parseFloat(style.fontSize), contrast: contrast(style.color, surface(element)) });
-        }
+    for (const view of ['motion', 'forces'] as const) {
+      await selectAnalysisView(page, view);
+      const summary = page.locator('[data-physics-sample-forces] > summary');
+      if (view === 'forces') {
+        await summary.focus(); await summary.press('Space'); await summary.press('Enter');
+        await expect(summary).toBeFocused();
+        await expect(page.locator('[data-physics-sample-forces]')).toHaveJSProperty('open', true);
       }
-      const summary = inspector.querySelector('[data-physics-sample-forces] > summary')!;
-      return {
-        width: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth,
-        text, summary: box(summary), focus: parseFloat(getComputedStyle(summary).outlineWidth),
-        cards: [...inspector.querySelectorAll('[data-physics-force-card]')].map(box),
-        vectors: [...inspector.querySelectorAll('[data-physics-force-vector]')].map(box),
-        strokes: [...inspector.querySelectorAll('[data-physics-force-arrow]')].map(node => contrast(getComputedStyle(node).stroke, surface(node))),
-      };
-    });
-    const context = width + 'px ' + theme;
-    expect(result.scroll, context + ' overflow').toBeLessThanOrEqual(result.width + 1);
-    expect(result.cards).toHaveLength(3); expect(result.vectors).toHaveLength(3);
-    for (const box of [result.summary, ...result.cards, ...result.vectors]) {
-      expect(box.left, context).toBeGreaterThanOrEqual(0); expect(box.right, context).toBeLessThanOrEqual(result.width + 1);
-      expect(box.width, context).toBeGreaterThan(0); expect(box.height, context).toBeGreaterThan(0);
+      const result = await page.locator('[data-physics-sample-inspector]').evaluate(inspector => {
+        const rgb = (color: string) => {
+          const match = color.match(/^rgba?\(([^)]+)\)$/); if (!match) throw Error('Unresolved force color: ' + color);
+          return match[1].split(',').map(Number);
+        };
+        const lum = (color: string) => rgb(color).slice(0, 3).map(value => {
+          const unit = value / 255; return unit <= .04045 ? unit / 12.92 : ((unit + .055) / 1.055) ** 2.4;
+        }).reduce((sum, value, index) => sum + value * [.2126, .7152, .0722][index], 0);
+        const contrast = (ink: string, background: string) => {
+          const a = lum(ink), b = lum(background); return (Math.max(a, b) + .05) / (Math.min(a, b) + .05);
+        };
+        const surface = (element: Element) => {
+          for (let parent: Element | null = element; parent; parent = parent.parentElement) {
+            const color = getComputedStyle(parent).backgroundColor, channels = rgb(color);
+            if (channels.length === 3 || channels[3] >= .99) return color;
+          }
+          throw Error('Force content has no resolved surface');
+        };
+        const visible = (node: Element) => node.getClientRects().length > 0;
+        const box = (node: Element) => {
+          const r = node.getBoundingClientRect(); return { left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width, height: r.height };
+        };
+        const text: Array<{ content: string; font: number; contrast: number }> = [];
+        const regions = inspector.querySelectorAll('[data-physics-force-balance],[data-physics-phase-help],[data-physics-vertical-balance],[data-physics-sample-forces] > summary');
+        for (const region of regions) {
+          const walker = document.createTreeWalker(region, NodeFilter.SHOW_TEXT);
+          for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+            const element = node.parentElement!;
+            if (!node.textContent?.trim() || !element.getClientRects().length || element.closest('.sr-only,svg')) continue;
+            const style = getComputedStyle(element);
+            text.push({ content: node.textContent.trim(), font: parseFloat(style.fontSize), contrast: contrast(style.color, surface(element)) });
+          }
+        }
+        const summary = inspector.querySelector('[data-physics-sample-forces] > summary')!;
+        return {
+          width: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth,
+          text, summary: visible(summary) ? box(summary) : null, focus: parseFloat(getComputedStyle(summary).outlineWidth),
+          cards: [...inspector.querySelectorAll('[data-physics-force-card]')].filter(visible).map(box),
+          vectors: [...inspector.querySelectorAll('[data-physics-force-vector]')].filter(visible).map(box),
+          strokes: [...inspector.querySelectorAll('[data-physics-force-arrow]')].filter(visible).map(node => contrast(getComputedStyle(node).stroke, surface(node))),
+        };
+      });
+      const context = width + 'px ' + theme + ' ' + view;
+      expect(result.scroll, context + ' overflow').toBeLessThanOrEqual(result.width + 1);
+      expect(result.cards).toHaveLength(view === 'forces' ? 3 : 0); expect(result.vectors).toHaveLength(view === 'forces' ? 3 : 0);
+      for (const box of [...(result.summary ? [result.summary] : []), ...result.cards, ...result.vectors]) {
+        expect(box.left, context).toBeGreaterThanOrEqual(0); expect(box.right, context).toBeLessThanOrEqual(result.width + 1);
+        expect(box.width, context).toBeGreaterThan(0); expect(box.height, context).toBeGreaterThan(0);
+      }
+      for (let a = 0; a < result.cards.length; a++) for (let b = a + 1; b < result.cards.length; b++) {
+        const first = result.cards[a], second = result.cards[b];
+        expect(first.right <= second.left || second.right <= first.left || first.bottom <= second.top || second.bottom <= first.top, context + ' card overlap').toBe(true);
+      }
+      if (view === 'forces') {
+        expect(result.summary).not.toBeNull();
+        expect(result.summary!.width, context).toBeGreaterThanOrEqual(44);
+        expect(result.summary!.height, context).toBeGreaterThanOrEqual(44);
+        expect(result.focus, context).toBeGreaterThanOrEqual(2);
+      }
+      expect(result.text.length).toBeGreaterThan(view === 'forces' ? 20 : 2);
+      for (const reading of result.text) {
+        expect(reading.font, context + ': ' + reading.content).toBeGreaterThanOrEqual(12);
+        expect(reading.contrast, context + ': ' + reading.content).toBeGreaterThanOrEqual(theme === 'contrast' ? 7 : 4.5);
+      }
+      expect(result.strokes).toHaveLength(view === 'forces' ? 3 : 0);
+      for (const ratio of result.strokes) expect(ratio, context + ' vector contrast').toBeGreaterThanOrEqual(theme === 'contrast' ? 7 : 3);
     }
-    for (let a = 0; a < result.cards.length; a++) for (let b = a + 1; b < result.cards.length; b++) {
-      const first = result.cards[a], second = result.cards[b];
-      expect(first.right <= second.left || second.right <= first.left || first.bottom <= second.top || second.bottom <= first.top, context + ' card overlap').toBe(true);
-    }
-    expect(result.summary.width, context).toBeGreaterThanOrEqual(44);
-    expect(result.summary.height, context).toBeGreaterThanOrEqual(44);
-    expect(result.focus, context).toBeGreaterThanOrEqual(2);
-    expect(result.text.length).toBeGreaterThan(20);
-    for (const reading of result.text) {
-      expect(reading.font, context + ': ' + reading.content).toBeGreaterThanOrEqual(12);
-      expect(reading.contrast, context + ': ' + reading.content).toBeGreaterThanOrEqual(theme === 'contrast' ? 7 : 4.5);
-    }
-    expect(result.strokes).toHaveLength(3);
-    for (const ratio of result.strokes) expect(ratio, context + ' vector contrast').toBeGreaterThanOrEqual(theme === 'contrast' ? 7 : 3);
   }
   expect(await evidence(page)).toEqual(before); expect(errors).toEqual([]);
 });

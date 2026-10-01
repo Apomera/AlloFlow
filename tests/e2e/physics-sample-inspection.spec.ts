@@ -10,6 +10,15 @@ test.beforeAll(async () => harness.start());
 test.afterAll(async () => harness.stop());
 test.afterEach(async ({ page }) => harness.destroy(page));
 
+type AnalysisView = 'motion' | 'forces' | 'energy' | 'data';
+
+async function selectAnalysisView(page: Page, view: AnalysisView) {
+  const tab = page.locator('[data-physics-analysis-tab="' + view + '"]');
+  if (await tab.getAttribute('aria-selected') !== 'true') await tab.click();
+  await expect(tab).toHaveAttribute('aria-selected', 'true');
+  await expect(page.locator('[data-physics-analysis-panel="' + view + '"]')).toBeVisible();
+}
+
 async function mount(page: Page) {
   await page.addInitScript(() => {
     const w = window as any;
@@ -76,10 +85,16 @@ async function evidence(page: Page) {
 }
 
 async function copyCsv(page: Page) {
-  const before = await page.evaluate(() => (window as any).__sampleCsvCopies.length);
-  await page.getByRole('button', { name: 'Copy the flight data as CSV for a spreadsheet', exact: true }).click();
-  await expect.poll(() => page.evaluate(() => (window as any).__sampleCsvCopies.length)).toBe(before + 1);
-  return page.evaluate(() => (window as any).__sampleCsvCopies.at(-1) as string);
+  const previousView = await page.locator('[data-physics-analysis-workspace]').getAttribute('data-physics-analysis-view') as AnalysisView;
+  await selectAnalysisView(page, 'data');
+  try {
+    const before = await page.evaluate(() => (window as any).__sampleCsvCopies.length);
+    await page.getByRole('button', { name: 'Copy the flight data as CSV for a spreadsheet', exact: true }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__sampleCsvCopies.length)).toBe(before + 1);
+    return await page.evaluate(() => (window as any).__sampleCsvCopies.at(-1) as string);
+  } finally {
+    await selectAnalysisView(page, previousView);
+  }
 }
 
 async function assertSelected(page: Page, index: number) {
@@ -157,6 +172,7 @@ test('table and keyboard selection synchronize recorded views without changing f
   const headings = await table.locator('th').allTextContents();
   expect(headings.filter(text => text.includes('m/s'))).toHaveLength(3);
 
+  await selectAnalysisView(page, 'data');
   const tablePoint = table.locator('[data-physics-sample-index]').nth(3);
   const tableIndex = Number(await tablePoint.getAttribute('data-physics-sample-index'));
   await tablePoint.click();
@@ -280,12 +296,14 @@ test('sample inspection remains readable without page overflow at 320px in all t
   await setState(page, { angle: 35, velocity: 25, gravity: 9.8, launchHeight: 12, mass: 2, airResist: true, showFlightData: true });
   await page.getByRole('button', { name: 'Launch!', exact: true }).click();
   await finish(page);
+  await selectAnalysisView(page, 'data');
   await page.locator('[data-physics-flight-table] [data-physics-sample-index]').nth(2).click();
-  await page.locator('[data-physics-sample-forces] summary').click();
+  await selectAnalysisView(page, 'forces');
 
   for (const theme of ['default', 'dark', 'contrast']) {
     await page.evaluate(t => (window as any).__setSampleTheme(t), theme);
     await expect(page.locator('#physics-fs-outer')).toHaveAttribute('data-physics-theme', theme === 'default' ? 'light' : theme);
+    await selectAnalysisView(page, 'forces');
     await redraw(page);
     const layout = await page.evaluate(() => {
       const panel = document.querySelector('[data-physics-sample-inspector]')!;
@@ -316,17 +334,11 @@ test('sample inspection remains readable without page overflow at 320px in all t
         const surface = luminance(background);
         return { text: node.textContent, ratio: (Math.max(foreground, surface) + 0.05) / (Math.min(foreground, surface) + 0.05) };
       });
-      const graphFonts = [...document.querySelectorAll<SVGTextElement>('[data-physics-component-graphs] text')].map(node => {
-        const matrix = node.getScreenCTM();
-        return parseFloat(getComputedStyle(node).fontSize) * (matrix ? Math.hypot(matrix.a, matrix.b) : 0);
-      });
       return {
         width: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth,
         panel: { left: rect.left, right: rect.right },
         textSizes: texts.map(node => parseFloat(getComputedStyle(node).fontSize)),
         contrasts,
-        graphFonts,
-        tableWrap: document.querySelector('[data-physics-flight-table-wrap]')!.getBoundingClientRect().width,
       };
     });
     expect(layout.scroll, theme + ' page overflow').toBeLessThanOrEqual(layout.width + 1);
@@ -335,9 +347,24 @@ test('sample inspection remains readable without page overflow at 320px in all t
     expect(layout.textSizes.length).toBeGreaterThan(20);
     for (const size of layout.textSizes) expect(size, theme + ' inspector text').toBeGreaterThanOrEqual(12);
     for (const mark of layout.contrasts) expect(mark.ratio, theme + ': ' + mark.text).toBeGreaterThanOrEqual(theme === 'contrast' ? 7 : 4.5);
-    expect(layout.graphFonts.length).toBeGreaterThan(5);
-    for (const size of layout.graphFonts) expect(size, theme + ' graph text').toBeGreaterThanOrEqual(11.99);
-    expect(layout.tableWrap).toBeLessThan(layout.width);
+    await selectAnalysisView(page, 'motion');
+    const graphLayout = await page.evaluate(() => ({
+      overflow: document.documentElement.scrollWidth - innerWidth,
+      fonts: [...document.querySelectorAll<SVGTextElement>('[data-physics-component-graphs] text')].map(node => {
+        const matrix = node.getScreenCTM();
+        return parseFloat(getComputedStyle(node).fontSize) * (matrix ? Math.hypot(matrix.a, matrix.b) : 0);
+      }),
+    }));
+    expect(graphLayout.overflow).toBeLessThanOrEqual(1);
+    expect(graphLayout.fonts.length).toBeGreaterThan(5);
+    for (const size of graphLayout.fonts) expect(size, theme + ' graph text').toBeGreaterThanOrEqual(11.99);
+    await selectAnalysisView(page, 'data');
+    const dataLayout = await page.locator('[data-physics-flight-table-wrap]').evaluate(node => ({
+      width: node.getBoundingClientRect().width, overflow: document.documentElement.scrollWidth - innerWidth,
+    }));
+    expect(dataLayout.overflow).toBeLessThanOrEqual(1);
+    expect(dataLayout.width).toBeGreaterThan(0);
+    expect(dataLayout.width).toBeLessThan(layout.width);
   }
   expect(errors).toEqual([]);
 });
@@ -372,7 +399,7 @@ test('graph time control selects full-resolution records and keeps keyboard focu
   expect(await copyCsv(page)).toBe(csv);
 });
 
-test('tapping either scaled graph chooses the nearest actual observation, including impact', async ({ page }) => {
+test('tapping scaled motion and energy graphs chooses original observations, including impact', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 900 });
   await mount(page);
   await page.evaluate(() => { document.getElementById('wrap')!.style.width = '100%'; });
@@ -389,9 +416,25 @@ test('tapping either scaled graph chooses the nearest actual observation, includ
     await graph.scrollIntoViewIfNeeded();
     const box = (await graph.boundingBox())!;
     const fraction = points[index].t / points.at(-1).t;
+    await graph.evaluate(svg => svg.addEventListener('click', event => {
+      const bounds = svg.getBoundingClientRect();
+      (window as any).__lastGraphTap = { clientX: (event as MouseEvent).clientX, left: bounds.left, width: bounds.width };
+    }, { once: true }));
     await graph.click({ position: { x: (48 + 200 * fraction) / 260 * box.width, y: 90 / 210 * box.height } });
+    const tap = await page.evaluate(() => (window as any).__lastGraphTap);
+    expect(Math.abs(tap.clientX - (tap.left + (48 + 200 * fraction) / 260 * tap.width))).toBeLessThanOrEqual(1);
     await assertSelected(page, index);
     await expect(page.locator('[data-physics-graph-time-value]')).toHaveText('t = ' + points[index].t.toFixed(3) + ' s');
+  }
+  await selectAnalysisView(page, 'energy');
+  for (const index of [points.length - 1, 0]) {
+    const graph = page.locator('[data-physics-energy-graph]');
+    await graph.scrollIntoViewIfNeeded();
+    const box = (await graph.boundingBox())!;
+    const fraction = points[index].t / points.at(-1).t;
+    await graph.click({ position: { x: (58 + 226 * fraction) / 300 * box.width, y: 90 / 226 * box.height } });
+    await assertSelected(page, index);
+    await expect(page.locator('[data-physics-energy-panel]')).toHaveAttribute('data-sample-index', String(index));
   }
   // The last interval is shorter than a full tick: selection uses actual time.
   expect(points.at(-1).t - points.at(-2).t).toBeLessThan(.035);

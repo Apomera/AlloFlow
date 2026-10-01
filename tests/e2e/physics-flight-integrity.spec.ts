@@ -7,6 +7,25 @@ test.beforeAll(async () => harness.start());
 test.afterAll(async () => harness.stop());
 test.afterEach(async ({ page }) => harness.destroy(page));
 
+type AnalysisView = 'motion' | 'forces' | 'energy' | 'data';
+
+async function selectAnalysisView(page: Page, view: AnalysisView) {
+  const tab = page.locator('[data-physics-analysis-tab="' + view + '"]');
+  if (await tab.getAttribute('aria-selected') !== 'true') await tab.click();
+  await expect(tab).toHaveAttribute('aria-selected', 'true');
+  await expect(page.locator('[data-physics-analysis-panel="' + view + '"]')).toBeVisible();
+}
+
+async function copyFlightCsv(page: Page) {
+  const previousView = await page.locator('[data-physics-analysis-workspace]').getAttribute('data-physics-analysis-view') as AnalysisView;
+  await selectAnalysisView(page, 'data');
+  try {
+    await page.getByRole('button', { name: 'Copy the flight data as CSV for a spreadsheet', exact: true }).click();
+  } finally {
+    await selectAnalysisView(page, previousView);
+  }
+}
+
 async function mount(page: Page) {
   await page.addInitScript(() => {
     const w = window as any;
@@ -133,12 +152,12 @@ test('exports preserve capped run IDs and the current flight mass and impact', a
   expect(rows).toEqual([2, 3, 4, 5, 6, 7, 8, 9]);
   await setState(page, { mass: 10, simSpeed: 0 });
   await page.getByRole('button', { name: 'Launch!', exact: true }).click();
-  await page.getByRole('button', { name: 'Copy the flight data as CSV for a spreadsheet', exact: true }).click();
+  await copyFlightCsv(page);
   expect(await page.evaluate(() => (window as any).__copiedPhysics)).toContain('mass_kg=10');
   await page.locator('[data-physics-step]').click();
   await page.evaluate(() => (window as any).__tickPhysics(16));
   await page.waitForFunction(() => (window as any).__toolData.physics.runCount === 10, null, { polling: 20 });
-  await page.getByRole('button', { name: 'Copy the flight data as CSV for a spreadsheet', exact: true }).click();
+  await copyFlightCsv(page);
   const exported = await page.evaluate(() => ({ csv: (window as any).__copiedPhysics, flight: (window as any).__toolData.physics.lastFlight }));
   const end = exported.csv.trim().split('\n').at(-1).split(',').map(Number);
   expect(end[0]).toBe(exported.flight.time);

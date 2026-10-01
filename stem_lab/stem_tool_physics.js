@@ -668,7 +668,7 @@ window.StemLab = window.StemLab || {
                 // Simulation time control (1.0 = real-time; 0.5 / 0.25 slow-mo; 0 = paused)
                 simSpeed: 1.0,
                 // X-Y motion component graphs (Vx-vs-t + Vy-vs-t side-by-side)
-                showGraphs: false,
+                showGraphs: false, analysisView: 'motion',
                 // Target Destruction Mode
                 targetMode: false, targetRound: 0, targetScore: 0, targetAttempts: 0,
                 targetList: null, targetConstraint: null, targetFeedback: null, targetShowScaffold: false,
@@ -2592,7 +2592,780 @@ window.StemLab = window.StemLab || {
             } catch (e) { return false; }
           }
 
-          return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme": isContrast ? "contrast" : (isDark ? "dark" : "light"), className: "max-w-5xl mx-auto animate-in fade-in duration-200", style: d.physFsMode ? { position: 'fixed', inset: 0, zIndex: 9998, width: '100vw', height: '100vh', maxWidth: '100vw', margin: 0, overflowY: 'auto', background: themeSurface, color: themeInk, padding: '10px' } : { position: 'relative', background: themeSurface, color: themeInk } },
+
+          var analysisViews = [
+            { id: 'motion', label: __alloT('stem.physics.analysis_motion', 'Motion'), icon: 'M3 17C7 3 14 3 21 17M3 21h18' },
+            { id: 'forces', label: __alloT('stem.physics.analysis_forces', 'Forces'), icon: 'M12 21V3m-5 5 5-5 5 5M3 12h18m-5-5 5 5-5 5' },
+            { id: 'energy', label: __alloT('stem.physics.analysis_energy', 'Energy'), icon: 'm13 2-9 12h7l-1 8 10-12h-7l0-8Z' },
+            { id: 'data', label: __alloT('stem.physics.analysis_data', 'Data'), icon: 'M3 4h18v16H3ZM3 10h18M9 4v16M15 4v16' }
+          ];
+          var analysisView = analysisViews.some(function(view) { return view.id === d.analysisView; }) ? d.analysisView : 'motion';
+          var analysisCanvas = typeof document !== 'undefined' ? document.getElementById('physicsCanvas') : null;
+          var analysisSelected = physSelectedInspection(analysisCanvas);
+          var analysisOpen = !!(analysisSelected || d.showGraphs || d.showFlightData);
+          function physOpenAnalysisView(view, focus) {
+            if (!analysisViews.some(function(item) { return item.id === view; })) return;
+            setLabToolData(function(prev) { return Object.assign({}, prev, { physics: Object.assign({}, prev.physics, {
+              analysisView: view, showGraphs: true, showFlightData: true
+            }) }); });
+            if (focus) setTimeout(function() {
+              var tab = document.querySelector('[data-physics-analysis-tab="' + view + '"]');
+              if (tab) tab.focus({ preventScroll: true });
+            }, 0);
+          }
+          function physAnalysisTabKey(event, index) {
+            var next;
+            var rtl = window.getComputedStyle(event.currentTarget).direction === 'rtl';
+            if (event.key === 'ArrowRight') next = (index + (rtl ? 3 : 1)) % 4;
+            else if (event.key === 'ArrowLeft') next = (index + (rtl ? 1 : 3)) % 4;
+            else if (event.key === 'Home') next = 0;
+            else if (event.key === 'End') next = 3;
+            if (next == null) return;
+            event.preventDefault();
+            physOpenAnalysisView(analysisViews[next].id, true);
+          }
+
+          function physRenderFlightHistory() {
+              var cv = typeof document !== 'undefined' ? document.getElementById('physicsCanvas') : null;
+              var trails = cv && cv._trails || [];
+              if (!trails.length) return null;
+              var sample = physSelectedInspection(cv);
+              var selectedIndex = sample ? trails.indexOf(cv._inspection.trail) : trails.length - 1;
+              var trail = trails[selectedIndex];
+              return React.createElement('section', { 'data-physics-flight-history': true, 'aria-label': __alloT('stem.physics.history_title', 'Recent recorded flights') },
+                React.createElement('label', { htmlFor: 'physics-history-flight' }, __alloT('stem.physics.history_choose', 'Inspect a recorded flight')),
+                React.createElement('select', { id: 'physics-history-flight', 'data-physics-history-select': true, value: selectedIndex, 'aria-describedby': 'physics-history-help',
+                  onChange: function(event) {
+                    var chosen = trails[Number(event.target.value)];
+                    if (chosen) physSelectSample(chosen.length - 1, chosen);
+                  } }, trails.map(function(recorded, index) {
+                    var label = recorded.run != null ? __alloT('stem.physics.investigation_run', 'Run') + ' ' + recorded.run : __alloT('stem.physics.history_unfinished', 'Unfinished flight') + ' ' + (index + 1);
+                    label += ' · ' + (recorded.drag ? __alloT('stem.physics.sample_drag_on', 'Air drag on') : __alloT('stem.physics.sample_drag_off', 'Air drag off')) + ' · θ ' + recorded.angle + '° · v₀ ' + recorded.velocity + ' m/s';
+                    return React.createElement('option', { key: index, value: index }, label);
+                  })),
+                React.createElement('button', { type: 'button', 'data-physics-history-inspect': true,
+                  onClick: function() { if (physSelectSample(sample ? sample.index : trail.length - 1, trail)) physRevealInspection(); } }, __alloT('stem.physics.history_open', 'Inspect this flight')),
+                React.createElement('p', { id: 'physics-history-help' }, __alloT('stem.physics.history_help', 'Up to five flights are kept in this session. Choosing a flight pauses playback and links its recorded canvas, graphs, and table.')));
+            }
+
+          // Each view reads the same captured trail. The canvas remains outside the workspace.
+          function physRenderAnalysisReadings() {
+
+              var cv = typeof document !== 'undefined' ? document.getElementById('physicsCanvas') : null;
+              var selected = physSelectedInspection(cv);
+              var trails = cv && cv._trails || [];
+              var trail = selected ? cv._inspection.trail : trails[trails.length - 1];
+              var sample = selected || physInspectSample(trail, trail ? trail.length - 1 : 0);
+              if (!sample) return null;
+              var h = React.createElement;
+
+              var parameters = sample.parameters;
+              var moments = physRecordedMoments(trail);
+              var highest = moments ? moments.highestIndex : sample.index;
+              var apexIndex = moments ? moments.apexIndex : -1;
+              var latest = physInspectSample(trail, trail.length - 1);
+              var phaseLabels = {
+                rising: __alloT('stem.physics.sample_phase_rising', 'Rising'),
+                apex: sample.t === 0 ? __alloT('stem.physics.sample_phase_release', 'Highest point at release') : __alloT('stem.physics.sample_phase_apex', 'At apex'),
+                falling: __alloT('stem.physics.sample_phase_falling', 'Falling'),
+                level: __alloT('stem.physics.sample_phase_level', 'Vertical velocity is zero'),
+                impact: __alloT('stem.physics.sample_ground_impact', 'Ground impact')
+              };
+              var phaseLabel = phaseLabels[sample.phase];
+              var phaseHelp = sample.phase === 'impact'
+                ? __alloT('stem.physics.force_phase_impact', 'These forces describe arrival just before contact. The collision force is not simulated.')
+                : sample.vy > 0
+                  ? parameters.airResist
+                    ? __alloT('stem.physics.force_phase_rising_drag', 'While the projectile rises, gravity and vertical air drag act downward.')
+                    : __alloT('stem.physics.force_phase_rising_vacuum', 'While the projectile rises, gravity changes its vertical velocity downward.')
+                  : sample.vy < 0
+                    ? parameters.airResist
+                      ? __alloT('stem.physics.force_phase_falling_drag', 'During descent, vertical air drag acts upward. Net force determines the acceleration.')
+                      : __alloT('stem.physics.force_phase_falling_vacuum', 'During descent, gravity changes its vertical velocity downward.')
+                    : __alloT('stem.physics.force_phase_zero_vertical', 'Vertical velocity is zero at this moment. Gravity still acts downward.');
+              if (sample.gravityForce === 0 && !sample.impact) phaseHelp = parameters.airResist
+                ? __alloT('stem.physics.force_phase_no_gravity_drag', 'With no gravity, air drag alone determines acceleration.')
+                : __alloT('stem.physics.force_phase_no_forces', 'With gravity and air drag both absent, velocity stays unchanged.');
+              if (sample.vy === 0 && sample.dragFx !== 0) phaseHelp += ' ' +
+                __alloT('stem.physics.force_phase_horizontal_drag', 'Horizontal motion still produces air drag.');
+              var forceVectors = [
+                { key: 'gravity', label: __alloT('stem.physics.force_gravity', 'Gravity'),
+                  description: sample.gravityForce === 0 ? __alloT('stem.physics.force_no_gravity', 'Gravity is zero') : __alloT('stem.physics.force_downward', 'Acts downward'), x: sample.gravityFx, y: sample.gravityFy, magnitude: sample.gravityForce, dash: '4 3' },
+                { key: 'drag', label: __alloT('stem.physics.force_air_drag', 'Air drag'),
+                  description: parameters.airResist ? __alloT('stem.physics.force_opposes_velocity', 'Opposes velocity') : __alloT('stem.physics.sample_drag_off', 'Air drag off'),
+                  x: sample.dragFx, y: sample.dragFy, magnitude: sample.dragForce, dash: '2 3' },
+                { key: 'net', label: __alloT('stem.physics.force_net', 'Net force'),
+                  description: __alloT('stem.physics.force_sets_acceleration', 'Sets acceleration'), x: sample.fx, y: sample.fy, magnitude: Math.hypot(sample.fx, sample.fy), dash: null }
+              ];
+              var forceScale = Math.max.apply(null, forceVectors.map(function(vector) { return vector.magnitude; }));
+              function forceCard(vector) {
+                var length = forceScale > 0 ? 42 * (vector.magnitude / forceScale) : 0;
+                var endX = 64 + (forceScale > 0 ? 42 * (vector.x / forceScale) : 0);
+                var endY = 64 - (forceScale > 0 ? 42 * (vector.y / forceScale) : 0);
+                var direction = Math.atan2(-vector.y, vector.x), head = Math.min(6, length / 3);
+                function component(field, label, value) {
+                  return h('div', { key: field }, h('dt', null, label),
+                    h('dd', { 'data-physics-force-component': vector.key + '-' + field, 'data-value': value }, physFormatSampleValue(value) + ' N'));
+                }
+                return h('section', { key: vector.key, 'data-physics-force-card': vector.key, 'aria-label': vector.label },
+                  h('div', { className: 'phys-force-title' }, h('h5', null, vector.label), h('p', null, vector.description)),
+                  h('div', { className: 'phys-force-body' },
+                    h('svg', { 'data-physics-force-vector': vector.key, viewBox: '0 0 128 128', 'aria-hidden': true, focusable: 'false' },
+                      h('circle', { cx: 64, cy: 64, r: 51, fill: 'none', stroke: 'var(--phys-line)' }),
+                      h('path', { d: 'M12 64H116M64 12V116', fill: 'none', stroke: 'var(--phys-line)', strokeDasharray: '2 4' }),
+                      vector.magnitude > 0 && h('g', { fill: 'none', stroke: 'var(--phys-accent)', strokeWidth: vector.key === 'net' ? 3 : 2.5 },
+                        h('line', { 'data-physics-force-arrow': vector.key, 'data-fx': vector.x, 'data-fy': vector.y,
+                          'data-magnitude': vector.magnitude, 'data-scale': forceScale, x1: 64, y1: 64, x2: endX, y2: endY, strokeDasharray: vector.dash }),
+                        h('path', { d: 'M' + (endX - Math.cos(direction - .45) * head) + ' ' + (endY - Math.sin(direction - .45) * head) +
+                          'L' + endX + ' ' + endY + 'L' + (endX - Math.cos(direction + .45) * head) + ' ' + (endY - Math.sin(direction + .45) * head) })),
+                      h('circle', { cx: 64, cy: 64, r: 3, fill: 'var(--phys-ink)' })),
+                    h('dl', null,
+                      component('x', __alloT('stem.physics.force_horizontal', 'Horizontal · x'), vector.x),
+                      component('y', __alloT('stem.physics.force_vertical', 'Vertical · y'), vector.y),
+                      component('magnitude', __alloT('stem.physics.force_magnitude', 'Magnitude'), vector.magnitude))),
+                  vector.magnitude === 0 ? h('p', { className: 'phys-force-note', 'data-physics-force-zero': vector.key },
+                    __alloT('stem.physics.force_zero', 'Zero force: no arrow.')) : length < 4.5 ? h('p', { className: 'phys-force-note' },
+                    __alloT('stem.physics.force_tiny', 'The arrow is too short to see clearly at this scale; the values above retain its size.')) : null);
+              }
+              function measurement(key, label, value, unit) {
+                var swatch = key === 'ke' ? 'var(--phys-accent)' : key === 'pe' ? 'var(--phys-muted)' : key === 'dragLoss' ? 'repeating-linear-gradient(135deg,var(--phys-line),var(--phys-line) 2px,var(--phys-panel) 2px,var(--phys-panel) 4px)' : null;
+                return h('div', { key: key, 'data-physics-measurement': key }, h('dt', null, swatch && h('span', { className: 'phys-energy-key', 'aria-hidden': true, style: { background: swatch } }), label), h('dd', null, physFormatSampleValue(value) + ' ' + unit));
+              }
+              var sampleLabel = __alloT('stem.physics.sample_number', 'Sample') + ' ' + (sample.index + 1) + ' / ' + sample.count;
+              var settings = [
+                'θ = ' + parameters.angle + '°', 'v₀ = ' + parameters.velocity + ' m/s',
+                'g = ' + parameters.gravity + ' m/s²', 'm = ' + parameters.mass + ' kg', 'h₀ = ' + parameters.launchHeight + ' m',
+                parameters.airResist ? __alloT('stem.physics.sample_drag_on', 'Air drag on') : __alloT('stem.physics.sample_drag_off', 'Air drag off')
+              ];
+
+            return {
+              header: React.createElement(React.Fragment, null, h('div', { className: 'phys-measured-heading' },
+                  h('div', null,
+                    h('h3', { id: 'physics-sample-heading' }, __alloT('stem.physics.analysis_title', 'Flight analysis')),
+                    h('p', { 'data-physics-graph-flight': sample.run == null ? 'unfinished' : sample.run }, (sample.run != null ? __alloT('stem.physics.investigation_run', 'Run') + ' ' + sample.run + ' · ' : '') + (selected ? sampleLabel : __alloT('stem.physics.analysis_latest', 'Latest recorded sample')) + (sample.impact ? ' · ' + __alloT('stem.physics.sample_ground_impact', 'Ground impact') : ''))),
+                  h('span', { className: 'phys-analysis-phase', 'data-physics-analysis-phase': sample.phase }, phaseLabel),
+                  h('strong', { className: 'phys-sample-time' }, 't = ' + sample.t.toFixed(3) + ' s'),
+                  selected && h('button', { type: 'button', 'data-physics-sample-close': true, onClick: function() {
+                    var olderFlight = cv._inspection && cv._inspection.trail !== cv._trails[cv._trails.length - 1];
+                    physClearInspection();
+                    setTimeout(function() {
+                      var opener = olderFlight ? document.querySelector('[data-physics-history-select]') : document.querySelector('[data-physics-inspect]');
+                      if (opener) opener.focus();
+                    }, 0);
+                  } }, __alloT('stem.physics.sample_close', 'Close inspector'))), h('div', { className: 'phys-capture-settings', 'data-physics-graph-settings': true, 'aria-label': __alloT('stem.physics.sample_recorded_settings', 'Recorded launch settings') }, settings.map(function(label, index) { return h('span', { key: index, 'data-physics-graph-setting': ['angle', 'velocity', 'gravity', 'mass', 'launchHeight'][index] }, label); })), h('p', { className: 'sr-only', 'data-physics-sample-status': true, role: 'status', 'aria-live': 'polite', 'aria-atomic': true },
+                  selected ? (sample.run != null ? __alloT('stem.physics.investigation_run', 'Run') + ' ' + sample.run + ' · ' : '') + sampleLabel + ' · t = ' + sample.t.toFixed(3) + ' s · ' + phaseLabel : '')),
+              motion: React.createElement(React.Fragment, null, h('section', { 'data-physics-motion-phase': sample.phase, 'aria-label': phaseLabel },
+                  h('div', { className: 'phys-phase-heading' }, h('span', { 'aria-hidden': true }, sample.phase === 'rising' ? '↑' : sample.phase === 'falling' || sample.phase === 'impact' ? '↓' : sample.phase === 'apex' ? '∩' : '—'), h('h4', { 'data-physics-phase-label': true }, phaseLabel)),
+                  h('p', { 'data-physics-phase-help': true }, phaseHelp),
+                  h('dl', { className: 'phys-phase-values' },
+                    h('div', null, h('dt', null, __alloT('stem.physics.sample_vertical_velocity', 'Vertical velocity · vy')), h('dd', { 'data-physics-phase-value': 'vy', 'data-value': sample.vy }, physFormatSampleValue(sample.vy) + ' m/s')),
+                    h('div', null, h('dt', null, __alloT('stem.physics.sample_vertical_acceleration', 'Vertical acceleration · ay')), h('dd', { 'data-physics-phase-value': 'ay', 'data-value': sample.ay }, physFormatSampleValue(sample.ay) + ' m/s²'))),
+                  h('div', { 'data-physics-vertical-balance': true },
+                    h('p', null, __alloT('stem.physics.force_vertical_equation', 'Gravity + vertical air drag = net vertical force')),
+                    h('strong', null, physFormatSampleValue(sample.gravityFy) + ' N + (' + physFormatSampleValue(sample.dragFy) + ' N) = ' + physFormatSampleValue(sample.fy) + ' N'))), h('section', { className: 'phys-measured-card', 'aria-labelledby': 'physics-sample-motion' },
+                    h('h4', { id: 'physics-sample-motion' }, __alloT('stem.physics.sample_motion', 'Position & velocity')),
+                    h('dl', null,
+                      measurement('x', __alloT('stem.physics.sample_horizontal_position', 'Horizontal position · x'), sample.x, 'm'),
+                      measurement('y', __alloT('stem.physics.sample_height', 'Height above ground · y'), sample.y, 'm'),
+                      measurement('vx', __alloT('stem.physics.sample_horizontal_velocity', 'Horizontal velocity · vx'), sample.vx, 'm/s'),
+                      measurement('vy', __alloT('stem.physics.sample_vertical_velocity', 'Vertical velocity · vy'), sample.vy, 'm/s'),
+                      measurement('speed', __alloT('stem.physics.metric_speed', 'Speed'), sample.speed, 'm/s')))),
+              forces: h('details', { 'data-physics-sample-forces': true, open: analysisView === 'forces' },
+                  h('summary', null, __alloT('stem.physics.sample_forces', 'Forces & acceleration')),
+                  h('section', { 'data-physics-force-balance': true, 'data-force-scale': forceScale, 'aria-labelledby': 'physics-force-heading' },
+                    h('h4', { id: 'physics-force-heading' }, __alloT('stem.physics.force_heading', 'Forces at this recorded moment')),
+                    h('p', { className: 'phys-force-explanation' }, __alloT('stem.physics.force_equation', 'Gravity + air drag = net force. Acceleration = net force ÷ recorded mass.')),
+                    h('p', { className: 'phys-force-phase-help' }, phaseHelp),
+                    h('div', { className: 'phys-force-cards' }, forceVectors.map(forceCard)),
+                    h('p', { className: 'phys-force-scale' }, (forceScale > 0 ? __alloT('stem.physics.force_scale', 'All arrows share one scale; the longest represents') + ' ' + physFormatSampleValue(forceScale) + ' N. ' : __alloT('stem.physics.force_all_zero', 'All recorded forces are zero.') + ' ') +
+                      __alloT('stem.physics.force_axes', 'Right and up are positive. The scale updates when you choose another moment.')),
+                    h('p', { className: 'phys-force-mass' }, __alloT('stem.physics.force_recorded_mass', 'Recorded mass') + ': ' + parameters.mass + ' kg · ay = ' + physFormatSampleValue(sample.fy) +
+                      ' N ÷ ' + parameters.mass + ' kg = ' + physFormatSampleValue(sample.ay) + ' m/s²')),
+                  h('div', { className: 'phys-measured-grid' },
+                    h('div', { className: 'phys-measured-card' }, h('dl', null,
+                      measurement('ax', __alloT('stem.physics.sample_horizontal_acceleration', 'Horizontal acceleration · ax'), sample.ax, 'm/s²'),
+                      measurement('ay', __alloT('stem.physics.sample_vertical_acceleration', 'Vertical acceleration · ay'), sample.ay, 'm/s²'),
+                      measurement('fx', __alloT('stem.physics.sample_horizontal_force', 'Net horizontal force · Fx'), sample.fx, 'N'),
+                      measurement('fy', __alloT('stem.physics.sample_vertical_force', 'Net vertical force · Fy'), sample.fy, 'N'))),
+                    h('div', { className: 'phys-measured-card' }, h('dl', null,
+                      measurement('gravityForce', __alloT('stem.physics.inspect_gravity_force', 'Gravitational force downward'), sample.gravityForce, 'N'),
+                      measurement('dragForce', __alloT('stem.physics.inspect_drag_force', 'Drag force opposite velocity'), sample.dragForce, 'N'))))),
+              energy: h('section', { className: 'phys-measured-card', 'aria-labelledby': 'physics-sample-energy' },
+                    h('h4', { id: 'physics-sample-energy' }, __alloT('stem.physics.sample_energy', 'Energy at this moment')),
+                    h('dl', null,
+                      measurement('ke', __alloT('stem.physics.sample_kinetic_energy', 'Kinetic · KE'), sample.ke, 'J'),
+                      measurement('pe', __alloT('stem.physics.sample_potential_energy', 'Potential · PE'), sample.pe, 'J'),
+                      measurement('totalEnergy', __alloT('stem.physics.sample_mechanical_energy', 'Mechanical · KE + PE'), sample.totalEnergy, 'J'),
+                      measurement('dragLoss', __alloT('stem.physics.inspect_energy_transferred', 'Energy transferred to the air'), sample.dragLoss, 'J'),
+                      measurement('initialEnergy', __alloT('stem.physics.sample_initial_energy', 'Initial energy'), sample.initialEnergy, 'J')),
+                    sample.initialEnergy > 0 && h('div', { className: 'phys-energy-budget', 'aria-hidden': true },
+                      h('span', { style: { width: Math.max(0, Math.min(100, sample.ke / sample.initialEnergy * 100)) + '%', background: 'var(--phys-accent)' } }),
+                      h('span', { style: { width: Math.max(0, Math.min(100, sample.pe / sample.initialEnergy * 100)) + '%', background: 'var(--phys-muted)' } }),
+                      h('span', { style: { width: Math.max(0, Math.min(100, sample.dragLoss / sample.initialEnergy * 100)) + '%', background: 'repeating-linear-gradient(135deg,var(--phys-line),var(--phys-line) 3px,var(--phys-panel) 3px,var(--phys-panel) 6px)' } }))),
+              help: React.createElement(React.Fragment, null, h('p', { className: 'phys-measured-help' }, __alloT('stem.physics.sample_inspection_help', 'These are recorded measurements. Moving the time control pauses playback and leaves the flight evidence intact. Highest recorded point selects the highest sampled position.')), h('p', { className: 'phys-measured-help' }, __alloT('stem.physics.inspect_axes', 'Right and up are positive; potential energy is measured from the ground.')), sample.impact && h('p', { className: 'phys-measured-help', 'data-physics-impact-note': true, style: { padding: '10px 12px', background: 'var(--phys-soft)', borderLeft: '3px solid var(--phys-accent)', borderRadius: 6 } }, __alloT('stem.physics.sample_impact_note', 'Impact values describe the arriving projectile immediately before ground contact. The model stops at contact and does not simulate the collision force.')), typeof d.inspectionSnapshot === 'string' && h('p', { className: 'sr-only' }, d.inspectionSnapshot))
+            };
+          }
+
+          function physRenderAnalysisGraphs() {
+
+              // The charts own their surfaces because SVG paint does not inherit
+              // the host theme. Grid lines remain distinct in high contrast.
+              var graphColors = isContrast
+                ? { panel: '#000000', surface: '#000000', ink: '#ffff00', muted: '#ffffff', border: '#ffffff', axis: '#ffffff', grid: '#ffffff', vx: '#ffff00', vy: '#ffffff', range: '#ffff00', marker: '#ffffff' }
+                : isDark
+                  ? { panel: '#101f32', surface: '#0b1627', ink: '#e8f1fc', muted: '#b6c8dc', border: '#38516b', axis: '#94a3b8', grid: '#73859d', vx: '#67b8ff', vy: '#cfb4ff', range: '#fbbf24', marker: '#67e8f9' }
+                  : { panel: '#eef5fb', surface: '#ffffff', ink: '#1d344d', muted: '#52677e', border: '#c8d8e8', axis: '#64748b', grid: '#8492a5', vx: '#1767b2', vy: '#793dbb', range: '#a95b05', marker: '#087687' };
+              var graphPanelStyle = { padding: '14px 10px', marginBottom: 16, borderRadius: 18, border: '1px solid ' + graphColors.border, background: graphColors.panel, color: graphColors.ink };
+              var graphCardStyle = { minWidth: 0, padding: '12px 8px', borderRadius: 14, border: '1px solid ' + graphColors.border, background: graphColors.surface };
+              var cv = typeof document !== 'undefined' ? document.getElementById('physicsCanvas') : null;
+              var trails = cv && cv._trails ? cv._trails : [];
+              var selectedPoint = physSelectedInspection(cv);
+              var lastTrail = selectedPoint ? cv._inspection.trail : trails.length > 0 ? trails[trails.length - 1] : null;
+              if (!lastTrail || lastTrail.length === 0) {
+                return { motion: React.createElement("section", { 'data-physics-motion-panel': true, style: graphPanelStyle },
+                  React.createElement("h3", { style: { margin: '0 0 6px', fontSize: 16, fontWeight: 800 } }, __alloT('stem.physics.motion_components', 'Motion Components')),
+                  React.createElement("p", { style: { margin: 0, fontSize: 14, lineHeight: 1.55, color: graphColors.muted } }, __alloT('stem.physics.launch_to_see_vx_vy', 'Launch a projectile to see Vx-vs-t and Vy-vs-t.'))
+                ), energy: React.createElement('p', { className: 'phys-measured-help' }, __alloT('stem.physics.analysis_launch_energy', 'Launch a projectile to explore its energy.')) };
+              }
+              var pts = lastTrail;
+              var graphHasDrag = !!lastTrail.drag;
+              var vxDescription = graphHasDrag
+                ? __alloT('stem.physics.graph_vx_drag', 'Horizontal velocity decreases because drag opposes motion.')
+                : __alloT('stem.physics.graph_vx_vacuum', 'Without air drag, horizontal velocity stays constant because there is no horizontal force.');
+              var vyDescription = graphHasDrag
+                ? __alloT('stem.physics.graph_vy_drag', 'Vertical velocity curves over time. Drag and gravity determine its slope; Vy is zero at the apex.')
+                : __alloT('stem.physics.graph_vy_vacuum', 'Without air drag, vertical velocity decreases in a straight line with slope −g and reaches zero at the apex.');
+              var graphMoments = physRecordedMoments(pts);
+              var plotIndices = physMomentIndices(pts, 80, selectedPoint ? selectedPoint.index : null, false);
+              // Keep meaningful full-resolution observations on the plotted curve.
+              // The remaining vertices are representative recorded samples.
+              var samples = plotIndices.map(function(index) {
+                return { t: pts[index].t != null ? pts[index].t : index * PHYS_DT, vx: pts[index].mVx || 0, vy: pts[index].mVy || 0 };
+              });
+              var tMax = samples[samples.length - 1].t || 1;
+              var graphCanInspect = !!graphMoments;
+              var graphLatest = graphMoments ? physInspectSample(pts, graphMoments.latestIndex) : null;
+              var graphApex = graphMoments && graphMoments.apexIndex >= 0 ? physInspectSample(pts, graphMoments.apexIndex) : null;
+              var graphRecorded = lastTrail.parameters || lastTrail;
+              var graphIndex = selectedPoint ? selectedPoint.index : pts.length - 1;
+              var graphTime = pts[graphIndex].t != null ? pts[graphIndex].t : graphIndex * PHYS_DT;
+              function selectGraphTime(event, geometry) {
+                if (!graphCanInspect) return;
+                var bounds = event.currentTarget.getBoundingClientRect();
+                if (!(bounds.width > 0) || !isFinite(event.clientX)) return;
+                var svgWidth = geometry ? geometry.width : W;
+                var plotLeft = bounds.left + (geometry ? geometry.left : padL) / svgWidth * bounds.width;
+                var plotWidth = (geometry ? geometry.plotWidth : innerW) / svgWidth * bounds.width;
+                var pixelX = event.clientX - plotLeft;
+                // Native click coordinates can round a fractional SVG edge inward.
+                // A one-pixel endpoint target keeps launch and impact selectable;
+                // interior taps still choose the nearest original observation.
+                var ratio = pixelX <= 1 ? 0 : pixelX >= plotWidth - 1 ? 1 : Math.max(0, Math.min(1, pixelX / plotWidth));
+                var wanted = ratio * tMax;
+                // Find the nearest full-resolution observation, including the
+                // shortened impact interval. The plotted curve is downsampled.
+                var low = 0, high = pts.length - 1;
+                while (low < high) {
+                  var middle = Math.floor((low + high) / 2);
+                  if (pts[middle].t < wanted) low = middle + 1;
+                  else high = middle;
+                }
+                if (low > 0 && wanted - pts[low - 1].t <= pts[low].t - wanted) low--;
+                physSelectSample(low, lastTrail);
+              }
+              var vxAbs = 0, vyMax = 0, vyMin = 0;
+              samples.forEach(function (s) {
+                if (Math.abs(s.vx) > vxAbs) vxAbs = Math.abs(s.vx);
+                if (s.vy > vyMax) vyMax = s.vy;
+                if (s.vy < vyMin) vyMin = s.vy;
+              });
+              var W = 260, H = 210, padL = 48, padR = 12, padT = 18, padB = 52;
+              var innerW = W - padL - padR, innerH = H - padT - padB;
+              var roundLimit = function(value) {
+                var magnitude = Math.pow(10, Math.floor(Math.log10(Math.max(value, 0.01))));
+                var scaled = value / magnitude;
+                var steps = [1, 2, 2.5, 5, 10];
+                for (var step = 0; step < steps.length; step++) if (scaled <= steps[step]) return steps[step] * magnitude;
+                return 10 * magnitude;
+              };
+              var tickNumber = function(value) {
+                if (Math.abs(value) < 0.000001) return '0';
+                return String(Number(value.toFixed(3)));
+              };
+              var vxLimit = roundLimit(Math.max(vxAbs * 1.12, 1));
+              var vxYScale = innerH / vxLimit;
+              var vxY0 = padT + innerH;
+              var vxPath = samples.map(function (s, i) {
+                var x = padL + (s.t / tMax) * innerW;
+                var y = vxY0 - s.vx * vxYScale;
+                return (i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1);
+              }).join(' ');
+              var vyRange = roundLimit(Math.max(Math.abs(vyMin), Math.abs(vyMax), 1) * 1.12);
+              var vyYScale = innerH / (vyRange * 2);
+              var vyY0 = padT + innerH / 2;
+              var vyPath = samples.map(function (s, i) {
+                var x = padL + (s.t / tMax) * innerW;
+                var y = vyY0 - s.vy * vyYScale;
+                return (i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1);
+              }).join(' ');
+              var axisLine = function (x1, y1, x2, y2, dashed) {
+                return React.createElement('line', { x1: x1, y1: y1, x2: x2, y2: y2, stroke: dashed ? graphColors.grid : graphColors.axis, strokeWidth: dashed ? 0.75 : 1.25, strokeDasharray: dashed ? '2 5' : undefined });
+              };
+              var lbl = function (x, y, text, anchor) {
+                return React.createElement('text', { x: x, y: y, fontSize: 18, fill: graphColors.ink, textAnchor: anchor || 'middle', fontFamily: 'system-ui, sans-serif', style: { fontSize: 18, fontVariantNumeric: 'tabular-nums' } }, text);
+              };
+              var timeAxis = function() {
+                return [0, 0.5, 1].map(function(fraction) {
+                  var x = padL + fraction * innerW;
+                  return React.createElement('g', { key: fraction },
+                    fraction > 0 && axisLine(x, padT, x, padT + innerH, true),
+                    lbl(x, H - 29, tickNumber(tMax * fraction), fraction === 0 ? 'start' : fraction === 1 ? 'end' : 'middle')
+                  );
+                });
+              };
+              var endpoint = function(sample, field, zero, scale, color) {
+                return React.createElement('circle', { cx: padL + sample.t / tMax * innerW, cy: zero - sample[field] * scale, r: 3.5, fill: color, stroke: graphColors.surface, strokeWidth: 1.5 });
+              };
+              var velocityCard = function(field, title, description, color, path, limit, zero, scale) {
+                var first = samples[0], latest = samples[samples.length - 1];
+                var ticks = field === 'vx' ? [0, limit / 2, limit] : [-limit, 0, limit];
+                // The cursor uses the actual recorded sample, independently of
+                // the lighter set of points used to draw the curve.
+                var selectedValue = selectedPoint ? selectedPoint[field] : null;
+                var selectedX = selectedPoint ? padL + selectedPoint.t / tMax * innerW : null;
+                var selectedY = selectedPoint ? zero - selectedValue * scale : null;
+                var phaseLabel = selectedPoint ? {
+                  rising: __alloT('stem.physics.sample_phase_rising', 'Rising'),
+                  apex: selectedPoint.t === 0 ? __alloT('stem.physics.sample_phase_release', 'Highest point at release') : __alloT('stem.physics.sample_phase_apex', 'At apex'),
+                  falling: __alloT('stem.physics.sample_phase_falling', 'Falling'),
+                  level: __alloT('stem.physics.sample_phase_level', 'Vertical velocity is zero'),
+                  impact: __alloT('stem.physics.sample_ground_impact', 'Ground impact')
+                }[selectedPoint.phase] : '';
+                var selectionText = selectedPoint ? __alloT('stem.physics.graph_selected_sample', 'Selected sample') + ': t = ' + selectedPoint.t.toFixed(3) + ' s; ' + (field === 'vx' ? 'Vx' : 'Vy') + ' = ' + physFormatSampleValue(selectedValue) + ' m/s.' : '';
+                return React.createElement('div', { style: graphCardStyle },
+                  React.createElement('h4', { style: { margin: '0 0 5px', fontSize: 14, lineHeight: 1.45, fontWeight: 750, color: color } }, title),
+                  React.createElement('div', { 'data-physics-graph-selected': selectedPoint ? field : undefined,
+                    'data-sample-index': selectedPoint ? selectedPoint.index : undefined, 'data-time': selectedPoint ? selectedPoint.t : undefined, 'data-value': selectedPoint ? selectedValue : undefined },
+                    React.createElement('p', { 'data-physics-graph-reading-label': field, style: { margin: '0 0 4px', fontSize: 12, lineHeight: 1.5, color: graphColors.muted } },
+                      (selectedPoint ? __alloT('stem.physics.graph_selected_sample', 'Selected sample') + ' · ' + phaseLabel : graphLatest && graphLatest.impact ? __alloT('stem.physics.sample_ground_impact', 'Ground impact') : __alloT('stem.physics.sample_latest_point', 'Latest point')) + ' · t = ' + graphTime.toFixed(3) + ' s'),
+                    React.createElement('p', { 'data-physics-graph-reading': field, 'data-value': selectedPoint ? selectedValue : latest[field],
+                      style: { margin: '0 0 8px', fontSize: 26, lineHeight: 1.35, fontWeight: 750, fontVariantNumeric: 'tabular-nums', color: graphColors.ink } },
+                      physFormatSampleValue(selectedPoint ? selectedValue : latest[field]),
+                      React.createElement('span', { style: { fontSize: 13, fontWeight: 500, color: graphColors.muted } }, ' m/s'))),
+                  React.createElement('dl', { className: 'phys-graph-endpoints' },
+                    React.createElement('div', null, React.createElement('dt', { style: { color: graphColors.muted } }, __alloT('stem.physics.sample_launch_point', 'Launch point')), React.createElement('dd', null, physFormatSampleValue(first[field]) + ' m/s')),
+                    React.createElement('div', null, React.createElement('dt', { style: { color: graphColors.muted } }, graphLatest && graphLatest.impact ? __alloT('stem.physics.sample_ground_impact', 'Ground impact') : __alloT('stem.physics.sample_latest_point', 'Latest point')), React.createElement('dd', null, physFormatSampleValue(latest[field]) + ' m/s'))),
+                  React.createElement('svg', { 'data-physics-graph': field, 'data-plotted-indices': plotIndices.join(','), 'data-plotted-count': plotIndices.length, onClick: graphCanInspect ? selectGraphTime : undefined, 'aria-describedby': graphCanInspect ? 'physics-graph-time-help' : undefined, style: { cursor: graphCanInspect ? 'crosshair' : 'default', display: 'block', background: graphColors.surface, borderRadius: 8, width: '100%', maxWidth: 320, height: 'auto', margin: '0 auto' }, viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'aria-label': description + (selectionText ? ' ' + selectionText : '') },
+                    timeAxis(),
+                    ticks.map(function(value) { return React.createElement('g', { key: value },
+                      axisLine(padL, zero - value * scale, W - padR, zero - value * scale, value !== 0),
+                      lbl(padL - 8, zero - value * scale + 5, tickNumber(value), 'end')
+                    ); }),
+                    axisLine(padL, padT, padL, padT + innerH),
+                    graphApex && React.createElement('line', { 'data-physics-graph-apex-guide': field, 'data-sample-index': graphApex.index, 'data-time': graphApex.t,
+                      x1: padL + graphApex.t / tMax * innerW, x2: padL + graphApex.t / tMax * innerW, y1: padT, y2: padT + innerH, stroke: graphColors.marker, strokeWidth: 2, strokeDasharray: '8 4' }),
+                    selectedPoint && React.createElement('line', {
+                      'data-physics-graph-cursor': field, 'data-sample-index': selectedPoint.index, 'data-time': selectedPoint.t,
+                      x1: selectedX, x2: selectedX, y1: padT, y2: padT + innerH,
+                      stroke: graphColors.marker, strokeWidth: 1.5, strokeDasharray: '6 3'
+                    }),
+                    React.createElement('path', { d: path, stroke: color, strokeWidth: 2.8, fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' }),
+                    endpoint(first, field, zero, scale, color),
+                    endpoint(latest, field, zero, scale, color),
+                    selectedPoint && React.createElement('circle', {
+                      'data-physics-graph-marker': field, 'data-sample-index': selectedPoint.index, 'data-time': selectedPoint.t, 'data-value': selectedValue,
+                      cx: selectedX, cy: selectedY, r: 6.5, fill: graphColors.marker, stroke: graphColors.ink, strokeWidth: 2
+                    }),
+                    lbl(padL + innerW / 2, H - 5, __alloT('stem.physics.axis_time_s', 'time (s)'))
+                  ),
+                  graphApex && React.createElement('p', { className: 'phys-graph-guide-key', style: { color: graphColors.muted } }, React.createElement('span', { 'aria-hidden': true, style: { borderColor: graphColors.marker } }),
+                    __alloT('stem.physics.graph_apex_guide', 'Dashed guide: recorded apex') + ' · t = ' + graphApex.t.toFixed(3) + ' s'),
+                  React.createElement('p', { style: { margin: '8px 0 0', fontSize: 14, lineHeight: 1.55, color: graphColors.muted } }, description)
+                );
+              };
+
+            return {
+              timeline: graphCanInspect && React.createElement('div', { 'data-physics-graph-time-control': true, 'data-physics-analysis-timeline': true, style: { marginBottom: 12, padding: '12px 14px', background: graphColors.surface, border: '1px solid ' + graphColors.border, borderRadius: 12 } },
+                  React.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' } },
+                    React.createElement('label', { htmlFor: 'physics-graph-time', style: { fontSize: 14, fontWeight: 700, color: graphColors.ink } }, __alloT('stem.physics.graph_recorded_time', 'Recorded time')),
+                    React.createElement('span', { 'data-physics-graph-time-value': true, style: { color: graphColors.ink, fontSize: 16, fontWeight: 750, fontVariantNumeric: 'tabular-nums' } }, 't = ' + graphTime.toFixed(3) + ' s')),
+                  React.createElement('input', { id: 'physics-graph-time', 'data-physics-graph-time-slider': true, 'data-physics-sample-slider': true, type: 'range', min: 0, max: pts.length - 1, step: 1, value: graphIndex, disabled: pts.length < 2,
+                    'aria-valuetext': 't = ' + graphTime.toFixed(3) + ' s; ' + __alloT('stem.physics.graph_sample', 'sample') + ' ' + (graphIndex + 1) + ' / ' + pts.length,
+                    'aria-describedby': 'physics-graph-time-help', onChange: function(event) { physSelectSample(Number(event.target.value), lastTrail); },
+                    style: { display: 'block', width: '100%', minHeight: 44, margin: '6px 0', accentColor: graphColors.marker } }),
+                  React.createElement('div', { style: { display: 'flex', gap: '8px 16px', alignItems: 'center', flexWrap: 'wrap' } },
+                    React.createElement('button', { type: 'button', 'data-physics-graph-inspect': true, onClick: function() { physSelectSample(graphIndex, lastTrail); },
+                      style: { minHeight: 44, padding: '9px 12px', border: '1px solid ' + graphColors.axis, background: graphColors.panel, color: graphColors.ink, borderRadius: 9, fontSize: 12, fontWeight: 700 } }, __alloT('stem.physics.graph_inspect_time', 'Inspect this time')),
+                    React.createElement('p', { id: 'physics-graph-time-help', style: { flex: '1 1 240px', margin: 0, color: graphColors.muted, fontSize: 12, lineHeight: 1.6 } },
+                      __alloT('stem.physics.graph_time_help', 'Tap a graph or move the time control to inspect the nearest recorded point. Selecting a point pauses playback.'))),
+                  React.createElement('div', { className: 'phys-sample-buttons' },
+                    React.createElement('button', { type: 'button', 'data-physics-sample-prev': true, disabled: graphIndex === 0, onClick: function() { physSelectSample(graphIndex - 1, lastTrail); } }, __alloT('stem.physics.sample_previous', 'Previous point')),
+                    React.createElement('button', { type: 'button', 'data-physics-sample-next': true, disabled: graphIndex >= pts.length - 1, onClick: function() { physSelectSample(graphIndex + 1, lastTrail); } }, __alloT('stem.physics.sample_next', 'Next point'))),
+                  React.createElement('div', { className: 'phys-graph-moments', role: 'group', 'aria-label': __alloT('stem.physics.sample_moments', 'Recorded flight moments') },
+                    [
+                      { id: 'launch', index: graphMoments.launchIndex, label: __alloT('stem.physics.sample_launch_point', 'Launch point') },
+                      { id: graphApex ? 'apex' : 'highest', index: graphApex ? graphMoments.apexIndex : graphMoments.highestIndex, label: graphApex ? __alloT('stem.physics.sample_apex_point', 'Apex') : __alloT('stem.physics.sample_highest_point', 'Highest recorded point') },
+                      { id: graphMoments.impact ? 'impact' : 'latest', index: graphMoments.latestIndex, label: graphMoments.impact ? __alloT('stem.physics.sample_ground_impact', 'Ground impact') : __alloT('stem.physics.sample_latest_point', 'Latest point') }
+                    ].map(function(moment) {
+                      var pressed = !!selectedPoint && selectedPoint.index === moment.index;
+                      return React.createElement('button', { key: moment.id, type: 'button', 'data-physics-graph-jump': moment.id, 'data-physics-sample-jump': moment.id === 'apex' || moment.id === 'highest' ? 'highest' : moment.id === 'impact' ? 'latest' : moment.id, 'data-physics-sample-landmark': moment.id,
+                        'data-sample-index': moment.index, 'data-time': pts[moment.index].t, 'aria-pressed': pressed,
+                        onClick: function() { physSelectSample(moment.index, lastTrail); },
+                        style: { background: pressed ? graphColors.panel : graphColors.surface, color: graphColors.ink,
+                          border: '1px solid ' + (pressed ? graphColors.marker : graphColors.border),
+                          boxShadow: pressed ? 'inset 0 -3px ' + graphColors.marker : 'none' } },
+                        React.createElement('span', null, moment.label), React.createElement('strong', null, 't = ' + pts[moment.index].t.toFixed(3) + ' s'));
+                    }))),
+              motion: React.createElement('section', { 'data-physics-motion-panel': true, style: graphPanelStyle },
+                React.createElement("h3", { style: { margin: '0 0 12px', fontSize: 16, lineHeight: 1.4, fontWeight: 800 } },
+                  selectedPoint ? __alloT('stem.physics.motion_components_recorded', 'Motion Components (selected recorded flight)') : __alloT('stem.physics.motion_components_recent', 'Motion Components (most recent launch)')
+                ), React.createElement("div", { "data-physics-component-graphs": true, style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 310px), 1fr))', gap: 12 } },
+                  velocityCard('vx', __alloT('stem.physics.graph_vx_title', 'Vx (m/s) — horizontal velocity'), vxDescription, graphColors.vx, vxPath, vxLimit, vxY0, vxYScale),
+                  velocityCard('vy', __alloT('stem.physics.graph_vy_title', 'Vy (m/s) — vertical velocity'), vyDescription, graphColors.vy, vyPath, vyRange, vyY0, vyYScale)
+                ), React.createElement('p', { 'data-physics-graph-sampling-help': true, style: { margin: '12px 0 0', fontSize: 12, lineHeight: 1.6, color: graphColors.muted } }, __alloT('stem.physics.graph_sampling_help', 'Curves connect representative recorded points. Recorded moments and the selected point are included; the time control uses every point.')), React.createElement("p", { style: { margin: '12px 0', fontSize: 14, lineHeight: 1.55, color: graphColors.muted } },
+                  graphHasDrag
+                    ? __alloT('stem.physics.graph_drag_model_note', 'This flight includes air drag. The drag force depends on total speed, coupling horizontal and vertical motion. Gravity stays constant; total acceleration changes.')
+                    : __alloT('stem.physics.graph_vacuum_model_note', 'This flight has no air drag. Horizontal and vertical motion are independent; gravity changes only vertical velocity.')
+                ), React.createElement('button', { type: 'button', 'data-physics-graph-open-data': true, onClick: function() {
+                  var outer = typeof document !== 'undefined' ? document.getElementById('physics-fs-outer') : null;
+                  physOpenAnalysisView('data');
+                  setTimeout(function() {
+                    if (!outer || !outer.isConnected) return;
+                    var table = outer.querySelector('[data-physics-flight-data]');
+                    if (!table) return;
+                    table.scrollIntoView({ behavior: window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+                    table.focus({ preventScroll: true });
+                  }, 0);
+                }, style: { minHeight: 44, padding: '9px 14px', borderRadius: 10, border: '1px solid ' + graphColors.axis, color: graphColors.ink, background: graphColors.surface, fontSize: 14, fontWeight: 700 } }, __alloT('stem.physics.graph_open_data', 'Open the flight data table'))),
+              energy: (function() {
+                  var current = physInspectSample(pts, graphIndex);
+                  function unavailableEnergy() { return React.createElement('div', { 'data-physics-energy-unavailable': true, style: Object.assign({}, graphCardStyle, { marginTop: 14 }) },
+                    React.createElement('p', { style: { margin: 0, color: graphColors.muted, fontSize: 13, lineHeight: 1.6 } }, __alloT('stem.physics.energy_unavailable', 'The energy timeline needs original launch settings and supported recorded samples.'))); }
+                  if (!current) return unavailableEnergy();
+                  var energies = [];
+                  for (var i = 0; i < plotIndices.length; i++) {
+                    var index = plotIndices[i];
+                    var value = physInspectSample(pts, index);
+                    if (!value) return unavailableEnergy();
+                    energies.push(value);
+                  }
+                  // Include the selected full-resolution point in the filled bands.
+                  if (!energies.some(function(point) { return point.index === current.index; })) {
+                    energies.push(current); energies.sort(function(a, b) { return a.t - b.t; });
+                  }
+                  var p = current.parameters;
+                  var eW = 300, eH = 226, eL = 58, eR = 16, eT = 34, eB = 52;
+                  var eIW = eW - eL - eR, eIH = eH - eT - eB, eZero = eT + eIH;
+                  var eMax = current.initialEnergy, eScale = eIH / eMax, kilo = eMax >= 1000;
+                  var colors = { ke: graphColors.vx, pe: graphColors.vy, dragLoss: graphColors.range };
+                  var labels = { ke: __alloT('stem.physics.sample_kinetic_energy', 'Kinetic · KE'), pe: __alloT('stem.physics.sample_potential_energy', 'Potential · PE'), dragLoss: __alloT('stem.physics.energy_transferred', 'Transferred by drag') };
+                  var patterns = { pe: 'physics-energy-potential-pattern', dragLoss: 'physics-energy-transfer-pattern' };
+                  function energyX(point) { return eL + point.t / tMax * eIW; }
+                  function energyY(value) { return eZero - value * eScale; }
+                  function cumulative(point, part) { return part === 'ke' ? point.ke : part === 'pe' ? point.totalEnergy : point.totalEnergy + point.dragLoss; }
+                  function lower(point, part) { return part === 'ke' ? 0 : part === 'pe' ? point.ke : point.totalEnergy; }
+                  function area(part) {
+                    return energies.map(function(point, index) { return (index ? 'L' : 'M') + energyX(point).toFixed(3) + ',' + energyY(cumulative(point, part)).toFixed(3); }).join(' ') + ' ' +
+                      energies.slice().reverse().map(function(point) { return 'L' + energyX(point).toFixed(3) + ',' + energyY(lower(point, part)).toFixed(3); }).join(' ') + ' Z';
+                  }
+                  function swatch(part) {
+                    return React.createElement('span', { className: 'phys-energy-swatch', 'aria-hidden': true, style: { background: part === 'ke' ? colors.ke : 'repeating-linear-gradient(' + (part === 'pe' ? '0deg' : '135deg') + ',' + colors[part] + ',' + colors[part] + ' 4px,' + graphColors.surface + ' 4px,' + graphColors.surface + ' 6px)' } });
+                  }
+                  function energyReading(key, label) {
+                    return React.createElement('div', { key: key, className: 'phys-energy-reading' },
+                      React.createElement('span', null, colors[key] && swatch(key), label),
+                      React.createElement('strong', { 'data-physics-energy-value': key, 'data-value': current[key] }, current[key].toFixed(2) + ' J'));
+                  }
+                  var timeLabel = selectedPoint ? __alloT('stem.physics.graph_selected_sample', 'Selected sample') : __alloT('stem.physics.energy_latest_sample', 'Latest recorded sample');
+                  var description = __alloT('stem.physics.energy_chart_description', 'Recorded energy over time. Stacked bands show kinetic energy, gravitational potential energy, and energy transferred by air drag.');
+                  return React.createElement('section', { 'data-physics-energy-panel': true, 'data-run': current.run == null ? 'unfinished' : current.run,
+                    'data-sample-index': current.index, 'data-time': current.t, 'aria-labelledby': 'physics-energy-heading', style: Object.assign({}, graphCardStyle, { marginTop: 14, color: graphColors.ink }) },
+                    React.createElement('div', { className: 'phys-energy-heading' },
+                      React.createElement('h4', { id: 'physics-energy-heading' }, __alloT('stem.physics.energy_timeline_title', 'Energy through the recorded flight')),
+                      React.createElement('p', { 'data-physics-energy-time': true }, timeLabel + ' · t = ' + current.t.toFixed(3) + ' s')),
+                    React.createElement('p', { 'data-physics-energy-settings': true, className: 'phys-energy-help', style: { color: graphColors.muted } },
+                      'm = ' + p.mass + ' kg · v₀ = ' + p.velocity + ' m/s · g = ' + p.gravity + ' m/s² · h₀ = ' + p.launchHeight + ' m · ' + (p.airResist ? __alloT('stem.physics.sample_drag_on', 'Air drag on') : __alloT('stem.physics.sample_drag_off', 'Air drag off'))),
+                    React.createElement('div', { className: 'phys-energy-layout' },
+                      React.createElement('div', null,
+                        energies.length > 1 ? React.createElement('svg', { 'data-physics-energy-graph': true, 'data-plotted-count': energies.length, 'data-initial-energy': eMax,
+                          onClick: function(event) { selectGraphTime(event, { width: eW, left: eL, plotWidth: eIW }); }, 'aria-describedby': 'physics-graph-time-help physics-energy-sampling-help',
+                          viewBox: '0 0 ' + eW + ' ' + eH, role: 'img', 'aria-label': description + ' ' + timeLabel + ': t = ' + current.t.toFixed(3) + ' s.',
+                          style: { display: 'block', width: '100%', maxWidth: 400, height: 'auto', margin: '0 auto', background: graphColors.surface, cursor: 'crosshair' } },
+                          React.createElement('defs', null, ['pe', 'dragLoss'].map(function(part) {
+                            return React.createElement('pattern', { key: part, id: patterns[part], patternUnits: 'userSpaceOnUse', width: 8, height: 8 },
+                              React.createElement('rect', { width: 8, height: 8, fill: colors[part] }),
+                              React.createElement('line', { x1: part === 'pe' ? 0 : -2, y1: part === 'pe' ? 3 : 8, x2: part === 'pe' ? 8 : 8, y2: part === 'pe' ? 3 : -2, stroke: graphColors.surface, strokeWidth: 2 }));
+                          })),
+                          [0, .5, 1].map(function(fraction) { var y = energyY(eMax * fraction); return React.createElement('g', { key: fraction },
+                            axisLine(eL, y, eW - eR, y, fraction > 0 && fraction < 1), lbl(eL - 8, y + 5, String(Number((eMax * fraction / (kilo ? 1000 : 1)).toFixed(!kilo && eMax >= 100 ? 0 : 2))), 'end')); }),
+                          ['dragLoss', 'pe', 'ke'].map(function(part) { return React.createElement('path', { key: part, 'data-physics-energy-area': part,
+                            d: area(part), fill: part === 'ke' ? colors.ke : 'url(#' + patterns[part] + ')', stroke: graphColors.surface, strokeWidth: 1 }); }),
+                          React.createElement('line', { 'data-physics-energy-origin': true, x1: eL, x2: eW - eR, y1: eZero, y2: eZero, stroke: graphColors.axis, strokeWidth: 1.25 }),
+                          React.createElement('line', { 'data-physics-energy-initial': true, x1: eL, x2: eW - eR, y1: eT, y2: eT, stroke: graphColors.ink, strokeWidth: 1.5, strokeDasharray: '5 4' }),
+                          axisLine(eL, eT, eL, eZero),
+                          [0, .5, 1].map(function(fraction) { return React.createElement('g', { key: fraction }, lbl(eL + fraction * eIW, eH - 29, tickNumber(tMax * fraction), fraction === 0 ? 'start' : fraction === 1 ? 'end' : 'middle')); }),
+                          lbl(eL, 22, kilo ? __alloT('stem.physics.energy_axis_kj', 'energy (kJ)') : __alloT('stem.physics.energy_axis_j', 'energy (J)'), 'start'),
+                          lbl(eL + eIW / 2, eH - 5, __alloT('stem.physics.axis_time_s', 'time (s)')),
+                          selectedPoint && React.createElement('line', { 'data-physics-energy-cursor': true, 'data-sample-index': current.index, 'data-time': current.t,
+                            x1: energyX(current), x2: energyX(current), y1: eT, y2: eZero, stroke: graphColors.surface, strokeWidth: 2.5, strokeDasharray: '6 3' }),
+                          selectedPoint && React.createElement('circle', { 'data-physics-energy-boundary': 'mechanical', 'data-value': current.totalEnergy,
+                            cx: energyX(current), cy: energyY(current.totalEnergy), r: 6, fill: colors.pe, stroke: graphColors.surface, strokeWidth: 2.5 }),
+                          selectedPoint && React.createElement('circle', { 'data-physics-energy-boundary': 'ke', 'data-value': current.ke,
+                            cx: energyX(current), cy: energyY(current.ke), r: 3.5, fill: colors.ke, stroke: graphColors.surface, strokeWidth: 2.5 }))
+                          : React.createElement('p', { 'data-physics-energy-single-sample': true, className: 'phys-energy-help', style: { color: graphColors.muted } }, __alloT('stem.physics.energy_single_sample', 'The launch sample is recorded. Step or resume to draw the energy timeline.'))),
+                      React.createElement('div', { className: 'phys-energy-readings' },
+                        ['ke', 'pe', 'dragLoss'].map(function(key) { return energyReading(key, labels[key]); }),
+                        React.createElement('div', { className: 'phys-energy-current-budget', 'aria-hidden': true }, ['ke', 'pe', 'dragLoss'].map(function(key) {
+                          return React.createElement('span', { key: key, 'data-physics-energy-budget': key, style: { width: Math.max(0, Math.min(100, current[key] / eMax * 100)) + '%',
+                            background: key === 'ke' ? colors.ke : 'repeating-linear-gradient(' + (key === 'pe' ? '0deg' : '135deg') + ',' + colors[key] + ',' + colors[key] + ' 4px,' + graphColors.surface + ' 4px,' + graphColors.surface + ' 6px)' } });
+                        })),
+                        energyReading('totalEnergy', __alloT('stem.physics.sample_mechanical_energy', 'Mechanical · KE + PE')),
+                        energyReading('initialEnergy', __alloT('stem.physics.sample_initial_energy', 'Initial energy')))),
+                    React.createElement('p', { className: 'phys-energy-help', style: { color: graphColors.muted } }, __alloT('stem.physics.energy_budget_help', 'Kinetic energy depends on mass and speed. Potential energy depends on mass, gravity, and height above ground. The diagonal band shows energy transferred by drag.')),
+                    React.createElement('p', { id: 'physics-energy-sampling-help', className: 'phys-energy-help', style: { color: graphColors.muted } }, __alloT('stem.physics.energy_sampling_help', 'The timeline connects a representative set of recorded samples. The time control uses every recorded point.')),
+                    current.impact && React.createElement('p', { 'data-physics-energy-impact': true, className: 'phys-energy-help', style: { color: graphColors.muted } }, __alloT('stem.physics.energy_impact_note', 'The final flight sample is at ground contact, before collision energy is redistributed.')));
+                })(),
+              prediction: (function() {
+                  var ang = parseFloat((typeof d.angle === 'number' && isFinite(d.angle)) ? d.angle : 45);
+                  var vel = parseFloat(d.velocity || 25);
+                  var grav = parseFloat((typeof d.gravity === 'number' && isFinite(d.gravity)) ? d.gravity : 9.8);
+                  var height = d.launchHeight || 0;
+                  var vacuum = window.StemLab._physics.vacuum;
+                  var ideal = vacuum(ang, vel, grav, height);
+                  if (ideal.status !== 'landed') return null;
+                  var optimumAngle = ideal.optimumAngle;
+                  var maxR = vacuum(optimumAngle, vel, grav, height).range;
+                  if (!isFinite(maxR) || maxR <= 0) return null;
+                  var rW = 260, rH = 226, rPL = 48, rPR = 12, rPT = 34, rPB = 52;
+                  var rIW = rW - rPL - rPR, rIH = rH - rPT - rPB;
+                  var rangeLimit = roundLimit(maxR * 1.08);
+                  // Build sweep curve every 2°
+                  var pathPts = [];
+                  for (var ra = 0; ra <= 90; ra += 2) {
+                    var rVal = vacuum(ra, vel, grav, height).range;
+                    var sx = rPL + (ra / 90) * rIW;
+                    var sy = rPT + rIH - (rVal / rangeLimit) * rIH;
+                    pathPts.push((pathPts.length === 0 ? 'M' : 'L') + sx.toFixed(1) + ',' + sy.toFixed(1));
+                  }
+                  var rangePath = pathPts.join(' ');
+                  // Current-angle marker
+                  var curR = ideal.range;
+                  var curSX = rPL + (ang / 90) * rIW;
+                  var curSY = rPT + rIH - (curR / rangeLimit) * rIH;
+                  // Elevated launchers have a no-drag optimum below 45°.
+                  var optSX = rPL + (optimumAngle / 90) * rIW;
+                  var optSY = rPT + rIH - (maxR / rangeLimit) * rIH;
+                  var axisLine2 = function (x1, y1, x2, y2, color, dash) {
+                    var p = { x1: x1, y1: y1, x2: x2, y2: y2, stroke: color || graphColors.axis, strokeWidth: dash ? 0.85 : 1.25 };
+                    if (dash) p.strokeDasharray = dash;
+                    return React.createElement('line', p);
+                  };
+                  var lbl2 = function (x, y, text, anchor) {
+                    return React.createElement('text', { x: x, y: y, fontSize: 18, fill: graphColors.ink, textAnchor: anchor || 'middle', fontFamily: 'system-ui, sans-serif', style: { fontSize: 18, fontVariantNumeric: 'tabular-nums' } }, text);
+                  };
+                  var angleReadout = function(label, angle, range, color) {
+                    return React.createElement('div', { style: { minWidth: 0, padding: '8px 10px', borderLeft: '3px solid ' + color, background: graphColors.panel, borderRadius: 6 } },
+                      React.createElement('p', { style: { margin: '0 0 4px', fontSize: 13, fontWeight: 650, color: graphColors.muted } }, label),
+                      React.createElement('p', { style: { margin: 0, fontSize: 17, fontWeight: 750, lineHeight: 1.4, fontVariantNumeric: 'tabular-nums', color: graphColors.ink } }, angle.toFixed(1) + '° · ' + range.toFixed(1) + ' m')
+                    );
+                  };
+                  return React.createElement("div", { 'data-physics-range-card': true, style: Object.assign({}, graphCardStyle, { marginTop: 14 }) },
+                    React.createElement("h4", { style: { margin: '0 0 5px', fontSize: 16, fontWeight: 800, color: graphColors.ink } },
+                      __alloT('stem.physics.graph_range_title', 'Range across launch angles')
+                    ),
+                    React.createElement('p', { style: { margin: '0 0 10px', fontSize: 14, lineHeight: 1.55, color: graphColors.muted } },
+                      __alloT('stem.physics.graph_range_settings', 'Ideal prediction for current settings') + ': v=' + vel + ' m/s · g=' + grav + ' m/s² · h₀=' + height + ' m'
+                    ),
+                    React.createElement('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: 10, marginBottom: 10 } },
+                      angleReadout(__alloT('stem.physics.graph_current_angle', 'Current angle'), ang, curR, graphColors.marker),
+                      angleReadout(__alloT('stem.physics.graph_optimal_angle', 'Best angle without drag'), optimumAngle, maxR, graphColors.range)
+                    ),
+                    React.createElement("svg", { "data-physics-graph": "range", 'data-launch-height': height, 'data-optimum-angle': optimumAngle, style: { display: 'block', background: graphColors.surface, borderRadius: 8, width: '100%', maxWidth: 360, height: 'auto', margin: '0 auto' }, viewBox: "0 0 " + rW + " " + rH, width: "100%", role: "img", "aria-label": __alloT('stem.physics.aria_range_angle_height_graph', 'Ideal range versus angle without air drag. Launch height:') + ' ' + height + ' m. ' + __alloT('stem.physics.aria_range_angle_optimum', 'Maximum range at') + ' ' + optimumAngle.toFixed(1) + '°.' },
+                      [0, rangeLimit / 2, rangeLimit].map(function(value) {
+                        var y = rPT + rIH - value / rangeLimit * rIH;
+                        return React.createElement('g', { key: value },
+                          value > 0 && axisLine2(rPL, y, rW - rPR, y, graphColors.grid, '2 5'),
+                          lbl2(rPL - 8, y + 5, tickNumber(value), 'end')
+                        );
+                      }),
+                      [30, 60, 90].map(function(a) {
+                        var x = rPL + a / 90 * rIW;
+                        return React.createElement('line', { key: a, x1: x, x2: x, y1: rPT, y2: rPT + rIH, stroke: graphColors.grid, strokeWidth: 0.75, strokeDasharray: '2 5' });
+                      }),
+                      // Y/X axes
+                      axisLine2(rPL, rPT, rPL, rPT + rIH),
+                      axisLine2(rPL, rPT + rIH, rW - rPR, rPT + rIH),
+                      // Height-aware optimum dashed vertical reference
+                      axisLine2(optSX, optSY, optSX, rPT + rIH, graphColors.range, '5 4'),
+                      // Range curve
+                      React.createElement('path', { d: rangePath, stroke: graphColors.range, strokeWidth: 2.8, fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' }),
+                      React.createElement('circle', { cx: optSX, cy: optSY, r: 4, fill: graphColors.range, stroke: graphColors.surface, strokeWidth: 1.5 }),
+                      // Current-angle marker line + dot
+                      axisLine2(curSX, curSY, curSX, rPT + rIH, graphColors.marker, '3 3'),
+                      React.createElement('circle', { cx: curSX, cy: curSY, r: 4.5, fill: graphColors.marker, stroke: graphColors.surface, strokeWidth: 1.5 }),
+                      lbl2(rPL, 18, __alloT('stem.physics.axis_range_m', 'range (m)'), 'start'),
+                      // Fewer ticks keep the same labels readable on phones.
+                      [0, 30, 60, 90].map(function (a) {
+                        var ax = rPL + (a / 90) * rIW;
+                        return React.createElement('text', { key: a, x: ax, y: rH - 29, fontSize: 18, fill: graphColors.ink, textAnchor: a === 0 ? 'start' : a === 90 ? 'end' : 'middle', fontFamily: 'system-ui, sans-serif', style: { fontSize: 18 } }, a + '°');
+                      }),
+                      // Axis title
+                      lbl2(rPL + rIW / 2, rH - 5, __alloT('stem.physics.axis_launch_angle', 'launch angle (θ)'))
+                    ),
+                    React.createElement("p", { style: { margin: '10px 0 0', fontSize: 14, lineHeight: 1.55, color: graphColors.muted } },
+                      height > 0
+                        ? __alloT('stem.physics.sweep_note_elevated', 'An elevated launch has a no-drag optimum below 45°. Complementary angles generally have different ranges when launch and landing heights differ.')
+                        : __alloT('stem.physics.sweep_note_ground', 'From ground level with no air drag, range peaks at 45°. Complementary angles such as 30° and 60° have equal range.')
+                    ),
+                    d.airResist && React.createElement('p', { style: { margin: '8px 0 0', paddingTop: 8, borderTop: '1px solid ' + graphColors.border, fontSize: 14, lineHeight: 1.55, color: graphColors.muted } },
+                      __alloT('stem.physics.sweep_drag_model_note', 'This curve is the no-drag prediction. With air drag on, use measured launches to find the best angle.')
+                    )
+                  );
+                })()
+            };
+          }
+
+          function physRenderAnalysisData() { return React.createElement("section", { 'data-physics-flight-data': true, 'aria-labelledby': 'physics-flight-data-heading', tabIndex: -1 },
+              React.createElement("div", { className: "phys-measured-heading" },
+                React.createElement("div", null,
+                  React.createElement("h3", { id: 'physics-flight-data-heading' }, __alloT('stem.physics.flight_data_title', 'Flight Data')),
+                  React.createElement("p", null, __alloT('stem.physics.flight_data_select_help', 'Select a time to inspect that recorded moment on the trajectory and graphs.'))),
+                React.createElement("button", {
+                  type: "button",
+                  "aria-label": __alloT('stem.physics.aria_copy_csv', 'Copy the flight data as CSV for a spreadsheet'),
+                  onClick: function () {
+                    var csv = physFlightCsv();
+                    if (!csv) { if (addToast) addToast(__alloT('stem.physics.csv_nothing', 'Launch a projectile first \u2014 there is no flight data yet.'), 'warning'); return; }
+                    physCopyText(csv).then(function (ok) {
+                      var msg = ok ? __alloT('stem.physics.toast_csv_copied', 'Flight data copied as CSV. Paste it into a spreadsheet.') : __alloT('stem.physics.toast_csv_failed', 'Could not copy automatically. Select the table and copy it by hand.');
+                      if (addToast) addToast((ok ? '\uD83D\uDCCB ' : '\u26A0\uFE0F ') + msg, ok ? 'success' : 'warning');
+                      if (typeof announceToSR === 'function') announceToSR(msg);
+                    });
+                  },
+                  className: "px-2 py-1 rounded-lg text-[0.625rem] font-bold bg-white text-cyan-800 border border-cyan-300 hover:bg-cyan-100"
+                }, "\uD83D\uDCCB " + __alloT('stem.physics.copy_csv', 'Copy CSV'))
+              ),
+              (function() {
+                var cv = typeof document !== 'undefined' ? document.getElementById('physicsCanvas') : null;
+                var trails = cv && cv._trails ? cv._trails : [];
+                var selected = physSelectedInspection(cv);
+                var lastTrail = selected ? cv._inspection.trail : trails.length > 0 ? trails[trails.length - 1] : [];
+                if (lastTrail.length === 0) {
+                  return React.createElement("p", { className: "phys-measured-help" }, __alloT('stem.physics.launch_to_see_flight_data', 'Launch a projectile to see flight data'));
+                }
+                // Include both endpoints, then add the selected sample if it
+                // falls between the evenly spaced rows. Export keeps all points.
+                var tableMoments = physRecordedMoments(lastTrail);
+                var indices = physMomentIndices(lastTrail, 11, selected ? selected.index : null, true);
+                var recorded = lastTrail.parameters || lastTrail;
+                var settings = [];
+                if (lastTrail.run != null) settings.push(__alloT('stem.physics.investigation_run', 'Run') + ' ' + lastTrail.run);
+                [['angle', 'θ', '°'], ['velocity', 'v₀', 'm/s'], ['gravity', 'g', 'm/s²'], ['mass', 'm', 'kg'], ['launchHeight', 'h₀', 'm']].forEach(function(setting) {
+                  if (typeof recorded[setting[0]] === 'number' && isFinite(recorded[setting[0]])) settings.push(setting[1] + ' = ' + recorded[setting[0]] + ' ' + setting[2]);
+                });
+                settings.push(recorded.drag || recorded.airResist ? __alloT('stem.physics.sample_drag_on', 'Air drag on') : __alloT('stem.physics.sample_drag_off', 'Air drag off'));
+                var summaryIndex = selected ? selected.index : lastTrail.length - 1;
+                var summaryPoint = lastTrail[summaryIndex];
+                var summaryTime = summaryPoint.t != null ? summaryPoint.t : summaryIndex * PHYS_DT;
+                function summaryMeasurement(key, label, value, unit) {
+                  return React.createElement('div', { key: key },
+                    React.createElement('dt', null, label),
+                    React.createElement('dd', { 'data-physics-flight-summary-value': key }, physFormatSampleValue(value) + ' ' + unit));
+                }
+                function revealSelectedRow(element) {
+                  if (!element) return;
+                  // Only a new user-selected point moves this scroll region.
+                  // Live data refreshes retain the reader's scroll position.
+                  if (!selected || d.simSpeed !== 0) { element._physicsSelectedRow = null; return; }
+                  var previous = element._physicsSelectedRow;
+                  if (analysisView !== 'data') { element._physicsSelectedRow = null; return; }
+                  if (previous && previous.trail === lastTrail && previous.index === selected.index) return;
+                  var row = element.querySelector('tbody tr[data-selected="true"]');
+                  var heading = element.querySelector('thead');
+                  if (!row || !heading) return;
+                  element._physicsSelectedRow = { trail: lastTrail, index: selected.index };
+                  var viewport = element.getBoundingClientRect();
+                  var rowBounds = row.getBoundingClientRect();
+                  var visibleTop = viewport.top + element.clientTop + heading.getBoundingClientRect().height + 4;
+                  var visibleBottom = viewport.top + element.clientTop + element.clientHeight - 4;
+                  if (rowBounds.top < visibleTop) element.scrollTop = Math.max(0, element.scrollTop + rowBounds.top - visibleTop);
+                  else if (rowBounds.bottom > visibleBottom) element.scrollTop += rowBounds.bottom - visibleBottom;
+                }
+                var rows = indices.map(function(ri) {
+                  var pt = lastTrail[ri];
+                  var t_sec = pt.t != null ? pt.t : ri * PHYS_DT;
+                  var isSelected = !!selected && selected.index === ri;
+                  var momentLabel = tableMoments ? ri === 0 ? __alloT('stem.physics.sample_launch_point', 'Launch point') : ri === tableMoments.apexIndex ? __alloT('stem.physics.sample_apex_point', 'Apex') : ri === tableMoments.latestIndex ? (tableMoments.impact ? __alloT('stem.physics.sample_ground_impact', 'Ground impact') : __alloT('stem.physics.sample_latest_point', 'Latest point')) : tableMoments.apexIndex < 0 && ri === tableMoments.highestIndex ? __alloT('stem.physics.sample_highest_point', 'Highest recorded point') : null : null;
+                  return React.createElement('tr', { key: ri, 'data-selected': isSelected ? 'true' : 'false' },
+                    React.createElement('th', { scope: 'row' },
+                      React.createElement('button', { type: 'button', 'data-physics-sample-index': ri, 'aria-pressed': isSelected,
+                        'aria-label': __alloT('stem.physics.sample_inspect_point', 'Inspect sample') + ' ' + (ri + 1) + ', t = ' + t_sec.toFixed(3) + ' s' + (momentLabel ? ', ' + momentLabel : ''),
+                        onClick: function() {
+                          if (physSelectSample(ri)) setTimeout(function() {
+                            var panel = document.querySelector('[data-physics-sample-inspector]');
+                            if (!panel) return;
+                            panel.scrollIntoView({ behavior: window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'nearest' });
+                            var slider = panel.querySelector('[data-physics-sample-slider]');
+                            (slider && !slider.disabled ? slider : panel).focus({ preventScroll: true });
+                          }, 0);
+                        } }, t_sec.toFixed(3), momentLabel && React.createElement('span', { 'data-physics-table-moment': true }, momentLabel))),
+                    React.createElement('td', null, physFormatSampleValue(pt.mX)),
+                    React.createElement('td', null, physFormatSampleValue(pt.mY)),
+                    React.createElement('td', null, physFormatSampleValue(pt.mVx || 0)),
+                    React.createElement('td', null, physFormatSampleValue(pt.mVy || 0)),
+                    React.createElement('td', null, physFormatSampleValue(Math.hypot(pt.mVx || 0, pt.mVy || 0))));
+                });
+                return React.createElement('div', null,
+                  React.createElement('div', { className: 'phys-capture-settings', 'aria-label': __alloT('stem.physics.sample_recorded_settings', 'Recorded launch settings') }, settings.map(function(label, i) { return React.createElement('span', { key: i }, label); })),
+                  React.createElement('div', { 'data-physics-flight-summary': selected ? 'selected' : 'latest', 'data-run': lastTrail.run == null ? 'unfinished' : lastTrail.run, 'data-sample-index': summaryIndex, 'data-time': summaryTime },
+                    React.createElement('p', null,
+                      React.createElement('strong', null, selected ? __alloT('stem.physics.graph_selected_sample', 'Selected sample') : __alloT('stem.physics.sample_latest_point', 'Latest point')),
+                      React.createElement('span', null, 't = ' + summaryTime.toFixed(3) + ' s')),
+                    React.createElement('dl', null,
+                      summaryMeasurement('height', __alloT('stem.physics.flight_data_height_short', 'Height · y'), summaryPoint.mY, 'm'),
+                      summaryMeasurement('vx', __alloT('stem.physics.flight_data_vx_short', 'Horizontal · vx'), summaryPoint.mVx || 0, 'm/s'),
+                      summaryMeasurement('vy', __alloT('stem.physics.flight_data_vy_short', 'Vertical · vy'), summaryPoint.mVy || 0, 'm/s'),
+                      summaryMeasurement('speed', __alloT('stem.physics.metric_speed', 'Speed'), Math.hypot(summaryPoint.mVx || 0, summaryPoint.mVy || 0), 'm/s'))),
+                  React.createElement('p', { className: 'phys-measured-help', id: 'physics-flight-sampling-help' },
+                    indices.length + ' / ' + lastTrail.length + ' ' + __alloT('stem.physics.flight_data_points_shown', 'recorded points shown. The launch and latest point are included. CSV contains every point.')),
+                  React.createElement('p', { 'data-physics-flight-scroll-hint': true, id: 'physics-flight-scroll-help' },
+                    React.createElement('span', { 'aria-hidden': true }, '↔'),
+                    React.createElement('span', null, __alloT('stem.physics.flight_data_scroll_hint', 'Swipe or scroll sideways to see every measurement. Time stays visible.'))),
+                  React.createElement('div', { 'data-physics-flight-table-wrap': true, ref: revealSelectedRow, role: 'region', tabIndex: 0, 'aria-label': __alloT('stem.physics.flight_data_scroll_region', 'Recorded flight measurements; scroll for all columns'), 'aria-describedby': 'physics-flight-sampling-help physics-flight-scroll-help' },
+                    React.createElement('table', { 'data-physics-flight-table': true },
+                      React.createElement('caption', { className: 'sr-only' }, __alloT('stem.physics.caption_data_table', 'physics data table')),
+                      React.createElement('thead', null, React.createElement('tr', null,
+                        ['t (s)', 'x (m)', 'y (m)', 'vx (m/s)', 'vy (m/s)', '|v| (m/s)'].map(function(label, i) { return React.createElement('th', { key: i, scope: 'col' }, label); }))),
+                      React.createElement('tbody', null, rows))));
+              })()
+            ); }
+
+          var analysisReadings = analysisOpen ? physRenderAnalysisReadings() : null;
+          var analysisGraphs = analysisOpen ? physRenderAnalysisGraphs() : null;
+          function physRenderAnalysisWorkspace() {
+            if (!analysisOpen && !(analysisCanvas && analysisCanvas._trails && analysisCanvas._trails.length)) return null;
+            var h = React.createElement;
+            return h('section', { id: 'physics-sample-inspector', 'data-physics-analysis-workspace': true,
+              'data-physics-sample-inspector': !!analysisSelected || undefined, 'data-physics-inspection': !!analysisSelected || undefined,
+              'data-physics-analysis-view': analysisView, 'aria-labelledby': analysisOpen ? analysisReadings ? 'physics-sample-heading' : 'physics-analysis-heading' : undefined, 'aria-label': analysisOpen ? undefined : __alloT('stem.physics.history_title', 'Recent recorded flights'), tabIndex: -1 },
+              physRenderFlightHistory(),
+              analysisOpen && (analysisReadings ? analysisReadings.header : h('h3', { id: 'physics-analysis-heading' }, __alloT('stem.physics.analysis_title', 'Flight analysis'))),
+              analysisGraphs && analysisGraphs.timeline,
+              analysisOpen && h('div', { className: 'phys-analysis-tabs', role: 'tablist', 'aria-label': __alloT('stem.physics.analysis_views', 'Flight analysis views') },
+                analysisViews.map(function(view, index) { return h('button', { key: view.id, type: 'button', role: 'tab',
+                  id: 'physics-analysis-tab-' + view.id, 'data-physics-analysis-tab': view.id, 'aria-selected': analysisView === view.id,
+                  'aria-controls': 'physics-analysis-panel-' + view.id, tabIndex: analysisView === view.id ? 0 : -1,
+                  onClick: function() { physOpenAnalysisView(view.id); }, onKeyDown: function(event) { physAnalysisTabKey(event, index); } },
+                  h('svg', { viewBox: '0 0 24 24', width: 18, height: 18, fill: 'none', stroke: 'currentColor', strokeWidth: 1.7, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true, focusable: false }, h('path', { d: view.icon })), view.label); })),
+              analysisOpen && analysisViews.map(function(view) { return h('div', { key: view.id, role: 'tabpanel',
+                id: 'physics-analysis-panel-' + view.id, 'data-physics-analysis-panel': view.id, 'aria-labelledby': 'physics-analysis-tab-' + view.id,
+                hidden: analysisView !== view.id, tabIndex: 0 },
+                view.id === 'motion' ? h(React.Fragment, null, analysisReadings && analysisReadings.motion, analysisGraphs.motion) :
+                view.id === 'forces' ? analysisReadings ? analysisReadings.forces : h('p', { className: 'phys-measured-help' }, __alloT('stem.physics.analysis_launch_forces', 'Launch a projectile to explore its forces.')) :
+                view.id === 'energy' ? h(React.Fragment, null, analysisReadings && analysisReadings.energy, analysisGraphs.energy) : physRenderAnalysisData()); }),
+              analysisReadings && analysisReadings.help);
+          }
+return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme": isContrast ? "contrast" : (isDark ? "dark" : "light"), className: "max-w-5xl mx-auto animate-in fade-in duration-200", style: d.physFsMode ? { position: 'fixed', inset: 0, zIndex: 9998, width: '100vw', height: '100vh', maxWidth: '100vw', margin: 0, overflowY: 'auto', background: themeSurface, color: themeInk, padding: '10px' } : { position: 'relative', background: themeSurface, color: themeInk } },
             React.createElement('style', { 'data-physics-visual-styles': true }, `
               #physics-fs-outer{--phys-panel:#fff;--phys-soft:#f3f7fa;--phys-ink:#172c40;--phys-muted:#486176;--phys-line:#c4d2de;--phys-accent:#086d89;--phys-selected:#e1f4f8;--phys-shadow:0 6px 22px rgba(20,47,69,.055);width:100%;min-width:0;box-sizing:border-box;flex:1 1 100%;font-variant-numeric:tabular-nums;line-height:1.5;container-type:inline-size}
               #physics-fs-outer[data-physics-theme="dark"]{--phys-panel:#142438;--phys-soft:#1a3046;--phys-ink:#eef5fb;--phys-muted:#b9ccdd;--phys-line:#526e87;--phys-accent:#8bdcf0;--phys-selected:#204357;--phys-shadow:none;color-scheme:dark}
@@ -2782,6 +3555,24 @@ window.StemLab = window.StemLab || {
                 #physics-fs-outer .phys-pathway-detail{display:block;margin-top:1px}
               }
               #physics-fs-outer[data-physics-theme="contrast"] :is(.phys-guidance-copy,.phys-header-guidance-toggle){background:#000;color:#fff;border-color:#fff}
+
+              #physics-fs-outer [data-physics-analysis-workspace]{min-width:0;margin:0 0 18px;padding:18px;border:1px solid var(--phys-line);border-radius:18px;background:var(--phys-panel);color:var(--phys-ink);box-shadow:var(--phys-shadow)}
+              #physics-fs-outer [data-physics-analysis-workspace]>[data-physics-flight-history]{margin:0 0 15px;padding:0 0 15px;border:0;border-bottom:1px solid var(--phys-line);border-radius:0;background:transparent;box-shadow:none}
+              #physics-fs-outer [data-physics-analysis-workspace] :is(button,[role="tabpanel"]):focus-visible{outline:3px solid var(--phys-accent);outline-offset:3px}
+              #physics-fs-outer [data-physics-analysis-workspace] button{min-width:44px;min-height:44px;padding:9px 12px;border:1px solid var(--phys-line);border-radius:9px;background:var(--phys-panel);color:var(--phys-ink);font-size:12px;font-weight:650;line-height:1.5;white-space:normal;overflow-wrap:anywhere}
+              #physics-fs-outer [data-physics-analysis-workspace] button:disabled{opacity:.5;cursor:not-allowed}
+              #physics-fs-outer .phys-analysis-phase{display:inline-flex;align-items:center;padding:5px 9px;border:1px solid var(--phys-line);border-radius:7px;background:var(--phys-soft);color:var(--phys-ink);font-size:12px;font-weight:700;line-height:1.5}
+              #physics-fs-outer .phys-analysis-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:16px 0;padding:5px;background:var(--phys-soft);border:1px solid var(--phys-line);border-radius:13px}
+              #physics-fs-outer .phys-analysis-tabs [role="tab"]{display:flex;align-items:center;justify-content:center;gap:7px;min-height:48px;background:transparent;border-color:transparent;color:var(--phys-muted);font-size:14px}
+              #physics-fs-outer .phys-analysis-tabs [role="tab"][aria-selected="true"]{color:var(--phys-accent);background:var(--phys-selected);border-color:var(--phys-accent);box-shadow:inset 0 -3px var(--phys-accent)}
+              #physics-fs-outer .phys-analysis-tabs svg{flex-shrink:0}
+              #physics-fs-outer [data-physics-analysis-panel]{min-width:0}
+              #physics-fs-outer [data-physics-analysis-panel][hidden]{display:none!important}
+              #physics-fs-outer [data-physics-analysis-panel]>:is(.phys-measured-card,[data-physics-motion-phase]){margin-bottom:14px}
+              #physics-fs-outer [data-physics-analysis-panel] [data-physics-flight-data]{padding:0;margin:0;border:0;box-shadow:none;background:transparent}
+              #physics-fs-outer [data-physics-analysis-timeline] .phys-sample-buttons{margin:10px 0}
+              @container(max-width:460px){#physics-fs-outer [data-physics-analysis-workspace]{padding:12px}#physics-fs-outer .phys-analysis-tabs{gap:3px;padding:4px}#physics-fs-outer .phys-analysis-tabs [role="tab"]{flex-direction:column;gap:3px;padding:7px 3px;font-size:12px;min-height:60px}}
+
               #physics-fs-outer :is([data-physics-sample-inspector],[data-physics-flight-data]){min-width:0;margin-bottom:16px;padding:18px;border:1px solid var(--phys-line);border-radius:16px;background:var(--phys-panel);color:var(--phys-ink);box-shadow:var(--phys-shadow)}
               #physics-fs-outer .phys-measured-heading{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 18px;margin-bottom:12px}
               #physics-fs-outer .phys-measured-heading h3{margin:0;font-size:1rem;font-weight:750;color:var(--phys-ink)}
@@ -3184,199 +3975,9 @@ window.StemLab = window.StemLab || {
 
             ),
 
-            (function() {
-              var cv = typeof document !== 'undefined' ? document.getElementById('physicsCanvas') : null;
-              var trails = cv && cv._trails || [];
-              if (!trails.length) return null;
-              var sample = physSelectedInspection(cv);
-              var selectedIndex = sample ? trails.indexOf(cv._inspection.trail) : trails.length - 1;
-              var trail = trails[selectedIndex];
-              return React.createElement('section', { 'data-physics-flight-history': true, 'aria-label': __alloT('stem.physics.history_title', 'Recent recorded flights') },
-                React.createElement('label', { htmlFor: 'physics-history-flight' }, __alloT('stem.physics.history_choose', 'Inspect a recorded flight')),
-                React.createElement('select', { id: 'physics-history-flight', 'data-physics-history-select': true, value: selectedIndex, 'aria-describedby': 'physics-history-help',
-                  onChange: function(event) {
-                    var chosen = trails[Number(event.target.value)];
-                    if (chosen) physSelectSample(chosen.length - 1, chosen);
-                  } }, trails.map(function(recorded, index) {
-                    var label = recorded.run != null ? __alloT('stem.physics.investigation_run', 'Run') + ' ' + recorded.run : __alloT('stem.physics.history_unfinished', 'Unfinished flight') + ' ' + (index + 1);
-                    label += ' · ' + (recorded.drag ? __alloT('stem.physics.sample_drag_on', 'Air drag on') : __alloT('stem.physics.sample_drag_off', 'Air drag off')) + ' · θ ' + recorded.angle + '° · v₀ ' + recorded.velocity + ' m/s';
-                    return React.createElement('option', { key: index, value: index }, label);
-                  })),
-                React.createElement('button', { type: 'button', 'data-physics-history-inspect': true,
-                  onClick: function() { if (physSelectSample(sample ? sample.index : trail.length - 1, trail)) physRevealInspection(); } }, __alloT('stem.physics.history_open', 'Inspect this flight')),
-                React.createElement('p', { id: 'physics-history-help' }, __alloT('stem.physics.history_help', 'Up to five flights are kept in this session. Choosing a flight pauses playback and links its recorded canvas, graphs, and table.')));
-            })(),
+            null,
 
-            (function() {
-              var cv = typeof document !== 'undefined' ? document.getElementById('physicsCanvas') : null;
-              var sample = physSelectedInspection(cv);
-              if (!sample) return null;
-              var h = React.createElement;
-              var trail = cv._inspection.trail;
-              var parameters = sample.parameters;
-              var moments = physRecordedMoments(trail);
-              var highest = moments ? moments.highestIndex : sample.index;
-              var apexIndex = moments ? moments.apexIndex : -1;
-              var latest = physInspectSample(trail, trail.length - 1);
-              var phaseLabels = {
-                rising: __alloT('stem.physics.sample_phase_rising', 'Rising'),
-                apex: sample.t === 0 ? __alloT('stem.physics.sample_phase_release', 'Highest point at release') : __alloT('stem.physics.sample_phase_apex', 'At apex'),
-                falling: __alloT('stem.physics.sample_phase_falling', 'Falling'),
-                level: __alloT('stem.physics.sample_phase_level', 'Vertical velocity is zero'),
-                impact: __alloT('stem.physics.sample_ground_impact', 'Ground impact')
-              };
-              var phaseLabel = phaseLabels[sample.phase];
-              var phaseHelp = sample.phase === 'impact'
-                ? __alloT('stem.physics.force_phase_impact', 'These forces describe arrival just before contact. The collision force is not simulated.')
-                : sample.vy > 0
-                  ? parameters.airResist
-                    ? __alloT('stem.physics.force_phase_rising_drag', 'While the projectile rises, gravity and vertical air drag act downward.')
-                    : __alloT('stem.physics.force_phase_rising_vacuum', 'While the projectile rises, gravity changes its vertical velocity downward.')
-                  : sample.vy < 0
-                    ? parameters.airResist
-                      ? __alloT('stem.physics.force_phase_falling_drag', 'During descent, vertical air drag acts upward. Net force determines the acceleration.')
-                      : __alloT('stem.physics.force_phase_falling_vacuum', 'During descent, gravity changes its vertical velocity downward.')
-                    : __alloT('stem.physics.force_phase_zero_vertical', 'Vertical velocity is zero at this moment. Gravity still acts downward.');
-              if (sample.gravityForce === 0 && !sample.impact) phaseHelp = parameters.airResist
-                ? __alloT('stem.physics.force_phase_no_gravity_drag', 'With no gravity, air drag alone determines acceleration.')
-                : __alloT('stem.physics.force_phase_no_forces', 'With gravity and air drag both absent, velocity stays unchanged.');
-              if (sample.vy === 0 && sample.dragFx !== 0) phaseHelp += ' ' +
-                __alloT('stem.physics.force_phase_horizontal_drag', 'Horizontal motion still produces air drag.');
-              var forceVectors = [
-                { key: 'gravity', label: __alloT('stem.physics.force_gravity', 'Gravity'),
-                  description: sample.gravityForce === 0 ? __alloT('stem.physics.force_no_gravity', 'Gravity is zero') : __alloT('stem.physics.force_downward', 'Acts downward'), x: sample.gravityFx, y: sample.gravityFy, magnitude: sample.gravityForce, dash: '4 3' },
-                { key: 'drag', label: __alloT('stem.physics.force_air_drag', 'Air drag'),
-                  description: parameters.airResist ? __alloT('stem.physics.force_opposes_velocity', 'Opposes velocity') : __alloT('stem.physics.sample_drag_off', 'Air drag off'),
-                  x: sample.dragFx, y: sample.dragFy, magnitude: sample.dragForce, dash: '2 3' },
-                { key: 'net', label: __alloT('stem.physics.force_net', 'Net force'),
-                  description: __alloT('stem.physics.force_sets_acceleration', 'Sets acceleration'), x: sample.fx, y: sample.fy, magnitude: Math.hypot(sample.fx, sample.fy), dash: null }
-              ];
-              var forceScale = Math.max.apply(null, forceVectors.map(function(vector) { return vector.magnitude; }));
-              function forceCard(vector) {
-                var length = forceScale > 0 ? 42 * (vector.magnitude / forceScale) : 0;
-                var endX = 64 + (forceScale > 0 ? 42 * (vector.x / forceScale) : 0);
-                var endY = 64 - (forceScale > 0 ? 42 * (vector.y / forceScale) : 0);
-                var direction = Math.atan2(-vector.y, vector.x), head = Math.min(6, length / 3);
-                function component(field, label, value) {
-                  return h('div', { key: field }, h('dt', null, label),
-                    h('dd', { 'data-physics-force-component': vector.key + '-' + field, 'data-value': value }, physFormatSampleValue(value) + ' N'));
-                }
-                return h('section', { key: vector.key, 'data-physics-force-card': vector.key, 'aria-label': vector.label },
-                  h('div', { className: 'phys-force-title' }, h('h5', null, vector.label), h('p', null, vector.description)),
-                  h('div', { className: 'phys-force-body' },
-                    h('svg', { 'data-physics-force-vector': vector.key, viewBox: '0 0 128 128', 'aria-hidden': true, focusable: 'false' },
-                      h('circle', { cx: 64, cy: 64, r: 51, fill: 'none', stroke: 'var(--phys-line)' }),
-                      h('path', { d: 'M12 64H116M64 12V116', fill: 'none', stroke: 'var(--phys-line)', strokeDasharray: '2 4' }),
-                      vector.magnitude > 0 && h('g', { fill: 'none', stroke: 'var(--phys-accent)', strokeWidth: vector.key === 'net' ? 3 : 2.5 },
-                        h('line', { 'data-physics-force-arrow': vector.key, 'data-fx': vector.x, 'data-fy': vector.y,
-                          'data-magnitude': vector.magnitude, 'data-scale': forceScale, x1: 64, y1: 64, x2: endX, y2: endY, strokeDasharray: vector.dash }),
-                        h('path', { d: 'M' + (endX - Math.cos(direction - .45) * head) + ' ' + (endY - Math.sin(direction - .45) * head) +
-                          'L' + endX + ' ' + endY + 'L' + (endX - Math.cos(direction + .45) * head) + ' ' + (endY - Math.sin(direction + .45) * head) })),
-                      h('circle', { cx: 64, cy: 64, r: 3, fill: 'var(--phys-ink)' })),
-                    h('dl', null,
-                      component('x', __alloT('stem.physics.force_horizontal', 'Horizontal · x'), vector.x),
-                      component('y', __alloT('stem.physics.force_vertical', 'Vertical · y'), vector.y),
-                      component('magnitude', __alloT('stem.physics.force_magnitude', 'Magnitude'), vector.magnitude))),
-                  vector.magnitude === 0 ? h('p', { className: 'phys-force-note', 'data-physics-force-zero': vector.key },
-                    __alloT('stem.physics.force_zero', 'Zero force: no arrow.')) : length < 4.5 ? h('p', { className: 'phys-force-note' },
-                    __alloT('stem.physics.force_tiny', 'The arrow is too short to see clearly at this scale; the values above retain its size.')) : null);
-              }
-              function measurement(key, label, value, unit) {
-                var swatch = key === 'ke' ? 'var(--phys-accent)' : key === 'pe' ? 'var(--phys-muted)' : key === 'dragLoss' ? 'repeating-linear-gradient(135deg,var(--phys-line),var(--phys-line) 2px,var(--phys-panel) 2px,var(--phys-panel) 4px)' : null;
-                return h('div', { key: key, 'data-physics-measurement': key }, h('dt', null, swatch && h('span', { className: 'phys-energy-key', 'aria-hidden': true, style: { background: swatch } }), label), h('dd', null, physFormatSampleValue(value) + ' ' + unit));
-              }
-              var sampleLabel = __alloT('stem.physics.sample_number', 'Sample') + ' ' + (sample.index + 1) + ' / ' + sample.count;
-              var settings = [
-                'θ = ' + parameters.angle + '°', 'v₀ = ' + parameters.velocity + ' m/s',
-                'g = ' + parameters.gravity + ' m/s²', 'm = ' + parameters.mass + ' kg', 'h₀ = ' + parameters.launchHeight + ' m',
-                parameters.airResist ? __alloT('stem.physics.sample_drag_on', 'Air drag on') : __alloT('stem.physics.sample_drag_off', 'Air drag off')
-              ];
-              return h('section', { id: 'physics-sample-inspector', 'data-physics-sample-inspector': true, 'data-physics-inspection': true, 'aria-labelledby': 'physics-sample-heading', tabIndex: -1 },
-                h('div', { className: 'phys-measured-heading' },
-                  h('div', null,
-                    h('h3', { id: 'physics-sample-heading' }, __alloT('stem.physics.sample_inspector_title', 'Explore a recorded moment')),
-                    h('p', null, (sample.run != null ? __alloT('stem.physics.investigation_run', 'Run') + ' ' + sample.run + ' · ' : '') + sampleLabel + (sample.impact ? ' · ' + __alloT('stem.physics.sample_ground_impact', 'Ground impact') : ''))),
-                  h('strong', { className: 'phys-sample-time' }, 't = ' + sample.t.toFixed(3) + ' s'),
-                  h('button', { type: 'button', 'data-physics-sample-close': true, onClick: function() {
-                    var olderFlight = cv._inspection && cv._inspection.trail !== cv._trails[cv._trails.length - 1];
-                    physClearInspection();
-                    setTimeout(function() {
-                      var opener = olderFlight ? document.querySelector('[data-physics-history-select]') : document.querySelector('[data-physics-inspect]');
-                      if (opener) opener.focus();
-                    }, 0);
-                  } }, __alloT('stem.physics.sample_close', 'Close inspector'))),
-                h('div', { className: 'phys-capture-settings', 'aria-label': __alloT('stem.physics.sample_recorded_settings', 'Recorded launch settings') }, settings.map(function(label, index) { return h('span', { key: index }, label); })),
-                h('p', { className: 'sr-only', 'data-physics-sample-status': true, role: 'status', 'aria-live': 'polite', 'aria-atomic': true },
-                  (sample.run != null ? __alloT('stem.physics.investigation_run', 'Run') + ' ' + sample.run + ' · ' : '') + sampleLabel + ' · t = ' + sample.t.toFixed(3) + ' s · ' + phaseLabel),
-                h('div', { className: 'phys-sample-navigation' },
-                  h('label', { htmlFor: 'physics-sample-slider' }, __alloT('stem.physics.sample_slider_label', 'Move through the recorded flight')),
-                  h('input', { type: 'range', id: 'physics-sample-slider', 'data-physics-sample-slider': true, min: 0, max: Math.max(0, trail.length - 1), step: 1, value: sample.index,
-                    'aria-valuetext': sampleLabel + ', t = ' + sample.t.toFixed(3) + ' s', disabled: trail.length < 2,
-                    onChange: function(e) { physSelectSample(Number(e.target.value)); } }),
-                  h('div', { className: 'phys-sample-buttons' },
-                    h('button', { type: 'button', 'data-physics-sample-prev': true, disabled: sample.index === 0, onClick: function() { physSelectSample(sample.index - 1); } }, __alloT('stem.physics.sample_previous', 'Previous point')),
-                    h('button', { type: 'button', 'data-physics-sample-next': true, disabled: sample.index >= trail.length - 1, onClick: function() { physSelectSample(sample.index + 1); } }, __alloT('stem.physics.sample_next', 'Next point'))),
-                  h('div', { className: 'phys-sample-landmarks', role: 'group', 'aria-label': __alloT('stem.physics.sample_moments', 'Recorded flight moments') },
-                    h('button', { type: 'button', 'data-physics-sample-jump': 'launch', 'data-physics-sample-landmark': 'launch', 'aria-pressed': sample.index === 0, onClick: function() { physSelectSample(0); } },
-                      h('span', null, __alloT('stem.physics.sample_launch_point', 'Launch point')), h('strong', null, 't = ' + trail[0].t.toFixed(3) + ' s')),
-                    h('button', { type: 'button', 'data-physics-sample-jump': 'highest', 'data-physics-sample-landmark': apexIndex >= 0 ? 'apex' : 'highest', 'aria-pressed': sample.index === (apexIndex >= 0 ? apexIndex : highest), onClick: function() { physSelectSample(apexIndex >= 0 ? apexIndex : highest); } },
-                      h('span', null, apexIndex >= 0 ? __alloT('stem.physics.sample_apex_point', 'Apex') : __alloT('stem.physics.sample_highest_point', 'Highest recorded point')), h('strong', null, 't = ' + trail[apexIndex >= 0 ? apexIndex : highest].t.toFixed(3) + ' s')),
-                    h('button', { type: 'button', 'data-physics-sample-jump': 'latest', 'data-physics-sample-landmark': latest && latest.impact ? 'impact' : 'latest', 'aria-pressed': sample.index === trail.length - 1, onClick: function() { physSelectSample(trail.length - 1); } },
-                      h('span', null, latest && latest.impact ? __alloT('stem.physics.sample_ground_impact', 'Ground impact') : __alloT('stem.physics.sample_latest_point', 'Latest point')), h('strong', null, 't = ' + trail[trail.length - 1].t.toFixed(3) + ' s')))),
-                h('section', { 'data-physics-motion-phase': sample.phase, 'aria-label': phaseLabel },
-                  h('div', { className: 'phys-phase-heading' }, h('span', { 'aria-hidden': true }, sample.phase === 'rising' ? '↑' : sample.phase === 'falling' || sample.phase === 'impact' ? '↓' : sample.phase === 'apex' ? '∩' : '—'), h('h4', { 'data-physics-phase-label': true }, phaseLabel)),
-                  h('p', { 'data-physics-phase-help': true }, phaseHelp),
-                  h('dl', { className: 'phys-phase-values' },
-                    h('div', null, h('dt', null, __alloT('stem.physics.sample_vertical_velocity', 'Vertical velocity · vy')), h('dd', { 'data-physics-phase-value': 'vy', 'data-value': sample.vy }, physFormatSampleValue(sample.vy) + ' m/s')),
-                    h('div', null, h('dt', null, __alloT('stem.physics.sample_vertical_acceleration', 'Vertical acceleration · ay')), h('dd', { 'data-physics-phase-value': 'ay', 'data-value': sample.ay }, physFormatSampleValue(sample.ay) + ' m/s²'))),
-                  h('div', { 'data-physics-vertical-balance': true },
-                    h('p', null, __alloT('stem.physics.force_vertical_equation', 'Gravity + vertical air drag = net vertical force')),
-                    h('strong', null, physFormatSampleValue(sample.gravityFy) + ' N + (' + physFormatSampleValue(sample.dragFy) + ' N) = ' + physFormatSampleValue(sample.fy) + ' N'))),
-                h('div', { className: 'phys-measured-grid' },
-                  h('section', { className: 'phys-measured-card', 'aria-labelledby': 'physics-sample-motion' },
-                    h('h4', { id: 'physics-sample-motion' }, __alloT('stem.physics.sample_motion', 'Position & velocity')),
-                    h('dl', null,
-                      measurement('x', __alloT('stem.physics.sample_horizontal_position', 'Horizontal position · x'), sample.x, 'm'),
-                      measurement('y', __alloT('stem.physics.sample_height', 'Height above ground · y'), sample.y, 'm'),
-                      measurement('vx', __alloT('stem.physics.sample_horizontal_velocity', 'Horizontal velocity · vx'), sample.vx, 'm/s'),
-                      measurement('vy', __alloT('stem.physics.sample_vertical_velocity', 'Vertical velocity · vy'), sample.vy, 'm/s'),
-                      measurement('speed', __alloT('stem.physics.metric_speed', 'Speed'), sample.speed, 'm/s'))),
-                  h('section', { className: 'phys-measured-card', 'aria-labelledby': 'physics-sample-energy' },
-                    h('h4', { id: 'physics-sample-energy' }, __alloT('stem.physics.sample_energy', 'Energy at this moment')),
-                    h('dl', null,
-                      measurement('ke', __alloT('stem.physics.sample_kinetic_energy', 'Kinetic · KE'), sample.ke, 'J'),
-                      measurement('pe', __alloT('stem.physics.sample_potential_energy', 'Potential · PE'), sample.pe, 'J'),
-                      measurement('totalEnergy', __alloT('stem.physics.sample_mechanical_energy', 'Mechanical · KE + PE'), sample.totalEnergy, 'J'),
-                      measurement('dragLoss', __alloT('stem.physics.inspect_energy_transferred', 'Energy transferred to the air'), sample.dragLoss, 'J'),
-                      measurement('initialEnergy', __alloT('stem.physics.sample_initial_energy', 'Initial energy'), sample.initialEnergy, 'J')),
-                    sample.initialEnergy > 0 && h('div', { className: 'phys-energy-budget', 'aria-hidden': true },
-                      h('span', { style: { width: Math.max(0, Math.min(100, sample.ke / sample.initialEnergy * 100)) + '%', background: 'var(--phys-accent)' } }),
-                      h('span', { style: { width: Math.max(0, Math.min(100, sample.pe / sample.initialEnergy * 100)) + '%', background: 'var(--phys-muted)' } }),
-                      h('span', { style: { width: Math.max(0, Math.min(100, sample.dragLoss / sample.initialEnergy * 100)) + '%', background: 'repeating-linear-gradient(135deg,var(--phys-line),var(--phys-line) 3px,var(--phys-panel) 3px,var(--phys-panel) 6px)' } })))),
-                h('details', { 'data-physics-sample-forces': true },
-                  h('summary', null, __alloT('stem.physics.sample_forces', 'Forces & acceleration')),
-                  h('section', { 'data-physics-force-balance': true, 'data-force-scale': forceScale, 'aria-labelledby': 'physics-force-heading' },
-                    h('h4', { id: 'physics-force-heading' }, __alloT('stem.physics.force_heading', 'Forces at this recorded moment')),
-                    h('p', { className: 'phys-force-explanation' }, __alloT('stem.physics.force_equation', 'Gravity + air drag = net force. Acceleration = net force ÷ recorded mass.')),
-                    h('div', { className: 'phys-force-cards' }, forceVectors.map(forceCard)),
-                    h('p', { className: 'phys-force-scale' }, (forceScale > 0 ? __alloT('stem.physics.force_scale', 'All arrows share one scale; the longest represents') + ' ' + physFormatSampleValue(forceScale) + ' N. ' : __alloT('stem.physics.force_all_zero', 'All recorded forces are zero.') + ' ') +
-                      __alloT('stem.physics.force_axes', 'Right and up are positive. The scale updates when you choose another moment.')),
-                    h('p', { className: 'phys-force-mass' }, __alloT('stem.physics.force_recorded_mass', 'Recorded mass') + ': ' + parameters.mass + ' kg · ay = ' + physFormatSampleValue(sample.fy) +
-                      ' N ÷ ' + parameters.mass + ' kg = ' + physFormatSampleValue(sample.ay) + ' m/s²')),
-                  h('div', { className: 'phys-measured-grid' },
-                    h('div', { className: 'phys-measured-card' }, h('dl', null,
-                      measurement('ax', __alloT('stem.physics.sample_horizontal_acceleration', 'Horizontal acceleration · ax'), sample.ax, 'm/s²'),
-                      measurement('ay', __alloT('stem.physics.sample_vertical_acceleration', 'Vertical acceleration · ay'), sample.ay, 'm/s²'),
-                      measurement('fx', __alloT('stem.physics.sample_horizontal_force', 'Net horizontal force · Fx'), sample.fx, 'N'),
-                      measurement('fy', __alloT('stem.physics.sample_vertical_force', 'Net vertical force · Fy'), sample.fy, 'N'))),
-                    h('div', { className: 'phys-measured-card' }, h('dl', null,
-                      measurement('gravityForce', __alloT('stem.physics.inspect_gravity_force', 'Gravitational force downward'), sample.gravityForce, 'N'),
-                      measurement('dragForce', __alloT('stem.physics.inspect_drag_force', 'Drag force opposite velocity'), sample.dragForce, 'N'))))),
-                h('p', { className: 'phys-measured-help' }, __alloT('stem.physics.sample_inspection_help', 'These are recorded measurements. Moving the time control pauses playback and leaves the flight evidence intact. Highest recorded point selects the highest sampled position.')),
-                h('p', { className: 'phys-measured-help' }, __alloT('stem.physics.inspect_axes', 'Right and up are positive; potential energy is measured from the ground.')),
-                sample.impact && h('p', { className: 'phys-measured-help', 'data-physics-impact-note': true, style: { padding: '10px 12px', background: 'var(--phys-soft)', borderLeft: '3px solid var(--phys-accent)', borderRadius: 6 } }, __alloT('stem.physics.sample_impact_note', 'Impact values describe the arriving projectile immediately before ground contact. The model stops at contact and does not simulate the collision force.')),
-                typeof d.inspectionSnapshot === 'string' && h('p', { className: 'sr-only' }, d.inspectionSnapshot));
-            })(),
+            physRenderAnalysisWorkspace(),
 
             React.createElement("div", { 'data-physics-controls': true, className: "flex flex-wrap gap-1.5 mb-2" },
 
@@ -3391,10 +3992,15 @@ window.StemLab = window.StemLab || {
                   { id: 'overlay', key: 'showOverlay', label: __alloT('stem.physics.view_compare_paths', 'Compare paths'), aria: __alloT('stem.physics.aria_compare_currently', 'Trajectory comparison overlay, currently '), path: 'M3 20h18M4 17C8 2 15 2 20 17M4 17C7 7 11 7 14 17' },
                   { id: 'graphs', key: 'showGraphs', label: __alloT('stem.physics.view_motion_graphs', 'Motion graphs').trim(), aria: __alloT('stem.physics.aria_motion_currently', 'Motion component graphs (Vx vs t and Vy vs t), currently '), path: 'M4 3v17h17M6 14l4-5 4 3 5-7' }
                 ].map(function(view) {
-                  var enabled = !!d[view.key];
+                  var analysisEntry = view.id === 'graphs' || view.id === 'data';
+                  var enabled = analysisEntry ? analysisOpen && analysisView === (view.id === 'data' ? 'data' : 'motion') : !!d[view.key];
                   return React.createElement('button', { key: view.id, type: 'button', className: 'phys-view-card', 'data-physics-view': view.id,
-                    'aria-label': view.aria + (enabled ? __alloT('stem.physics.state_on_lc', 'on') : __alloT('stem.physics.state_off_lc', 'off')) + __alloT('stem.physics.aria_click_to_toggle', '. Click to toggle.'),
-                    'aria-pressed': enabled, onClick: function() { upd(view.key, !d[view.key]); } },
+                    'aria-label': analysisEntry ? view.label + ' · ' + (enabled ? __alloT('stem.physics.analysis_current_view', 'Current analysis view') : __alloT('stem.physics.analysis_open_view', 'Open analysis view')) : view.aria + (enabled ? __alloT('stem.physics.state_on_lc', 'on') : __alloT('stem.physics.state_off_lc', 'off')) + __alloT('stem.physics.aria_click_to_toggle', '. Click to toggle.'),
+                    'aria-pressed': enabled, onClick: function() {
+                      if (view.id === 'graphs' || view.id === 'data') {
+                        physOpenAnalysisView(view.id === 'data' ? 'data' : 'motion');
+                      } else upd(view.key, !d[view.key]);
+                    } },
                     React.createElement('span', { className: 'phys-view-title' },
                       React.createElement('svg', { viewBox: '0 0 24 24', width: 18, height: 18, fill: 'none', stroke: 'currentColor', strokeWidth: 1.75, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true, focusable: false }, React.createElement('path', { d: view.path })),
                       React.createElement('span', null, view.label)),
@@ -4127,426 +4733,7 @@ window.StemLab = window.StemLab || {
 
             // ── Motion Component Graphs (Vx-vs-t, Vy-vs-t) ──
             // Explain the recorded model, even after launch controls change.
-            d.showGraphs && (function() {
-              // The charts own their surfaces because SVG paint does not inherit
-              // the host theme. Grid lines remain distinct in high contrast.
-              var graphColors = isContrast
-                ? { panel: '#000000', surface: '#000000', ink: '#ffff00', muted: '#ffffff', border: '#ffffff', axis: '#ffffff', grid: '#ffffff', vx: '#ffff00', vy: '#ffffff', range: '#ffff00', marker: '#ffffff' }
-                : isDark
-                  ? { panel: '#101f32', surface: '#0b1627', ink: '#e8f1fc', muted: '#b6c8dc', border: '#38516b', axis: '#94a3b8', grid: '#73859d', vx: '#67b8ff', vy: '#cfb4ff', range: '#fbbf24', marker: '#67e8f9' }
-                  : { panel: '#eef5fb', surface: '#ffffff', ink: '#1d344d', muted: '#52677e', border: '#c8d8e8', axis: '#64748b', grid: '#8492a5', vx: '#1767b2', vy: '#793dbb', range: '#a95b05', marker: '#087687' };
-              var graphPanelStyle = { padding: '14px 10px', marginBottom: 16, borderRadius: 18, border: '1px solid ' + graphColors.border, background: graphColors.panel, color: graphColors.ink };
-              var graphCardStyle = { minWidth: 0, padding: '12px 8px', borderRadius: 14, border: '1px solid ' + graphColors.border, background: graphColors.surface };
-              var cv = typeof document !== 'undefined' ? document.getElementById('physicsCanvas') : null;
-              var trails = cv && cv._trails ? cv._trails : [];
-              var selectedPoint = physSelectedInspection(cv);
-              var lastTrail = selectedPoint ? cv._inspection.trail : trails.length > 0 ? trails[trails.length - 1] : null;
-              if (!lastTrail || lastTrail.length === 0) {
-                return React.createElement("section", { 'data-physics-motion-panel': true, style: graphPanelStyle },
-                  React.createElement("h3", { style: { margin: '0 0 6px', fontSize: 16, fontWeight: 800 } }, __alloT('stem.physics.motion_components', 'Motion Components')),
-                  React.createElement("p", { style: { margin: 0, fontSize: 14, lineHeight: 1.55, color: graphColors.muted } }, __alloT('stem.physics.launch_to_see_vx_vy', 'Launch a projectile to see Vx-vs-t and Vy-vs-t.'))
-                );
-              }
-              var pts = lastTrail;
-              var graphHasDrag = !!lastTrail.drag;
-              var vxDescription = graphHasDrag
-                ? __alloT('stem.physics.graph_vx_drag', 'Horizontal velocity decreases because drag opposes motion.')
-                : __alloT('stem.physics.graph_vx_vacuum', 'Without air drag, horizontal velocity stays constant because there is no horizontal force.');
-              var vyDescription = graphHasDrag
-                ? __alloT('stem.physics.graph_vy_drag', 'Vertical velocity curves over time. Drag and gravity determine its slope; Vy is zero at the apex.')
-                : __alloT('stem.physics.graph_vy_vacuum', 'Without air drag, vertical velocity decreases in a straight line with slope −g and reaches zero at the apex.');
-              var graphMoments = physRecordedMoments(pts);
-              var plotIndices = physMomentIndices(pts, 80, selectedPoint ? selectedPoint.index : null, false);
-              // Keep meaningful full-resolution observations on the plotted curve.
-              // The remaining vertices are representative recorded samples.
-              var samples = plotIndices.map(function(index) {
-                return { t: pts[index].t != null ? pts[index].t : index * PHYS_DT, vx: pts[index].mVx || 0, vy: pts[index].mVy || 0 };
-              });
-              var tMax = samples[samples.length - 1].t || 1;
-              var graphCanInspect = !!graphMoments;
-              var graphLatest = graphMoments ? physInspectSample(pts, graphMoments.latestIndex) : null;
-              var graphApex = graphMoments && graphMoments.apexIndex >= 0 ? physInspectSample(pts, graphMoments.apexIndex) : null;
-              var graphRecorded = lastTrail.parameters || lastTrail;
-              var graphIndex = selectedPoint ? selectedPoint.index : pts.length - 1;
-              var graphTime = pts[graphIndex].t != null ? pts[graphIndex].t : graphIndex * PHYS_DT;
-              function selectGraphTime(event, geometry) {
-                if (!graphCanInspect) return;
-                var bounds = event.currentTarget.getBoundingClientRect();
-                if (!(bounds.width > 0) || !isFinite(event.clientX)) return;
-                var ratio = Math.max(0, Math.min(1, ((event.clientX - bounds.left) * (geometry ? geometry.width : W) / bounds.width - (geometry ? geometry.left : padL)) / (geometry ? geometry.plotWidth : innerW)));
-                var wanted = ratio * tMax;
-                // Find the nearest full-resolution observation, including the
-                // shortened impact interval. The plotted curve is downsampled.
-                var low = 0, high = pts.length - 1;
-                while (low < high) {
-                  var middle = Math.floor((low + high) / 2);
-                  if (pts[middle].t < wanted) low = middle + 1;
-                  else high = middle;
-                }
-                if (low > 0 && wanted - pts[low - 1].t <= pts[low].t - wanted) low--;
-                physSelectSample(low);
-              }
-              var vxAbs = 0, vyMax = 0, vyMin = 0;
-              samples.forEach(function (s) {
-                if (Math.abs(s.vx) > vxAbs) vxAbs = Math.abs(s.vx);
-                if (s.vy > vyMax) vyMax = s.vy;
-                if (s.vy < vyMin) vyMin = s.vy;
-              });
-              var W = 260, H = 210, padL = 48, padR = 12, padT = 18, padB = 52;
-              var innerW = W - padL - padR, innerH = H - padT - padB;
-              var roundLimit = function(value) {
-                var magnitude = Math.pow(10, Math.floor(Math.log10(Math.max(value, 0.01))));
-                var scaled = value / magnitude;
-                var steps = [1, 2, 2.5, 5, 10];
-                for (var step = 0; step < steps.length; step++) if (scaled <= steps[step]) return steps[step] * magnitude;
-                return 10 * magnitude;
-              };
-              var tickNumber = function(value) {
-                if (Math.abs(value) < 0.000001) return '0';
-                return String(Number(value.toFixed(3)));
-              };
-              var vxLimit = roundLimit(Math.max(vxAbs * 1.12, 1));
-              var vxYScale = innerH / vxLimit;
-              var vxY0 = padT + innerH;
-              var vxPath = samples.map(function (s, i) {
-                var x = padL + (s.t / tMax) * innerW;
-                var y = vxY0 - s.vx * vxYScale;
-                return (i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1);
-              }).join(' ');
-              var vyRange = roundLimit(Math.max(Math.abs(vyMin), Math.abs(vyMax), 1) * 1.12);
-              var vyYScale = innerH / (vyRange * 2);
-              var vyY0 = padT + innerH / 2;
-              var vyPath = samples.map(function (s, i) {
-                var x = padL + (s.t / tMax) * innerW;
-                var y = vyY0 - s.vy * vyYScale;
-                return (i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1);
-              }).join(' ');
-              var axisLine = function (x1, y1, x2, y2, dashed) {
-                return React.createElement('line', { x1: x1, y1: y1, x2: x2, y2: y2, stroke: dashed ? graphColors.grid : graphColors.axis, strokeWidth: dashed ? 0.75 : 1.25, strokeDasharray: dashed ? '2 5' : undefined });
-              };
-              var lbl = function (x, y, text, anchor) {
-                return React.createElement('text', { x: x, y: y, fontSize: 18, fill: graphColors.ink, textAnchor: anchor || 'middle', fontFamily: 'system-ui, sans-serif', style: { fontSize: 18, fontVariantNumeric: 'tabular-nums' } }, text);
-              };
-              var timeAxis = function() {
-                return [0, 0.5, 1].map(function(fraction) {
-                  var x = padL + fraction * innerW;
-                  return React.createElement('g', { key: fraction },
-                    fraction > 0 && axisLine(x, padT, x, padT + innerH, true),
-                    lbl(x, H - 29, tickNumber(tMax * fraction), fraction === 0 ? 'start' : fraction === 1 ? 'end' : 'middle')
-                  );
-                });
-              };
-              var endpoint = function(sample, field, zero, scale, color) {
-                return React.createElement('circle', { cx: padL + sample.t / tMax * innerW, cy: zero - sample[field] * scale, r: 3.5, fill: color, stroke: graphColors.surface, strokeWidth: 1.5 });
-              };
-              var velocityCard = function(field, title, description, color, path, limit, zero, scale) {
-                var first = samples[0], latest = samples[samples.length - 1];
-                var ticks = field === 'vx' ? [0, limit / 2, limit] : [-limit, 0, limit];
-                // The cursor uses the actual recorded sample, independently of
-                // the lighter set of points used to draw the curve.
-                var selectedValue = selectedPoint ? selectedPoint[field] : null;
-                var selectedX = selectedPoint ? padL + selectedPoint.t / tMax * innerW : null;
-                var selectedY = selectedPoint ? zero - selectedValue * scale : null;
-                var phaseLabel = selectedPoint ? {
-                  rising: __alloT('stem.physics.sample_phase_rising', 'Rising'),
-                  apex: selectedPoint.t === 0 ? __alloT('stem.physics.sample_phase_release', 'Highest point at release') : __alloT('stem.physics.sample_phase_apex', 'At apex'),
-                  falling: __alloT('stem.physics.sample_phase_falling', 'Falling'),
-                  level: __alloT('stem.physics.sample_phase_level', 'Vertical velocity is zero'),
-                  impact: __alloT('stem.physics.sample_ground_impact', 'Ground impact')
-                }[selectedPoint.phase] : '';
-                var selectionText = selectedPoint ? __alloT('stem.physics.graph_selected_sample', 'Selected sample') + ': t = ' + selectedPoint.t.toFixed(3) + ' s; ' + (field === 'vx' ? 'Vx' : 'Vy') + ' = ' + physFormatSampleValue(selectedValue) + ' m/s.' : '';
-                return React.createElement('div', { style: graphCardStyle },
-                  React.createElement('h4', { style: { margin: '0 0 5px', fontSize: 14, lineHeight: 1.45, fontWeight: 750, color: color } }, title),
-                  React.createElement('div', { 'data-physics-graph-selected': selectedPoint ? field : undefined,
-                    'data-sample-index': selectedPoint ? selectedPoint.index : undefined, 'data-time': selectedPoint ? selectedPoint.t : undefined, 'data-value': selectedPoint ? selectedValue : undefined },
-                    React.createElement('p', { 'data-physics-graph-reading-label': field, style: { margin: '0 0 4px', fontSize: 12, lineHeight: 1.5, color: graphColors.muted } },
-                      (selectedPoint ? __alloT('stem.physics.graph_selected_sample', 'Selected sample') + ' · ' + phaseLabel : graphLatest && graphLatest.impact ? __alloT('stem.physics.sample_ground_impact', 'Ground impact') : __alloT('stem.physics.sample_latest_point', 'Latest point')) + ' · t = ' + graphTime.toFixed(3) + ' s'),
-                    React.createElement('p', { 'data-physics-graph-reading': field, 'data-value': selectedPoint ? selectedValue : latest[field],
-                      style: { margin: '0 0 8px', fontSize: 26, lineHeight: 1.35, fontWeight: 750, fontVariantNumeric: 'tabular-nums', color: graphColors.ink } },
-                      physFormatSampleValue(selectedPoint ? selectedValue : latest[field]),
-                      React.createElement('span', { style: { fontSize: 13, fontWeight: 500, color: graphColors.muted } }, ' m/s'))),
-                  React.createElement('dl', { className: 'phys-graph-endpoints' },
-                    React.createElement('div', null, React.createElement('dt', { style: { color: graphColors.muted } }, __alloT('stem.physics.sample_launch_point', 'Launch point')), React.createElement('dd', null, physFormatSampleValue(first[field]) + ' m/s')),
-                    React.createElement('div', null, React.createElement('dt', { style: { color: graphColors.muted } }, graphLatest && graphLatest.impact ? __alloT('stem.physics.sample_ground_impact', 'Ground impact') : __alloT('stem.physics.sample_latest_point', 'Latest point')), React.createElement('dd', null, physFormatSampleValue(latest[field]) + ' m/s'))),
-                  React.createElement('svg', { 'data-physics-graph': field, 'data-plotted-indices': plotIndices.join(','), 'data-plotted-count': plotIndices.length, onClick: graphCanInspect ? selectGraphTime : undefined, 'aria-describedby': graphCanInspect ? 'physics-graph-time-help' : undefined, style: { cursor: graphCanInspect ? 'crosshair' : 'default', display: 'block', background: graphColors.surface, borderRadius: 8, width: '100%', maxWidth: 320, height: 'auto', margin: '0 auto' }, viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'aria-label': description + (selectionText ? ' ' + selectionText : '') },
-                    timeAxis(),
-                    ticks.map(function(value) { return React.createElement('g', { key: value },
-                      axisLine(padL, zero - value * scale, W - padR, zero - value * scale, value !== 0),
-                      lbl(padL - 8, zero - value * scale + 5, tickNumber(value), 'end')
-                    ); }),
-                    axisLine(padL, padT, padL, padT + innerH),
-                    graphApex && React.createElement('line', { 'data-physics-graph-apex-guide': field, 'data-sample-index': graphApex.index, 'data-time': graphApex.t,
-                      x1: padL + graphApex.t / tMax * innerW, x2: padL + graphApex.t / tMax * innerW, y1: padT, y2: padT + innerH, stroke: graphColors.marker, strokeWidth: 2, strokeDasharray: '8 4' }),
-                    selectedPoint && React.createElement('line', {
-                      'data-physics-graph-cursor': field, 'data-sample-index': selectedPoint.index, 'data-time': selectedPoint.t,
-                      x1: selectedX, x2: selectedX, y1: padT, y2: padT + innerH,
-                      stroke: graphColors.marker, strokeWidth: 1.5, strokeDasharray: '6 3'
-                    }),
-                    React.createElement('path', { d: path, stroke: color, strokeWidth: 2.8, fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' }),
-                    endpoint(first, field, zero, scale, color),
-                    endpoint(latest, field, zero, scale, color),
-                    selectedPoint && React.createElement('circle', {
-                      'data-physics-graph-marker': field, 'data-sample-index': selectedPoint.index, 'data-time': selectedPoint.t, 'data-value': selectedValue,
-                      cx: selectedX, cy: selectedY, r: 6.5, fill: graphColors.marker, stroke: graphColors.ink, strokeWidth: 2
-                    }),
-                    lbl(padL + innerW / 2, H - 5, __alloT('stem.physics.axis_time_s', 'time (s)'))
-                  ),
-                  graphApex && React.createElement('p', { className: 'phys-graph-guide-key', style: { color: graphColors.muted } }, React.createElement('span', { 'aria-hidden': true, style: { borderColor: graphColors.marker } }),
-                    __alloT('stem.physics.graph_apex_guide', 'Dashed guide: recorded apex') + ' · t = ' + graphApex.t.toFixed(3) + ' s'),
-                  React.createElement('p', { style: { margin: '8px 0 0', fontSize: 14, lineHeight: 1.55, color: graphColors.muted } }, description)
-                );
-              };
-              return React.createElement("section", { 'data-physics-motion-panel': true, style: graphPanelStyle },
-                React.createElement("h3", { style: { margin: '0 0 12px', fontSize: 16, lineHeight: 1.4, fontWeight: 800 } },
-                  selectedPoint ? __alloT('stem.physics.motion_components_recorded', 'Motion Components (selected recorded flight)') : __alloT('stem.physics.motion_components_recent', 'Motion Components (most recent launch)')
-                ),
-                React.createElement('p', { 'data-physics-graph-flight': lastTrail.run == null ? 'unfinished' : lastTrail.run, style: { margin: '0 0 8px', fontSize: 12, lineHeight: 1.6, color: graphColors.muted } },
-                  (lastTrail.run != null ? __alloT('stem.physics.investigation_run', 'Run') + ' ' + lastTrail.run : __alloT('stem.physics.history_unfinished', 'Unfinished flight')) + ' · ' + (graphHasDrag ? __alloT('stem.physics.sample_drag_on', 'Air drag on') : __alloT('stem.physics.sample_drag_off', 'Air drag off'))),
-                React.createElement('div', { 'data-physics-graph-settings': true, className: 'phys-capture-settings', role: 'group', 'aria-label': __alloT('stem.physics.sample_recorded_settings', 'Recorded launch settings') },
-                  [['angle', 'θ', '°'], ['velocity', 'v₀', 'm/s'], ['gravity', 'g', 'm/s²'], ['mass', 'm', 'kg'], ['launchHeight', 'h₀', 'm']].filter(function(setting) { return physFinite(graphRecorded[setting[0]]); }).map(function(setting) {
-                    return React.createElement('span', { key: setting[0], 'data-physics-graph-setting': setting[0] }, setting[1] + ' = ' + graphRecorded[setting[0]] + ' ' + setting[2]);
-                  })),
-                graphCanInspect && React.createElement('div', { 'data-physics-graph-time-control': true, style: { marginBottom: 12, padding: '12px 14px', background: graphColors.surface, border: '1px solid ' + graphColors.border, borderRadius: 12 } },
-                  React.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' } },
-                    React.createElement('label', { htmlFor: 'physics-graph-time', style: { fontSize: 14, fontWeight: 700, color: graphColors.ink } }, __alloT('stem.physics.graph_recorded_time', 'Recorded time')),
-                    React.createElement('span', { 'data-physics-graph-time-value': true, style: { color: graphColors.ink, fontSize: 16, fontWeight: 750, fontVariantNumeric: 'tabular-nums' } }, 't = ' + graphTime.toFixed(3) + ' s')),
-                  React.createElement('input', { id: 'physics-graph-time', 'data-physics-graph-time-slider': true, type: 'range', min: 0, max: pts.length - 1, step: 1, value: graphIndex, disabled: pts.length < 2,
-                    'aria-valuetext': 't = ' + graphTime.toFixed(3) + ' s; ' + __alloT('stem.physics.graph_sample', 'sample') + ' ' + (graphIndex + 1) + ' / ' + pts.length,
-                    'aria-describedby': 'physics-graph-time-help', onChange: function(event) { physSelectSample(Number(event.target.value)); },
-                    style: { display: 'block', width: '100%', minHeight: 44, margin: '6px 0', accentColor: graphColors.marker } }),
-                  React.createElement('div', { style: { display: 'flex', gap: '8px 16px', alignItems: 'center', flexWrap: 'wrap' } },
-                    React.createElement('button', { type: 'button', 'data-physics-graph-inspect': true, onClick: function() { physSelectSample(graphIndex); },
-                      style: { minHeight: 44, padding: '9px 12px', border: '1px solid ' + graphColors.axis, background: graphColors.panel, color: graphColors.ink, borderRadius: 9, fontSize: 12, fontWeight: 700 } }, __alloT('stem.physics.graph_inspect_time', 'Inspect this time')),
-                    React.createElement('p', { id: 'physics-graph-time-help', style: { flex: '1 1 240px', margin: 0, color: graphColors.muted, fontSize: 12, lineHeight: 1.6 } },
-                      __alloT('stem.physics.graph_time_help', 'Tap a graph or move the time control to inspect the nearest recorded point. Selecting a point pauses playback.'))),
-                  React.createElement('div', { className: 'phys-graph-moments', role: 'group', 'aria-label': __alloT('stem.physics.sample_moments', 'Recorded flight moments') },
-                    [
-                      { id: 'launch', index: graphMoments.launchIndex, label: __alloT('stem.physics.sample_launch_point', 'Launch point') },
-                      { id: graphApex ? 'apex' : 'highest', index: graphApex ? graphMoments.apexIndex : graphMoments.highestIndex, label: graphApex ? __alloT('stem.physics.sample_apex_point', 'Apex') : __alloT('stem.physics.sample_highest_point', 'Highest recorded point') },
-                      { id: graphMoments.impact ? 'impact' : 'latest', index: graphMoments.latestIndex, label: graphMoments.impact ? __alloT('stem.physics.sample_ground_impact', 'Ground impact') : __alloT('stem.physics.sample_latest_point', 'Latest point') }
-                    ].map(function(moment) {
-                      var pressed = !!selectedPoint && selectedPoint.index === moment.index;
-                      return React.createElement('button', { key: moment.id, type: 'button', 'data-physics-graph-jump': moment.id,
-                        'data-sample-index': moment.index, 'data-time': pts[moment.index].t, 'aria-pressed': pressed,
-                        onClick: function() { physSelectSample(moment.index, lastTrail); },
-                        style: { background: pressed ? graphColors.panel : graphColors.surface, color: graphColors.ink,
-                          border: '1px solid ' + (pressed ? graphColors.marker : graphColors.border),
-                          boxShadow: pressed ? 'inset 0 -3px ' + graphColors.marker : 'none' } },
-                        React.createElement('span', null, moment.label), React.createElement('strong', null, 't = ' + pts[moment.index].t.toFixed(3) + ' s'));
-                    }))),
-                React.createElement("div", { "data-physics-component-graphs": true, style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 310px), 1fr))', gap: 12 } },
-                  velocityCard('vx', __alloT('stem.physics.graph_vx_title', 'Vx (m/s) — horizontal velocity'), vxDescription, graphColors.vx, vxPath, vxLimit, vxY0, vxYScale),
-                  velocityCard('vy', __alloT('stem.physics.graph_vy_title', 'Vy (m/s) — vertical velocity'), vyDescription, graphColors.vy, vyPath, vyRange, vyY0, vyYScale)
-                ),
-                React.createElement('p', { 'data-physics-graph-sampling-help': true, style: { margin: '12px 0 0', fontSize: 12, lineHeight: 1.6, color: graphColors.muted } }, __alloT('stem.physics.graph_sampling_help', 'Curves connect representative recorded points. Recorded moments and the selected point are included; the time control uses every point.')),
-                React.createElement("p", { style: { margin: '12px 0', fontSize: 14, lineHeight: 1.55, color: graphColors.muted } },
-                  graphHasDrag
-                    ? __alloT('stem.physics.graph_drag_model_note', 'This flight includes air drag. The drag force depends on total speed, coupling horizontal and vertical motion. Gravity stays constant; total acceleration changes.')
-                    : __alloT('stem.physics.graph_vacuum_model_note', 'This flight has no air drag. Horizontal and vertical motion are independent; gravity changes only vertical velocity.')
-                ),
-                React.createElement('button', { type: 'button', 'data-physics-graph-open-data': true, onClick: function() {
-                  var outer = typeof document !== 'undefined' ? document.getElementById('physics-fs-outer') : null;
-                  upd('showFlightData', true);
-                  setTimeout(function() {
-                    if (!outer || !outer.isConnected) return;
-                    var table = outer.querySelector('[data-physics-flight-data]');
-                    if (!table) return;
-                    table.scrollIntoView({ behavior: window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
-                    table.focus({ preventScroll: true });
-                  }, 0);
-                }, style: { minHeight: 44, padding: '9px 14px', borderRadius: 10, border: '1px solid ' + graphColors.axis, color: graphColors.ink, background: graphColors.surface, fontSize: 14, fontWeight: 700 } }, __alloT('stem.physics.graph_open_data', 'Open the flight data table')),
-
-
-                // Energy comes from this trail's captured launch and recorded points.
-                (function() {
-                  var current = physInspectSample(pts, graphIndex);
-                  function unavailableEnergy() { return React.createElement('div', { 'data-physics-energy-unavailable': true, style: Object.assign({}, graphCardStyle, { marginTop: 14 }) },
-                    React.createElement('p', { style: { margin: 0, color: graphColors.muted, fontSize: 13, lineHeight: 1.6 } }, __alloT('stem.physics.energy_unavailable', 'The energy timeline needs original launch settings and supported recorded samples.'))); }
-                  if (!current) return unavailableEnergy();
-                  var energies = [];
-                  for (var i = 0; i < plotIndices.length; i++) {
-                    var index = plotIndices[i];
-                    var value = physInspectSample(pts, index);
-                    if (!value) return unavailableEnergy();
-                    energies.push(value);
-                  }
-                  // Include the selected full-resolution point in the filled bands.
-                  if (!energies.some(function(point) { return point.index === current.index; })) {
-                    energies.push(current); energies.sort(function(a, b) { return a.t - b.t; });
-                  }
-                  var p = current.parameters;
-                  var eW = 300, eH = 226, eL = 58, eR = 16, eT = 34, eB = 52;
-                  var eIW = eW - eL - eR, eIH = eH - eT - eB, eZero = eT + eIH;
-                  var eMax = current.initialEnergy, eScale = eIH / eMax, kilo = eMax >= 1000;
-                  var colors = { ke: graphColors.vx, pe: graphColors.vy, dragLoss: graphColors.range };
-                  var labels = { ke: __alloT('stem.physics.sample_kinetic_energy', 'Kinetic · KE'), pe: __alloT('stem.physics.sample_potential_energy', 'Potential · PE'), dragLoss: __alloT('stem.physics.energy_transferred', 'Transferred by drag') };
-                  var patterns = { pe: 'physics-energy-potential-pattern', dragLoss: 'physics-energy-transfer-pattern' };
-                  function energyX(point) { return eL + point.t / tMax * eIW; }
-                  function energyY(value) { return eZero - value * eScale; }
-                  function cumulative(point, part) { return part === 'ke' ? point.ke : part === 'pe' ? point.totalEnergy : point.totalEnergy + point.dragLoss; }
-                  function lower(point, part) { return part === 'ke' ? 0 : part === 'pe' ? point.ke : point.totalEnergy; }
-                  function area(part) {
-                    return energies.map(function(point, index) { return (index ? 'L' : 'M') + energyX(point).toFixed(3) + ',' + energyY(cumulative(point, part)).toFixed(3); }).join(' ') + ' ' +
-                      energies.slice().reverse().map(function(point) { return 'L' + energyX(point).toFixed(3) + ',' + energyY(lower(point, part)).toFixed(3); }).join(' ') + ' Z';
-                  }
-                  function swatch(part) {
-                    return React.createElement('span', { className: 'phys-energy-swatch', 'aria-hidden': true, style: { background: part === 'ke' ? colors.ke : 'repeating-linear-gradient(' + (part === 'pe' ? '0deg' : '135deg') + ',' + colors[part] + ',' + colors[part] + ' 4px,' + graphColors.surface + ' 4px,' + graphColors.surface + ' 6px)' } });
-                  }
-                  function energyReading(key, label) {
-                    return React.createElement('div', { key: key, className: 'phys-energy-reading' },
-                      React.createElement('span', null, colors[key] && swatch(key), label),
-                      React.createElement('strong', { 'data-physics-energy-value': key, 'data-value': current[key] }, current[key].toFixed(2) + ' J'));
-                  }
-                  var timeLabel = selectedPoint ? __alloT('stem.physics.graph_selected_sample', 'Selected sample') : __alloT('stem.physics.energy_latest_sample', 'Latest recorded sample');
-                  var description = __alloT('stem.physics.energy_chart_description', 'Recorded energy over time. Stacked bands show kinetic energy, gravitational potential energy, and energy transferred by air drag.');
-                  return React.createElement('section', { 'data-physics-energy-panel': true, 'data-run': current.run == null ? 'unfinished' : current.run,
-                    'data-sample-index': current.index, 'data-time': current.t, 'aria-labelledby': 'physics-energy-heading', style: Object.assign({}, graphCardStyle, { marginTop: 14, color: graphColors.ink }) },
-                    React.createElement('div', { className: 'phys-energy-heading' },
-                      React.createElement('h4', { id: 'physics-energy-heading' }, __alloT('stem.physics.energy_timeline_title', 'Energy through the recorded flight')),
-                      React.createElement('p', { 'data-physics-energy-time': true }, timeLabel + ' · t = ' + current.t.toFixed(3) + ' s')),
-                    React.createElement('p', { 'data-physics-energy-settings': true, className: 'phys-energy-help', style: { color: graphColors.muted } },
-                      'm = ' + p.mass + ' kg · v₀ = ' + p.velocity + ' m/s · g = ' + p.gravity + ' m/s² · h₀ = ' + p.launchHeight + ' m · ' + (p.airResist ? __alloT('stem.physics.sample_drag_on', 'Air drag on') : __alloT('stem.physics.sample_drag_off', 'Air drag off'))),
-                    React.createElement('div', { className: 'phys-energy-layout' },
-                      React.createElement('div', null,
-                        energies.length > 1 ? React.createElement('svg', { 'data-physics-energy-graph': true, 'data-plotted-count': energies.length, 'data-initial-energy': eMax,
-                          onClick: function(event) { selectGraphTime(event, { width: eW, left: eL, plotWidth: eIW }); }, 'aria-describedby': 'physics-graph-time-help physics-energy-sampling-help',
-                          viewBox: '0 0 ' + eW + ' ' + eH, role: 'img', 'aria-label': description + ' ' + timeLabel + ': t = ' + current.t.toFixed(3) + ' s.',
-                          style: { display: 'block', width: '100%', maxWidth: 400, height: 'auto', margin: '0 auto', background: graphColors.surface, cursor: 'crosshair' } },
-                          React.createElement('defs', null, ['pe', 'dragLoss'].map(function(part) {
-                            return React.createElement('pattern', { key: part, id: patterns[part], patternUnits: 'userSpaceOnUse', width: 8, height: 8 },
-                              React.createElement('rect', { width: 8, height: 8, fill: colors[part] }),
-                              React.createElement('line', { x1: part === 'pe' ? 0 : -2, y1: part === 'pe' ? 3 : 8, x2: part === 'pe' ? 8 : 8, y2: part === 'pe' ? 3 : -2, stroke: graphColors.surface, strokeWidth: 2 }));
-                          })),
-                          [0, .5, 1].map(function(fraction) { var y = energyY(eMax * fraction); return React.createElement('g', { key: fraction },
-                            axisLine(eL, y, eW - eR, y, fraction > 0 && fraction < 1), lbl(eL - 8, y + 5, String(Number((eMax * fraction / (kilo ? 1000 : 1)).toFixed(!kilo && eMax >= 100 ? 0 : 2))), 'end')); }),
-                          ['dragLoss', 'pe', 'ke'].map(function(part) { return React.createElement('path', { key: part, 'data-physics-energy-area': part,
-                            d: area(part), fill: part === 'ke' ? colors.ke : 'url(#' + patterns[part] + ')', stroke: graphColors.surface, strokeWidth: 1 }); }),
-                          React.createElement('line', { 'data-physics-energy-origin': true, x1: eL, x2: eW - eR, y1: eZero, y2: eZero, stroke: graphColors.axis, strokeWidth: 1.25 }),
-                          React.createElement('line', { 'data-physics-energy-initial': true, x1: eL, x2: eW - eR, y1: eT, y2: eT, stroke: graphColors.ink, strokeWidth: 1.5, strokeDasharray: '5 4' }),
-                          axisLine(eL, eT, eL, eZero),
-                          [0, .5, 1].map(function(fraction) { return React.createElement('g', { key: fraction }, lbl(eL + fraction * eIW, eH - 29, tickNumber(tMax * fraction), fraction === 0 ? 'start' : fraction === 1 ? 'end' : 'middle')); }),
-                          lbl(eL, 22, kilo ? __alloT('stem.physics.energy_axis_kj', 'energy (kJ)') : __alloT('stem.physics.energy_axis_j', 'energy (J)'), 'start'),
-                          lbl(eL + eIW / 2, eH - 5, __alloT('stem.physics.axis_time_s', 'time (s)')),
-                          selectedPoint && React.createElement('line', { 'data-physics-energy-cursor': true, 'data-sample-index': current.index, 'data-time': current.t,
-                            x1: energyX(current), x2: energyX(current), y1: eT, y2: eZero, stroke: graphColors.surface, strokeWidth: 2.5, strokeDasharray: '6 3' }),
-                          selectedPoint && React.createElement('circle', { 'data-physics-energy-boundary': 'mechanical', 'data-value': current.totalEnergy,
-                            cx: energyX(current), cy: energyY(current.totalEnergy), r: 6, fill: colors.pe, stroke: graphColors.surface, strokeWidth: 2.5 }),
-                          selectedPoint && React.createElement('circle', { 'data-physics-energy-boundary': 'ke', 'data-value': current.ke,
-                            cx: energyX(current), cy: energyY(current.ke), r: 3.5, fill: colors.ke, stroke: graphColors.surface, strokeWidth: 2.5 }))
-                          : React.createElement('p', { 'data-physics-energy-single-sample': true, className: 'phys-energy-help', style: { color: graphColors.muted } }, __alloT('stem.physics.energy_single_sample', 'The launch sample is recorded. Step or resume to draw the energy timeline.'))),
-                      React.createElement('div', { className: 'phys-energy-readings' },
-                        ['ke', 'pe', 'dragLoss'].map(function(key) { return energyReading(key, labels[key]); }),
-                        React.createElement('div', { className: 'phys-energy-current-budget', 'aria-hidden': true }, ['ke', 'pe', 'dragLoss'].map(function(key) {
-                          return React.createElement('span', { key: key, 'data-physics-energy-budget': key, style: { width: Math.max(0, Math.min(100, current[key] / eMax * 100)) + '%',
-                            background: key === 'ke' ? colors.ke : 'repeating-linear-gradient(' + (key === 'pe' ? '0deg' : '135deg') + ',' + colors[key] + ',' + colors[key] + ' 4px,' + graphColors.surface + ' 4px,' + graphColors.surface + ' 6px)' } });
-                        })),
-                        energyReading('totalEnergy', __alloT('stem.physics.sample_mechanical_energy', 'Mechanical · KE + PE')),
-                        energyReading('initialEnergy', __alloT('stem.physics.sample_initial_energy', 'Initial energy')))),
-                    React.createElement('p', { className: 'phys-energy-help', style: { color: graphColors.muted } }, __alloT('stem.physics.energy_budget_help', 'Kinetic energy depends on mass and speed. Potential energy depends on mass, gravity, and height above ground. The diagonal band shows energy transferred by drag.')),
-                    React.createElement('p', { id: 'physics-energy-sampling-help', className: 'phys-energy-help', style: { color: graphColors.muted } }, __alloT('stem.physics.energy_sampling_help', 'The timeline connects a representative set of recorded samples. The time control uses every recorded point.')),
-                    current.impact && React.createElement('p', { 'data-physics-energy-impact': true, className: 'phys-energy-help', style: { color: graphColors.muted } }, __alloT('stem.physics.energy_impact_note', 'The final flight sample is at ground contact, before collision energy is redistributed.')));
-                })(),
-
-                // ── Ideal range vs angle at the current launch height ──
-                (function() {
-                  var ang = parseFloat((typeof d.angle === 'number' && isFinite(d.angle)) ? d.angle : 45);
-                  var vel = parseFloat(d.velocity || 25);
-                  var grav = parseFloat((typeof d.gravity === 'number' && isFinite(d.gravity)) ? d.gravity : 9.8);
-                  var height = d.launchHeight || 0;
-                  var vacuum = window.StemLab._physics.vacuum;
-                  var ideal = vacuum(ang, vel, grav, height);
-                  if (ideal.status !== 'landed') return null;
-                  var optimumAngle = ideal.optimumAngle;
-                  var maxR = vacuum(optimumAngle, vel, grav, height).range;
-                  if (!isFinite(maxR) || maxR <= 0) return null;
-                  var rW = 260, rH = 226, rPL = 48, rPR = 12, rPT = 34, rPB = 52;
-                  var rIW = rW - rPL - rPR, rIH = rH - rPT - rPB;
-                  var rangeLimit = roundLimit(maxR * 1.08);
-                  // Build sweep curve every 2°
-                  var pathPts = [];
-                  for (var ra = 0; ra <= 90; ra += 2) {
-                    var rVal = vacuum(ra, vel, grav, height).range;
-                    var sx = rPL + (ra / 90) * rIW;
-                    var sy = rPT + rIH - (rVal / rangeLimit) * rIH;
-                    pathPts.push((pathPts.length === 0 ? 'M' : 'L') + sx.toFixed(1) + ',' + sy.toFixed(1));
-                  }
-                  var rangePath = pathPts.join(' ');
-                  // Current-angle marker
-                  var curR = ideal.range;
-                  var curSX = rPL + (ang / 90) * rIW;
-                  var curSY = rPT + rIH - (curR / rangeLimit) * rIH;
-                  // Elevated launchers have a no-drag optimum below 45°.
-                  var optSX = rPL + (optimumAngle / 90) * rIW;
-                  var optSY = rPT + rIH - (maxR / rangeLimit) * rIH;
-                  var axisLine2 = function (x1, y1, x2, y2, color, dash) {
-                    var p = { x1: x1, y1: y1, x2: x2, y2: y2, stroke: color || graphColors.axis, strokeWidth: dash ? 0.85 : 1.25 };
-                    if (dash) p.strokeDasharray = dash;
-                    return React.createElement('line', p);
-                  };
-                  var lbl2 = function (x, y, text, anchor) {
-                    return React.createElement('text', { x: x, y: y, fontSize: 18, fill: graphColors.ink, textAnchor: anchor || 'middle', fontFamily: 'system-ui, sans-serif', style: { fontSize: 18, fontVariantNumeric: 'tabular-nums' } }, text);
-                  };
-                  var angleReadout = function(label, angle, range, color) {
-                    return React.createElement('div', { style: { minWidth: 0, padding: '8px 10px', borderLeft: '3px solid ' + color, background: graphColors.panel, borderRadius: 6 } },
-                      React.createElement('p', { style: { margin: '0 0 4px', fontSize: 13, fontWeight: 650, color: graphColors.muted } }, label),
-                      React.createElement('p', { style: { margin: 0, fontSize: 17, fontWeight: 750, lineHeight: 1.4, fontVariantNumeric: 'tabular-nums', color: graphColors.ink } }, angle.toFixed(1) + '° · ' + range.toFixed(1) + ' m')
-                    );
-                  };
-                  return React.createElement("div", { 'data-physics-range-card': true, style: Object.assign({}, graphCardStyle, { marginTop: 14 }) },
-                    React.createElement("h4", { style: { margin: '0 0 5px', fontSize: 16, fontWeight: 800, color: graphColors.ink } },
-                      __alloT('stem.physics.graph_range_title', 'Range across launch angles')
-                    ),
-                    React.createElement('p', { style: { margin: '0 0 10px', fontSize: 14, lineHeight: 1.55, color: graphColors.muted } },
-                      __alloT('stem.physics.graph_range_settings', 'Ideal prediction for current settings') + ': v=' + vel + ' m/s · g=' + grav + ' m/s² · h₀=' + height + ' m'
-                    ),
-                    React.createElement('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: 10, marginBottom: 10 } },
-                      angleReadout(__alloT('stem.physics.graph_current_angle', 'Current angle'), ang, curR, graphColors.marker),
-                      angleReadout(__alloT('stem.physics.graph_optimal_angle', 'Best angle without drag'), optimumAngle, maxR, graphColors.range)
-                    ),
-                    React.createElement("svg", { "data-physics-graph": "range", 'data-launch-height': height, 'data-optimum-angle': optimumAngle, style: { display: 'block', background: graphColors.surface, borderRadius: 8, width: '100%', maxWidth: 360, height: 'auto', margin: '0 auto' }, viewBox: "0 0 " + rW + " " + rH, width: "100%", role: "img", "aria-label": __alloT('stem.physics.aria_range_angle_height_graph', 'Ideal range versus angle without air drag. Launch height:') + ' ' + height + ' m. ' + __alloT('stem.physics.aria_range_angle_optimum', 'Maximum range at') + ' ' + optimumAngle.toFixed(1) + '°.' },
-                      [0, rangeLimit / 2, rangeLimit].map(function(value) {
-                        var y = rPT + rIH - value / rangeLimit * rIH;
-                        return React.createElement('g', { key: value },
-                          value > 0 && axisLine2(rPL, y, rW - rPR, y, graphColors.grid, '2 5'),
-                          lbl2(rPL - 8, y + 5, tickNumber(value), 'end')
-                        );
-                      }),
-                      [30, 60, 90].map(function(a) {
-                        var x = rPL + a / 90 * rIW;
-                        return React.createElement('line', { key: a, x1: x, x2: x, y1: rPT, y2: rPT + rIH, stroke: graphColors.grid, strokeWidth: 0.75, strokeDasharray: '2 5' });
-                      }),
-                      // Y/X axes
-                      axisLine2(rPL, rPT, rPL, rPT + rIH),
-                      axisLine2(rPL, rPT + rIH, rW - rPR, rPT + rIH),
-                      // Height-aware optimum dashed vertical reference
-                      axisLine2(optSX, optSY, optSX, rPT + rIH, graphColors.range, '5 4'),
-                      // Range curve
-                      React.createElement('path', { d: rangePath, stroke: graphColors.range, strokeWidth: 2.8, fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' }),
-                      React.createElement('circle', { cx: optSX, cy: optSY, r: 4, fill: graphColors.range, stroke: graphColors.surface, strokeWidth: 1.5 }),
-                      // Current-angle marker line + dot
-                      axisLine2(curSX, curSY, curSX, rPT + rIH, graphColors.marker, '3 3'),
-                      React.createElement('circle', { cx: curSX, cy: curSY, r: 4.5, fill: graphColors.marker, stroke: graphColors.surface, strokeWidth: 1.5 }),
-                      lbl2(rPL, 18, __alloT('stem.physics.axis_range_m', 'range (m)'), 'start'),
-                      // Fewer ticks keep the same labels readable on phones.
-                      [0, 30, 60, 90].map(function (a) {
-                        var ax = rPL + (a / 90) * rIW;
-                        return React.createElement('text', { key: a, x: ax, y: rH - 29, fontSize: 18, fill: graphColors.ink, textAnchor: a === 0 ? 'start' : a === 90 ? 'end' : 'middle', fontFamily: 'system-ui, sans-serif', style: { fontSize: 18 } }, a + '°');
-                      }),
-                      // Axis title
-                      lbl2(rPL + rIW / 2, rH - 5, __alloT('stem.physics.axis_launch_angle', 'launch angle (θ)'))
-                    ),
-                    React.createElement("p", { style: { margin: '10px 0 0', fontSize: 14, lineHeight: 1.55, color: graphColors.muted } },
-                      height > 0
-                        ? __alloT('stem.physics.sweep_note_elevated', 'An elevated launch has a no-drag optimum below 45°. Complementary angles generally have different ranges when launch and landing heights differ.')
-                        : __alloT('stem.physics.sweep_note_ground', 'From ground level with no air drag, range peaks at 45°. Complementary angles such as 30° and 60° have equal range.')
-                    ),
-                    d.airResist && React.createElement('p', { style: { margin: '8px 0 0', paddingTop: 8, borderTop: '1px solid ' + graphColors.border, fontSize: 14, lineHeight: 1.55, color: graphColors.muted } },
-                      __alloT('stem.physics.sweep_drag_model_note', 'This curve is the no-drag prediction. With air drag on, use measured launches to find the best angle.')
-                    )
-                  );
-                })()
-              );
-            })(),
+            analysisOpen && analysisGraphs.prediction,
 
             // ── Learn Panel (Newton's Laws & Projectile Motion) ──
             // Grade-banded like the Myths panel: 3-5 sees the concrete cards,
@@ -4589,119 +4776,7 @@ window.StemLab = window.StemLab || {
             })(),
 
             // ── Real-Time Flight Data Table ──
-            d.showFlightData && React.createElement("section", { 'data-physics-flight-data': true, 'aria-labelledby': 'physics-flight-data-heading', tabIndex: -1 },
-              React.createElement("div", { className: "phys-measured-heading" },
-                React.createElement("div", null,
-                  React.createElement("h3", { id: 'physics-flight-data-heading' }, __alloT('stem.physics.flight_data_title', 'Flight Data')),
-                  React.createElement("p", null, __alloT('stem.physics.flight_data_select_help', 'Select a time to inspect that recorded moment on the trajectory and graphs.'))),
-                React.createElement("button", {
-                  type: "button",
-                  "aria-label": __alloT('stem.physics.aria_copy_csv', 'Copy the flight data as CSV for a spreadsheet'),
-                  onClick: function () {
-                    var csv = physFlightCsv();
-                    if (!csv) { if (addToast) addToast(__alloT('stem.physics.csv_nothing', 'Launch a projectile first \u2014 there is no flight data yet.'), 'warning'); return; }
-                    physCopyText(csv).then(function (ok) {
-                      var msg = ok ? __alloT('stem.physics.toast_csv_copied', 'Flight data copied as CSV. Paste it into a spreadsheet.') : __alloT('stem.physics.toast_csv_failed', 'Could not copy automatically. Select the table and copy it by hand.');
-                      if (addToast) addToast((ok ? '\uD83D\uDCCB ' : '\u26A0\uFE0F ') + msg, ok ? 'success' : 'warning');
-                      if (typeof announceToSR === 'function') announceToSR(msg);
-                    });
-                  },
-                  className: "px-2 py-1 rounded-lg text-[0.625rem] font-bold bg-white text-cyan-800 border border-cyan-300 hover:bg-cyan-100"
-                }, "\uD83D\uDCCB " + __alloT('stem.physics.copy_csv', 'Copy CSV'))
-              ),
-              (function() {
-                var cv = typeof document !== 'undefined' ? document.getElementById('physicsCanvas') : null;
-                var trails = cv && cv._trails ? cv._trails : [];
-                var selected = physSelectedInspection(cv);
-                var lastTrail = selected ? cv._inspection.trail : trails.length > 0 ? trails[trails.length - 1] : [];
-                if (lastTrail.length === 0) {
-                  return React.createElement("p", { className: "phys-measured-help" }, __alloT('stem.physics.launch_to_see_flight_data', 'Launch a projectile to see flight data'));
-                }
-                // Include both endpoints, then add the selected sample if it
-                // falls between the evenly spaced rows. Export keeps all points.
-                var tableMoments = physRecordedMoments(lastTrail);
-                var indices = physMomentIndices(lastTrail, 11, selected ? selected.index : null, true);
-                var recorded = lastTrail.parameters || lastTrail;
-                var settings = [];
-                if (lastTrail.run != null) settings.push(__alloT('stem.physics.investigation_run', 'Run') + ' ' + lastTrail.run);
-                [['angle', 'θ', '°'], ['velocity', 'v₀', 'm/s'], ['gravity', 'g', 'm/s²'], ['mass', 'm', 'kg'], ['launchHeight', 'h₀', 'm']].forEach(function(setting) {
-                  if (typeof recorded[setting[0]] === 'number' && isFinite(recorded[setting[0]])) settings.push(setting[1] + ' = ' + recorded[setting[0]] + ' ' + setting[2]);
-                });
-                settings.push(recorded.drag || recorded.airResist ? __alloT('stem.physics.sample_drag_on', 'Air drag on') : __alloT('stem.physics.sample_drag_off', 'Air drag off'));
-                var summaryIndex = selected ? selected.index : lastTrail.length - 1;
-                var summaryPoint = lastTrail[summaryIndex];
-                var summaryTime = summaryPoint.t != null ? summaryPoint.t : summaryIndex * PHYS_DT;
-                function summaryMeasurement(key, label, value, unit) {
-                  return React.createElement('div', { key: key },
-                    React.createElement('dt', null, label),
-                    React.createElement('dd', { 'data-physics-flight-summary-value': key }, physFormatSampleValue(value) + ' ' + unit));
-                }
-                function revealSelectedRow(element) {
-                  if (!element) return;
-                  // Only a new user-selected point moves this scroll region.
-                  // Live data refreshes retain the reader's scroll position.
-                  if (!selected || d.simSpeed !== 0) { element._physicsSelectedRow = null; return; }
-                  var previous = element._physicsSelectedRow;
-                  if (previous && previous.trail === lastTrail && previous.index === selected.index) return;
-                  var row = element.querySelector('tbody tr[data-selected="true"]');
-                  var heading = element.querySelector('thead');
-                  if (!row || !heading) return;
-                  element._physicsSelectedRow = { trail: lastTrail, index: selected.index };
-                  var viewport = element.getBoundingClientRect();
-                  var rowBounds = row.getBoundingClientRect();
-                  var visibleTop = viewport.top + element.clientTop + heading.getBoundingClientRect().height + 4;
-                  var visibleBottom = viewport.top + element.clientTop + element.clientHeight - 4;
-                  if (rowBounds.top < visibleTop) element.scrollTop = Math.max(0, element.scrollTop + rowBounds.top - visibleTop);
-                  else if (rowBounds.bottom > visibleBottom) element.scrollTop += rowBounds.bottom - visibleBottom;
-                }
-                var rows = indices.map(function(ri) {
-                  var pt = lastTrail[ri];
-                  var t_sec = pt.t != null ? pt.t : ri * PHYS_DT;
-                  var isSelected = !!selected && selected.index === ri;
-                  var momentLabel = tableMoments ? ri === 0 ? __alloT('stem.physics.sample_launch_point', 'Launch point') : ri === tableMoments.apexIndex ? __alloT('stem.physics.sample_apex_point', 'Apex') : ri === tableMoments.latestIndex ? (tableMoments.impact ? __alloT('stem.physics.sample_ground_impact', 'Ground impact') : __alloT('stem.physics.sample_latest_point', 'Latest point')) : tableMoments.apexIndex < 0 && ri === tableMoments.highestIndex ? __alloT('stem.physics.sample_highest_point', 'Highest recorded point') : null : null;
-                  return React.createElement('tr', { key: ri, 'data-selected': isSelected ? 'true' : 'false' },
-                    React.createElement('th', { scope: 'row' },
-                      React.createElement('button', { type: 'button', 'data-physics-sample-index': ri, 'aria-pressed': isSelected,
-                        'aria-label': __alloT('stem.physics.sample_inspect_point', 'Inspect sample') + ' ' + (ri + 1) + ', t = ' + t_sec.toFixed(3) + ' s' + (momentLabel ? ', ' + momentLabel : ''),
-                        onClick: function() {
-                          if (physSelectSample(ri)) setTimeout(function() {
-                            var panel = document.querySelector('[data-physics-sample-inspector]');
-                            if (!panel) return;
-                            panel.scrollIntoView({ behavior: window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'nearest' });
-                            var slider = panel.querySelector('[data-physics-sample-slider]');
-                            (slider && !slider.disabled ? slider : panel).focus({ preventScroll: true });
-                          }, 0);
-                        } }, t_sec.toFixed(3), momentLabel && React.createElement('span', { 'data-physics-table-moment': true }, momentLabel))),
-                    React.createElement('td', null, physFormatSampleValue(pt.mX)),
-                    React.createElement('td', null, physFormatSampleValue(pt.mY)),
-                    React.createElement('td', null, physFormatSampleValue(pt.mVx || 0)),
-                    React.createElement('td', null, physFormatSampleValue(pt.mVy || 0)),
-                    React.createElement('td', null, physFormatSampleValue(Math.hypot(pt.mVx || 0, pt.mVy || 0))));
-                });
-                return React.createElement('div', null,
-                  React.createElement('div', { className: 'phys-capture-settings', 'aria-label': __alloT('stem.physics.sample_recorded_settings', 'Recorded launch settings') }, settings.map(function(label, i) { return React.createElement('span', { key: i }, label); })),
-                  React.createElement('div', { 'data-physics-flight-summary': selected ? 'selected' : 'latest', 'data-run': lastTrail.run == null ? 'unfinished' : lastTrail.run, 'data-sample-index': summaryIndex, 'data-time': summaryTime },
-                    React.createElement('p', null,
-                      React.createElement('strong', null, selected ? __alloT('stem.physics.graph_selected_sample', 'Selected sample') : __alloT('stem.physics.sample_latest_point', 'Latest point')),
-                      React.createElement('span', null, 't = ' + summaryTime.toFixed(3) + ' s')),
-                    React.createElement('dl', null,
-                      summaryMeasurement('height', __alloT('stem.physics.flight_data_height_short', 'Height · y'), summaryPoint.mY, 'm'),
-                      summaryMeasurement('vx', __alloT('stem.physics.flight_data_vx_short', 'Horizontal · vx'), summaryPoint.mVx || 0, 'm/s'),
-                      summaryMeasurement('vy', __alloT('stem.physics.flight_data_vy_short', 'Vertical · vy'), summaryPoint.mVy || 0, 'm/s'),
-                      summaryMeasurement('speed', __alloT('stem.physics.metric_speed', 'Speed'), Math.hypot(summaryPoint.mVx || 0, summaryPoint.mVy || 0), 'm/s'))),
-                  React.createElement('p', { className: 'phys-measured-help', id: 'physics-flight-sampling-help' },
-                    indices.length + ' / ' + lastTrail.length + ' ' + __alloT('stem.physics.flight_data_points_shown', 'recorded points shown. The launch and latest point are included. CSV contains every point.')),
-                  React.createElement('p', { 'data-physics-flight-scroll-hint': true, id: 'physics-flight-scroll-help' },
-                    React.createElement('span', { 'aria-hidden': true }, '↔'),
-                    React.createElement('span', null, __alloT('stem.physics.flight_data_scroll_hint', 'Swipe or scroll sideways to see every measurement. Time stays visible.'))),
-                  React.createElement('div', { 'data-physics-flight-table-wrap': true, ref: revealSelectedRow, role: 'region', tabIndex: 0, 'aria-label': __alloT('stem.physics.flight_data_scroll_region', 'Recorded flight measurements; scroll for all columns'), 'aria-describedby': 'physics-flight-sampling-help physics-flight-scroll-help' },
-                    React.createElement('table', { 'data-physics-flight-table': true },
-                      React.createElement('caption', { className: 'sr-only' }, __alloT('stem.physics.caption_data_table', 'physics data table')),
-                      React.createElement('thead', null, React.createElement('tr', null,
-                        ['t (s)', 'x (m)', 'y (m)', 'vx (m/s)', 'vy (m/s)', '|v| (m/s)'].map(function(label, i) { return React.createElement('th', { key: i, scope: 'col' }, label); }))),
-                      React.createElement('tbody', null, rows))));
-              })()
-            ),
+            null,
 
 
             // ═══ TARGET DESTRUCTION MODE UI ═══
