@@ -1671,3 +1671,67 @@ test('guided prediction review fits at 320px and preserves readable controls in 
   expect(await page.evaluate(() => (window as any).__toolData._nuclearLab.nkStudio.distance.runs)).toEqual([1, 2]);
   expect(await page.evaluate(() => (window as any).__toolData._nuclearLab.nkStudio.completed)).toBeUndefined();
 });
+
+test('guided visuals show honest prediction cues, aligned apparatus, and equal quarter divisions', async ({ page }) => {
+  await page.setViewportSize({ width: 1100, height: 1000 }); await mount(page, {});
+  const half = page.locator('[data-ns-first-guess="half"] rect').last();
+  expect(Number(await half.getAttribute('width'))).toBe(50);
+  expect(Number(await page.locator('[data-ns-first-guess="quarter"] rect').last().getAttribute('width'))).toBe(25);
+  expect(Number(await page.locator('[data-ns-first-guess="same"] rect').last().getAttribute('width'))).toBe(100);
+  await expect(page.locator('[data-ns-reading]')).toHaveText('—');
+  await expect(page.locator('[data-ns-first-chart]')).toHaveCount(0);
+  expect(await page.evaluate(() => (window as any).__toolData._nuclearLab.nkStudio)).toBeUndefined();
+  await page.screenshot({ path: output + '/first-visual-desktop-start.png', fullPage: true }); await audit(page);
+  await page.getByRole('button', { name: 'Half as much', exact: true }).click();
+  await page.getByRole('button', { name: 'Take a reading at 1 m' }).click();
+  await page.getByRole('button', { name: 'Move detector to 2 m' }).click();
+  const body = page.locator('[data-ns-first-apparatus="detector"] rect');
+  expect(Number(await body.getAttribute('x')) + Number(await body.getAttribute('width')) / 2).toBe(205);
+  await expect(page.locator('[data-ns-reading]')).toHaveText('100%');
+  await expect(page.locator('[data-ns-first-detector="saved"]')).toHaveAttribute('data-distance', '1');
+  await page.screenshot({ path: output + '/first-visual-desktop-apparatus.png', fullPage: true }); await audit(page);
+  await page.getByRole('button', { name: 'Take a reading at 2 m' }).click();
+  const firstTrack = page.locator('[data-ns-first-bar="1"] [data-ns-first-scale]');
+  expect(await firstTrack.locator('.ns-first-scale-cuts > span').first().evaluate(node => parseFloat((node as HTMLElement).style.left))).toBe(25);
+  expect(await firstTrack.locator('.ns-first-scale-cuts > span').evaluateAll(nodes => nodes.map(node => parseFloat((node as HTMLElement).style.left)))).toEqual([25, 50, 75]);
+  await expect(page.locator('[data-ns-first-bar="1"] > strong')).toHaveText('100%');
+  await expect(page.locator('[data-ns-first-bar="2"] > strong')).toHaveText('25%');
+  const trackBox = (await page.locator('[data-ns-first-bar="2"] .ns-case-track').boundingBox())!;
+  const fillBox = (await page.locator('[data-ns-first-bar="2"] .ns-case-fill').boundingBox())!;
+  expect(Math.abs(fillBox.width / (trackBox.width - 2) - 0.25)).toBeLessThan(0.01);
+  await page.screenshot({ path: output + '/first-visual-desktop-evidence.png', fullPage: true }); await audit(page);
+  expect(await page.evaluate(() => (window as any).__toolData._nuclearLab.nkStudio.distance.runs)).toEqual([1, 2]);
+  expect(await page.evaluate(() => (window as any).__toolData._nuclearLab.nkStudio.completed)).toBeUndefined();
+});
+
+for (const width of [320, 390]) {
+  test('guided visuals retain readable prediction cards and visible measurements at ' + width + 'px', async ({ page }) => {
+    await page.setViewportSize({ width, height: 844 }); await page.emulateMedia({ reducedMotion: 'reduce' });
+    await mount(page, { nkLargeText: true, nkReduceMotion: true });
+    await page.evaluate(() => { (window as any).__ctx.theme = 'light'; (window as any).__rerender(); });
+    const cards = page.getByRole('group', { name: 'Make your prediction' }).getByRole('button');
+    for (const card of await cards.all()) {
+      expect((await card.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+      expect((await card.boundingBox())!.width).toBeGreaterThanOrEqual(44);
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.screenshot({ path: output + '/first-visual-mobile-start-' + width + '.png', fullPage: true }); await audit(page);
+    await page.getByRole('button', { name: 'One quarter', exact: true }).focus(); await page.keyboard.press('Enter');
+    await page.getByRole('button', { name: 'Take a reading at 1 m' }).focus(); await page.keyboard.press('Enter');
+    await page.getByRole('button', { name: 'Move detector to 2 m' }).focus(); await page.keyboard.press('Enter');
+    const read = page.getByRole('button', { name: 'Take a reading at 2 m' });
+    await expect(read).toBeFocused(); await expect(read).toBeInViewport({ ratio: 1 });
+    await expect(page.locator('[data-ns-reading]')).toBeInViewport({ ratio: 1 });
+    await expect(page.locator('[data-ns-first-position-image]')).toBeInViewport({ ratio: 1 });
+    await expect(page.locator('[data-ns-reading]')).toHaveText('100%');
+    await page.screenshot({ path: output + '/first-visual-mobile-apparatus-' + width + '.png' }); await audit(page);
+    await page.emulateMedia({ forcedColors: 'active', reducedMotion: 'reduce' });
+    await expect(page.locator('[data-ns-first-apparatus="source"] rect')).toHaveCSS('fill', 'rgb(255, 255, 255)');
+    await expect(read).toHaveCSS('outline-style', 'solid');
+    await page.screenshot({ path: output + '/first-visual-mobile-forced-' + width + '.png' }); await audit(page);
+    await page.keyboard.press('Enter');
+    await expect(page.locator('[data-ns-first-bar="2"] > strong')).toHaveText('25%');
+    await expect(page.locator('[data-ns-first-chart]')).toBeInViewport({ ratio: 1 });
+    await page.screenshot({ path: output + '/first-visual-mobile-evidence-forced-' + width + '.png' }); await audit(page);
+  });
+}
