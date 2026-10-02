@@ -376,3 +376,23 @@ Initial test workers failed during startup. A focused configuration with the sam
 Headless screenshot composition could stall subsequent native frames after a WebGL capture. The phone harness verifies the actual boundary-to-force unmount and native frame clocks before taking its final screenshots in separate fixtures. The process harness similarly completes all geometry, interaction and idle assertions before capturing each verified state in a fresh browser; each capture replay must match the tested model settings and camera.
 
 The consolidated [verification.json](C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-6/tectonics-process-refinement/verification.json) links the unit results, final browser reports and asset integrity proof. Captures are stored beside their reports.
+
+
+## Equal-scale earthquake evidence and event inspection
+
+The earthquake plot now uses equal kilometre scales: plot height follows the distance/depth ranges and the available plot width. A 45-degree estimate appears at 45 degrees. Labels stay at 14 CSS pixels when the host resizes, including phone panels. Light shading marks the existing shallow, intermediate and deep ranges, with a text key that gives their exact boundaries. Depth increases downward; the distance and depth axis titles retain their units.
+
+Read one earthquake links an event selector, its exact distance/depth values, an outlined coordinate row and a ring on the graph. Dashed guides connect the point to both axes. Previous, Next and Clear selection work locally. Event-number buttons support Up/Down and Home/End with one table tab stop; controls have 44-pixel touch targets. Coordinate columns share the remaining space after the event column, so long restored decimals wrap on narrow screens. Theme colors keep the new controls readable, including their disabled states.
+
+Selection tracks the actual observation object. Coincident observations remain distinct, and the rolling 200-event log cannot silently move a selection to another event. If a selected observation leaves the displayed log, the selection clears. Checked samples remain fixed while the live model continues. Check, Revise, reset and boundary changes clear local inspection. The panel identifies its sample and reminds students to compare several events before inferring a slab angle or boundary type. Inspection does not calculate or expose another fitted angle, alter model time or rate, record work, award points, play a sound or issue an announcement.
+
+### Verification of graph geometry and event inspection
+
+- All 755 distinct focused checks passed across 45 files. New cases cover estimates from 5 to 85 degrees, responsive equal scales, exact restored values, coincident points, keyboard navigation, fixed checked samples, rolling observations, depth-band boundaries and silent idle behavior.
+- 125 distinct checks passed against the installed source. The new inspector contributes 51 checks and 14 captures across 320-pixel, 390-pixel and desktop views in light, dark and high-contrast themes. Actual SVG transforms verify equal scales and angles; labels stay inside the plot. The affected panels pass their recorded accessibility and overflow checks.
+- The idle audit again covers 1,200 actual draw frames, automatic drift, stationary inputs, rerenders and restored progress without repeated rewards, sounds or notices. Each inspected layout also remains unchanged through 1,200 paused idle frames. Saved investigation and application checks preserve frozen evidence and printed work.
+- Source, public asset and local build match SHA-256 73111f87c1f7e0db382f6e6f412b662777e8e46b40e6021c2c50e2faec0e6448. Both English tectonic dictionaries contain 17 new labels and preserve all existing values. The retired unequal-scale help label remains in the dictionaries. Syntax, JSON and mirror checks pass. The full TectGL renderer declaration is byte-identical to the preceding committed version.
+
+Browser coordinate assertions allow less than 0.001 CSS pixel of rounding and less than 0.0001 degree of angular rounding; direct geometry tests use the unrounded source attributes. Browser reports identify the exact source and scoped dictionary hashes where the dictionary is used. Unit coverage is consolidated by file and full test name. The affected file rerun updates the former 18-unit SVG-label contract to the responsive 14-pixel labels and adds an explicit geometric angle assertion.
+
+The consolidated [verification.json](C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-6/tectonics-earthquake-refinement/verification.json) links the test reports, final browser results and asset integrity proof. Captures are stored beside those reports.

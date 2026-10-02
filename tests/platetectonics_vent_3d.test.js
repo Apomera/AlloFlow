@@ -1337,13 +1337,16 @@ describe('Plate Boundary Simulator: the quake log reads the slab dip off the dat
     act(() => { log.open = true; log.dispatchEvent(new window.Event('toggle')); });
     const guess = host.querySelector('[data-pt-slab-line="guess"]');
     expect(guess).toBeTruthy();
-    // Presentation changes must not move the data origin or change the axes.
+    // The data origin stays fixed; equal kilometre scales preserve the angle.
     expect(Number(guess.getAttribute('x1'))).toBeCloseTo(52 + 150 / 950 * (460 - 52 - 12));
     expect(Number(guess.getAttribute('y1'))).toBe(14);
     expect(host.querySelector('[data-pt-quake-axis="distance"]').textContent).toContain('overriding plate');
     expect(log.querySelector('svg').getAttribute('aria-label')).toContain('70 km or deeper');
     expect(log.querySelectorAll('svg text')).toHaveLength(9);
-    expect([...log.querySelectorAll('svg text')].every(text => Number(text.getAttribute('font-size')) >= 18)).toBe(true);
+    expect([...log.querySelectorAll('svg text')].every(text => Number(text.getAttribute('font-size')) >= 14)).toBe(true);
+    const deltaX = Number(guess.getAttribute('x2')) - Number(guess.getAttribute('x1'));
+    const deltaY = Number(guess.getAttribute('y2')) - Number(guess.getAttribute('y1'));
+    expect(Math.atan2(deltaY, deltaX) * 180 / Math.PI).toBeCloseTo(Number(host.querySelector('#pt-ql-dip').value), 8);
     const endpoint = [...log.querySelectorAll('svg text')].find(text => text.textContent === '800');
     expect(endpoint.getAttribute('text-anchor')).toBe('end');
     for (const mode of ['divergent', 'transform']) {

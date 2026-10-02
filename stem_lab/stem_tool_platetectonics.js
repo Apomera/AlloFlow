@@ -4641,6 +4641,48 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
     var s = st[0];
     var setS = st[1];
     var update = function(patch) { setS(function(prev) { return Object.assign({}, prev, patch); }); };
+    // Event inspection is local to this displayed sample. It never writes an
+    // observation, changes model time, or issues a reward or announcement.
+    var quakeInspectionState = useState(null), quakeInspection = quakeInspectionState[0], setQuakeInspection = quakeInspectionState[1];
+    var quakePlotRef = useRef(null), quakeLogRef = useRef(null);
+    var quakePlotWidthState = useState(460), quakePlotWidth = quakePlotWidthState[0], setQuakePlotWidth = quakePlotWidthState[1];
+    useEffect(function () {
+      var plot = quakePlotRef.current;
+      if (!s.qlOpen || !plot) return;
+      function measure() {
+        var matrix = typeof plot.getScreenCTM === 'function' ? plot.getScreenCTM() : null;
+        var width = matrix ? 460 * Math.sqrt(matrix.a * matrix.a + matrix.b * matrix.b) : plot.getBoundingClientRect().width;
+        if (isFinite(width) && width > 0) setQuakePlotWidth(function (previous) { return Math.abs(previous - width) > 0.05 ? width : previous; });
+      }
+      measure();
+      var observer = typeof window.ResizeObserver === 'function' ? new window.ResizeObserver(measure) : null;
+      if (observer) observer.observe(plot);
+      window.addEventListener('resize', measure);
+      return function () { if (observer) observer.disconnect(); window.removeEventListener('resize', measure); };
+    }, [s.qlOpen]);
+    function inspectQuake(point) {
+      if (!point) { setQuakeInspection(null); return; }
+      var current = sRef.current;
+      var captured = current.dipLocked && current.dipSample && Array.isArray(current.dipSample.points) ? current.dipSample : null;
+      var log = captured ? captured.points : current.qlog;
+      if (!Array.isArray(log) || log.indexOf(point) < 0) return;
+      setQuakeInspection(function (previous) {
+        return previous && previous.mode === current.mode && previous.point === point && previous.captured === !!captured
+          ? previous : { mode: current.mode, point: point, captured: !!captured };
+      });
+    }
+    function inspectQuakeKey(event, point) {
+      var current = sRef.current;
+      var captured = current.dipLocked && current.dipSample && Array.isArray(current.dipSample.points) ? current.dipSample : null;
+      var log = captured ? captured.points : current.qlog, index = Array.isArray(log) ? log.indexOf(point) : -1;
+      if (index < 0) return;
+      var next = event.key === 'ArrowDown' ? Math.min(log.length - 1, index + 1)
+        : event.key === 'ArrowUp' ? Math.max(0, index - 1) : event.key === 'Home' ? 0 : event.key === 'End' ? log.length - 1 : -1;
+      if (next < 0) return;
+      event.preventDefault(); inspectQuake(log[next]);
+      var button = quakeLogRef.current && quakeLogRef.current.querySelector('[data-pt-quake-inspect-row="' + next + '"]');
+      if (button) button.focus();
+    }
 
     // Keep incomplete number entry intact: clamping the first digit of 37 to
     // 5 would otherwise turn the next keystroke into 57. Commit on blur/Enter
@@ -4790,6 +4832,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       }
     }
     function startBoundaryTrial(mode) {
+      setQuakeInspection(null);
       var saved = boundaryRef.current;
       if (!saved) return;
       slabActionPending.current = false; slabFocusPending.current = null;
@@ -5671,6 +5714,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
     }
 
   function reset(clearSavedSample) {
+    setQuakeInspection(null);
     slabActionPending.current = false;
     slabFocusPending.current = null;
     setDipAngleDraft(String(s.dipGuess));
@@ -6488,24 +6532,36 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
         deep.forEach(function (q) { sxz += q.x * q.z; sxx += q.x * q.x; });
         if (sxx > 0) fitDip = Math.atan(sxz / sxx) * 180 / Math.PI;
       }
-      // The current 45-degree slab and its earthquake scatter fit within this
-      // frame. Both axes retain numerical distance units for angle estimates.
-      var VW = 460, VH = 250, L = 52, R = 12, T = 14, B = 40, XMIN = -150, XMAX = 800, ZMAX = 720;
+      // Equal kilometre scales preserve the angle of the observed band. Font
+      // size and margins follow the actual CSS width, including narrow hosts.
+      var VW = 460, XMIN = -150, XMAX = 800, ZMAX = 720, unit = VW / quakePlotWidth;
+      var L = Math.max(52, 44 * unit), R = Math.max(12, 12 * unit), T = Math.max(14, 12 * unit), B = Math.max(40, 34 * unit);
+      var VH = T + B + (VW - L - R) * ZMAX / (XMAX - XMIN), axisFont = 14 * unit;
       var qx = function (x) { return L + (x - XMIN) / (XMAX - XMIN) * (VW - L - R); };
       var qz = function (z) { return T + z / ZMAX * (VH - T - B); };
+      var inspectedIndex = quakeInspection && quakeInspection.mode === s.mode && quakeInspection.captured === !!captured ? log.indexOf(quakeInspection.point) : -1;
+      var inspectedPoint = inspectedIndex >= 0 ? log[inspectedIndex] : null;
+      var bands = [
+        { id: 'shallow', lo: 0, hi: 70, color: isDark ? '#fb7185' : '#be123c', label: __alloT('stem.platetectonics.depth_band_shallow', 'Shallow'), range: __alloT('stem.platetectonics.depth_band_shallow_range', '0–<70 km') },
+        { id: 'intermediate', lo: 70, hi: 300, color: isDark ? '#fdba74' : '#c2410c', label: __alloT('stem.platetectonics.depth_band_intermediate', 'Intermediate'), range: __alloT('stem.platetectonics.depth_band_intermediate_range', '70–<300 km') },
+        { id: 'deep', lo: 300, hi: 700, color: isDark ? '#c4b5fd' : '#6d28d9', label: __alloT('stem.platetectonics.depth_band_deep', 'Deep'), range: __alloT('stem.platetectonics.depth_band_deep_range', '300–700 km') }
+      ];
+      function bandOf(point) { return bands[point.z >= 300 ? 2 : point.z >= 70 ? 1 : 0]; }
       var ink = isDark ? '#f1f5f9' : '#0f172a', muted = isDark ? '#cbd5e1' : '#475569', grid = isDark ? '#334155' : '#e2e8f0';
       var kids = [h('rect', { key: 'bg', x: 0, y: 0, width: VW, height: VH, fill: isDark ? '#0f172a' : '#ffffff' })];
+      bands.forEach(function (band) {
+        kids.push(h('rect', { key: 'band-' + band.id, 'data-pt-quake-depth-band': band.id, x: L, y: qz(band.lo), width: VW - L - R, height: qz(band.hi) - qz(band.lo), fill: band.color, opacity: isDark ? 0.1 : 0.06 }));
+      });
       [0, 200, 400, 600].forEach(function (z) {
-        kids.push(h('line', { key: 'gz' + z, x1: L, y1: qz(z), x2: VW - R, y2: qz(z), stroke: grid }));
-        kids.push(h('text', { key: 'tz' + z, x: L - 6, y: qz(z) + 6, fontSize: 18, fill: muted, textAnchor: 'end' }, String(z)));
+        kids.push(h('line', { key: 'gz' + z, 'data-pt-quake-grid': 'depth', 'data-km': z, x1: L, y1: qz(z), x2: VW - R, y2: qz(z), stroke: grid }));
+        kids.push(h('text', { key: 'tz' + z, 'data-pt-quake-axis-label': 'depth', 'data-km': z, x: L - 8 * unit, y: qz(z) + axisFont * 0.35, fontSize: axisFont, fill: muted, textAnchor: 'end' }, String(z)));
       });
       [0, 200, 400, 600, 800].forEach(function (x) {
-        kids.push(h('line', { key: 'gx' + x, x1: qx(x), y1: T, x2: qx(x), y2: VH - B, stroke: grid }));
-        kids.push(h('text', { key: 'tx' + x, x: qx(x), y: VH - B + 21, fontSize: 18, fill: muted, textAnchor: x === XMAX ? 'end' : 'middle' }, String(x)));
+        kids.push(h('line', { key: 'gx' + x, 'data-pt-quake-grid': 'distance', 'data-km': x, x1: qx(x), y1: T, x2: qx(x), y2: VH - B, stroke: grid }));
+        kids.push(h('text', { key: 'tx' + x, 'data-pt-quake-axis-label': 'distance', 'data-km': x, x: qx(x), y: VH - B + 22 * unit, fontSize: axisFont, fill: muted, textAnchor: x === XMAX ? 'end' : 'middle' }, String(x)));
       });
       log.forEach(function (q, i) {
-        var col = q.z >= 300 ? (isDark ? '#c4b5fd' : '#6d28d9') : q.z >= 70 ? (isDark ? '#fdba74' : '#c2410c') : (isDark ? '#fb7185' : '#be123c');
-        kids.push(h('circle', { key: 'q' + i, 'data-pt-quake-point': String(i), 'data-distance-km': q.x, 'data-depth-km': q.z, cx: qx(q.x), cy: qz(q.z), r: 3.2, fill: col, opacity: 0.85 }));
+        kids.push(h('circle', { key: 'q' + i, 'data-pt-quake-point': String(i), 'data-pt-quake-inspected': String(i === inspectedIndex), 'data-distance-km': q.x, 'data-depth-km': q.z, cx: qx(q.x), cy: qz(q.z), r: Math.max(3.2, 3 * unit), fill: bandOf(q).color, opacity: 0.9 }));
       });
       var dip = s.dipGuess * Math.PI / 180;
       var xEnd = Math.min(XMAX, ZMAX / Math.tan(dip));
@@ -6514,70 +6570,102 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
         var fr = fitDip * Math.PI / 180, xf = Math.min(XMAX, ZMAX / Math.tan(fr));
         kids.push(h('line', { key: 'fit', 'data-pt-slab-line': 'fit', x1: qx(0), y1: qz(0), x2: qx(xf), y2: qz(xf * Math.tan(fr)), stroke: isDark ? '#38bdf8' : '#0369a1', strokeWidth: 2.5 }));
       }
+      if (inspectedPoint) {
+        var ix = qx(inspectedPoint.x), iz = qz(inspectedPoint.z), focusInk = isDark ? '#f8fafc' : '#0f172a';
+        kids.push(h('g', { key: 'inspection', 'data-pt-quake-inspection-guides': String(inspectedIndex), 'aria-hidden': 'true' },
+          h('line', { 'data-pt-quake-guide': 'depth', x1: L, y1: iz, x2: ix, y2: iz, stroke: focusInk, strokeWidth: 1.5, strokeDasharray: '4 4', vectorEffect: 'non-scaling-stroke' }),
+          h('line', { 'data-pt-quake-guide': 'distance', x1: ix, y1: iz, x2: ix, y2: VH - B, stroke: focusInk, strokeWidth: 1.5, strokeDasharray: '4 4', vectorEffect: 'non-scaling-stroke' }),
+          h('circle', { 'data-pt-quake-inspection-ring': String(inspectedIndex), cx: ix, cy: iz, r: 7 * unit, fill: 'none', stroke: isDark ? '#0f172a' : '#ffffff', strokeWidth: 5, vectorEffect: 'non-scaling-stroke' }),
+          h('circle', { cx: ix, cy: iz, r: 7 * unit, fill: 'none', stroke: focusInk, strokeWidth: 2, vectorEffect: 'non-scaling-stroke' })));
+      }
       var card = 'rounded-xl border p-3 ' + (isDark ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-orange-300 text-slate-800');
       // The widget re-renders every frame while running; the chart is only
       // built while its panel is open.
-      return h('details', { className: 'mx-3 mb-3 ' + card, 'data-pt-quake-log': String(log.length), 'data-pt-quake-live-count': String((s.qlog || []).length), open: !!s.qlOpen,
+      return h('details', { ref: quakeLogRef, className: 'mx-3 mb-3 ' + card, 'data-pt-quake-log': String(log.length), 'data-pt-quake-live-count': String((s.qlog || []).length), open: !!s.qlOpen,
           onToggle: function (e) { if (!e || e.target !== e.currentTarget) return; var o = !!e.currentTarget.open; if (o !== !!s.qlOpen) update({ qlOpen: o }); } },
-        h('summary', { className: 'text-[12px] font-black cursor-pointer ' + (isDark ? 'text-orange-300' : 'text-orange-800') },
+        h('summary', { className: 'text-sm font-black cursor-pointer ' + (isDark ? 'text-orange-300' : 'text-orange-800') },
           (captured ? __alloT('stem.platetectonics.ql_summary_captured', '📊 Quake log: checked sample ({n} earthquakes)') : __alloT('stem.platetectonics.ql_summary_live', '📊 Quake log: latest observations ({n} earthquakes)')).replace('{n}', log.length)),
-        h('p', { className: 'text-[13px] leading-relaxed mt-2', 'data-pt-quake-sample-note': captured ? 'captured' : 'live' }, captured
+        h('p', { className: 'text-sm leading-relaxed mt-2', 'data-pt-quake-sample-note': captured ? 'captured' : 'live' }, captured
           ? __alloT('stem.platetectonics.ql_sample_captured', 'Showing the {n} model earthquakes captured when you checked your angle. This plot stays fixed while the simulator continues. Revise your angle to compare against the latest observations.').replace('{n}', log.length)
           : __alloT('stem.platetectonics.ql_sample_live', 'Showing the latest {n} model earthquakes (up to 200), plotted by distance from the boundary and depth. For subduction, estimate an angle from the band, then check it against the data.').replace('{n}', log.length)),
-        captured && h('p', { className: 'text-[12px] leading-relaxed mt-1', 'data-pt-slab-saved-note': s.dipRestored ? 'restored' : 'saved' }, s.dipRestored
+        captured && h('p', { className: 'text-sm leading-relaxed mt-1', 'data-pt-slab-saved-note': s.dipRestored ? 'restored' : 'saved' }, s.dipRestored
           ? __alloT('stem.platetectonics.ql_saved_restored_fresh', 'Your checked sample is restored. The current model starts paused at zero years. Revise can use these saved points. Play or one paused interval starts a fresh live log; the checked plot stays fixed until you revise it.')
           : __alloT('stem.platetectonics.ql_saved_kept', 'This checked sample and angle are saved when you leave the activity. Revise keeps the saved result until you check again. Reset clears it.')),
         s.qlOpen && h('div', { className: 'mt-2', style: { maxWidth: 620 } },
-          h('p', { 'data-pt-quake-axis': 'depth', className: 'text-[12px] font-semibold mb-1' }, __alloT('stem.platetectonics.ql_axis_z', 'Depth (km)'), ' ↓'),
-          h('svg', { viewBox: '0 0 ' + VW + ' ' + VH, width: '100%', role: 'img', className: 'rounded-lg border ' + (isDark ? 'border-slate-700' : 'border-slate-300'), style: { display: 'block', background: isDark ? '#0f172a' : '#ffffff' },
+          h('p', { 'data-pt-quake-axis': 'depth', className: 'text-sm font-semibold mb-1' }, __alloT('stem.platetectonics.ql_axis_z', 'Depth (km)'), ' ↓'),
+          h('svg', { ref: quakePlotRef, 'data-pt-quake-plot': 'equal-scale', viewBox: '0 0 ' + VW + ' ' + VH, width: '100%', role: 'img', 'aria-describedby': inspectedPoint ? 'pt-ql-inspected-values' : 'pt-ql-equal-scale-help', className: 'rounded-lg border ' + (isDark ? 'border-slate-700' : 'border-slate-300'), style: { display: 'block', height: 'auto', aspectRatio: VW + '/' + VH, background: isDark ? '#0f172a' : '#ffffff' },
             'aria-label': (s.mode === 'convergent'
               ? __alloT('stem.platetectonics.ql_aria_depth70', 'Scatter plot of {n} earthquakes, distance from the boundary against depth. {d} are 70 km or deeper. Your line slopes down at {a} degrees.')
               : __alloT('stem.platetectonics.ql_aria_no_slab', 'Scatter plot of {n} earthquakes, distance from the boundary against depth. No slab-angle line is drawn for this boundary.'))
               .replace('{n}', log.length).replace('{d}', deep.length).replace('{a}', s.dipGuess) }, kids),
-          h('p', { 'data-pt-quake-axis': 'distance', className: 'text-[12px] leading-relaxed font-semibold mt-1 text-center' }, s.mode === 'convergent'
+          h('p', { 'data-pt-quake-axis': 'distance', className: 'text-sm leading-relaxed font-semibold mt-1 text-center' }, s.mode === 'convergent'
             ? __alloT('stem.platetectonics.ql_axis_x', 'Distance from the boundary (km), toward the overriding plate')
             : __alloT('stem.platetectonics.ql_axis_x_neutral', 'Distance from the boundary (km)')),
+          h('p', { id: 'pt-ql-equal-scale-help', 'data-pt-quake-scale-help': 'true', className: 'text-sm leading-relaxed mt-2' }, __alloT('stem.platetectonics.ql_equal_scale_help', 'The same number of kilometres takes the same length on both axes. Depth increases down from the surface, so the band’s slope can help you estimate an angle.')),
+          h('div', { 'data-pt-quake-band-key': 'true', className: 'flex flex-wrap gap-3 mt-3 text-sm' }, bands.map(function (band) {
+            return h('span', { key: band.id, className: 'inline-flex items-center gap-2' }, h('span', { 'aria-hidden': 'true', style: { width: 10, height: 10, display: 'inline-block', backgroundColor: band.color } }), band.label + ' · ' + band.range);
+          })),
+          h('fieldset', { 'data-pt-quake-inspector': captured ? 'captured' : 'live', className: 'min-w-0 mt-3 rounded-lg border p-3 text-sm leading-relaxed ' + (isDark ? 'border-slate-600 bg-slate-950' : 'border-slate-300 bg-slate-50') },
+            h('legend', { className: 'px-1 font-bold' }, __alloT('stem.platetectonics.ql_inspect_title', 'Read one earthquake')),
+            h('label', { htmlFor: 'pt-ql-event', className: 'block font-semibold' }, __alloT('stem.platetectonics.ql_inspect_choose_label', 'Event in the displayed sample')),
+            h('select', { id: 'pt-ql-event', 'data-pt-quake-inspect-select': 'true', value: inspectedIndex < 0 ? '' : String(inspectedIndex), disabled: !log.length, className: 'block w-full min-w-0 min-h-11 mt-1 px-2 rounded-lg border text-sm ' + (isDark ? 'bg-slate-900 border-slate-600' : 'bg-white border-slate-400'), style: { minHeight: 44, maxWidth: '100%' },
+              onChange: function (event) { inspectQuake(event.target.value === '' ? null : log[Number(event.target.value)]); } },
+              h('option', { value: '' }, __alloT('stem.platetectonics.ql_inspect_choose', 'Choose an event')),
+              log.map(function (point, index) { return h('option', { key: index, value: String(index) }, __alloT('stem.platetectonics.ql_inspect_option', 'Event {n} · {band}').replace('{n}', index + 1).replace('{band}', bandOf(point).label)); })),
+            h('div', { role: 'group', 'aria-label': __alloT('stem.platetectonics.ql_inspect_controls', 'Move between displayed earthquakes'), className: 'flex flex-wrap gap-2 mt-2' },
+              h('button', { type: 'button', 'data-pt-quake-inspect-prev': 'true', disabled: inspectedIndex <= 0, className: 'min-h-11 px-3 py-2 rounded-lg border font-semibold disabled:opacity-70', style: { minHeight: 44, color: ink, backgroundColor: isDark ? '#0f172a' : '#ffffff' }, onClick: function () { if (inspectedIndex > 0) inspectQuake(log[inspectedIndex - 1]); } }, __alloT('stem.platetectonics.ql_inspect_prev', 'Previous')),
+              h('button', { type: 'button', 'data-pt-quake-inspect-next': 'true', disabled: inspectedIndex < 0 || inspectedIndex >= log.length - 1, className: 'min-h-11 px-3 py-2 rounded-lg border font-semibold disabled:opacity-70', style: { minHeight: 44, color: ink, backgroundColor: isDark ? '#0f172a' : '#ffffff' }, onClick: function () { if (inspectedIndex >= 0 && inspectedIndex < log.length - 1) inspectQuake(log[inspectedIndex + 1]); } }, __alloT('stem.platetectonics.ql_inspect_next', 'Next')),
+              h('button', { type: 'button', 'data-pt-quake-inspect-clear': 'true', disabled: !inspectedPoint, className: 'min-h-11 px-3 py-2 rounded-lg border font-semibold disabled:opacity-70', style: { minHeight: 44, color: ink, backgroundColor: isDark ? '#0f172a' : '#ffffff' }, onClick: function () { inspectQuake(null); } }, __alloT('stem.platetectonics.ql_inspect_clear', 'Clear selection'))),
+            inspectedPoint && h('div', { id: 'pt-ql-inspected-values', 'data-pt-quake-inspected-values': String(inspectedIndex), className: 'mt-3' },
+              h('dl', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-3' },
+                h('div', null, h('dt', { className: 'font-semibold' }, s.mode === 'convergent' ? __alloT('stem.platetectonics.ql_coordinates_trench', 'Distance from trench (km)') : __alloT('stem.platetectonics.ql_coordinates_boundary', 'Distance from boundary (km)')), h('dd', { 'data-pt-quake-inspected-distance': 'true', className: 'mt-1 tabular-nums', style: { overflowWrap: 'anywhere' } }, String(inspectedPoint.x))),
+                h('div', null, h('dt', { className: 'font-semibold' }, __alloT('stem.platetectonics.ql_coordinates_depth', 'Depth (km)')), h('dd', { 'data-pt-quake-inspected-depth': 'true', className: 'mt-1 tabular-nums', style: { overflowWrap: 'anywhere' } }, String(inspectedPoint.z))),
+                h('div', null, h('dt', { className: 'font-semibold' }, __alloT('stem.platetectonics.ql_inspect_band', 'Depth band')), h('dd', { 'data-pt-quake-inspected-band': bandOf(inspectedPoint).id, className: 'mt-1' }, bandOf(inspectedPoint).label + ' · ' + bandOf(inspectedPoint).range))),
+              h('p', { 'data-pt-quake-inspected-source': captured ? 'captured' : 'live', className: 'mt-3' }, captured ? __alloT('stem.platetectonics.ql_inspect_captured', 'This event belongs to your fixed checked sample, even while newer earthquakes enter the live run.') : __alloT('stem.platetectonics.ql_inspect_live', 'This event belongs to the latest observation log. Selection follows this observation as the log changes; it clears if the observation leaves the displayed sample.')),
+              h('p', { className: 'mt-2' }, __alloT('stem.platetectonics.ql_inspect_read_guides', 'The ring marks this event. Dashed guides connect it to the distance and depth axes; the outlined coordinate row contains the same values.')),
+              h('p', { 'data-pt-quake-inspected-caution': 'true', className: 'mt-2 font-semibold' }, __alloT('stem.platetectonics.ql_inspect_caution', 'Compare several events before drawing a conclusion. One earthquake does not establish a slab angle or boundary type.')))),
           h('details', { 'data-pt-slab-coordinates': captured ? 'captured' : 'live', className: 'mt-3 rounded-lg border p-3 text-sm leading-relaxed ' + (isDark ? 'bg-slate-950 border-slate-600 text-slate-100' : 'bg-slate-50 border-slate-300 text-slate-900') },
             h('summary', { className: 'min-h-11 py-2 font-bold cursor-pointer focus:ring-2 focus:ring-yellow-500 focus:outline-none', style: { minHeight: 44 } }, __alloT('stem.platetectonics.ql_coordinates_summary', 'Read the plotted coordinates ({n} events)').replace('{n}', log.length)),
             h('p', { 'data-pt-slab-coordinates-note': captured ? 'captured' : 'live', className: 'mt-2 mb-3' }, captured
               ? __alloT('stem.platetectonics.ql_coordinates_captured', 'These coordinates belong to the checked sample shown in the plot. They stay fixed while the live run continues. Revise your angle to use the latest observations.')
               : __alloT('stem.platetectonics.ql_coordinates_live', 'These coordinates belong to the latest observations shown in the plot. The list changes as new model earthquakes enter the log.')),
+            log.length && h('p', { id: 'pt-ql-row-keys', className: 'mb-3' }, __alloT('stem.platetectonics.ql_inspect_nav_help', 'Choose an event number to inspect its point. Within these buttons, Up/Down moves one row and Home/End moves to the first/last event.')) ,
             log.length ? h('table', { 'data-pt-slab-coordinates-table': 'true', className: 'w-full text-sm', style: { width: '100%', tableLayout: 'fixed', fontSize: 14, borderCollapse: 'collapse' } },
               h('caption', { className: 'text-left mb-2' }, __alloT('stem.platetectonics.ql_coordinates_caption', 'The same distance and depth values used to draw each point, in kilometres. Event numbers identify positions in this displayed sample.')),
               h('thead', null, h('tr', null,
-                h('th', { scope: 'col', className: 'text-left align-top py-2 pr-2', style: { width: '20%' } }, __alloT('stem.platetectonics.ql_coordinates_event', 'Event')),
-                h('th', { scope: 'col', className: 'text-left align-top py-2 pr-2', style: { width: '40%', overflowWrap: 'anywhere' } }, s.mode === 'convergent' ? __alloT('stem.platetectonics.ql_coordinates_trench', 'Distance from trench (km)') : __alloT('stem.platetectonics.ql_coordinates_boundary', 'Distance from boundary (km)')),
-                h('th', { scope: 'col', className: 'text-left align-top py-2', style: { width: '40%' } }, __alloT('stem.platetectonics.ql_coordinates_depth', 'Depth (km)')))),
-              h('tbody', null, log.map(function (q, i) { return h('tr', { key: i, 'data-pt-slab-coordinate-row': String(i), 'data-distance-km': q.x, 'data-depth-km': q.z, className: 'border-t ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                h('th', { scope: 'row', className: 'text-left align-top py-2 pr-2 font-semibold' }, String(i + 1)),
+                h('th', { scope: 'col', className: 'text-left align-top py-2 pr-2', style: { width: 56 } }, __alloT('stem.platetectonics.ql_coordinates_event', 'Event')),
+                h('th', { scope: 'col', className: 'text-left align-top py-2 pr-2', style: { overflowWrap: 'anywhere' } }, s.mode === 'convergent' ? __alloT('stem.platetectonics.ql_coordinates_trench', 'Distance from trench (km)') : __alloT('stem.platetectonics.ql_coordinates_boundary', 'Distance from boundary (km)')),
+                h('th', { scope: 'col', className: 'text-left align-top py-2', style: { overflowWrap: 'anywhere' } }, __alloT('stem.platetectonics.ql_coordinates_depth', 'Depth (km)')))),
+              h('tbody', null, log.map(function (q, i) { return h('tr', { key: i, 'data-pt-slab-coordinate-row': String(i), 'data-distance-km': q.x, 'data-depth-km': q.z, 'data-pt-slab-coordinate-inspected': String(i === inspectedIndex), 'aria-current': i === inspectedIndex ? 'true' : undefined, style: i === inspectedIndex ? { outline: '2px solid ' + (isDark ? '#f8fafc' : '#0f172a'), outlineOffset: -2 } : undefined, className: 'border-t ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                h('th', { scope: 'row', className: 'text-left align-top py-2 pr-2 font-semibold' }, h('button', { type: 'button', 'data-pt-quake-inspect-row': String(i), 'aria-pressed': i === inspectedIndex, 'aria-label': __alloT('stem.platetectonics.ql_inspect_row_aria', 'Inspect event {n}').replace('{n}', i + 1), 'aria-describedby': 'pt-ql-row-keys', tabIndex: i === (inspectedIndex < 0 ? 0 : inspectedIndex) ? 0 : -1, className: 'rounded-md border focus:ring-2 focus:ring-yellow-500 focus:outline-none', style: { minHeight: 44, minWidth: 44 }, onClick: function () { inspectQuake(q); }, onKeyDown: function (event) { inspectQuakeKey(event, q); } }, String(i + 1))),
                 h('td', { 'data-pt-slab-coordinate-distance': 'true', className: 'align-top py-2 pr-2', style: { overflowWrap: 'anywhere', fontVariantNumeric: 'tabular-nums' } }, String(q.x)),
                 h('td', { 'data-pt-slab-coordinate-depth': 'true', className: 'align-top py-2', style: { overflowWrap: 'anywhere', fontVariantNumeric: 'tabular-nums' } }, String(q.z))); })))
               : h('p', { 'data-pt-slab-coordinates-empty': 'true', className: 'mt-2' }, __alloT('stem.platetectonics.ql_coordinates_empty', 'No earthquake coordinates are plotted yet. Play or advance a paused interval to gather observations.')))),
         s.mode !== 'convergent'
-          ? h('p', { className: 'text-[13px] mt-2 font-semibold' }, log.length
+          ? h('p', { className: 'text-sm mt-2 font-semibold' }, log.length
               ? __alloT('stem.platetectonics.ql_no_slab_observations', 'This model’s observations are shallow and close to the boundary. No plate is sinking here, so there is no dipping slab band to fit. Switch to Convergent to compare.')
               : __alloT('stem.platetectonics.ql_no_observations', 'No earthquakes are plotted yet. Run this boundary to gather observations. Switch to Convergent to investigate a dipping slab.'))
           : h('div', { className: 'mt-2', ref: slabPanelRef },
-              h('label', { htmlFor: 'pt-ql-dip', className: 'block text-[13px] font-bold' },
+              h('label', { htmlFor: 'pt-ql-dip', className: 'block text-sm font-bold' },
                 __alloT('stem.platetectonics.ql_your_angle', 'Your slab angle: {a}°').replace('{a}', s.dipGuess)),
-              h('p', { id: 'pt-ql-angle-help', className: 'text-[12px] leading-relaxed mt-1' }, __alloT('stem.platetectonics.ql_angle_help', 'Angle is measured down from the horizontal, in degrees. The axes use different scales; use the coordinates as well as the band’s appearance.')),
+              h('p', { id: 'pt-ql-angle-help', className: 'text-sm leading-relaxed mt-1' }, __alloT('stem.platetectonics.ql_angle_equal_help', 'Angle is measured down from horizontal. Both axes use the same kilometre scale; compare several events and your dashed estimate before checking the data fit.')),
               h('div', { className: 'flex flex-wrap items-center gap-2 my-2' },
-                h('input', { id: 'pt-ql-dip', type: 'range', min: 5, max: 85, step: 1, value: s.dipGuess, disabled: s.dipLocked, className: 'flex-1 min-w-0 min-h-10', style: { accentColor: '#d97706' }, 'aria-describedby': 'pt-ql-angle-help',
+                h('input', { id: 'pt-ql-dip', type: 'range', min: 5, max: 85, step: 1, value: s.dipGuess, disabled: s.dipLocked, className: 'flex-1 min-w-0 min-h-11', style: { accentColor: '#d97706' }, 'aria-describedby': 'pt-ql-angle-help',
                   'aria-valuetext': __alloT('stem.platetectonics.ql_angle_vt', '{a} degrees').replace('{a}', s.dipGuess),
                   onChange: function (e) { var angle = parseInt(e.target.value, 10); setDipAngleDraft(String(angle)); update({ dipGuess: angle }); } }),
-                h('label', { className: 'flex items-center gap-1 text-[12px]' },
+                h('label', { className: 'flex items-center gap-1 text-sm' },
                   h('span', { className: 'sr-only' }, __alloT('stem.platetectonics.ql_exact_angle', 'Exact slab angle in degrees')),
-                  h('input', { type: 'number', min: 5, max: 85, step: 1, value: dipAngleDraft, disabled: s.dipLocked, 'data-pt-slab-angle-number': 'true', 'aria-describedby': 'pt-ql-angle-help' + (s.dipLocked ? '' : ' pt-ql-entry-help'), className: 'w-16 min-h-10 rounded-lg border px-2 ' + (isDark ? 'bg-slate-950 border-slate-600 text-slate-100' : 'bg-white border-slate-400 text-slate-900'),
+                  h('input', { type: 'number', min: 5, max: 85, step: 1, value: dipAngleDraft, disabled: s.dipLocked, 'data-pt-slab-angle-number': 'true', 'aria-describedby': 'pt-ql-angle-help' + (s.dipLocked ? '' : ' pt-ql-entry-help'), className: 'w-16 min-h-11 rounded-lg border px-2 ' + (isDark ? 'bg-slate-950 border-slate-600 text-slate-100' : 'bg-white border-slate-400 text-slate-900'),
                     onChange: function (e) { setDipAngleDraft(e.target.value); },
                     onBlur: commitSlabAngle,
                     onKeyDown: function (e) { if (e.key === 'Enter') { e.preventDefault(); commitSlabAngle(); } } }), '°')),
-              !s.dipLocked && h('p', { id: 'pt-ql-entry-help', className: 'text-[12px] leading-relaxed mb-2' }, __alloT('stem.platetectonics.ql_angle_entry_help', 'Type an angle, then press Enter or leave the field to update your line.')),
-              h('div', { 'data-pt-slab-legend': 'true', className: 'flex flex-wrap gap-x-4 gap-y-2 text-[13px] mb-2' },
+              !s.dipLocked && h('p', { id: 'pt-ql-entry-help', className: 'text-sm leading-relaxed mb-2' }, __alloT('stem.platetectonics.ql_angle_entry_help', 'Type an angle, then press Enter or leave the field to update your line.')),
+              h('div', { 'data-pt-slab-legend': 'true', className: 'flex flex-wrap gap-x-4 gap-y-2 text-sm mb-2' },
                 h('span', { className: 'inline-flex items-center gap-2' }, h('span', { 'aria-hidden': 'true', style: { display: 'inline-block', width: 24, borderTop: '3px dashed #d97706' } }), __alloT('stem.platetectonics.ql_legend_guess', 'Your estimate (dashed)')),
                 s.dipLocked && h('span', { className: 'inline-flex items-center gap-2' }, h('span', { 'aria-hidden': 'true', style: { display: 'inline-block', width: 24, borderTop: '3px solid ' + (isDark ? '#38bdf8' : '#0369a1') } }), __alloT('stem.platetectonics.ql_legend_fit', 'Data fit (solid)'))),
               !s.dipLocked
                 ? h('button', { type: 'button', 'data-pt-quake-lock': 'true', disabled: !canLock,
-                    className: 'min-h-10 mt-1 px-3 py-2 rounded-lg text-[12px] font-bold border focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (canLock ? 'bg-amber-700 text-white border-amber-800' : 'opacity-60 ' + (isDark ? 'bg-slate-800 text-slate-300 border-slate-600' : 'bg-white text-slate-500 border-slate-300')),
+                    className: 'min-h-11 mt-1 px-3 py-2 rounded-lg text-sm font-bold border focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (canLock ? 'bg-amber-700 text-white border-amber-800' : 'opacity-60 ' + (isDark ? 'bg-slate-800 text-slate-300 border-slate-600' : 'bg-white text-slate-500 border-slate-300')),
                     onClick: function () {
                       if (!canLock || fitDip == null || !isFinite(fitDip) || slabActionPending.current) return;
                       slabActionPending.current = true;
@@ -6585,17 +6673,18 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
                       var checkedAngle = commitSlabAngle();
                       var checkedSample = ptSlabRecord({ version: 1, angle: checkedAngle, points: log });
                       if (!checkedSample) { slabActionPending.current = false; return; }
+                      setQuakeInspection(null);
                       update({ dipGuess: checkedAngle, dipLocked: true, running: false, dipRestored: false, dipSample: { points: checkedSample.points } });
                       if (typeof props.onRecordSlab === 'function') props.onRecordSlab(checkedSample);
                       if (typeof announceToSR === 'function') announceToSR(__alloT('stem.platetectonics.ql_sr_checked', 'Angle checked. The run is paused and the sample is captured. Compare your dashed estimate with the solid data fit.'));
                     } },
                     canLock ? __alloT('stem.platetectonics.ql_check_angle', 'Check my angle against this sample') : __alloT('stem.platetectonics.ql_need_70km', 'Let it run: {n} of 8 quakes at least 70 km deep (a faster rate makes more)').replace('{n}', deep.length))
                 : h('div', { className: 'mt-2' },
-                    h('p', { className: 'text-[13px] leading-relaxed', 'data-pt-quake-fit': fitDip == null ? '' : String(Math.round(fitDip)) },
+                    h('p', { className: 'text-sm leading-relaxed', 'data-pt-quake-fit': fitDip == null ? '' : String(Math.round(fitDip)) },
                       __alloT('stem.platetectonics.ql_result_sample', 'The solid line fits {n} captured earthquakes at 70 km or deeper: about {f}° from horizontal. Your estimate was {g}°. In real subduction zones, the dipping earthquake band (Wadati–Benioff zone) helps trace the sinking slab. Deep earthquakes occur within the slab.')
                         .replace('{n}', deep.length).replace('{f}', fitDip == null ? '?' : Math.round(fitDip)).replace('{g}', s.dipGuess)),
-                    h('button', { type: 'button', 'data-pt-slab-revise': 'true', className: 'min-h-10 mt-2 px-3 py-2 rounded-lg text-[12px] font-bold border focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'bg-slate-950 border-slate-600 text-slate-100' : 'bg-white border-slate-400 text-slate-800'),
-                      onClick: function () { slabActionPending.current = false; slabFocusPending.current = '#pt-ql-dip'; update({ dipLocked: false, dipSample: null }); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.platetectonics.ql_sr_revise', 'Your estimate is editable again. The current run and observations are kept.')); } }, __alloT('stem.platetectonics.ql_revise', 'Revise my angle')))
+                    h('button', { type: 'button', 'data-pt-slab-revise': 'true', className: 'min-h-11 mt-2 px-3 py-2 rounded-lg text-sm font-bold border focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'bg-slate-950 border-slate-600 text-slate-100' : 'bg-white border-slate-400 text-slate-800'),
+                      onClick: function () { setQuakeInspection(null); slabActionPending.current = false; slabFocusPending.current = '#pt-ql-dip'; update({ dipLocked: false, dipSample: null }); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.platetectonics.ql_sr_revise', 'Your estimate is editable again. The current run and observations are kept.')); } }, __alloT('stem.platetectonics.ql_revise', 'Revise my angle')))
             ));
     })(),
     // Educational cards
