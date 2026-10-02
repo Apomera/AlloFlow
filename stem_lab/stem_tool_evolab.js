@@ -2913,6 +2913,100 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         counts: { residents: original.size, pool: pool.length, offspring: born.length, arrivals: round.migrants.filter(function(m) { return m.species === sp && m.to === island; }).length, departures: round.migrants.filter(function(m) { return m.species === sp && m.from === island; }).length } };
     }
 
+    function fingerprint(world) {
+      var text = JSON.stringify([world.seed, world.smallFounders, world.generation, world.rng, world.nextId, settings(world.settings), world.history]);
+      var a = 2166136261, b = 3335557771;
+      for (var i = 0; i < text.length; i++) { a = Math.imul(a ^ text.charCodeAt(i), 16777619); b = Math.imul(b ^ text.charCodeAt(i), 2246822519); }
+      return (a >>> 0).toString(16).padStart(8, '0') + (b >>> 0).toString(16).padStart(8, '0');
+    }
+    // Compact replay recipe avoids saving another full genealogy to localStorage.
+    // The checksum detects corrupted snapshots; it is not an authentication token.
+    function checkpoint(world) {
+      if (!world || world.privateResearch) return null;
+      return { version: 1, seed: world.seed, smallFounders: world.smallFounders, generation: world.generation, rng: world.rng, nextId: world.nextId, settings: settings(world.settings), rounds: world.history.slice(1).map(function(f) { return settings(f.round.settings); }), checksum: fingerprint(world) };
+    }
+    function restoreCheckpoint(raw) {
+      try {
+        if (!raw || raw.version !== 1 || !Number.isInteger(raw.seed) || raw.seed < 0 || raw.seed > 4294967295 || typeof raw.smallFounders !== 'boolean' || !Number.isInteger(raw.generation) || raw.generation < 0 || raw.generation > LIMIT || !Array.isArray(raw.rounds) || raw.rounds.length !== raw.generation || !settings(raw.settings) || typeof raw.checksum !== 'string') return null;
+        var world = create(raw.seed, raw.smallFounders);
+        for (var i = 0; i < raw.rounds.length; i++) { var s = settings(raw.rounds[i]); if (!s) return null; world = step(Object.assign({}, world, { settings: s })); }
+        world = Object.assign({}, world, { settings: settings(raw.settings) });
+        return world.rng === raw.rng && world.nextId === raw.nextId && fingerprint(world) === raw.checksum ? world : null;
+      } catch (_) { return null; }
+    }
+    function mix32(n) { n ^= n >>> 16; n = Math.imul(n, 0x7feb352d); n ^= n >>> 15; n = Math.imul(n, 0x846ca68b); return (n ^ n >>> 16) >>> 0; }
+    function researchPlan(world, options) {
+      options = options || {};
+      if (typeof options !== 'object' || Array.isArray(options)) return null;
+      if (!world || !settings(world.settings) || world.generation >= LIMIT || world.privateResearch) return null;
+      var replicates = options.replicates === undefined ? 12 : options.replicates, rounds = options.rounds === undefined ? 5 : options.rounds, batch = options.batch === undefined ? 0 : options.batch;
+      if (!Number.isInteger(replicates) || replicates < 2 || replicates > 24 || !Number.isInteger(rounds) || rounds < 1 || rounds > 5 || !Number.isInteger(batch) || batch < 0 || batch > 4294967295) return null;
+      rounds = Math.min(rounds, LIMIT - world.generation);
+      var connected = world.settings.migration || .12;
+      return { version: 1, sourceChecksum: fingerprint(world), sourceSeed: world.seed, sourceRng: world.rng, start: world.generation, end: world.generation + rounds, replicates: replicates, rounds: rounds, batch: batch, settings: settings(world.settings), connected: connected,
+        conditions: [{ id: '00', migration: 0, reciprocal: false }, { id: '10', migration: connected, reciprocal: false }, { id: '01', migration: 0, reciprocal: true }, { id: '11', migration: connected, reciprocal: true }] };
+    }
+    function researchSeed(plan, trial) { return mix32(plan.sourceRng ^ mix32(plan.batch) ^ Math.imul(trial + 1, 0x9e3779b9)); }
+    function researchFrame(frame) {
+      var out = { generation: frame.generation };
+      species.forEach(function(sp) {
+        var d = diversity(frame, sp), means = d.rows.map(function(s) { return s.mean; }), valid = means.filter(function(v) { return v !== null; });
+        out[sp] = { means: means, sizes: d.rows.map(function(s) { return s.size; }), within: d.within, between: d.contrast, pooled: d.pooled, divergence: valid.length ? Math.max.apply(null, valid) - Math.min.apply(null, valid) : null };
+      });
+      return out;
+    }
+    function privateBranch(world, plan, trial, condition) {
+      var seed = researchSeed(plan, trial), s = settings(plan.settings);
+      s.migration = condition.migration; s.reciprocal = condition.reciprocal;
+      var next = Object.assign({}, world, { rng: seed, settings: s, privateResearch: true, privateSeed: seed });
+      for (var i = 0; i < plan.rounds; i++) next = step(next);
+      return next;
+    }
+    function validResearch(world, plan, trial) {
+      if (!world || !plan || !Number.isInteger(trial) || trial < 0 || trial >= plan.replicates) return false;
+      var expected = researchPlan(world, plan);
+      return !!expected && JSON.stringify(expected) === JSON.stringify(plan);
+    }
+    function researchBranch(world, plan, trial, id) {
+      if (!validResearch(world, plan, trial)) return null;
+      var c = plan.conditions.filter(function(c) { return c.id === id; })[0];
+      return c ? privateBranch(world, plan, trial, c) : null;
+    }
+    function researchTrial(world, plan, trial) {
+      if (!validResearch(world, plan, trial)) return null;
+      return { index: trial, seed: researchSeed(plan, trial), conditions: plan.conditions.map(function(c) {
+        var branch = privateBranch(world, plan, trial, c), copies = { birds: 0, plants: 0 };
+        branch.history.slice(plan.start + 1).forEach(function(f) { f.round.migrants.forEach(function(m) { copies[m.species] += m.gametes; }); });
+        return { id: c.id, series: branch.history.slice(plan.start).map(researchFrame), migrantCopies: copies };
+      }) };
+    }
+    function researchValue(condition, metric, sp, island) {
+      if (!condition || ['within', 'between', 'trait', 'divergence'].indexOf(metric) < 0 || species.indexOf(sp) < 0 || !Number.isInteger(island) || island < 0 || island > 2) return null;
+      var last = condition.series[condition.series.length - 1][sp];
+      return metric === 'trait' ? last.means[island] : last[metric];
+    }
+    function sampleSummary(values) {
+      var valid = values.filter(function(v) { return Number.isFinite(v); });
+      return { count: valid.length, total: values.length, values: values, mean: valid.length ? valid.reduce(function(n, v) { return n + v; }, 0) / valid.length : null, min: valid.length ? Math.min.apply(null, valid) : null, max: valid.length ? Math.max.apply(null, valid) : null };
+    }
+    function researchSummary(trials, metric, sp, island) {
+      var ids = ['00', '10', '01', '11'];
+      function get(t, id) { return researchValue(t.conditions.filter(function(c) { return c.id === id; })[0], metric, sp, island); }
+      function effect(indices, fn) { return sampleSummary(trials.map(function(t) { var v = ids.map(function(id) { return get(t, id); }); return indices.some(function(i) { return v[i] === null; }) ? null : fn(v); })); }
+      return { conditions: ids.map(function(id) { return Object.assign({ id: id }, sampleSummary(trials.map(function(t) { return get(t, id); }))); }),
+        connectionWithoutPartners: effect([0, 1], function(v) { return v[1] - v[0]; }), connectionWithPartners: effect([2, 3], function(v) { return v[3] - v[2]; }),
+        partnersIsolated: effect([0, 2], function(v) { return v[2] - v[0]; }), partnersConnected: effect([1, 3], function(v) { return v[3] - v[1]; }),
+        interaction: effect([0, 1, 2, 3], function(v) { return (v[3] - v[2]) - (v[1] - v[0]); }) };
+    }
+    function restoreResearch(raw) {
+      if (!raw || raw.version !== 1 || !raw.options || typeof raw.options !== 'object' || Array.isArray(raw.options)) return null;
+      var source = restoreCheckpoint(raw.source), plan = source && researchPlan(source, raw.options);
+      if (!plan) return null;
+      return { version: 1, source: checkpoint(source), options: { replicates: plan.replicates, rounds: plan.rounds, batch: plan.batch },
+        complete: raw.complete === true,
+        prediction: typeof raw.prediction === 'string' ? raw.prediction.slice(0, 500) : '', reasoning: typeof raw.reasoning === 'string' ? raw.reasoning.slice(0, 6000) : '' };
+    }
+
     function compare(world, kind, generations) {
       var remaining = Math.min(5, LIMIT - world.generation), count = Math.min(remaining, Math.max(1, generations || 5)), a = world, b = world;
       a = Object.assign({}, a, { settings: Object.assign({}, a.settings, kind === 'migration' ? { migration: 0 } : { reciprocal: false }) });
@@ -2920,7 +3014,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       for (var i = 0; i < count; i++) { a = step(a); b = step(b); }
       return { kind: kind, start: world.generation, end: a.generation, a: a, b: b };
     }
-    return { create: create, step: step, restore: restore, settings: settings, stats: stats, diversity: diversity, value: value, fitness: fitness, crack: crack, find: find, compare: compare, parentShares: parentShares, story: story, islands: islands, distances: distances, species: species, limit: LIMIT };
+    return { create: create, step: step, restore: restore, settings: settings, stats: stats, diversity: diversity, value: value, fitness: fitness, crack: crack, find: find, compare: compare, parentShares: parentShares, story: story, fingerprint: fingerprint, checkpoint: checkpoint, restoreCheckpoint: restoreCheckpoint, researchPlan: researchPlan, researchSeed: researchSeed, researchTrial: researchTrial, researchBranch: researchBranch, researchValue: researchValue, researchSummary: researchSummary, restoreResearch: restoreResearch, islands: islands, distances: distances, species: species, limit: LIMIT };
   })();
   window.StemLab.evoArchipelagoModel = ArchipelagoModel;
   function ax(k, fb) { return __alloT('stem.evolab.archipelago_' + k, fb); }
@@ -3014,6 +3108,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
   }
 
   var archipelagoCSS = `
+  .ea-app .ea-fieldwork-nav{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}.ea-app .ea-fieldwork-nav button{font-size:12px;white-space:normal}.ea-app .ea-research{border-top:4px solid #795290;scroll-margin-top:20px}.ea-app .ea-research h2,.ea-app .ea-research h3{margin:0}.ea-app .ea-research label{display:grid;gap:7px;font-size:13px;min-width:0}.ea-app .ea-research select,.ea-app .ea-research input[type=text],.ea-app .ea-research textarea{max-width:100%;width:100%;padding:10px;border:1px solid #9bb599;border-radius:9px;background:#fff;color:#203b39;font:inherit}.ea-app .ea-research textarea{min-height:110px;resize:vertical}.ea-app .ea-research-design{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.ea-app .ea-research-design>div{border-left:4px solid;padding:12px;background:#f0f3e9;border-radius:9px;font-size:12px;min-width:0}.ea-app .ea-research-controls,.ea-app .ea-research-questions{display:flex;gap:9px;align-items:end;flex-wrap:wrap}.ea-app .ea-research-controls>label{max-width:140px}.ea-app .ea-research-questions button{white-space:normal;font-size:12px}.ea-app .ea-research-questions button[aria-pressed=true]{background:#5b426c;color:#fff;border-color:#5b426c}.ea-app .ea-research-questions button[aria-pressed=true]:hover{background:#4d365e;color:#fff}.ea-app .ea-research-question{padding:12px;border-radius:10px;background:#f0eaf3;font-size:13px;line-height:1.6;color:#3f304e}.ea-app .ea-research-selectors{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}.ea-app .ea-research-plot{display:block;width:100%;height:auto;background:#f6f7f0;border-radius:12px}.ea-app .ea-research-plot text{fill:#304a43;font:600 12px system-ui}.ea-app .ea-research-plot .ea-research-plot-small{font:11px system-ui;fill:#435d53}.ea-app .ea-research-plot circle{cursor:pointer}.ea-app .ea-research-progress{display:grid;gap:9px;font-size:13px;padding:12px;background:#ece7f1;border-radius:10px}.ea-app .ea-research-progress progress{width:100%;accent-color:#795290}.ea-app .ea-research-stale{margin:0;border-left:4px solid #9b6d26;background:#f6efdf;padding:12px;font-size:13px;color:#4d4028;line-height:1.6;border-radius:8px}.ea-app .ea-research-results{border-top:1px solid #cad7c3;padding-top:16px}.ea-app .ea-research-contrast{padding:12px;margin:8px 0;background:#eef1e8;border-radius:9px;font-size:13px}.ea-app .ea-research-trial{display:grid;gap:10px;padding:14px;border:1px solid #b8cbb3;background:#f8faf4;border-radius:12px;min-width:0}.ea-app .ea-research-trial summary{margin-bottom:9px}.ea-app #ea-fieldwork-story{scroll-margin-top:20px}@media(max-width:500px){.ea-app .ea-research-selectors{grid-template-columns:1fr}.ea-app .ea-research-controls{align-items:stretch}.ea-app .ea-research-controls>label{max-width:none}.ea-app .ea-research-controls>button{width:100%}}
+
   .ea-app .ea-story{border-top:4px solid #3b7263}.ea-app .ea-story-heading{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.ea-app .ea-story-heading h2{margin:5px 0}.ea-app .ea-story label{display:grid;gap:7px;font-size:13px}.ea-app .ea-story select{max-width:100%;padding:9px;border:1px solid #9bb599;border-radius:8px;background:#fff;color:#203b39}.ea-app .ea-story-counts{padding:12px;background:#e8efe2;border-radius:10px;font-size:13px;font-weight:600}.ea-app .ea-story-stages{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.ea-app .ea-story-stages button{display:grid;grid-template-columns:24px minmax(0,1fr);gap:5px;text-align:left;white-space:normal;padding:12px;min-width:0;border:1px solid #a4b9a0;border-radius:11px;background:#f8faf4;color:#203b39}.ea-app .ea-story-stages button>strong,.ea-app .ea-story-stages button>small,.ea-app .ea-story-meter{grid-column:1/-1}.ea-app .ea-story-stages button>strong{font-size:22px;font-variant-numeric:tabular-nums}.ea-app .ea-story-stages button[aria-pressed=true]{background:#234f49;color:#fff;border-color:#234f49}.ea-app .ea-story-stages button[aria-pressed=true] small{color:#fff}.ea-app .ea-story-stages button[aria-pressed=true]:hover{background:#21463c;color:#fff}.ea-app .ea-story-number{border-radius:50%;width:22px;height:22px;background:#dce8d4;color:#23483e;text-align:center;line-height:22px;font-weight:700}.ea-app .ea-story-stage-name{font-size:12px;font-weight:700;line-height:1.5}.ea-app .ea-story-stage-name small{display:block;font-size:10px;font-weight:500}.ea-app .ea-story-meter{display:block;height:6px;background:#cad9c3;border-radius:6px;overflow:hidden}.ea-app .ea-story-meter>span{display:block;height:100%;background:#477b6a}.ea-app .ea-story-stages button[aria-pressed=true] .ea-story-meter>span{background:#e7d190}.ea-app .ea-story-detail{padding:16px;border-left:4px solid #a4803d;background:#f4f0e4;border-radius:10px}.ea-app .ea-story-detail p{margin:7px 0 0}.ea-app .ea-story-total{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:12px;border-radius:10px;background:#e7efe2;font-size:13px}.ea-app .ea-copy-trail>label{margin:12px 0}.ea-app .ea-story-copy-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}.ea-app .ea-story-copy-pair>div{padding:13px;background:#edf2e7;border-radius:10px;min-width:0}.ea-app .ea-story-stages button:hover{background:#eaf0e3}@media(max-width:500px){.ea-app .ea-story-stages{grid-template-columns:repeat(2,minmax(0,1fr))}.ea-app .ea-story-copy-pair{grid-template-columns:1fr}}
 
   .ea-app{--ei-ink:#203b39;--ei-muted:#455e59}.ea-app .ea-shell{max-width:1480px;margin:auto;padding:0 24px 28px}.ea-app .ea-intro{background:#e7efe3;border:1px solid #b2c7ad;border-radius:16px;padding:18px;margin:18px 0}.ea-app .ea-intro p{max-width:90ch}.ea-app .ea-layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(300px,1fr);gap:20px;align-items:start}.ea-app .ea-main,.ea-app .ea-sidebar{min-width:0;display:grid;gap:16px}.ea-app .ea-scene-wrap{border-radius:18px;background:#d8ebe8;overflow:hidden;border:1px solid #99bcb7}.ea-app .ea-scene{height:390px;position:relative}.ea-app .ea-scene canvas{width:100%;height:100%;display:block;touch-action:pan-y}.ea-app .ea-scene-message{padding:30px;color:#173c43}.ea-app .ea-camera{padding:12px}.ea-app .ea-islands{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.ea-app .ea-islands button{display:grid;gap:4px;text-align:left;min-width:0;white-space:normal}.ea-app .ea-islands button[aria-pressed=true]{background:#234f49;color:#fff;border-color:#234f49}.ea-app .ea-islands small{font-size:11px}.ea-app .ea-islands button[aria-pressed=true] small{color:#fff}.ea-app .ea-islands button[aria-pressed=true]:hover,.ea-app .ea-species-buttons button[aria-pressed=true]:hover{background:#21463c;color:#fff}.ea-app .ea-map{width:100%;height:auto;display:block;background:#e2f0ef;border-radius:12px}.ea-app .ea-map text{font:600 13px system-ui;fill:#193d3c}.ea-app .ea-map .ea-route{stroke:#5f827e;stroke-width:2;fill:none;stroke-dasharray:5 5}.ea-app .ea-controls label{display:grid;gap:6px;min-width:0}.ea-app .ea-controls input[type=range]{width:100%}.ea-app .ea-controls .ea-check{display:flex;gap:9px;align-items:center}.ea-app .ea-counts{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ea-app .ea-counts div{padding:10px;border-radius:10px;background:#edf1e6}.ea-app .ea-counts strong{font-size:23px;display:block}.ea-app .ea-counts small{font-size:12px}.ea-app .ea-chart{width:100%;height:auto;background:#f4f6ee;border-radius:12px}.ea-app .ea-chart text{font:12px system-ui;fill:#344c46}.ea-app .ea-table-wrap{overflow-x:auto}.ea-app table{width:100%;border-collapse:collapse;font-size:13px}.ea-app th,.ea-app td{text-align:left;padding:9px 7px;border-bottom:1px solid #d1ddd0;white-space:nowrap}.ea-app caption{text-align:left;font-weight:700;padding:9px 0}.ea-app .ea-members{display:flex;flex-wrap:wrap;gap:6px}.ea-app .ea-members button{min-width:36px;padding:6px;font-size:12px}.ea-app .ea-members button[aria-pressed=true]{background:#234f49;color:white}.ea-app .ea-alleles{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ea-app .ea-alleles>div{background:#f1f3e9;border-radius:10px;padding:10px;min-width:0}.ea-app .ea-alleles strong{display:block}.ea-app .ea-trip{padding:12px;border-left:4px solid #a77a40;background:#f5f0e3;border-radius:8px}.ea-app .ea-result{padding:12px;border:1px solid #becfbb;border-radius:12px}.ea-app .ea-result h3{margin:0 0 8px}.ea-app .ea-legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px}.ea-app .ea-timeline{display:grid;gap:8px}.ea-app .ea-timeline input{width:100%}.ea-app .ea-note{font-size:13px;color:#3f5952;line-height:1.6}.ea-app .ea-prominent{color:#223e37;font-size:14px;line-height:1.6}.ea-app details>summary{cursor:pointer;font-weight:700}.ea-app .ea-fork{display:grid;gap:12px}.ea-app .ea-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}.ea-app .ea-pair>div{padding:12px;background:#edf2e7;border-radius:10px}.ea-app :focus-visible{outline:3px solid #1b686e;outline-offset:3px}.ea-app .ea-link{color:#235d55;text-decoration:underline}.ea-app .ea-limit{border-left:4px solid #aa8043}.ea-app input[type=number]{width:100%;max-width:150px}.ea-app .ea-stepbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 18px;background:#f8faf2;border:1px solid #c3d2ba;border-radius:14px}.ea-app .ea-badge{font-size:12px;font-weight:700;letter-spacing:.04em;color:#3f614d}.ea-app .ea-stage-caption{margin:0;padding:12px;background:#edf3e9;font-size:12px;color:#3f5952}.ea-app .ea-movement-list{display:grid;gap:8px;max-height:330px;overflow:auto;padding:4px}.ea-app .ea-movement-list button{text-align:left;white-space:normal;width:100%}.ea-app .ea-explanation{width:100%;min-height:95px;padding:10px;border:1px solid #9bb599;border-radius:10px;color:#203b39;background:#fff}.ea-app .ea-micro{margin:0;font-size:12px;color:#466255}.ea-app .ea-species-buttons{display:flex;gap:8px;flex-wrap:wrap}.ea-app .ea-species-buttons button[aria-pressed=true]{background:#234f49;color:#fff}.ea-app .ea-inspector{scroll-margin-top:20px}.ea-app .ea-model-card{margin-top:20px}.ea-app .ea-forecast{display:grid;gap:8px}.ea-app .ea-forecast input{max-width:none}.ea-app .ea-stat-value{font-variant-numeric:tabular-nums}.ea-app .ea-feature{display:grid;gap:7px;margin:16px 0;background:#e7efe3;border:1px solid #b7cbb1;border-radius:12px;padding:15px}.ea-app .ea-feature p{margin:0}.ei-app .ei-primer-context{margin:15px 0;padding:15px;border:1px solid #b8c9ad;background:#edf3e7;border-radius:13px}.ei-app .ei-primer-context p{margin:5px 0 10px;font-size:13px;line-height:1.6}.ei-app .ei-primer-context details p{max-width:100ch}.ei-app .ei-primer-context summary{cursor:pointer;font-weight:700;font-size:13px}@media(max-width:850px){.ea-app .ea-layout{grid-template-columns:1fr}.ea-app .ea-shell{padding:0 12px 22px}.ea-app .ea-scene{height:290px}.ea-app .ea-islands small{font-size:10px}.ea-app .ea-islands button{padding:9px}.ea-app .ea-pair{grid-template-columns:1fr}.ea-app .ei-header{padding:20px 14px}.ea-app .ea-controls{gap:14px}}@media(prefers-reduced-motion:reduce){.ea-app *{scroll-behavior:auto}}
@@ -3075,6 +3171,167 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       h('details', null, h('summary', null, ax('story_math', 'How is the expected mean calculated?')), h('p', { className: 'ea-note' }, ax('story_math_explanation', 'For weights wᵢ and total W, a parent’s expected share of inherited copies is ½[wᵢ/W + Σⱼ≠ᵢ(wⱼ/W)×wᵢ/(W−wⱼ)]. The first term is its chance as first parent; the second averages its chance as second parent after excluding the first. Multiply these shares by each parent’s mean to obtain expected inheritance. The marker and trait copies are independently chosen.'))));
   }
 
+  function archResearchName(id) {
+    if (id === '00') return ax('research_c00', 'Isolated · partner effects off');
+    if (id === '10') return ax('research_c10', 'Connected · partner effects off');
+    if (id === '01') return ax('research_c01', 'Isolated · reciprocal effects');
+    return ax('research_c11', 'Connected · reciprocal effects');
+  }
+  function archResearchMetric(metric, sp, island) {
+    if (metric === 'within') return ax('research_within', 'Mean within-island marker H');
+    if (metric === 'between') return ax('research_between', 'Island A-frequency range');
+    if (metric === 'divergence') return ax('research_divergence', 'Island trait-mean range');
+    return archIslandName(island) + ' · ' + archTrait(sp);
+  }
+  function archResearchUnits(metric) {
+    if (metric === 'within') return ax('research_within_units', 'One neutral marker: H = 2p(1−p), from 0 to 0.5. This is the census-weighted mean across occupied islands, not total genetic diversity.');
+    if (metric === 'between') return ax('research_between_units', 'Highest minus lowest island frequency of marker A, from 0 to 1. This describes one marker, not genome-wide divergence.');
+    if (metric === 'divergence') return ax('research_divergence_units', 'Highest minus lowest island trait mean, from 0 to 100 trait points. This does not measure reproductive isolation.');
+    return ax('research_trait_units', 'Inherited trait mean on the selected island, on a 0–100 scale. Differences are trait points.');
+  }
+  function archResearchNumber(v, metric, signed) {
+    if (v === null) return '—';
+    var n = v * (metric === 'trait' || metric === 'divergence' ? 100 : 1), digits = metric === 'trait' || metric === 'divergence' ? 2 : 4;
+    if (Math.abs(n) < Math.pow(10, -digits) / 2) n = 0;
+    return (signed && n > 0 ? '+' : '') + n.toFixed(digits);
+  }
+  var archResearchColors = { '00': '#716343', '10': '#286879', '01': '#795290', '11': '#2b7056' };
+  function ArchipelagoResearchTrial(props) {
+    var R = props.React, h = R.createElement, m = ArchipelagoModel, f = props.finished;
+    var branch = R.useMemo(function() { return m.researchBranch(f.source, f.plan, props.trial, props.condition); }, [f, props.trial, props.condition]);
+    var childState = R.useState(null), offsetState = R.useState(0), offset = Math.min(offsetState[0] || f.plan.rounds, f.plan.rounds), privateGeneration = f.plan.start + offset;
+    var trace = R.useMemo(function() { return branch && m.story(branch, privateGeneration, props.island, props.species); }, [branch, privateGeneration, props.island, props.species]);
+    if (!trace) return null;
+    var child = trace.newborns.filter(function(o) { return o.id === childState[0]; })[0] || trace.newborns[0], frames = branch.history.slice(f.plan.start);
+    return h('div', { className: 'ea-research-trial', 'data-research-trial': props.trial, 'data-research-condition': props.condition },
+      h('h3', null, ax('research_trial_title', 'Inspect a possible future') + ' · ' + (props.trial + 1)),
+      h('p', { className: 'ea-note' }, archResearchName(props.condition) + ' · G' + f.plan.start + ' → G' + f.plan.end + ' · ' + archIslandName(props.island) + ' · ' + ax('research_private_seed', 'private seed') + ' ' + branch.privateSeed),
+      h('p', { className: 'ea-micro' }, ax('research_trial_limit', 'Both traits can change under habitat selection and drift. Two changing trajectories alone do not establish coevolution; compare the partner-effects controls across trials. Your expedition is unchanged.')),
+      h('div', { className: 'ea-legend' }, h('span', { style: { color: '#95562c' } }, '● ' + archTrait('birds')), h('span', { style: { color: '#34746c' } }, '● ' + archTrait('plants'))),
+      h('svg', { viewBox: '0 0 600 175', className: 'ea-chart', role: 'img', 'aria-label': ax('research_trajectory_label', 'Actual inherited means of both species in this private trial, on a 0–100 scale. Use the private-generation slider and exact table to investigate.') },
+        [0, .5, 1].map(function(v) { return h('g', { key: v }, h('line', { x1: 38, x2: 568, y1: 140 - v * 110, y2: 140 - v * 110, stroke: '#cedccd' }), h('text', { x: 4, y: 144 - v * 110 }, String(v * 100))); }),
+        ['birds', 'plants'].map(function(sp) { var path = '', previous = false; frames.forEach(function(frame, i) { var value = m.stats(frame.demes[props.island][sp]).mean; if (value === null) previous = false; else { path += (previous ? 'L' : 'M') + (38 + i / f.plan.rounds * 530) + ',' + (140 - value * 110); previous = true; } }); return h('path', { key: sp, d: path, fill: 'none', stroke: sp === 'birds' ? '#95562c' : '#34746c', strokeWidth: 3 }); }),
+        h('line', { x1: 38 + offset / f.plan.rounds * 530, x2: 38 + offset / f.plan.rounds * 530, y1: 25, y2: 145, stroke: '#314b42', strokeDasharray: '4 4' }), h('text', { x: 38, y: 164 }, 'G' + f.plan.start), h('text', { x: 530, y: 164 }, 'G' + f.plan.end)),
+      h('label', { htmlFor: 'ea-research-generation' }, ax('research_generation', 'Visit a private generation') + ': G' + privateGeneration, h('input', { id: 'ea-research-generation', type: 'range', min: 1, max: f.plan.rounds, step: 1, value: offset, disabled: f.plan.rounds === 1, onChange: function(e) { offsetState[1](Number(e.target.value)); } })),
+      h('p', { className: 'ea-micro', 'data-private-generation': privateGeneration }, ax('research_inspection_note', 'The outcome plot compares the final generation. The timeline and newborn copies below show the selected private generation.')),
+      h('details', null, h('summary', null, ax('research_trial_table', 'Read this trial’s exact trajectory')), h('div', { className: 'ea-table-wrap', role: 'region', tabIndex: 0, 'aria-label': ax('scrollable_table', 'Scrollable recorded data table') }, h('table', null,
+        h('caption', null, archIslandName(props.island) + ' · ' + ax('trait_scale', 'inherited trait means, 0–100')),
+        h('thead', null, h('tr', null, h('th', { scope: 'col' }, ax('generation_short', 'Generation')), h('th', { scope: 'col' }, archTrait('birds')), h('th', { scope: 'col' }, archTrait('plants')))),
+        h('tbody', null, frames.map(function(frame) { return h('tr', { key: frame.generation }, h('th', { scope: 'row' }, 'G' + frame.generation), h('td', null, archResearchNumber(m.stats(frame.demes[props.island].birds).mean, 'trait')), h('td', null, archResearchNumber(m.stats(frame.demes[props.island].plants).mean, 'trait'))); }))))),
+      h('details', { className: 'ea-research-births' }, h('summary', null, ax('research_trace_trial', 'Trace a newborn in this private future')),
+        h('p', { className: 'ea-micro' }, ax('research_id_namespace', 'Private offspring IDs belong to this trial and condition. Matching numbers in other futures do not identify the same organism. Origins refer to the parent’s location one generation earlier.')),
+        !child ? h('p', { className: 'ea-note' }, ax('research_no_birth', 'This island has no newborn cohort of the selected species in this outcome. A missing mean is not a zero-valued trait.')) : h('div', { className: 'ei-stack' },
+          h('label', { htmlFor: 'ea-research-birth' }, archSpecies(props.species) + ' · ' + ax('research_newborn', 'Choose a private newborn'), h('select', { id: 'ea-research-birth', value: child.id, onChange: function(e) { childState[1](Number(e.target.value)); } }, trace.newborns.map(function(o) { return h('option', { key: o.id, value: o.id }, '#' + o.id); }))),
+          h('div', { className: 'ea-story-copy-pair' }, child.copies.map(function(c, j) { return h('div', { key: j, 'data-research-copy': j, 'data-research-parent': c.parent, 'data-research-before': c.traitBeforeMutation, 'data-research-after': c.traitAfterMutation, 'data-research-marker': c.marker },
+            h('strong', null, ax('story_parent_label', 'Parent') + ' #' + c.parent + ' · ' + archIslandName(c.from)), h('p', { className: 'ea-note' }, c.from === props.island ? ax('story_local_parent', 'local parent') : archIslandName(c.from) + ' → ' + archIslandName(props.island) + ' · ' + ax('story_migrant_parent', 'migrant parent')),
+            h('p', { className: 'ea-note' }, ax('story_trait_copy', 'Trait copy') + ' ' + (c.traitCopy + 1) + ': ' + c.traitBeforeMutation.toFixed(4) + ' → ' + c.traitAfterMutation.toFixed(4)), h('p', { className: 'ea-micro' }, ax('story_marker_copy', 'Independently chosen marker copy') + ' ' + (c.markerCopy + 1) + ': ' + (c.marker ? 'A' : 'a'))); })),
+          h('p', { className: 'ea-note' }, trace.routes.filter(function(r) { return r.from !== props.island; }).reduce(function(n, r) { return n + r.copies; }, 0) + ' ' + ax('research_transmitted', 'marker copies came from migrant parents in this selected newborn cohort.')))));
+  }
+
+  function ArchipelagoResearch(props) {
+    var R = props.React, h = R.createElement, m = ArchipelagoModel, latest = R.useRef(props); latest.current = props;
+    var init = R.useRef(null);
+    if (!init.current) init.current = { study: m.restoreResearch(props.saved) || m.restoreResearch(lsGet('evoLab.archipelago.research.v1', null)), draft: lsGet('evoLab.archipelago.research.draft.v1', {}) || {} };
+    var saved = init.current.study, draft = init.current.draft, initialSource = R.useMemo(function() { return saved && saved.complete ? m.restoreCheckpoint(saved.source) : null; }, []);
+    var jobState = R.useState(function() { return initialSource ? { source: initialSource, plan: m.researchPlan(initialSource, saved.options) } : null; }), job = jobState[0];
+    var finishedState = R.useState(null), finished = finishedState[0], progressState = R.useState(0), progress = progressState[0], statusState = R.useState('');
+    var predictionState = R.useState((typeof draft.prediction === 'string' ? draft.prediction : saved ? saved.prediction : '').slice(0, 500)), prediction = predictionState[0];
+    var reasoningState = R.useState((typeof draft.reasoning === 'string' ? draft.reasoning : saved ? saved.reasoning : '').slice(0, 6000)), reasoning = reasoningState[0];
+    var countState = R.useState(saved ? saved.options.replicates : 12), nextBatch = R.useRef(saved ? (saved.options.batch + 1) >>> 0 : 0);
+    var metricState = R.useState(['within', 'between', 'trait', 'divergence'].indexOf(draft.metric) >= 0 ? draft.metric : 'within'), metric = metricState[0];
+    var trialState = R.useState(0), conditionState = R.useState('11');
+    R.useEffect(function() {
+      if (!job) return;
+      var canceled = false, timer, trials = [], index = 0; progressState[1](0);
+      function next() {
+        if (canceled) return;
+        try {
+          var trial = m.researchTrial(job.source, job.plan, index);
+          if (!trial) throw new Error('Invalid research plan');
+          trials.push(trial); index++; progressState[1](index);
+          if (index === job.plan.replicates) { finishedState[1]({ source: job.source, plan: job.plan, trials: trials }); jobState[1](null); statusState[1](ax('research_complete', 'Study complete. Compare the spread of outcomes, then inspect a trial and write your explanation.')); }
+          else timer = setTimeout(next, 0);
+        } catch (_) { jobState[1](null); statusState[1](ax('research_failed', 'This study could not finish. Your expedition and previous saved study remain available.')); }
+      }
+      timer = setTimeout(next, 0);
+      return function() { canceled = true; clearTimeout(timer); };
+    }, [job]);
+    var savedSource = R.useMemo(function() { return finished ? m.checkpoint(finished.source) : null; }, [finished]);
+    var currentStamp = R.useMemo(function() { return m.fingerprint(props.world); }, [props.world]);
+    function recipe() { return finished ? { version: 1, complete: true, source: savedSource, options: { replicates: finished.plan.replicates, rounds: finished.plan.rounds, batch: finished.plan.batch }, prediction: prediction, reasoning: reasoning } : null; }
+    R.useEffect(function() {
+      lsSet('evoLab.archipelago.research.draft.v1', { prediction: prediction, reasoning: reasoning, metric: metric });
+      if (finished) { var data = recipe(); lsSet('evoLab.archipelago.research.v1', data); if (latest.current.onSave) latest.current.onSave(data); }
+    }, [finished, prediction, reasoning, metric]);
+    function start(source) {
+      var plan = m.researchPlan(source, { replicates: countState[0], rounds: 5, batch: nextBatch.current });
+      if (!plan) return;
+      nextBatch.current = (nextBatch.current + 1) >>> 0; jobState[1]({ source: source, plan: plan }); statusState[1]('');
+    }
+    var summary = R.useMemo(function() { return finished ? m.researchSummary(finished.trials, metric, props.species, props.island) : null; }, [finished, metric, props.species, props.island]);
+    var trialIndex = finished ? Math.min(trialState[0], finished.trials.length - 1) : 0;
+    function download() {
+      if (!finished) return;
+      var data = { format: 'evolab-island-field-study', version: 1, model: 'evo-archipelago-v1', recipe: recipe(), plan: finished.plan, trials: finished.trials, view: { species: props.species, island: props.island, metric: metric }, summary: summary };
+      var url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })), a = document.createElement('a');
+      a.href = url; a.download = 'island-study-G' + finished.plan.start + '-batch' + finished.plan.batch + '.json'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function() { URL.revokeObjectURL(url); }, 0);
+    }
+    function record() {
+      if (!finished || !summary) return;
+      var plan = finished.plan, text = 'Island Connections · repeated 2×2 field study · illustrative model\nStarting seed=' + plan.sourceSeed + ', G' + plan.start + '→G' + plan.end + ', batch=' + plan.batch + ', futures per condition=' + plan.replicates + '.\nResponse: ' + archResearchMetric(metric, props.species, props.island) + ' · ' + archSpecies(props.species) + '.\n';
+      text += archResearchUnits(metric) + '\n';
+      text += 'Captured rainfall=' + plan.settings.rainfall.join(', ') + '; mutation=' + plan.settings.mutation + '; selection=' + plan.settings.selection + '; connected dispersal scale=' + plan.connected + '.\n';
+      summary.conditions.forEach(function(c) { text += archResearchName(c.id) + ': mean=' + archResearchNumber(c.mean, metric) + ', observed range=' + archResearchNumber(c.min, metric) + ' to ' + archResearchNumber(c.max, metric) + '; defined=' + c.count + '/' + c.total + '; individual outcomes=' + c.values.map(function(v) { return archResearchNumber(v, metric); }).join(',') + '.\n'; });
+      ['connectionWithoutPartners', 'connectionWithPartners', 'partnersIsolated', 'partnersConnected', 'interaction'].forEach(function(key) { var s = summary[key]; text += key + ': paired mean difference=' + archResearchNumber(s.mean, metric, true) + '; observed range=' + archResearchNumber(s.min, metric, true) + ' to ' + archResearchNumber(s.max, metric, true) + '; defined=' + s.count + '/' + s.total + '.\n'; });
+      text += 'Private future seeds=' + finished.trials.map(function(t) { return t.seed; }).join(',') + '.\nMy prediction: ' + prediction + '\nMy explanation: ' + reasoning + '\nLimits: all futures start from the same captured organisms. This measures stochastic future variation conditional on that population, not variation among independent ancestral samples. Four conditions share an initial private seed within each trial; changed dispersal and breeding decisions can change later random draws. Observed ranges are not confidence intervals. Simulation contrasts do not prove real-world effects, reproductive isolation or genome-wide diversity. The expedition RNG and history are unchanged.';
+      if (latest.current.onFinding) latest.current.onFinding(text); statusState[1](ax('research_saved', 'The repeated study, your prediction and your explanation are saved in the Learning Journal.'));
+    }
+    function plot() {
+      var maximum = metric === 'within' ? .5 : 1, x = function(v) { return 182 + v / maximum * 414; };
+      return h('svg', { viewBox: '0 0 630 275', className: 'ea-research-plot', role: 'img', 'aria-label': ax('research_plot_label', 'Each dot is one private future, each diamond is a condition mean, and each line spans the observed outcomes. Choose a trial and condition with the controls below to inspect it.') },
+        [0, maximum / 2, maximum].map(function(v) { return h('g', { key: v }, h('line', { x1: x(v), x2: x(v), y1: 20, y2: 240, stroke: '#d4ddd3' }), h('text', { x: x(v), y: 260, textAnchor: 'middle' }, archResearchNumber(v, metric))); }),
+        summary.conditions.map(function(c, row) { var y = 40 + row * 59; return h('g', { key: c.id }, h('text', { x: 7, y: y - 4 }, c.id[0] === '0' ? ax('isolated', 'Isolated islands') : ax('connected', 'Connected islands')), h('text', { x: 7, y: y + 13, className: 'ea-research-plot-small' }, c.id[1] === '0' ? ax('research_off_short', 'Partner effects off') : ax('research_on_short', 'Reciprocal effects')), c.mean !== null && h('line', { x1: x(c.min), x2: x(c.max), y1: y, y2: y, stroke: archResearchColors[c.id], strokeWidth: 2 }), c.values.map(function(v, index) { return v === null ? null : h('circle', { key: index, 'data-research-point': c.id + ':' + index, 'data-response': v, cx: x(v), cy: y + ((index % 5) - 2) * 4, r: conditionState[0] === c.id && trialIndex === index ? 6 : 4, fill: archResearchColors[c.id], stroke: conditionState[0] === c.id && trialIndex === index ? '#172f31' : '#fff', strokeWidth: 1.5, onClick: function() { trialState[1](index); conditionState[1](c.id); } }); }), c.mean !== null && h('path', { d: 'M' + x(c.mean) + ',' + (y - 8) + 'l6,8 -6,8 -6,-8z', fill: '#fff', stroke: archResearchColors[c.id], strokeWidth: 2 })); }));
+    }
+
+    return h('section', { id: 'ea-field-study', className: 'ei-card ei-stack ea-research', tabIndex: -1, 'aria-labelledby': 'ea-research-title', 'data-arch-research': job ? 'running' : finished ? 'complete' : 'ready' },
+      h('div', { className: 'ea-badge' }, ax('research_eyebrow', 'Field research · predict → repeat → inspect → explain')),
+      h('h2', { id: 'ea-research-title' }, ax('research_title', 'How do connections change evolution?')),
+      h('p', { className: 'ea-note' }, ax('research_intro', 'A single future can fool you. Make four copies of the same starting population, cross island connections with reciprocal partner effects, and repeat the experiment with new private randomness. Look for patterns and exceptions.')),
+      h('div', { className: 'ea-research-questions', role: 'group', 'aria-label': ax('research_questions', 'Choose a research lens') },
+        h('button', { type: 'button', 'aria-pressed': metric === 'within', onClick: function() { metricState[1]('within'); } }, ax('research_question_variation', 'Connections & variation')),
+        h('button', { type: 'button', 'aria-pressed': metric === 'divergence', onClick: function() { metricState[1]('divergence'); } }, ax('research_question_local', 'Local trait differences')),
+        h('button', { type: 'button', 'aria-pressed': metric === 'trait', onClick: function() { metricState[1]('trait'); } }, ax('research_question_partners', 'Evolving partners'))),
+      h('p', { className: 'ea-research-question' }, metric === 'within' ? ax('research_prompt_within', 'Will connections maintain more marker variation inside islands, or can chance overwhelm that pattern in some futures? Compare the spread, not just the mean.') : metric === 'trait' ? ax('research_prompt_trait', 'Do evolving partner traits change the inherited trait mean on this island? Compare partner effects off and on under both isolation and connection.') : metric === 'divergence' ? ax('research_prompt_divergence', 'Will islands retain different trait means when they exchange genes? Local rainfall, partner traits and chance may pull in different directions.') : ax('research_prompt_between', 'How much do island marker frequencies separate in these futures? A difference between islands does not measure genome-wide diversity or prove speciation.')),
+      h('label', { htmlFor: 'ea-research-prediction' }, ax('research_prediction', 'What do you predict, and why?'), h('input', { id: 'ea-research-prediction', type: 'text', maxLength: 500, value: prediction, onChange: function(e) { predictionState[1](e.target.value); } })),
+      h('div', { className: 'ea-research-design', 'aria-label': ax('research_design', 'Four experimental conditions') }, ['00', '10', '01', '11'].map(function(id) { return h('div', { key: id, style: { borderColor: archResearchColors[id] } }, h('strong', null, archResearchName(id))); })),
+      h('div', { className: 'ea-research-controls' }, h('label', { htmlFor: 'ea-research-count' }, ax('research_count', 'Futures per condition'), h('select', { id: 'ea-research-count', value: countState[0], disabled: !!job, onChange: function(e) { countState[1](Number(e.target.value)); } }, [8, 12, 24].concat([8, 12, 24].indexOf(countState[0]) >= 0 ? [] : [countState[0]]).map(function(n) { return h('option', { key: n, value: n }, String(n)); }))),
+        h('button', { type: 'button', className: 'ei-primary', disabled: !!job || props.world.generation >= m.limit, onClick: function() { start(props.world); } }, ax('research_run', 'Run study from present generation')),
+        finished && h('button', { type: 'button', disabled: !!job, onClick: function() { start(finished.source); } }, ax('research_repeat', 'Repeat this starting population')),
+        job && h('button', { type: 'button', onClick: function() { jobState[1](null); statusState[1](ax('research_canceled', 'Study canceled. Your expedition and any previous completed study are unchanged.')); } }, ax('research_cancel', 'Cancel study'))),
+      h('p', { className: 'ea-micro' }, ax('research_capture', 'A new study captures the present organisms and next-round rainfall, mutation and selection settings. Connected conditions use your dispersal scale, or 0.12 when it is zero. Every future runs up to five generations. Repeating this starting population keeps the original conditions and changes the private random batch.')),
+      props.world.generation >= m.limit && h('p', { className: 'ea-note' }, ax('research_limit', 'This expedition reached the generation limit. You can still inspect or repeat a saved study from an earlier starting generation.')),
+      job && h('div', { className: 'ea-research-progress', role: 'status' }, ax('research_running', 'Running private trials') + ': ' + progress + ' / ' + job.plan.replicates, h('progress', { max: job.plan.replicates, value: progress, 'aria-label': ax('research_progress', 'Completed private trials') })),
+      finished && h('div', { className: 'ei-stack ea-research-results' },
+        h('h3', null, (job ? ax('research_previous', 'Previous completed study') + ' · ' : '') + finished.plan.replicates + ' ' + ax('research_futures', 'futures per condition') + ' · G' + finished.plan.start + ' → G' + finished.plan.end),
+        h('p', { className: 'ea-micro', 'data-research-captured': finished.plan.batch }, ax('research_batch', 'Private random batch') + ' ' + finished.plan.batch + ' · ' + ax('research_captured_rain', 'captured rainfall') + ': ' + finished.plan.settings.rainfall.map(function(v) { return v.toFixed(2); }).join(' / ') + ' · ' + ax('mutation', 'Trait mutation probability per allele') + ': ' + finished.plan.settings.mutation.toFixed(3)),
+        finished.plan.sourceChecksum !== currentStamp && h('p', { className: 'ea-research-stale', 'data-research-stale': true }, ax('research_stale', 'Your expedition or upcoming conditions have changed. These results still belong to the captured starting generation and settings above. Run a new study to test the new conditions.')),
+        !finished.plan.settings.selection && h('p', { className: 'ea-research-stale' }, ax('research_selection_off', 'Selection was off in this study. Partner settings have no fitness effect: the paired on/off futures are identical within each connection condition. Dispersal and drift remain.')),
+        h('div', { className: 'ea-research-selectors' }, h('label', { htmlFor: 'ea-research-metric' }, ax('research_response', 'Choose a response'), h('select', { id: 'ea-research-metric', value: metric, onChange: function(e) { metricState[1](e.target.value); } }, ['within', 'between', 'trait', 'divergence'].map(function(key) { return h('option', { key: key, value: key }, archResearchMetric(key, props.species, props.island)); }))),
+          h('label', { htmlFor: 'ea-research-species' }, ax('story_species', 'Follow a species'), h('select', { id: 'ea-research-species', value: props.species, onChange: function(e) { props.onSpecies(e.target.value); } }, m.species.map(function(sp) { return h('option', { key: sp, value: sp }, archSpecies(sp)); })))),
+        h('p', { className: 'ea-micro' }, archResearchMetric(metric, props.species, props.island) + ' · ' + archSpecies(props.species) + ' · ' + archResearchUnits(metric)),
+        plot(), h('p', { className: 'ea-note' }, ax('research_plot_help', 'Dots = individual outcomes. Diamonds = condition means. Lines = observed minimum to maximum, not confidence intervals. Choose any dot, or use the trial and condition selectors, to inspect the same outcome. Missing cohorts produce missing means, not zero traits.')),
+        h('div', { className: 'ea-table-wrap', role: 'region', tabIndex: 0, 'aria-label': ax('scrollable_table', 'Scrollable recorded data table') }, h('table', null, h('caption', null, ax('research_summary_caption', 'End-of-study outcomes across the four conditions')), h('thead', null, h('tr', null, [ax('research_condition', 'Condition'), ax('research_mean', 'Mean'), ax('research_range', 'Observed range'), ax('research_defined', 'Defined / total')].map(function(label) { return h('th', { key: label, scope: 'col' }, label); }))), h('tbody', null, summary.conditions.map(function(c) { return h('tr', { key: c.id, 'data-research-summary': c.id, 'data-research-mean': c.mean === null ? undefined : c.mean }, h('th', { scope: 'row' }, archResearchName(c.id)), h('td', null, archResearchNumber(c.mean, metric)), h('td', null, archResearchNumber(c.min, metric) + ' – ' + archResearchNumber(c.max, metric)), h('td', null, c.count + '/' + c.total)); })))),
+        h('details', { className: 'ea-research-contrasts' }, h('summary', null, ax('research_contrasts', 'Does the effect of connections depend on partners?')), h('p', { className: 'ea-note' }, ax('research_contrasts_help', 'Within each trial, subtract isolated from connected outcomes. Compare that connection effect with partner effects off and on. Their difference is an interaction contrast in this simulated study; it is not a test of statistical significance.')),
+          ['connectionWithoutPartners', 'connectionWithPartners', 'interaction'].map(function(key) { var s = summary[key], label = key === 'connectionWithoutPartners' ? ax('research_effect_off', 'Connection effect · partners off') : key === 'connectionWithPartners' ? ax('research_effect_on', 'Connection effect · partners on') : ax('research_interaction', 'Difference of the two connection effects'); return h('div', { key: key, className: 'ea-research-contrast', 'data-research-contrast': key, 'data-contrast-mean': s.mean === null ? undefined : s.mean }, h('strong', null, label + ': ' + archResearchNumber(s.mean, metric, true)), h('p', { className: 'ea-micro' }, ax('research_range', 'Observed range') + ': ' + archResearchNumber(s.min, metric, true) + ' – ' + archResearchNumber(s.max, metric, true) + ' · ' + s.count + '/' + s.total)); }),
+          h('p', { className: 'ea-micro' }, ax('research_interaction_limit', 'A positive interaction contrast means the connection effect was more positive with partner effects on for this chosen response. Signs can vary among trials. A value near zero does not prove independence in nature.'))),
+        h('div', { className: 'ea-research-selectors' }, h('label', { htmlFor: 'ea-research-trial' }, ax('research_choose_trial', 'Choose a trial'), h('select', { id: 'ea-research-trial', value: trialIndex, onChange: function(e) { trialState[1](Number(e.target.value)); } }, finished.trials.map(function(t) { return h('option', { key: t.index, value: t.index }, String(t.index + 1)); }))), h('label', { htmlFor: 'ea-research-condition' }, ax('research_condition', 'Condition'), h('select', { id: 'ea-research-condition', value: conditionState[0], onChange: function(e) { conditionState[1](e.target.value); } }, finished.plan.conditions.map(function(c) { return h('option', { key: c.id, value: c.id }, archResearchName(c.id)); })))),
+        h(ArchipelagoResearchTrial, { React: R, finished: finished, trial: trialIndex, condition: conditionState[0], island: props.island, species: props.species }),
+        h('label', { htmlFor: 'ea-research-reasoning' }, ax('research_reasoning', 'What does the evidence support—and what remains uncertain?'), h('textarea', { id: 'ea-research-reasoning', maxLength: 6000, value: reasoning, onChange: function(e) { reasoningState[1](e.target.value); } })),
+        h('div', { className: 'ei-row' }, h('button', { type: 'button', onClick: record }, ax('research_save', 'Save repeated study to journal')), h('button', { type: 'button', onClick: download }, ax('research_download', 'Download reproducible study data')))),
+      h('p', { className: 'ea-note ea-limit' }, ax('research_scope', 'All futures start with the same captured organisms: this measures variation among possible futures of that population, not independent founder samples. Conditions share an initial private seed within each trial; their later draws can differ when dispersal or reproduction decisions differ. Rainfall is held fixed during the study. This is an illustrative genetics model, not a real ecosystem forecast or proof of new species.')),
+      statusState[0] && h('p', { className: 'ea-note', role: 'status' }, statusState[0]));
+  }
+
   function ArchipelagoLab(props) {
     var R = props.React, h = R.createElement, model = ArchipelagoModel;
     var worldState = R.useState(function() { return model.restore(props.saved) || model.restore(lsGet('evoLab.archipelago.v1', null)) || model.create(2026); }), world = worldState[0];
@@ -3132,6 +3389,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       h('div', { className: 'ea-shell' },
         h('div', { className: 'ea-intro' }, h('strong', null, ax('question', 'Can the same species evolve differently on different islands?')), h('p', { className: 'ea-prominent' }, ax('intro', 'Seedwing birds eat the seeds of Shellseed plants. Stronger beaks help birds open shells; harder shells protect seeds, but both traits have costs. Both species inherit their traits. Rainfall differs across islands, and birds and seeds can disperse across the sea.')), h('p', { className: 'ea-micro' }, ax('fiction', 'Fictional species and a simplified genetics experiment, inspired by island biogeography. This does not recreate Darwin’s finches or a measured Galápagos ecosystem.'))),
         h('div', { className: 'ea-stepbar' }, h('div', null, h('strong', { 'data-arch-generation': cursor }, 'G' + cursor), ' / G' + world.generation, h('div', { className: 'ea-badge' }, live ? ax('present', 'Present generation') : ax('archive', 'Recorded generation · settings below apply to the next round'))), h('div', { className: 'ei-row' }, !live && h('button', { type: 'button', onClick: function() { visit(world.generation); } }, ax('return', 'Return to present')), h('button', { type: 'button', className: 'ei-primary', disabled: !live || world.generation >= model.limit, onClick: advance }, ax('advance', 'Advance one generation')))),
+        h('nav', { className: 'ea-fieldwork-nav', 'aria-label': ax('fieldwork_nav', 'Fieldwork sections') }, [["ea-research-title", ax('nav_research', 'Run a field study')], ["ea-story-title", ax('nav_story', 'Explain a generation')], ["ea-settings-title", ax('nav_settings', 'Set the environment')], ["ea-note-title", ax('nav_notes', 'Write field evidence')]].map(function(item) { return h('button', { key: item[0], type: 'button', onClick: function() { var target = document.getElementById(item[0]); if (target) { target.scrollIntoView({ block: 'start' }); target.setAttribute('tabindex', '-1'); target.focus({ preventScroll: true }); } } }, item[1]); })),
         h('div', { className: 'ea-layout', style: { marginTop: 16 } },
           h('div', { className: 'ea-main' },
             h('div', { className: 'ea-islands', role: 'group', 'aria-label': ax('choose_island', 'Choose an island') }, model.islands.map(function(item, i) { return h('button', { key: i, type: 'button', 'data-arch-island': i, 'aria-pressed': island === i, onClick: function() { islandState[1](i); selectedState[1](null); overviewState[1](false); } }, h('strong', null, archIslandName(i)), h('small', null, ax('habitat_' + i, item.description))); })),
@@ -3149,6 +3407,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('p', { className: 'ea-note' }, ax('h_explanation', 'H = 2p(1−p): the probability that two independently sampled marker copies differ, using this sample’s allele frequency. Its maximum is 0.5 for this two-allele marker. Pooled H can stay high when each island has lost variation. One marker does not measure genome-wide diversity; isolation need not increase diversity within an island.'))),
             h('section', { className: 'ei-card ei-stack', 'aria-labelledby': 'ea-migrants-title' }, h('h2', { id: 'ea-migrants-title' }, ax('migrants', 'Crossing the sea · passing on genes')), h('div', { className: 'ea-counts' }, h('div', null, h('strong', { 'data-migrant-arrivals': migrations.length }, migrations.length), h('small', null, ax('arrivals', 'Individual arrivals in this round'))), h('div', null, h('strong', { 'data-migrant-parents': contributors.length }, contributors.length), h('small', null, ax('contributors', 'Arriving migrants that reproduced')))), h('p', { className: 'ea-note' }, ax('movement_not_flow', 'Migration changes where an individual is. Gene flow into the offspring cohort requires that migrant to reproduce and transmit alleles. Not every arrival contributes. Counts combine both species across all islands.')),
               !round ? h('p', { className: 'ea-note' }, ax('founding_note', 'G0 records founding samples from the same ancestral pools, before any dispersal round.')) : !migrations.length ? h('p', { className: 'ea-note' }, ax('no_arrivals', 'No individuals crossed in this recorded round.')) : h('div', { className: 'ea-movement-list' }, migrations.map(function(m) { return h('button', { key: m.id, type: 'button', 'data-migrant': m.id, onClick: function() { selectedState[1](m.id); spState[1](m.species); islandState[1](m.to); overviewState[1](false); setTimeout(function() { if (inspector.current) { inspector.current.scrollIntoView({ block: 'nearest' }); inspector.current.focus({ preventScroll: true }); } }, 0); } }, '#' + m.id + ' · ' + archSpecies(m.species) + ' · ' + archIslandName(m.from) + ' → ' + archIslandName(m.to), h('small', { style: { display: 'block' } }, m.gametes ? m.gametes + ' ' + ax('gametes', 'gametes contributed to offspring; marker copies A/a: ') + m.markerCopies[1] + '/' + m.markerCopies[0] : ax('no_gametes', 'Arrived, but left no offspring in this round'))); }))),
+            h(ArchipelagoResearch, { React: R, world: world, island: island, species: sp, saved: props.research, onSave: props.onResearchSave, onFinding: props.onResearchFinding, onSpecies: function(s) { spState[1](s); selectedState[1](null); } }),
             h('section', { className: 'ei-card ei-stack ea-fork', 'aria-labelledby': 'ea-fork-title', 'data-arch-comparison': true }, h('h2', { id: 'ea-fork-title' }, ax('fork', 'Test two possible futures')), h('p', { className: 'ea-note' }, ax('fork_intro', 'Copy the present generation and run five private generations. Change one setting, keep the starting individuals and other settings identical. Your expedition stays unchanged.')), h('div', { className: 'ei-row' }, h('button', { type: 'button', disabled: world.generation >= model.limit, onClick: function() { openComparison('migration'); } }, ax('test_migration', 'Test island connections')), h('button', { type: 'button', disabled: world.generation >= model.limit || !world.settings.selection, onClick: function() { openComparison('reciprocal'); } }, ax('test_reciprocal', 'Test reciprocal selection'))), comparison && h('div', { className: 'ea-result' }, h('h3', null, 'G' + comparison.start + ' → G' + comparison.end + ' · ' + archSpecies(sp)), h('div', { className: 'ea-pair' }, ['a', 'b'].map(function(key) { var w = comparison[key], d = model.diversity(w.history[w.generation], sp); return h('div', { key: key, 'data-future': key }, h('strong', null, key.toUpperCase() + ' · ' + (comparison.kind === 'migration' ? key === 'a' ? ax('isolated', 'Isolated islands') : ax('connected', 'Connected islands') : key === 'a' ? ax('partner_off', 'Partner trait effects off') : ax('partner_on', 'Reciprocal trait selection'))), h('p', { className: 'ea-note' }, ax('within', 'Mean within-island H') + ': ' + archNumber(d.within)), h('p', { className: 'ea-note' }, ax('contrast', 'Island A-frequency range') + ': ' + archNumber(d.contrast)), d.rows.map(function(s, i) { return h('p', { key: i, className: 'ea-micro' }, archIslandName(i) + ': ' + archTrait(sp) + ' ' + archNumber(s.mean === null ? null : s.mean * 100, 1)); })); })), h('p', { className: 'ea-note' }, ax('fork_limit', 'This is one stochastic pair, not a guaranteed pattern or a statistical test. Changing dispersal also changes who can breed; the random trajectories can differ. Repeat with fresh seeds before generalizing. With partner effects off, both species still evolve under habitat selection and drift.')))),
             h('section', { className: 'ei-card ei-stack', 'aria-labelledby': 'ea-note-title' }, h('h2', { id: 'ea-note-title' }, ax('notebook', 'Make a claim with evidence')), h('label', { htmlFor: 'ea-explanation' }, ax('explain_prompt', 'Use a number, a mechanism and a model limit')), h('textarea', { id: 'ea-explanation', className: 'ea-explanation', value: explanation, onChange: function(e) { var text = e.target.value.slice(0, 6000); explanationState[1](text); props.onExplanation(text); } }), h('button', { type: 'button', onClick: record }, ax('save', 'Save island evidence to journal')))),
           h('div', { className: 'ea-sidebar' },
@@ -4107,7 +4366,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       };
       var getNote = function(moduleId) { var p = _progressRef.current; var n = p && p.notes && p.notes[moduleId]; return n && typeof n === 'object' && typeof n.text === 'string' ? n : null; };
       var saveNote = function(moduleId, text, cer) {
-        var clean = String(text == null ? '' : text).slice(0, moduleId === 'archipelagoEvidence' ? 12000 : 2000);
+        var clean = String(text == null ? '' : text).slice(0, (moduleId === 'archipelagoEvidence' || moduleId === 'archipelagoResearch') ? 12000 : 2000);
         var parts = cer && typeof cer === 'object' ? { claim: String(cer.claim || '').slice(0, 600), evidence: String(cer.evidence || '').slice(0, 600), reasoning: String(cer.reasoning || '').slice(0, 600) } : null;
         writeProgress(function(p) {
           if (clean.trim()) { var rec = { text: clean, at: new Date().toISOString() }; if (parts) rec.cer = parts; p.notes[moduleId] = rec; }
@@ -4245,6 +4504,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       var MODULE_TITLES = {
         livingIsland: 'Living Island',
         archipelagoEvidence: ax('note_label', 'Island Connections · geographic and coevolution evidence'),
+        archipelagoResearch: ax('research_note_label', 'Island Connections · repeated field study'),
         livingIslandData: 'Living Island — recorded evidence',
         livingIslandHighlights: t('stem.evolab.island_note_highlights', 'Living Island · collected moments'),
         livingIslandTraitTrail: t('stem.evolab.island_note_trait_trail', 'Living Island · family trait evidence'),
@@ -17764,7 +18024,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       // MAIN VIEW DISPATCH
       // ─────────────────────────────────────────────────────
       if (view === 'archipelago') return h(ArchipelagoLab, {
-        React: React, saved: d.archipelago, explanation: d.archipelagoExplanation, prediction: d.archipelagoPrediction,
+        React: React, saved: d.archipelago, research: d.archipelagoResearch, explanation: d.archipelagoExplanation, prediction: d.archipelagoPrediction,
+        onResearchSave: function(study) { upd('archipelagoResearch', study); },
+        onResearchFinding: function(text) { saveNote('archipelagoResearch', text); },
         onSave: function(world) { upd('archipelago', world); },
         onExplanation: function(text) { upd('archipelagoExplanation', text); },
         onPrediction: function(text) { upd('archipelagoPrediction', text); },
