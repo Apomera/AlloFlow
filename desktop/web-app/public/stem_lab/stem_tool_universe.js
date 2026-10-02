@@ -263,7 +263,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
   }
 
   function flybyPhaseLabel(flyby,label) {
-    var phases=flyby.id==='nebula'?{depart:'Leaving the stellar field',filaments:'Approaching the blue filaments',passage:'Passing the blue veil',turn:'Turning toward the violet cloud',reveal:'Revealing the violet cloud',complete:'Nebula view ready'}:{arm:'Skimming the spiral arm',approach:'Approaching the halo',cluster:'Passing the star cluster',turn:'Turning toward the galaxy',reveal:'Revealing the spiral',complete:'Galaxy view ready'};
+    var phases=flyby.id==='nebula'?{depart:'Leaving the stellar field',filaments:'Approaching the blue filaments',passage:'Passing the blue veil',turn:'Turning toward the violet cloud',reveal:'Revealing the violet cloud',complete:'Nebula view ready'}:flyby.id==='group'?{depart:'Approaching the foreground spiral',spiral:'Sweeping around the spiral',crossing:'Crossing toward the golden elliptical',elliptical:'Passing the golden elliptical',reveal:'Revealing the galaxy group',complete:'Galaxy group view ready'}:{arm:'Skimming the spiral arm',approach:'Approaching the halo',cluster:'Passing the star cluster',turn:'Turning toward the galaxy',reveal:'Revealing the spiral',complete:'Galaxy view ready'};
     return label((flyby.id==='halo'?'flyby_phase_':'flyby_'+flyby.id+'_phase_')+flyby.phase,phases[flyby.phase]||flyby.name||'Scenic flyby');
   }
 
@@ -272,7 +272,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
   }
 
   function flybyCheckpointHelp(event,label) {
-    return event.routeId==='nebula'?label('journey_nebula_help','Travel is paused beside the violet cloud. Look around, orbit the nebula, or save this view.'):label('journey_flyby_help','Travel is paused after the curved cluster pass. Look around, orbit the galaxy, or save this view.');
+    return event.routeId==='nebula'?label('journey_nebula_help','Travel is paused beside the violet cloud. Look around, orbit the nebula, or save this view.'):event.routeId==='group'?label('journey_group_help','Travel is paused with the galaxies in view. Look around, orbit the golden elliptical, or save this viewpoint.'):label('journey_flyby_help','Travel is paused after the curved cluster pass. Look around, orbit the galaxy, or save this view.');
   }
 
   function UniverseFlightFlybyControls(props) {
@@ -283,7 +283,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
       h('h4',{id:prefix+'-flyby-title'},label('flyby_'+flyby.id,flyby.name||'Scenic flyby')),
       h('div',{className:'uf-flyby-phase'},h('strong',null,flybyPhaseLabel(flyby,label)),h('span',null,percent+'%')),
       h('progress',{id:prefix+'-flyby-progress',value:percent,max:100,'aria-label':label('flyby_progress','Flyby progress')}),
-      h('p',{className:'uf-note'},completed?(flyby.id==='nebula'?label('flyby_nebula_complete_help','The violet cloud view is ready. Travel is paused; look around or save this viewpoint.'):label('flyby_complete_help','The galaxy view is ready. Travel is paused; look around or save this viewpoint.')):label('flyby_control_help','Pause any time. Looking around keeps the route moving and releases the guided view.')),
+      h('p',{className:'uf-note'},completed?(flyby.id==='nebula'?label('flyby_nebula_complete_help','The violet cloud view is ready. Travel is paused; look around or save this viewpoint.'):flyby.id==='group'?label('flyby_group_complete_help','The galaxy group view is ready. Travel is paused; look around or save this viewpoint.'):label('flyby_complete_help','The galaxy view is ready. Travel is paused; look around or save this viewpoint.')):label('flyby_control_help','Pause any time. Looking around keeps the route moving and releases the guided view.')),
       h('label',{htmlFor:prefix+'-flyby-rate'},label('flyby_rate','Flyby pace')),
       h('select',{id:prefix+'-flyby-rate',value:props.rate,disabled:!props.ready||completed,onChange:function(e){props.onRate(Number(e.target.value));}},
         h('option',{value:0.5},label('flyby_slow','Slow · ½×')),h('option',{value:1},label('flyby_standard','Standard · 1×')),h('option',{value:2},label('flyby_fast','Fast · 2×'))),
@@ -453,9 +453,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
         ['neighborhood','Drift between stars','Nearby clusters and glowing clouds'],
         ['cosmic','Approach an island galaxy','A galaxy grows against the distant group'],
         ['halo','Halo flyby','Skim an arm, pass the cluster, and reveal the spiral'],
-        ['nebula','Nebula passage','Sweep past blue filaments and turn toward the violet cloud']
+        ['nebula','Nebula passage','Sweep past blue filaments and turn toward the violet cloud'],
+        ['group','Galaxy group flyby','Pass the spiral and golden elliptical, then reveal the group']
       ].map(function(item,index){return h('button',{key:item[0],type:'button','data-scenic-flight':item[0],className:index===0?'uf-primary':'',disabled:!props.ready,onClick:function(){props.onLaunch(item[0]);}},
-        h('strong',null,label('scenic_flight_'+item[0],item[1])),h('small',null,label('scenic_flight_'+item[0]+'_detail',item[2])),h('span',{className:'uf-scenic-duration'},item[0]==='halo'?label('flyby_duration','36 seconds at standard pace'):item[0]==='nebula'?label('flyby_nebula_duration','40 seconds at standard pace'):label('scenic_duration','About 20 seconds')));
+        h('strong',null,label('scenic_flight_'+item[0],item[1])),h('small',null,label('scenic_flight_'+item[0]+'_detail',item[2])),h('span',{className:'uf-scenic-duration'},item[0]==='halo'?label('flyby_duration','36 seconds at standard pace'):item[0]==='nebula'?label('flyby_nebula_duration','40 seconds at standard pace'):item[0]==='group'?label('flyby_group_duration','48 seconds at standard pace'):label('scenic_duration','About 20 seconds')));
       })));
   }
 
@@ -694,7 +695,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
     }
     function endFlyby() { if(scene.current&&scene.current.cancelFlyby&&scene.current.cancelFlyby()){setJourney(null);inspectScene();} }
     function launchScenicFlight(launchRegion) {
-      if(launchRegion==='halo'||launchRegion==='nebula')return launchFlyby(launchRegion);
+      if(api&&api.flybys&&api.flybys().some(function(item){return item.id===launchRegion;}))return launchFlyby(launchRegion);
       if(!scene.current||!ready||!api||!api.math.approachPlan)return false;
       var flights={
         neighborhood:{position:[0,0,0],targetId:'pale-star',fov:75},

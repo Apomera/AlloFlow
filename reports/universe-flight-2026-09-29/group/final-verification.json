@@ -1,0 +1,75 @@
+{
+  "completed": true,
+  "verifiedAt": "2026-10-02T00:02:58.925Z",
+  "sourceHash": "7765970b7c3bafdc604839d7355e1185bebf92b45ce9bd5c471818e928765a93",
+  "uiHash": "62322d3b8b8630e83ca78c99b289a6683c8ca5467eae6bfd4c14c28c3cd0ac04",
+  "testHash": "b9fbef9a566a2a0ec803dcbdc93b8ebf93834c440dc826113566a380eb608eb6",
+  "reportHash": "21b224fea36a134b80c5771291404b6085681aced3945ae04979e0a808a56340",
+  "focusedTests": 127,
+  "focusedTestFiles": 4,
+  "focusedTestExitCode": 0,
+  "focusedTestDurationSeconds": 19.79,
+  "originalFocusedLogHash": "00a0dfba2b6342530bc3e47ef511fdab0827563930ec95705f42554bb47a8646",
+  "groupBrowser": {
+    "completed": true,
+    "workflowGroups": 9,
+    "accessibilityScopes": 7,
+    "actualCaptures": 11,
+    "pageErrors": 0
+  },
+  "highlightsRegression": {
+    "completed": true,
+    "workflowGroups": 6,
+    "accessibilityScopes": 12,
+    "actualCaptures": 15,
+    "pageErrors": 0
+  },
+  "encounterRegression": {
+    "completed": true,
+    "workflowGroups": 32,
+    "accessibilityScopes": 10,
+    "actualCaptures": 17,
+    "pageErrors": 0
+  },
+  "evidenceHashes": {
+    "check.json": "0cda5c9b67ac6fc3fb95226b3db6a6a2da247c4947aa08910971a898257c80d3",
+    "geometry-audit.json": "4a524c83d3d815f6ae49142b3610fe7a9dc85e730411dcc9ce634354ed34a928",
+    "focused-tests.txt": "24b2572a410158a7a5fc7b00c6f748554c75d9aef57148fb156b133fb31b25b1",
+    "regression-highlights.json": "6de18b948abd05bacc39572f3d347a752f92aaccbf17f38aee76db0a33654d3d",
+    "regression-encounter.json": "67660d4a5f893137126c6c2db8368e53007a68e9cc22d71e4cf08c7c34cf0356"
+  },
+  "harnessHashes": {
+    "dev-tools/universe_flight_group_check.cjs": "f5ad7a52f2a8abb4308abb01d17fdc48bdead92e9a563b6610268478003b01ed",
+    "dev-tools/universe_flight_highlights_check.cjs": "dd0e25ea48a2e698ec12fe6863624ba45c0a218e0feabc86fcc167af67447aa2",
+    "dev-tools/universe_flight_encounter_check.cjs": "ad31540626a184027b60160377a847ea4652f760eafdfa38cbc104d1b6e1ec47"
+  },
+  "mirrorsMatch": true,
+  "syntaxChecks": 8,
+  "scopedWhitespaceCheck": true,
+  "served": [
+    {
+      "url": "http://127.0.0.1:3187/stem_lab/universe_flight_scene.js",
+      "status": 200,
+      "hash": "7765970b7c3bafdc604839d7355e1185bebf92b45ce9bd5c471818e928765a93"
+    },
+    {
+      "url": "http://127.0.0.1:3187/stem_lab/stem_tool_universe.js",
+      "status": 200,
+      "hash": "62322d3b8b8630e83ca78c99b289a6683c8ca5467eae6bfd4c14c28c3cd0ac04"
+    }
+  ],
+  "preview": {
+    "url": "http://127.0.0.1:3187/reports/universe-flight-2026-09-29/preview.html?enhanced=28#universe-flight",
+    "status": 200
+  },
+  "geometryShadersAtlasesPhysicsUnchanged": true,
+  "independentReview": "Passed: route sampling, exact renderer diff scope, native controls, test and harness review.",
+  "visualInspection": [
+    "spiral skim",
+    "golden elliptical pass",
+    "galaxy group panorama",
+    "phone phase cue",
+    "short-landscape controls"
+  ],
+  "limitations": "Authored camera tour through generated scenery; free exploration does not assign a physical spacecraft velocity. Scoped automated accessibility checks and resource counts are not a complete audit or performance benchmark."
+}

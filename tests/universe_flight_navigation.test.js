@@ -1295,7 +1295,7 @@ describe('Universe flight Halo flyby', () => {
     const routes = flight.flybys('galaxy');
     expect(routes).toHaveLength(1);
     expect(routes).toEqual(flight.flybys().filter(item => item.region === 'galaxy'));
-    expect(flight.flybys('cosmic')).toEqual([]);
+    expect(flight.flybys('cosmic')).toMatchObject([{ id: 'group', region: 'cosmic' }]);
     expect(flight.flybys('missing')).toEqual([]);
     expect(routes[0]).toMatchObject({ id: 'halo', region: 'galaxy', targetId: 'halo-cluster-2' });
     expect(routes[0].durationSeconds).toBeGreaterThan(10);
@@ -1641,8 +1641,8 @@ describe('Universe flight Nebula passage', () => {
 
   it('returns independent region-specific route catalogs and preserves the original Halo metadata', () => {
     const catalog = flight.flybys(), neighborhood = flight.flybys('neighborhood'), galaxy = flight.flybys('galaxy');
-    expect(catalog).toHaveLength(2);
-    expect(new Set(catalog.map(item => item.id)).size).toBe(2);
+    expect(catalog).toHaveLength(3);
+    expect(new Set(catalog.map(item => item.id)).size).toBe(3);
     expect(neighborhood).toHaveLength(1);
     expect(galaxy).toMatchObject([haloMetadata]);
     expect(neighborhood[0]).toMatchObject({
@@ -1651,7 +1651,7 @@ describe('Universe flight Nebula passage', () => {
     });
     expect(neighborhood).toEqual(catalog.filter(item => item.region === 'neighborhood'));
     expect(galaxy).toEqual(catalog.filter(item => item.region === 'galaxy'));
-    expect(flight.flybys('cosmic')).toEqual([]);
+    expect(flight.flybys('cosmic')).toEqual(catalog.filter(item => item.region === 'cosmic'));
     expect(flight.flybys('missing')).toEqual([]);
     expect(flight.flybys(null)).toEqual([]);
     const original = structuredClone(catalog);
@@ -1871,6 +1871,362 @@ describe('Universe flight Nebula passage', () => {
   });
 });
 
+describe('Universe flight galaxy group flyby', () => {
+  const launchPosition = [-450000, 400000, -1050000];
+  const endpoint = [1250000, 1200000, -800000];
+  const phases = ['depart', 'spiral', 'crossing', 'elliptical', 'reveal', 'complete'];
+
+  function publish() {
+    scene.set({ flybyRate: telemetry.flyby.rate });
+    return telemetry.flyby;
+  }
+
+  function launch(rate = 1) {
+    const route = flight.flybys('cosmic')[0];
+    scene.set({ mode: 'explore', region: 'cosmic', fov: route.fov, flybyRate: rate });
+    expect(scene.startFlyby('group')).toBe(true);
+    advance();
+    return route;
+  }
+
+  function finish(interval = 500) {
+    for (let step = 0; step < 2000 && telemetry.running; step++) advance(interval);
+    expect(telemetry.running).toBe(false);
+    expect(telemetry.flyby.completed).toBe(true);
+    return scene.snapshot();
+  }
+
+  function expectAtomicRejection(action) {
+    const saved = scene.snapshot(), published = structuredClone(telemetry);
+    const scheduled = [...frames.keys()], eventCount = pauseEvents.length;
+    expect(action()).toBe(false);
+    expect(scene.snapshot()).toEqual(saved);
+    expect(telemetry).toEqual(published);
+    expect([...frames.keys()]).toEqual(scheduled);
+    expect(pauseEvents).toHaveLength(eventCount);
+  }
+
+  function expectSameView(actual, expected) {
+    // Existing restore and resume normalize yaw to 0–2π without changing view.
+    expect({ ...actual, state: { ...actual.state, yaw: 0 } }).toEqual({ ...expected, state: { ...expected.state, yaw: 0 } });
+    expect(Math.sin(actual.state.yaw)).toBeCloseTo(Math.sin(expected.state.yaw), 12);
+    expect(Math.cos(actual.state.yaw)).toBeCloseTo(Math.cos(expected.state.yaw), 12);
+  }
+
+  it('adds one detached cosmic route while retaining every existing generated galaxy', () => {
+    const routes = flight.flybys('cosmic'), original = structuredClone(routes);
+    expect(routes).toHaveLength(1);
+    expect(flight.flybys().map(route => route.id)).toEqual(['halo', 'nebula', 'group']);
+    expect(routes[0]).toMatchObject({
+      id: 'group', name: 'Galaxy group flyby', region: 'cosmic', durationSeconds: 48,
+      position: launchPosition, aim: [0, 0, 0], fov: 60, targetId: 'near-galaxy',
+    });
+    expect(routes[0].highlights.map(highlight => highlight.id)).toEqual(['spiral', 'elliptical', 'panorama']);
+    expect(flight.landmarks('cosmic').map(item => item.id)).toEqual(['near-galaxy', 'companion-galaxy', 'distant-galaxy', 'golden-elliptical']);
+    routes[0].position[0] = 1e20; routes[0].aim[2] = 1e20;
+    routes[0].name = 'Changed'; routes[0].highlights[0].seconds = 1e20;
+    routes[0].highlights.splice(1);
+    expect(flight.flybys('cosmic')).toEqual(original);
+    expect(flight.flybys().filter(route => route.region === 'cosmic')).toEqual(original);
+  });
+
+  it('starts a fresh group journey and retains view preferences across the UI settings echo', () => {
+    scene.set({ mode: 'relativity', beta: 0.99, timeScale: 20 });
+    scene.set({ running: true });
+    advance(); advance(100);
+    expect(scene.snapshot().state.universeYears).toBeGreaterThan(0);
+    scene.set({ mode: 'explore', region: 'cosmic', quality: 'high', exposure: 0.72, compareRest: true });
+    scene.nudge('right', 100000); scene.frameTarget('near-galaxy', 1 / 3);
+    const creates = { ...graphicsCreates }, textures = createdTextures.slice(), uploads = textureUploads.length;
+    const route = launch(2), saved = scene.snapshot();
+    expect(telemetry.flyby).toMatchObject({ active: true, completed: false, id: 'group', progress: 0, elapsedSeconds: 0, autoLook: true, rate: 2, phase: 'depart' });
+    expect(telemetry.position).toEqual(route.position);
+    expect(telemetry.target.id).toBe('near-galaxy');
+    expect(telemetry.navigation.active).toBe(false);
+    expect(telemetry.orbit.active).toBe(false);
+    expect(telemetry.framing.canUndo).toBe(false);
+    expect(telemetry.cameraMoves).toBe(0);
+    expect(telemetry.trail).toEqual([route.position]);
+    expect(saved.state).toMatchObject({ distanceLy: 0, universeYears: 0, travelerYears: 0 });
+    expect(saved.settings).toMatchObject({ mode: 'explore', region: 'cosmic', fov: route.fov, quality: 'high', exposure: 0.72, beta: 0.99, compareRest: true });
+    scene.set({ ...saved.settings, running: true, speed: 1e10, smoothTravel: true, flybyRate: 2 });
+    expectSameView(scene.snapshot(), saved);
+    advance(100);
+    expect(publish().elapsedSeconds).toBeCloseTo(0.2, 10);
+    expect(graphicsCreates).toEqual(creates);
+    expect(createdTextures).toEqual(textures);
+    expect(textureUploads).toHaveLength(uploads);
+  });
+
+  it('skims the spiral and elliptical on a continuous curved course with one final panorama pause', () => {
+    const route = launch(), start = scene.snapshot().state.position;
+    const galaxies = flight.landmarks('cosmic'), spiral = galaxies[0], elliptical = galaxies[3];
+    const positions = [start], visited = [telemetry.flyby.phase];
+    let previousDistance = 0, previousPhase = 0;
+    pauses.length = 0; pauseEvents.length = 0;
+    for (let step = 0; step < 1000 && telemetry.running; step++) {
+      advance(100); publish();
+      const state = scene.snapshot().state;
+      expect(state.position.every(Number.isFinite)).toBe(true);
+      expect(Math.hypot(...state.position)).toBeLessThan(3000000);
+      expect(state.distanceLy).toBeGreaterThanOrEqual(previousDistance);
+      previousDistance = state.distanceLy;
+      expect(state.universeYears).toBe(0); expect(state.travelerYears).toBe(0);
+      const phase = phases.indexOf(telemetry.flyby.phase);
+      expect(phase).toBeGreaterThanOrEqual(previousPhase); previousPhase = phase;
+      if (visited.at(-1) !== telemetry.flyby.phase) visited.push(telemetry.flyby.phase);
+      positions.push(state.position);
+    }
+    const end = scene.snapshot();
+    expect(visited).toEqual(phases);
+    expect(telemetry.running).toBe(false);
+    expect(telemetry.flyby).toMatchObject({ active: false, completed: true, id: 'group', phase: 'complete', progress: 1, elapsedSeconds: route.durationSeconds });
+    expect(end.state.position).toEqual(endpoint);
+    expect(end.targetId).toBe('golden-elliptical');
+    const spiralPass = Math.min(...positions.map(position => Math.hypot(...position.map((value, i) => value - spiral.position[i]))));
+    const ellipticalPass = Math.min(...positions.map(position => Math.hypot(...position.map((value, i) => value - elliptical.position[i]))));
+    // The authored spiral skim enters its broad viewing range while keeping a
+    // 200,000 ly camera clearance. The elliptical is viewed outside its range.
+    expect(spiralPass).toBeGreaterThan(200000); expect(spiralPass).toBeLessThan(spiral.arrivalRadiusLy);
+    expect(ellipticalPass).toBeGreaterThan(elliptical.arrivalRadiusLy); expect(ellipticalPass).toBeLessThan(500000);
+    const line = end.state.position.map((value, i) => value - start[i]), length = Math.hypot(...line);
+    const unit = line.map(value => value / length);
+    const deviations = positions.map(position => {
+      const offset = position.map((value, i) => value - start[i]);
+      const projection = offset.reduce((sum, value, i) => sum + value * unit[i], 0);
+      return Math.hypot(...offset.map((value, i) => value - projection * unit[i]));
+    });
+    expect(Math.max(...deviations)).toBeGreaterThan(length * 0.05);
+    expect(end.state.distanceLy).toBeGreaterThan(length * 1.1);
+    const chords = positions.slice(1).map((position, i) => Math.hypot(...position.map((value, j) => value - positions[i][j])));
+    expect(Math.max(...chords)).toBeLessThan(end.state.distanceLy * 0.015);
+    expect(pauseEvents).toEqual([[expect.any(String), {
+      kind: 'flyby', region: 'cosmic', mode: 'explore', position: endpoint,
+      targetId: 'golden-elliptical', targetName: elliptical.name, routeId: route.id, routeName: route.name,
+    }]]);
+    advance(5000); expect(scene.snapshot()).toEqual(end);
+    expect(pauses).toHaveLength(1);
+  });
+
+  it('uses route pacing independently of physical settings and frame subdivision', () => {
+    const partial = [];
+    for (const [rate, interval] of [[0.25, 100], [1, 100], [4, 100], [1, 25]]) {
+      launch(rate); scene.set({ speed: 1e10, timeScale: 1e10, beta: 0.9999, smoothTravel: true });
+      for (let elapsed = 0; elapsed < 1000; elapsed += interval) advance(interval);
+      scene.set({ running: false });
+      expect(telemetry.flyby.elapsedSeconds).toBeCloseTo(rate, 10);
+      expect(telemetry.flyby.progress).toBeCloseTo(rate / 48, 10);
+      expect(telemetry.universeYears).toBe(0); expect(telemetry.travelerYears).toBe(0);
+      partial.push(scene.snapshot().state);
+    }
+    partial[3].position.forEach((value, i) => expect(value).toBeCloseTo(partial[1].position[i], 7));
+    expect(partial[3].distanceLy).toBeCloseTo(partial[1].distanceLy, 7);
+    expect(partial[0].position).not.toEqual(partial[1].position);
+    expect(partial[2].position).not.toEqual(partial[1].position);
+    launch(4); const fast = finish();
+    launch(0.5); const slow = finish();
+    expect(slow.state.position).toEqual(fast.state.position);
+    expect(slow.state.distanceLy).toBe(fast.state.distanceLy);
+    expect(slow.targetId).toBe('golden-elliptical');
+    launch(); scene.set({ flybyRate: 100 }); expect(telemetry.flyby.rate).toBe(4);
+    scene.set({ flybyRate: -100 }); expect(telemetry.flyby.rate).toBe(0.25);
+  });
+
+  it('freezes paused, hidden and offscreen group travel and excludes suspended wall time on resume', () => {
+    let intersect;
+    const originalObserver = window.IntersectionObserver;
+    window.IntersectionObserver = class {
+      constructor(callback) { intersect = callback; }
+      observe() {}
+      disconnect() {}
+    };
+    try {
+      scene.dispose();
+      scene = flight.create(sceneCanvas, { onTelemetry: value => { telemetry = value; }, onPause: (...args) => { pauses.push(args[0]); pauseEvents.push(args); } });
+      launch(2); advance(100); advance(100);
+      scene.set({ running: false });
+      const paused = scene.snapshot(), elapsed = telemetry.flyby.elapsedSeconds;
+      advance(5000); expect(scene.snapshot()).toEqual(paused);
+      scene.set({ running: true }); advance(5000);
+      expectSameView(scene.snapshot(), paused);
+      expect(publish().elapsedSeconds).toBe(elapsed);
+      advance(100); expect(publish().elapsedSeconds).toBeCloseTo(elapsed + 0.2, 10);
+      vi.spyOn(document, 'hidden', 'get').mockReturnValue(true);
+      document.dispatchEvent(new Event('visibilitychange'));
+      const hidden = scene.snapshot(), hiddenElapsed = telemetry.flyby.elapsedSeconds;
+      advance(5000); expect(scene.snapshot()).toEqual(hidden);
+      expect(telemetry.motion.paceLyPerSecond).toBe(0);
+      expect(telemetry.flyby.elapsedSeconds).toBe(hiddenElapsed);
+      vi.spyOn(document, 'hidden', 'get').mockReturnValue(false);
+      document.dispatchEvent(new Event('visibilitychange'));
+      advance(5000); expectSameView(scene.snapshot(), hidden);
+      advance(100); expect(publish().elapsedSeconds).toBeCloseTo(hiddenElapsed + 0.2, 10);
+      intersect([{ isIntersecting: false }]);
+      const offscreen = scene.snapshot(), offscreenElapsed = telemetry.flyby.elapsedSeconds;
+      advance(5000); expect(scene.snapshot()).toEqual(offscreen);
+      expect(telemetry.motion.paceLyPerSecond).toBe(0);
+      expect(telemetry.flyby.elapsedSeconds).toBe(offscreenElapsed);
+      intersect([{ isIntersecting: true }]);
+      advance(5000); expectSameView(scene.snapshot(), offscreen);
+      advance(100); expect(publish().elapsedSeconds).toBeCloseTo(offscreenElapsed + 0.2, 10);
+    } finally {
+      if (originalObserver === undefined) delete window.IntersectionObserver;
+      else window.IntersectionObserver = originalObserver;
+    }
+  });
+
+  it('keeps moving during manual look and restores its authored gaze without moving a paused observer', () => {
+    const route = launch(); advance(100); advance(100);
+    scene.look(0.4, -0.15);
+    const looked = scene.snapshot().state;
+    advance(100); advance(100); publish();
+    expect(telemetry.flyby).toMatchObject({ id: 'group', active: true, autoLook: false });
+    expect(telemetry.running).toBe(true);
+    expect(scene.snapshot().state.position).not.toEqual(looked.position);
+    expect(scene.snapshot().state.yaw).toBe(looked.yaw);
+    expect(scene.snapshot().state.pitch).toBe(looked.pitch);
+    scene.set({ running: false });
+    const before = scene.snapshot().state, elapsed = telemetry.flyby.elapsedSeconds;
+    expect(scene.followFlybyView()).toBe(true);
+    const followed = scene.snapshot().state;
+    expect(followed.position).toEqual(before.position);
+    expect(followed.distanceLy).toBe(before.distanceLy);
+    expect(telemetry.flyby.elapsedSeconds).toBe(elapsed);
+    expect(telemetry.running).toBe(false);
+    expect(telemetry.flyby.autoLook).toBe(true);
+    expect([followed.yaw, followed.pitch]).not.toEqual([looked.yaw, looked.pitch]);
+    expect(scene.frameTarget(route.targetId, 1 / 3)).toBe(true);
+    expect(telemetry.flyby).toMatchObject({ active: true, autoLook: false });
+    expect(telemetry.target.screen[0]).toBeCloseTo(1 / 3, 8);
+    expect(scene.followFlybyView()).toBe(true);
+    expect(scene.snapshot().state.yaw).toBe(followed.yaw);
+    expect(scene.snapshot().state.pitch).toBe(followed.pitch);
+    expect(scene.snapshot().state.position).toEqual(before.position);
+  });
+
+  it('ends the group route in place and hands control to free travel or another navigation action', () => {
+    launch(); advance(100); advance(100);
+    const saved = scene.snapshot();
+    expect(scene.cancelFlyby()).toBe(true);
+    expect(scene.snapshot()).toEqual(saved);
+    expect(telemetry.flyby).toMatchObject({ active: false, completed: false, id: null });
+    expect(telemetry.running).toBe(false);
+    advance(5000); expect(scene.snapshot()).toEqual(saved);
+    expect(scene.cancelFlyby()).toBe(false);
+    expect(scene.followFlybyView()).toBe(false);
+    scene.set({ speed: 100000, smoothTravel: false, running: true }); advance(); advance(100);
+    expect(telemetry.motion.kind).toBe('free');
+    expect(scene.snapshot().state.distanceLy).toBeCloseTo(saved.state.distanceLy + 10000, 7);
+    expect(Math.hypot(...scene.snapshot().state.position.map((value, i) => value - saved.state.position[i]))).toBeCloseTo(10000, 7);
+    const actions = [
+      () => scene.restore(scene.snapshot()),
+      () => scene.reset(),
+      () => scene.selectTarget('golden-elliptical'),
+      () => scene.nudge('right', 100000),
+      () => scene.navigateTo('golden-elliptical'),
+      () => scene.startOrbit('near-galaxy'),
+      () => scene.set({ region: 'galaxy' }),
+      () => scene.set({ mode: 'relativity' }),
+    ];
+    for (const action of actions) {
+      launch(); advance(100); action();
+      expect(telemetry.flyby).toMatchObject({ active: false, completed: false });
+      expect(telemetry.motion.kind).not.toBe('flyby');
+    }
+    launch(); scene.selectTarget('near-galaxy');
+    expect(telemetry.flyby.active).toBe(true);
+  });
+
+  it('rejects invalid and cross-region controls atomically, including lost, disposed and unavailable graphics', () => {
+    expectAtomicRejection(() => scene.startFlyby('group'));
+    for (const [region, id] of [['galaxy', 'halo'], ['neighborhood', 'nebula']]) {
+      scene.set({ mode: 'explore', region });
+      expect(scene.startFlyby(id)).toBe(true); advance(); advance(100);
+      expectAtomicRejection(() => scene.startFlyby('group'));
+      expect(telemetry.flyby.id).toBe(id);
+    }
+    scene.set({ mode: 'relativity', region: 'cosmic' });
+    expectAtomicRejection(() => scene.startFlyby('group'));
+    const route = launch();
+    for (const id of ['halo', 'nebula', 'missing', '__proto__', null, undefined, 8]) expectAtomicRejection(() => scene.startFlyby(id));
+    for (const id of ['arm', 'cluster', 'approach', 'filaments', 'violet', '__proto__', null, undefined, 8]) expectAtomicRejection(() => scene.seekFlybyHighlight(id));
+    expectAtomicRejection(() => scene.navigateTo('missing'));
+    expectAtomicRejection(() => scene.startOrbit('missing'));
+    expectAtomicRejection(() => scene.selectTarget('missing'));
+    expectAtomicRejection(() => scene.frameTarget('missing', 1 / 3));
+    expectAtomicRejection(() => scene.nudge('missing', 100000));
+    sceneCanvas.dispatchEvent(new Event('webglcontextlost', { cancelable: true }));
+    for (const action of [() => scene.startFlyby('group'), () => scene.seekFlybyHighlight(route.highlights[0].id), () => scene.cancelFlyby(), () => scene.followFlybyView()]) expectAtomicRejection(action);
+    scene.dispose();
+    for (const action of [() => scene.startFlyby('group'), () => scene.seekFlybyHighlight(route.highlights[0].id), () => scene.cancelFlyby(), () => scene.followFlybyView()]) expectAtomicRejection(action);
+    const canvas = document.createElement('canvas');
+    vi.spyOn(canvas, 'getContext').mockReturnValue(null);
+    vi.spyOn(canvas, 'getBoundingClientRect').mockReturnValue({ width: 800, height: 500 });
+    const unavailable = flight.create(canvas);
+    unavailable.set({ mode: 'explore', region: 'cosmic' });
+    const before = unavailable.snapshot();
+    expect(unavailable.startFlyby('group')).toBe(false);
+    expect(unavailable.seekFlybyHighlight(route.highlights[0].id)).toBe(false);
+    expect(unavailable.cancelFlyby()).toBe(false);
+    expect(unavailable.followFlybyView()).toBe(false);
+    expect(unavailable.snapshot()).toEqual(before);
+    unavailable.dispose();
+  });
+
+  it('jumps backward through the group highlights, clears framing, and resumes from the selected moment', () => {
+    const route = launch(2), first = route.highlights[0], last = route.highlights.at(-1);
+    scene.set({ fov: 91, exposure: 0.55, quality: 'low', beta: 0.73, compareRest: true, speed: 1234, smoothTravel: true });
+    expect(scene.seekFlybyHighlight(last.id)).toBe(true);
+    const later = scene.snapshot(), preferences = { ...later.settings };
+    expect(scene.frameTarget(route.targetId, 1 / 3)).toBe(true);
+    expect(telemetry.framing.canUndo).toBe(true);
+    expect(scene.seekFlybyHighlight(first.id)).toBe(true);
+    const earlier = scene.snapshot(), events = pauseEvents.length;
+    expect(earlier.state.distanceLy).toBeLessThan(later.state.distanceLy);
+    expect(earlier.state.position).not.toEqual(later.state.position);
+    expect(earlier.settings).toEqual(preferences);
+    expect(telemetry.flyby).toMatchObject({ active: true, completed: false, autoLook: true, elapsedSeconds: first.seconds, rate: 2 });
+    expect(telemetry.target.id).toBe('near-galaxy');
+    expect(telemetry.framing).toMatchObject({ canUndo: false, placement: null });
+    expect(telemetry.cameraMoves).toBe(0);
+    expect(telemetry.trail).toEqual([earlier.state.position]);
+    advance(5000); expect(scene.snapshot()).toEqual(earlier);
+    scene.set({ running: true }); advance(5000);
+    expectSameView(scene.snapshot(), earlier);
+    expect(publish().elapsedSeconds).toBe(first.seconds);
+    advance(100);
+    expect(publish().elapsedSeconds).toBeCloseTo(first.seconds + 0.2, 10);
+    expect(scene.snapshot().state.distanceLy).toBeGreaterThan(earlier.state.distanceLy);
+    expect(scene.snapshot().state.position).not.toEqual(earlier.state.position);
+    expect(scene.snapshot().settings).toEqual(preferences);
+    expect(pauseEvents).toHaveLength(events);
+  });
+
+  it('restores a detached version-one group highlight as an ordinary paused observation', () => {
+    const route = launch(), highlight = route.highlights[1];
+    expect(scene.seekFlybyHighlight(highlight.id)).toBe(true);
+    const saved = scene.snapshot(), expected = structuredClone(saved);
+    expect(saved.version).toBe(1);
+    expect(Object.keys(saved).sort()).toEqual(['settings', 'state', 'targetId', 'version']);
+    expect(Object.keys(saved.settings).sort()).toEqual(['beta', 'compareRest', 'exposure', 'fov', 'mode', 'quality', 'region']);
+    expect(saved.settings.region).toBe('cosmic');
+    expect(saved.targetId).toBe('near-galaxy');
+    saved.state.position[0] = 1e20; saved.settings.region = 'galaxy';
+    expect(scene.snapshot()).toEqual(expected);
+    expect(scene.restore(expected)).toBe(true);
+    expectSameView(scene.snapshot(), expected);
+    const restored = scene.snapshot();
+    expect(telemetry.running).toBe(false);
+    expect(telemetry.flyby).toMatchObject({ active: false, completed: false, id: null });
+    expectAtomicRejection(() => scene.seekFlybyHighlight(highlight.id));
+    advance(5000); expect(scene.snapshot()).toEqual(restored);
+    scene.set({ running: true, speed: 0 }); advance(); advance(100);
+    expect(scene.snapshot()).toEqual(restored);
+    expect(telemetry.motion.kind).toBe('free');
+    expect(telemetry.flyby.active).toBe(false);
+  });
+});
+
 describe('Universe flight scenic highlights', () => {
   function routeMetadata(id) {
     return flight.flybys().find(route => route.id === id);
@@ -1927,7 +2283,7 @@ describe('Universe flight scenic highlights', () => {
   it('exports named ordered highlights as detached route metadata', () => {
     const routes = flight.flybys(), original = structuredClone(routes);
     expect(routes.map(route => route.highlights.map(highlight => highlight.id))).toEqual([
-      ['arm', 'cluster', 'panorama'], ['approach', 'filaments', 'violet'],
+      ['arm', 'cluster', 'panorama'], ['approach', 'filaments', 'violet'], ['spiral', 'elliptical', 'panorama'],
     ]);
     for (const route of routes) {
       let previous = 0;
@@ -1954,7 +2310,7 @@ describe('Universe flight scenic highlights', () => {
     expect(flight.flybys('galaxy')).toEqual(original.filter(route => route.region === 'galaxy'));
   });
 
-  for (const routeId of ['halo', 'nebula']) {
+  for (const routeId of ['halo', 'nebula', 'group']) {
     it(`jumps to every ${routeId} highlight with the naturally sampled pose and one pause event`, () => {
       for (const highlight of routeMetadata(routeId).highlights) {
         const route = launch(routeId);
@@ -2036,7 +2392,7 @@ describe('Universe flight scenic highlights', () => {
   });
 
   it('revisits completed routes and produces one new completion only after each resumed leg', () => {
-    for (const routeId of ['halo', 'nebula']) {
+    for (const routeId of ['halo', 'nebula', 'group']) {
       const route = launch(routeId, 4), completed = finish();
       const previousCompletions = pauseEvents.filter(([, detail]) => detail?.kind === 'flyby').length;
       for (const highlight of [route.highlights[1], route.highlights[0]]) {
@@ -2101,7 +2457,7 @@ describe('Universe flight scenic highlights', () => {
   it('reuses all scene graphics resources through repeated jumps, resumes, and completed revisits', () => {
     const textures = createdTextures.slice(), uploads = textureUploads.length;
     const creates = { ...graphicsCreates }, deletions = deletedTextures.length;
-    for (const routeId of ['halo', 'nebula']) {
+    for (const routeId of ['halo', 'nebula', 'group']) {
       const route = launch(routeId, 4);
       for (const highlight of route.highlights) {
         expect(scene.seekFlybyHighlight(highlight.id)).toBe(true);

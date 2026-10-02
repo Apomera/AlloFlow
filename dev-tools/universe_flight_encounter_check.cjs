@@ -149,10 +149,11 @@ function summary(stats){const {sample,...rest}=stats;return rest;}
     }
     async function launchLayout(name,{fullscreen=false}={}){
       const launchArea=fullscreen?panel.locator('#uf-inview-scenic-flights'):page.locator('#uf-scenic-flights'),viewport=page.viewportSize();
-      assert.equal(await launchArea.locator('[data-scenic-flight]').count(),5);
+      assert.equal(await launchArea.locator('[data-scenic-flight]').count(),6);
       for(const originalFlight of ['galaxy','neighborhood','cosmic'])assert.ok((await launchArea.locator('[data-scenic-flight="'+originalFlight+'"]').innerText()).includes('About 20 seconds'));
       assert.ok((await launchArea.locator('[data-scenic-flight="halo"]').innerText()).includes('36 seconds at standard pace'));
       assert.ok((await launchArea.locator('[data-scenic-flight="nebula"]').innerText()).includes('40 seconds at standard pace'));
+      assert.ok((await launchArea.locator('[data-scenic-flight="group"]').innerText()).includes('48 seconds at standard pace'));
       if(fullscreen)assert.ok((await launchArea.innerText()).includes('Switches to Free exploration.'),'Physical mode makes the scenic mode change explicit');
       assert.ok(await launchArea.evaluate(node=>node.scrollWidth<=node.clientWidth+1),name+' has no horizontal launch overflow');
       const boxes=[];
@@ -164,7 +165,7 @@ function summary(stats){const {sample,...rest}=stats;return rest;}
       }
       if(fullscreen){const shell=await panel.boundingBox();assert.ok(shell.x>=0&&shell.y>=0&&shell.x+shell.width<=viewport.width+1&&shell.y+shell.height<=viewport.height+1,name+' control shell fits the screen');assert.equal(await panel.evaluate(node=>node.scrollTop),0,'The fixed fullscreen shell does not scroll');await stage.screenshot({path:path.join(report,'encounter-'+name+'.png')});}
       else {assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Normal layout avoids horizontal page overflow');await launchArea.screenshot({path:path.join(report,'encounter-'+name+'.png')});}
-      layouts.push({name,viewport,boxes});await axeScope(name,fullscreen?stage:launchArea);checks.push(name+' exposes all five readable and reachable scenic launch buttons');
+      layouts.push({name,viewport,boxes});await axeScope(name,fullscreen?stage:launchArea);checks.push(name+' exposes all six readable and reachable scenic launch buttons');
       return launchArea;
     }
     await page.addScriptTag({path:'node_modules/axe-core/axe.min.js'});

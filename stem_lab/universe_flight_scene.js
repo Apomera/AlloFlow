@@ -165,7 +165,69 @@
     }
     return {id:'nebula',name:'Nebula passage',region:'neighborhood',durationSeconds:40,position:nodes[0].slice(),aim:blue.slice(),fov:64,targetId:'blue-nebula',atTime:atTime};
   })();
-  var FLYBY_ROUTES = {halo:HALO_FLYBY,nebula:NEBULA_FLYBY};
+  // This authored viewing path passes existing galaxy models without changing
+  // their geometry. Arc-length timing slows beside each galaxy and finishes
+  // at rest in a broad group view; it is not a physical spacecraft trajectory.
+  var GROUP_FLYBY = (function () {
+    var spiral=[0,0,0], elliptical=[800000,550000,850000], group=[300000,200000,450000];
+    var nodes=[[-450000,400000,-1050000],[-200000,230000,-160000],[200000,250000,100000],
+      [610000,410000,490000],[720000,410000,565000],[1020000,540000,570000],[1250000,1200000,-800000]];
+    var tangents=[[210000,-90000,470000],[340000,0,320000],[480000,270000,350000],
+      [200000,-20000,180000],[170000,60000,70000],[230000,130000,-200000],[80000,180000,-1200000]];
+    var times=[0,8,16,24,30,36,48], samples=[], joins=[0], length=0, previous;
+    function curve(segment,u) {
+      var u2=u*u,u3=u2*u;
+      return nodes[segment].map(function(value,i) {
+        return (2*u3-3*u2+1)*value+(u3-2*u2+u)*tangents[segment][i]+
+          (-2*u3+3*u2)*nodes[segment+1][i]+(u3-u2)*tangents[segment+1][i];
+      });
+    }
+    for(var segment=0;segment<nodes.length-1;segment++) {
+      for(var step=segment?1:0;step<=256;step++) {
+        var position=curve(segment,step/256);
+        if(previous) length+=Math.hypot(position[0]-previous[0],position[1]-previous[1],position[2]-previous[2]);
+        samples.push({distance:length,parameter:segment+step/256});previous=position;
+      }
+      joins.push(length);
+    }
+    // The same monotone cubic distance controller as the other authored routes
+    // keeps progress increasing and speed continuous at every curve join.
+    var slopes=[0],rates=[];
+    for(var interval=0;interval<times.length-1;interval++) rates.push((joins[interval+1]-joins[interval])/(times[interval+1]-times[interval]));
+    for(var j=1;j<times.length-1;j++) {
+      var left=times[j]-times[j-1],right=times[j+1]-times[j],w1=2*right+left,w2=right+2*left;
+      slopes.push((w1+w2)/(w1/rates[j-1]+w2/rates[j]));
+    }
+    slopes.push(0);
+    // Keep the original spiral skim's distance timing as the later pass changes.
+    // This positive join speed remains within both adjacent monotone intervals.
+    slopes[2]=75014.6702177346;
+    function atTime(seconds) {
+      var elapsed=clamp(finite(seconds,0),0,48),interval=0;
+      while(interval<times.length-2 && elapsed>times[interval+1]) interval++;
+      var width=times[interval+1]-times[interval],u=(elapsed-times[interval])/width,u2=u*u,u3=u2*u;
+      var distance=(2*u3-3*u2+1)*joins[interval]+(u3-2*u2+u)*width*slopes[interval]+
+        (-2*u3+3*u2)*joins[interval+1]+(u3-u2)*width*slopes[interval+1];
+      distance=clamp(distance,joins[interval],joins[interval+1]);
+      var low=0,high=samples.length-1;
+      while(high-low>1) {var mid=Math.floor((low+high)/2);if(samples[mid].distance<distance)low=mid;else high=mid;}
+      var a=samples[low],b=samples[high],fraction=b.distance>a.distance?(distance-a.distance)/(b.distance-a.distance):0;
+      var parameter=a.parameter+(b.parameter-a.parameter)*fraction,part=Math.min(nodes.length-2,Math.floor(parameter));
+      var position=curve(part,parameter-part);
+      var blend=clamp((elapsed-16)/10,0,1);blend=blend*blend*(3-2*blend);
+      var aim=spiral.map(function(value,i){return value+(elliptical[i]-value)*blend;});
+      var reveal=clamp((elapsed-36)/8,0,1);reveal=reveal*reveal*(3-2*reveal);
+      aim=aim.map(function(value,i){return value+(group[i]-value)*reveal;});
+      var direction=aim.map(function(value,i){return value-position[i];});
+      var yaw=Math.atan2(direction[0],direction[2]),pitch=Math.atan2(direction[1],Math.hypot(direction[0],direction[2]));
+      var pace=((6*u2-6*u)*joins[interval]+(3*u2-4*u+1)*width*slopes[interval]+
+        (-6*u2+6*u)*joins[interval+1]+(3*u2-2*u)*width*slopes[interval+1])/width;
+      return {position:position,yaw:yaw,pitch:pitch,distance:distance,pace:Math.max(0,pace),
+        phase:elapsed>=48?'complete':elapsed>=36?'reveal':elapsed>=24?'elliptical':elapsed>=16?'crossing':elapsed>=8?'spiral':'depart'};
+    }
+    return {id:'group',name:'Galaxy group flyby',region:'cosmic',durationSeconds:48,position:nodes[0].slice(),aim:spiral.slice(),fov:60,targetId:'near-galaxy',atTime:atTime};
+  })();
+  var FLYBY_ROUTES = {halo:HALO_FLYBY,nebula:NEBULA_FLYBY,group:GROUP_FLYBY};
   HALO_FLYBY.completionTargetId = 'galactic-center';
   HALO_FLYBY.completionMessage = 'Halo flyby complete. Travel is paused beside the spiral; look around or explore another destination.';
   NEBULA_FLYBY.completionTargetId = 'violet-nebula';
@@ -179,6 +241,13 @@
     {id:'approach',name:'Blue cloud approach',seconds:8,description:'See the blue glow against the distant stellar field.'},
     {id:'filaments',name:'Among the filaments',seconds:12,description:'Look around the layered blue emission region.'},
     {id:'violet',name:'Violet cloud reveal',seconds:36,description:'Look toward the violet cloud after the curved passage.'}
+  ];
+  GROUP_FLYBY.completionTargetId = 'golden-elliptical';
+  GROUP_FLYBY.completionMessage = 'Galaxy group flyby complete. Travel is paused with the spiral and golden elliptical in view; look around or explore another destination.';
+  GROUP_FLYBY.highlights = [
+    {id:'spiral',name:'Spiral skim',seconds:12,description:'Look across the tilted arms of the nearby spiral.'},
+    {id:'elliptical',name:'Golden elliptical pass',seconds:30,description:'Compare the smooth warm halo with the nearby spiral.'},
+    {id:'panorama',name:'Galaxy group panorama',seconds:44,description:'Look back across the spiral and elliptical together.'}
   ];
   function flybyRoute(id) { return Object.prototype.hasOwnProperty.call(FLYBY_ROUTES,id) ? FLYBY_ROUTES[id] : null; }
   function flybys(region) {
