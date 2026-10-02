@@ -12,6 +12,7 @@ function walk(node) {
   if (node.type === 'CallExpression' && node.callee.type === 'Identifier') {
     const [key, value] = node.arguments;
     if (key?.type === 'Literal' && value?.type === 'Literal' && typeof value.value === 'string') {
+      if (node.callee.name === 'ax') entries['archipelago_' + key.value] = value.value;
       if (node.callee.name === 'tx') entries['island_' + key.value] = value.value;
       if (['t', '__alloT'].includes(node.callee.name) && String(key.value).startsWith('stem.evolab.island_')) entries[key.value.slice('stem.evolab.'.length)] = value.value;
     }
@@ -29,6 +30,9 @@ function walk(node) {
   }
 }
 walk(ast);
+[['Ember','Arid lava lowlands'],['Tide','Seasonal coastal scrub'],['Mist','Moist volcanic highlands']].forEach((row, i) => {
+  entries['archipelago_island_' + i] = row[0]; entries['archipelago_habitat_' + i] = row[1];
+});
 ['Generation', 'Habitat', 'Population', 'Insulation', 'Coat', 'Legs'].forEach((label, i) => { entries['island_col_' + i] = label; });
 const check = process.argv.includes('--check');
 if (!check && !process.argv.includes('--apply')) {

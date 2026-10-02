@@ -2046,7 +2046,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         h('div', null, h('small', null, tx('report_variant', 'New variation to investigate')), h('strong', null, props.nameOf(report.variant.id) + ' · #' + report.variant.id),
           h('small', null, report.variant.mutations + ' ' + tx('report_alleles', 'recorded allele mutations') + ' · ' + tx('report_no_upgrade', 'not a guaranteed advantage'))),
         h('button', { type: 'button', onClick: function() { props.onInspect(report.variant.id); } }, tx('report_inspect_variant', 'Meet this offspring'))),
-      h('p', { className: 'ei-small' }, report.mutations + ' ' + tx('report_total_mutations', 'new allele mutations in this cohort') + ' · ' + tx('diversity', 'Trait diversity (mean SD)') + ': ' + value(report.diversity) + '/100'));
+      h('p', { className: 'ei-small' }, report.mutations + ' ' + tx('report_total_mutations', 'new allele mutations in this cohort') + ' · ' + tx('diversity', 'Trait spread (mean SD)') + ': ' + value(report.diversity) + '/100'));
   }
 
   function islandChapterCopy(tx, chapter) {
@@ -2723,6 +2723,462 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       })));
   }
 
+  // Advanced, finite-deme genetics model. Scenery uses a separate deterministic
+  // landscape; reproduction and dispersal alone consume the biological stream.
+  var ArchipelagoModel = (function() {
+    var species = ['birds', 'plants'], N = 24, LIMIT = 40;
+    var islands = [
+      { name: 'Ember', description: 'Arid lava lowlands', color: '#ac7851', x: -12, z: 2 },
+      { name: 'Tide', description: 'Seasonal coastal scrub', color: '#859a51', x: 0, z: 6 },
+      { name: 'Mist', description: 'Moist volcanic highlands', color: '#4b805f', x: 13, z: -3 }
+    ];
+    var distances = [[0, 3, 10], [3, 0, 7], [10, 7, 0]];
+    function rng(seed) { var n = seed >>> 0; return { next: function() { n = (Math.imul(1664525, n) + 1013904223) >>> 0; return n / 4294967296; }, state: function() { return n; } }; }
+    function value(o) { return (o.genes[0] + o.genes[1]) / 2; }
+    function settings(s) {
+      if (!s || typeof s.reciprocal !== 'boolean' || typeof s.selection !== 'boolean' || !Number.isFinite(s.migration) || s.migration < 0 || s.migration > .4 || !Number.isFinite(s.mutation) || s.mutation < 0 || s.mutation > .05 || !Array.isArray(s.rainfall) || s.rainfall.length !== 3 || Array.from(s.rainfall).some(function(v) { return !Number.isFinite(v) || v < 0 || v > 1; })) return null;
+      return { migration: s.migration, reciprocal: s.reciprocal, selection: s.selection, mutation: s.mutation, rainfall: s.rainfall.slice() };
+    }
+    function create(seed, smallFounders) {
+      seed = Number.isFinite(Number(seed)) ? Number(seed) >>> 0 : 2026;
+      var r = rng(seed), nextId = 1, source = {}, demes = [];
+      species.forEach(function(sp) {
+        source[sp] = [];
+        for (var j = 0; j < 48; j++) source[sp].push({ genes: [r.next(), r.next()], marker: [j % 2, (j >> 1) % 2] });
+      });
+      for (var i = 0; i < 3; i++) {
+        var deme = {};
+        species.forEach(function(sp) {
+          deme[sp] = [];
+          for (var k = 0; k < (smallFounders && i === 2 ? 6 : N); k++) {
+            var ancestor = source[sp][Math.floor(r.next() * source[sp].length)];
+            deme[sp].push({ id: nextId++, born: 0, species: sp, genes: ancestor.genes.slice(), marker: ancestor.marker.slice(), parents: [], inheritance: [] });
+          }
+        });
+        demes.push(deme);
+      }
+      return { version: 1, seed: seed, smallFounders: smallFounders === true, rng: r.state(), nextId: nextId, generation: 0,
+        settings: { migration: .12, reciprocal: true, selection: true, mutation: .01, rainfall: [.15, .5, .85] },
+        history: [{ generation: 0, demes: demes, round: null }] };
+    }
+    function crack(beak, shell) { return .08 + .84 / (1 + Math.exp(-10 * (beak - shell))); }
+    // Relative expected contribution to reproduction, not survival probability.
+    // Every individual is evaluated against the partner distribution BEFORE
+    // either species reproduces: no same-round look-ahead or winning species.
+    function fitness(o, partner, rain, s) {
+      if (!s.selection) return 1;
+      var v = value(o), bird = o.species === 'birds';
+      var ideal = bird ? .72 - .42 * rain : .6 - .4 * rain;
+      var habitat = .25 + .75 * Math.exp(-Math.pow((v - ideal) / .38, 2));
+      var encounters = partner.length ? partner.reduce(function(sum, p) { return sum + (bird ? crack(v, value(p)) : crack(value(p), v)); }, 0) / partner.length : (bird ? 0 : 0);
+      var interaction = !s.reciprocal ? 1 : bird ? .18 + .82 * encounters : 1 - .75 * encounters;
+      var cost = bird ? 1 - .32 * v * v : Math.max(.12, 1 - .45 * v * v / (.35 + rain));
+      return .04 + habitat * interaction * cost;
+    }
+    function stats(pop) {
+      var size = pop.length, p = size ? pop.reduce(function(n, o) { return n + o.marker[0] + o.marker[1]; }, 0) / (2 * size) : null;
+      var mean = size ? pop.reduce(function(n, o) { return n + value(o); }, 0) / size : null;
+      return { size: size, mean: mean, sd: size ? Math.sqrt(pop.reduce(function(n, o) { return n + Math.pow(value(o) - mean, 2); }, 0) / size) : null, p: p, H: p === null ? null : 2 * p * (1 - p) };
+    }
+    function diversity(frame, sp) {
+      var rows = frame.demes.map(function(d) { return stats(d[sp]); }), total = rows.reduce(function(n, row) { return n + row.size; }, 0);
+      if (!total) return { rows: rows, within: null, pooled: null, contrast: null };
+      var p = rows.reduce(function(n, row) { return n + (row.p === null ? 0 : row.p * row.size); }, 0) / total;
+      var valid = rows.filter(function(row) { return row.p !== null; }).map(function(row) { return row.p; });
+      return { rows: rows, within: rows.reduce(function(n, row) { return n + (row.H === null ? 0 : row.H * row.size); }, 0) / total, pooled: 2 * p * (1 - p), contrast: Math.max.apply(null, valid) - Math.min.apply(null, valid) };
+    }
+    function pick(pool, weights, r, exclude) {
+      var sum = weights.reduce(function(n, w, i) { return n + (i === exclude ? 0 : w); }, 0), target = r.next() * sum;
+      for (var i = 0; i < pool.length; i++) { if (i === exclude) continue; target -= weights[i]; if (target < 0) return i; }
+      for (var j = pool.length - 1; j >= 0; j--) if (j !== exclude) return j;
+      return -1;
+    }
+    function step(world) {
+      if (!world || world.generation >= LIMIT) return world;
+      var s = settings(world.settings); if (!s) return world;
+      var r = rng(world.rng), before = world.history[world.generation], pools = [{ birds: [], plants: [] }, { birds: [], plants: [] }, { birds: [], plants: [] }], migrants = [], gen = world.generation + 1;
+      before.demes.forEach(function(d, from) {
+        species.forEach(function(sp) {
+          d[sp].forEach(function(o) {
+            var routes = [0, 1, 2].filter(function(to) { return to !== from; });
+            var rates = routes.map(function(to) { return s.migration * (sp === 'birds' ? 1 : .3) * Math.exp(-distances[from][to] / 6); });
+            var draw = r.next(), to = from;
+            if (draw < rates[0]) to = routes[0]; else if (draw < rates[0] + rates[1]) to = routes[1];
+            var movement = to === from ? null : { id: o.id, species: sp, from: from, to: to, gametes: 0, markerCopies: [0, 0] };
+            if (movement) migrants.push(movement);
+            pools[to][sp].push({ organism: o, from: from, movement: movement });
+          });
+        });
+      });
+      var demes = [], contributions = [], nextId = world.nextId, mutations = 0;
+      pools.forEach(function(pool, island) {
+        var deme = {};
+        species.forEach(function(sp) {
+          var members = pool[sp], partner = pool[sp === 'birds' ? 'plants' : 'birds'].map(function(p) { return p.organism; });
+          var weights = members.map(function(p) { return fitness(p.organism, partner, s.rainfall[island], s); });
+          contributions.push({ island: island, species: sp, members: members.map(function(p, i) { return { id: p.organism.id, from: p.from, weight: weights[i] }; }) });
+          deme[sp] = [];
+          for (var k = 0; k < (members.length >= 2 ? N : 0); k++) {
+            var ai = pick(members, weights, r, -1), bi = pick(members, weights, r, ai), chosen = [members[ai], members[bi]], genes = [], marker = [], inheritance = [];
+            chosen.forEach(function(p) {
+              var copy = r.next() < .5 ? 0 : 1, delta = r.next() < s.mutation ? (r.next() - .5) * .16 : null;
+              var allele = p.organism.genes[copy] + (delta === null ? 0 : delta);
+              allele = allele < 0 ? -allele : allele > 1 ? 2 - allele : allele;
+              var markerCopy = r.next() < .5 ? 0 : 1;
+              genes.push(allele); marker.push(p.organism.marker[markerCopy]);
+              inheritance.push({ copy: copy, delta: delta, markerCopy: markerCopy });
+              if (delta !== null) mutations++;
+              if (p.movement) { p.movement.gametes++; p.movement.markerCopies[p.organism.marker[markerCopy]]++; }
+            });
+            deme[sp].push({ id: nextId++, born: gen, species: sp, genes: genes, marker: marker, parents: chosen.map(function(p) { return p.organism.id; }), inheritance: inheritance });
+          }
+        });
+        demes.push(deme);
+      });
+      return Object.assign({}, world, { generation: gen, rng: r.state(), nextId: nextId, settings: s,
+        history: world.history.concat([{ generation: gen, demes: demes, round: { settings: s, migrants: migrants, contributions: contributions, mutations: mutations } }]) });
+    }
+    // Replay validation checks identities, parental copies, migration outcomes,
+    // settings and RNG rather than trusting saved summaries or cached means.
+    function restore(raw) {
+      try {
+        if (!raw || raw.version !== 1 || !Number.isInteger(raw.seed) || raw.seed < 0 || raw.seed > 4294967295 || typeof raw.smallFounders !== 'boolean' || !Number.isInteger(raw.generation) || raw.generation < 0 || raw.generation > LIMIT || !Array.isArray(raw.history) || raw.history.length !== raw.generation + 1 || !settings(raw.settings)) return null;
+        var next = create(raw.seed, raw.smallFounders);
+        if (JSON.stringify(next.history[0]) !== JSON.stringify(raw.history[0])) return null;
+        for (var i = 1; i <= raw.generation; i++) {
+          var s = settings(raw.history[i] && raw.history[i].round && raw.history[i].round.settings); if (!s) return null;
+          next = step(Object.assign({}, next, { settings: s }));
+          if (JSON.stringify(next.history[i]) !== JSON.stringify(raw.history[i])) return null;
+        }
+        if (next.rng !== raw.rng || next.nextId !== raw.nextId) return null;
+        return Object.assign({}, next, { settings: settings(raw.settings) });
+      } catch (_) { return null; }
+    }
+    function find(world, id) {
+      for (var g = 0; g <= world.generation; g++) for (var i = 0; i < 3; i++) for (var s = 0; s < 2; s++) {
+        var o = world.history[g].demes[i][species[s]].filter(function(p) { return p.id === id; })[0];
+        if (o) return { organism: o, island: i, generation: g };
+      }
+      return null;
+    }
+    // Expected copy shares in the ordered lottery with two distinct parents.
+    function parentShares(weights) {
+      if (weights.length < 2) return weights.map(function() { return null; });
+      var total = weights.reduce(function(n, w) { return n + w; }, 0);
+      return weights.map(function(w, i) {
+        var second = weights.reduce(function(n, other, j) { return n + (j === i ? 0 : other / total * w / (total - other)); }, 0);
+        return (w / total + second) / 2;
+      });
+    }
+    // Conditional reconstruction of recorded events; no stepping or RNG draws.
+    function story(world, generation, island, sp) {
+      if (!world || !Number.isInteger(generation) || generation < 1 || generation > world.generation || !Number.isInteger(island) || island < 0 || island > 2 || species.indexOf(sp) < 0) return null;
+      var before = world.history[generation - 1], frame = world.history[generation], round = frame.round;
+      var contribution = round.contributions.filter(function(c) { return c.island === island && c.species === sp; })[0];
+      var byId = {}, born = frame.demes[island][sp], members = contribution.members;
+      before.demes.forEach(function(d) { d[sp].forEach(function(o) { byId[o.id] = o; }); });
+      var pool = members.map(function(m) { return byId[m.id]; }), expected = parentShares(members.map(function(m) { return m.weight; }));
+      var parents = members.map(function(m, i) { return { id: m.id, from: m.from, weight: m.weight, expectedShare: expected[i], gametes: 0 }; }), parentIndex = {};
+      parents.forEach(function(p) { parentIndex[p.id] = p; });
+      var routes = [0, 1, 2].map(function(i) { return { from: i, copies: 0, A: 0, a: 0 }; });
+      var parentalTrait = 0, parentalMarker = 0, inheritedTrait = 0, inheritedMarker = 0, mutationEvents = 0;
+      var newborns = born.map(function(child) {
+        var copies = child.parents.map(function(id, j) {
+          var p = byId[id], provenance = parentIndex[id], event = child.inheritance[j];
+          var traitBeforeMutation = p.genes[event.copy], marker = p.marker[event.markerCopy];
+          provenance.gametes++; routes[provenance.from].copies++; routes[provenance.from][marker ? 'A' : 'a']++;
+          parentalTrait += value(p); parentalMarker += (p.marker[0] + p.marker[1]) / 2;
+          inheritedTrait += traitBeforeMutation; inheritedMarker += marker;
+          if (event.delta !== null) mutationEvents++;
+          return { parent: id, from: provenance.from, traitCopy: event.copy, markerCopy: event.markerCopy, traitBeforeMutation: traitBeforeMutation, traitAfterMutation: child.genes[j], marker: marker, mutation: event.delta };
+        });
+        return { id: child.id, copies: copies };
+      });
+      var count = born.length * 2, original = stats(before.demes[island][sp]), dispersed = stats(pool), offspring = stats(born);
+      function weighted(get) { return pool.length >= 2 ? pool.reduce(function(n, o, i) { return n + expected[i] * get(o); }, 0) : null; }
+      var stages = [
+        { key: 'residents', trait: original.mean, marker: original.p },
+        { key: 'dispersal', trait: dispersed.mean, marker: dispersed.p },
+        { key: 'expected', trait: weighted(value), marker: weighted(function(o) { return (o.marker[0] + o.marker[1]) / 2; }) },
+        { key: 'parents', trait: count ? parentalTrait / count : null, marker: count ? parentalMarker / count : null },
+        { key: 'copies', trait: count ? inheritedTrait / count : null, marker: count ? inheritedMarker / count : null },
+        { key: 'newborns', trait: offspring.mean, marker: offspring.p }
+      ];
+      stages.forEach(function(s, i) {
+        var prev = i ? stages[i - 1] : null;
+        s.traitDelta = !prev || prev.trait === null || s.trait === null ? null : s.trait - prev.trait;
+        s.markerDelta = !prev || prev.marker === null || s.marker === null ? null : s.marker - prev.marker;
+      });
+      return { generation: generation, island: island, species: sp, settings: settings(round.settings), stages: stages, parents: parents, newborns: newborns, routes: routes, mutationEvents: mutationEvents,
+        counts: { residents: original.size, pool: pool.length, offspring: born.length, arrivals: round.migrants.filter(function(m) { return m.species === sp && m.to === island; }).length, departures: round.migrants.filter(function(m) { return m.species === sp && m.from === island; }).length } };
+    }
+
+    function compare(world, kind, generations) {
+      var remaining = Math.min(5, LIMIT - world.generation), count = Math.min(remaining, Math.max(1, generations || 5)), a = world, b = world;
+      a = Object.assign({}, a, { settings: Object.assign({}, a.settings, kind === 'migration' ? { migration: 0 } : { reciprocal: false }) });
+      b = Object.assign({}, b, { settings: Object.assign({}, b.settings, kind === 'migration' ? { migration: Math.max(.12, b.settings.migration) } : { reciprocal: true }) });
+      for (var i = 0; i < count; i++) { a = step(a); b = step(b); }
+      return { kind: kind, start: world.generation, end: a.generation, a: a, b: b };
+    }
+    return { create: create, step: step, restore: restore, settings: settings, stats: stats, diversity: diversity, value: value, fitness: fitness, crack: crack, find: find, compare: compare, parentShares: parentShares, story: story, islands: islands, distances: distances, species: species, limit: LIMIT };
+  })();
+  window.StemLab.evoArchipelagoModel = ArchipelagoModel;
+  function ax(k, fb) { return __alloT('stem.evolab.archipelago_' + k, fb); }
+  function archIslandName(i) { return ax('island_' + i, ArchipelagoModel.islands[i].name); }
+  function archSpecies(sp) { return sp === 'birds' ? ax('birds', 'Seedwing birds') : ax('plants', 'Shellseed plants'); }
+  function archTrait(sp) { return sp === 'birds' ? ax('beak', 'Beak strength') : ax('shell', 'Seed-shell hardness'); }
+  function archNumber(v, digits) { return v === null ? '—' : v.toFixed(digits === undefined ? 3 : digits); }
+
+  function ArchipelagoScene(props) {
+    var R = props.React, h = R.createElement, host = R.useRef(null), engine = R.useRef(null), latest = R.useRef(props), state = R.useState('loading'), status = state[0]; latest.current = props;
+    R.useEffect(function() {
+      var disposed = false, renderer, observer, timeout, geometries = [], materials = [], remove = [];
+      function fail() { if (!disposed) state[1]('fallback'); }
+      function start() {
+        if (disposed || renderer) return;
+        try {
+          var T = window.THREE; if (!T || !host.current) return fail();
+          clearTimeout(timeout); renderer = new T.WebGLRenderer({ antialias: true }); renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+          if (T.sRGBEncoding !== undefined) renderer.outputEncoding = T.sRGBEncoding;
+          var canvas = renderer.domElement; canvas.setAttribute('aria-hidden', 'true'); host.current.appendChild(canvas);
+          var scene = new T.Scene(); scene.background = new T.Color('#c9e5e9').convertSRGBToLinear(); scene.fog = new T.Fog(new T.Color('#c9e5e9').convertSRGBToLinear(), 65, 110);
+          var camera = new T.PerspectiveCamera(43, 1, .1, 180), angle = .38, distance = 48;
+          scene.add(new T.HemisphereLight('#f0f9ff', '#556148', 1.05)); var sun = new T.DirectionalLight('#fff2d2', 1.1); sun.position.set(-8, 25, 12); scene.add(sun);
+          function geo(g) { geometries.push(g); return g; }
+          var cache = {}; function mat(c) { if (!cache[c]) { cache[c] = new T.MeshLambertMaterial({ color: new T.Color(c).convertSRGBToLinear() }); materials.push(cache[c]); } return cache[c]; }
+          var sphere = geo(new T.SphereGeometry(1, 12, 8)), cone = geo(new T.ConeGeometry(1, 1, 7)), cylinder = geo(new T.CylinderGeometry(.7, 1, 1, 6)), ring = geo(new T.TorusGeometry(1, .055, 5, 24));
+          function mesh(g, c, parent, x, y, z, sx, sy, sz) { var m = new T.Mesh(g, mat(c)); m.position.set(x, y, z); m.scale.set(sx, sy, sz); parent.add(m); return m; }
+          var ocean = mesh(geo(new T.PlaneGeometry(220, 220)), '#2b7487', scene, 0, -.1, 0, 1, 1, 1); ocean.rotation.x = -Math.PI / 2;
+          var terrain = [], animals = new T.Group(); scene.add(animals);
+          ArchipelagoModel.islands.forEach(function(island, i) {
+            var land = IslandLandscape.create(props.seed + i * 103), points = [], colors = [], indices = [], rings = 22, segments = 64;
+            terrain.push(land);
+            for (var r = 0; r <= rings; r++) for (var s = 0; s <= segments; s++) {
+              var a = s / segments * Math.PI * 2, radius = r / rings * land.coast(a) * .55, x = Math.cos(a) * radius, z = Math.sin(a) * radius * .8;
+              var sample = land.sample(x / .55, z / .55), height = sample.height * .75;
+              points.push(x + island.x, height, z + island.z);
+              var c = new T.Color(r > rings - 2 ? '#cfbd8d' : sample.lava > .6 ? '#625d56' : island.color).convertSRGBToLinear(); c.multiplyScalar(.85 + sample.grain * .3); colors.push(c.r, c.g, c.b);
+              if (r < rings && s < segments) { var v = r * (segments + 1) + s, n = v + segments + 1; indices.push(v, v + 1, n, v + 1, n + 1, n); }
+            }
+            var g = geo(new T.BufferGeometry()); g.setAttribute('position', new T.Float32BufferAttribute(points, 3)); g.setAttribute('color', new T.Float32BufferAttribute(colors, 3)); g.setIndex(indices); g.computeVertexNormals();
+            var m = new T.MeshLambertMaterial({ vertexColors: true }); materials.push(m); scene.add(new T.Mesh(g, m));
+            mesh(sphere, '#559ba4', scene, island.x, -.06, island.z, 6.1, .02, 4.7);
+          });
+          function draw() {
+            if (disposed) return;
+            var p = latest.current, target = p.overview ? { x: 0, z: 1 } : ArchipelagoModel.islands[p.island], d = p.overview ? distance : distance * .39;
+            camera.position.set(target.x + Math.sin(angle) * d, d * .63, target.z + Math.cos(angle) * d); camera.lookAt(target.x, .5, target.z); renderer.render(scene, camera);
+          }
+          function refresh() {
+            while (animals.children.length) animals.remove(animals.children[0]);
+            var p = latest.current;
+            p.frame.demes.forEach(function(deme, i) {
+              var island = ArchipelagoModel.islands[i];
+              ArchipelagoModel.species.forEach(function(sp) { deme[sp].forEach(function(o, j) {
+                var a = j * 2.399963 + (sp === 'birds' ? .7 : 0), rad = .65 + Math.sqrt(j / 24) * 3.7, x = Math.cos(a) * rad, z = Math.sin(a) * rad * .7;
+                var y = terrain[i].sample(x / .55, z / .55).height * .75, group = new T.Group(); group.position.set(x + island.x, y, z + island.z); group.userData = { id: o.id, species: sp, island: i }; animals.add(group);
+                var v = ArchipelagoModel.value(o);
+                if (sp === 'birds') {
+                  mesh(sphere, '#795348', group, 0, .35, 0, .28, .32, .42); mesh(sphere, '#473e39', group, 0, .59, .24, .22, .22, .22);
+                  var beak = mesh(cone, '#d5a158', group, 0, .56, .5, .10 + v * .15, .24 + v * .20, .1 + v * .1); beak.rotation.x = Math.PI / 2;
+                  mesh(sphere, '#1e292e', group, -.14, .63, .36, .025, .025, .025); mesh(sphere, '#1e292e', group, .14, .63, .36, .025, .025, .025);
+                  mesh(sphere, '#56453b', group, -.22, .35, 0, .07, .21, .28); mesh(sphere, '#56453b', group, .22, .35, 0, .07, .21, .28);
+                  mesh(cylinder, '#ad8255', group, -.09, .1, 0, .025, .2, .025); mesh(cylinder, '#ad8255', group, .09, .1, 0, .025, .2, .025);
+                } else {
+                  mesh(cylinder, '#6e5b3e', group, 0, .25, 0, .055, .5, .055); mesh(sphere, '#476647', group, 0, .53, 0, .36, .32, .36);
+                  mesh(sphere, '#ce965d', group, 0, .64, .26, .12 + v * .12, .12 + v * .12, .12 + v * .12);
+                }
+                if (o.id === p.selected) { var halo = mesh(ring, '#f4d573', group, 0, .025, 0, .57, .57, .57); halo.rotation.x = -Math.PI / 2; }
+              }); });
+            }); draw();
+          }
+          function resize() { if (!host.current || disposed) return; var box = host.current.getBoundingClientRect(); renderer.setSize(Math.max(1, box.width), Math.max(1, box.height), false); camera.aspect = Math.max(1, box.width) / Math.max(1, box.height); camera.updateProjectionMatrix(); draw(); }
+          observer = new ResizeObserver(resize); observer.observe(host.current);
+          var raycaster = new T.Raycaster(); function select(event) {
+            var box = canvas.getBoundingClientRect(); raycaster.setFromCamera(new T.Vector2((event.clientX - box.left) / box.width * 2 - 1, -((event.clientY - box.top) / box.height) * 2 + 1), camera);
+            var hits = raycaster.intersectObjects(animals.children, true); if (hits.length) { var item = hits[0].object; while (item && !item.userData.id) item = item.parent; if (item) latest.current.onPick(item.userData); }
+          }
+          canvas.addEventListener('click', select); remove.push(function() { canvas.removeEventListener('click', select); });
+          canvas.addEventListener('webglcontextlost', fail); remove.push(function() { canvas.removeEventListener('webglcontextlost', fail); });
+          engine.current = { refresh: refresh, turn: function(direction) { angle += direction * .3; draw(); } }; refresh(); resize(); state[1]('ready');
+        } catch (_) { fail(); }
+      }
+      timeout = setTimeout(fail, 12000);
+      if (window.THREE) start(); else if (window.StemLab.ensureThree) window.StemLab.ensureThree().then(start, fail); else fail();
+      return function() { disposed = true; clearTimeout(timeout); if (observer) observer.disconnect(); remove.forEach(function(f) { f(); }); engine.current = null; geometries.forEach(function(g) { g.dispose(); }); materials.forEach(function(m) { m.dispose(); }); if (renderer) { renderer.dispose(); renderer.forceContextLoss(); renderer.domElement.remove(); } };
+    }, [props.seed]);
+    R.useEffect(function() { if (engine.current) engine.current.refresh(); }, [props.frame, props.island, props.overview, props.selected]);
+    return h('div', { className: 'ea-scene-wrap' },
+      h('div', { className: 'ea-scene', ref: host, 'data-archipelago-scene': status }, status !== 'ready' && h('p', { className: 'ea-scene-message' }, status === 'fallback' ? ax('fallback', 'Use the island map and resident list below. All investigations work without 3D.') : ax('loading', 'Preparing the volcanic archipelago…'))),
+      h('div', { className: 'ei-row ea-camera' }, h('button', { type: 'button', disabled: status !== 'ready', onClick: function() { engine.current.turn(-1); } }, ax('turn_left', 'Turn view left')), h('button', { type: 'button', disabled: status !== 'ready', onClick: function() { engine.current.turn(1); } }, ax('turn_right', 'Turn view right')), h('button', { type: 'button', 'aria-pressed': props.overview, onClick: props.onOverview }, props.overview ? ax('focus_island', 'Focus selected island') : ax('whole_map', 'View whole archipelago'))));
+  }
+
+  var archipelagoCSS = `
+  .ea-app .ea-story{border-top:4px solid #3b7263}.ea-app .ea-story-heading{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.ea-app .ea-story-heading h2{margin:5px 0}.ea-app .ea-story label{display:grid;gap:7px;font-size:13px}.ea-app .ea-story select{max-width:100%;padding:9px;border:1px solid #9bb599;border-radius:8px;background:#fff;color:#203b39}.ea-app .ea-story-counts{padding:12px;background:#e8efe2;border-radius:10px;font-size:13px;font-weight:600}.ea-app .ea-story-stages{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.ea-app .ea-story-stages button{display:grid;grid-template-columns:24px minmax(0,1fr);gap:5px;text-align:left;white-space:normal;padding:12px;min-width:0;border:1px solid #a4b9a0;border-radius:11px;background:#f8faf4;color:#203b39}.ea-app .ea-story-stages button>strong,.ea-app .ea-story-stages button>small,.ea-app .ea-story-meter{grid-column:1/-1}.ea-app .ea-story-stages button>strong{font-size:22px;font-variant-numeric:tabular-nums}.ea-app .ea-story-stages button[aria-pressed=true]{background:#234f49;color:#fff;border-color:#234f49}.ea-app .ea-story-stages button[aria-pressed=true] small{color:#fff}.ea-app .ea-story-stages button[aria-pressed=true]:hover{background:#21463c;color:#fff}.ea-app .ea-story-number{border-radius:50%;width:22px;height:22px;background:#dce8d4;color:#23483e;text-align:center;line-height:22px;font-weight:700}.ea-app .ea-story-stage-name{font-size:12px;font-weight:700;line-height:1.5}.ea-app .ea-story-stage-name small{display:block;font-size:10px;font-weight:500}.ea-app .ea-story-meter{display:block;height:6px;background:#cad9c3;border-radius:6px;overflow:hidden}.ea-app .ea-story-meter>span{display:block;height:100%;background:#477b6a}.ea-app .ea-story-stages button[aria-pressed=true] .ea-story-meter>span{background:#e7d190}.ea-app .ea-story-detail{padding:16px;border-left:4px solid #a4803d;background:#f4f0e4;border-radius:10px}.ea-app .ea-story-detail p{margin:7px 0 0}.ea-app .ea-story-total{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:12px;border-radius:10px;background:#e7efe2;font-size:13px}.ea-app .ea-copy-trail>label{margin:12px 0}.ea-app .ea-story-copy-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}.ea-app .ea-story-copy-pair>div{padding:13px;background:#edf2e7;border-radius:10px;min-width:0}.ea-app .ea-story-stages button:hover{background:#eaf0e3}@media(max-width:500px){.ea-app .ea-story-stages{grid-template-columns:repeat(2,minmax(0,1fr))}.ea-app .ea-story-copy-pair{grid-template-columns:1fr}}
+
+  .ea-app{--ei-ink:#203b39;--ei-muted:#455e59}.ea-app .ea-shell{max-width:1480px;margin:auto;padding:0 24px 28px}.ea-app .ea-intro{background:#e7efe3;border:1px solid #b2c7ad;border-radius:16px;padding:18px;margin:18px 0}.ea-app .ea-intro p{max-width:90ch}.ea-app .ea-layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(300px,1fr);gap:20px;align-items:start}.ea-app .ea-main,.ea-app .ea-sidebar{min-width:0;display:grid;gap:16px}.ea-app .ea-scene-wrap{border-radius:18px;background:#d8ebe8;overflow:hidden;border:1px solid #99bcb7}.ea-app .ea-scene{height:390px;position:relative}.ea-app .ea-scene canvas{width:100%;height:100%;display:block;touch-action:pan-y}.ea-app .ea-scene-message{padding:30px;color:#173c43}.ea-app .ea-camera{padding:12px}.ea-app .ea-islands{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.ea-app .ea-islands button{display:grid;gap:4px;text-align:left;min-width:0;white-space:normal}.ea-app .ea-islands button[aria-pressed=true]{background:#234f49;color:#fff;border-color:#234f49}.ea-app .ea-islands small{font-size:11px}.ea-app .ea-islands button[aria-pressed=true] small{color:#fff}.ea-app .ea-islands button[aria-pressed=true]:hover,.ea-app .ea-species-buttons button[aria-pressed=true]:hover{background:#21463c;color:#fff}.ea-app .ea-map{width:100%;height:auto;display:block;background:#e2f0ef;border-radius:12px}.ea-app .ea-map text{font:600 13px system-ui;fill:#193d3c}.ea-app .ea-map .ea-route{stroke:#5f827e;stroke-width:2;fill:none;stroke-dasharray:5 5}.ea-app .ea-controls label{display:grid;gap:6px;min-width:0}.ea-app .ea-controls input[type=range]{width:100%}.ea-app .ea-controls .ea-check{display:flex;gap:9px;align-items:center}.ea-app .ea-counts{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ea-app .ea-counts div{padding:10px;border-radius:10px;background:#edf1e6}.ea-app .ea-counts strong{font-size:23px;display:block}.ea-app .ea-counts small{font-size:12px}.ea-app .ea-chart{width:100%;height:auto;background:#f4f6ee;border-radius:12px}.ea-app .ea-chart text{font:12px system-ui;fill:#344c46}.ea-app .ea-table-wrap{overflow-x:auto}.ea-app table{width:100%;border-collapse:collapse;font-size:13px}.ea-app th,.ea-app td{text-align:left;padding:9px 7px;border-bottom:1px solid #d1ddd0;white-space:nowrap}.ea-app caption{text-align:left;font-weight:700;padding:9px 0}.ea-app .ea-members{display:flex;flex-wrap:wrap;gap:6px}.ea-app .ea-members button{min-width:36px;padding:6px;font-size:12px}.ea-app .ea-members button[aria-pressed=true]{background:#234f49;color:white}.ea-app .ea-alleles{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ea-app .ea-alleles>div{background:#f1f3e9;border-radius:10px;padding:10px;min-width:0}.ea-app .ea-alleles strong{display:block}.ea-app .ea-trip{padding:12px;border-left:4px solid #a77a40;background:#f5f0e3;border-radius:8px}.ea-app .ea-result{padding:12px;border:1px solid #becfbb;border-radius:12px}.ea-app .ea-result h3{margin:0 0 8px}.ea-app .ea-legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px}.ea-app .ea-timeline{display:grid;gap:8px}.ea-app .ea-timeline input{width:100%}.ea-app .ea-note{font-size:13px;color:#3f5952;line-height:1.6}.ea-app .ea-prominent{color:#223e37;font-size:14px;line-height:1.6}.ea-app details>summary{cursor:pointer;font-weight:700}.ea-app .ea-fork{display:grid;gap:12px}.ea-app .ea-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}.ea-app .ea-pair>div{padding:12px;background:#edf2e7;border-radius:10px}.ea-app :focus-visible{outline:3px solid #1b686e;outline-offset:3px}.ea-app .ea-link{color:#235d55;text-decoration:underline}.ea-app .ea-limit{border-left:4px solid #aa8043}.ea-app input[type=number]{width:100%;max-width:150px}.ea-app .ea-stepbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 18px;background:#f8faf2;border:1px solid #c3d2ba;border-radius:14px}.ea-app .ea-badge{font-size:12px;font-weight:700;letter-spacing:.04em;color:#3f614d}.ea-app .ea-stage-caption{margin:0;padding:12px;background:#edf3e9;font-size:12px;color:#3f5952}.ea-app .ea-movement-list{display:grid;gap:8px;max-height:330px;overflow:auto;padding:4px}.ea-app .ea-movement-list button{text-align:left;white-space:normal;width:100%}.ea-app .ea-explanation{width:100%;min-height:95px;padding:10px;border:1px solid #9bb599;border-radius:10px;color:#203b39;background:#fff}.ea-app .ea-micro{margin:0;font-size:12px;color:#466255}.ea-app .ea-species-buttons{display:flex;gap:8px;flex-wrap:wrap}.ea-app .ea-species-buttons button[aria-pressed=true]{background:#234f49;color:#fff}.ea-app .ea-inspector{scroll-margin-top:20px}.ea-app .ea-model-card{margin-top:20px}.ea-app .ea-forecast{display:grid;gap:8px}.ea-app .ea-forecast input{max-width:none}.ea-app .ea-stat-value{font-variant-numeric:tabular-nums}.ea-app .ea-feature{display:grid;gap:7px;margin:16px 0;background:#e7efe3;border:1px solid #b7cbb1;border-radius:12px;padding:15px}.ea-app .ea-feature p{margin:0}.ei-app .ei-primer-context{margin:15px 0;padding:15px;border:1px solid #b8c9ad;background:#edf3e7;border-radius:13px}.ei-app .ei-primer-context p{margin:5px 0 10px;font-size:13px;line-height:1.6}.ei-app .ei-primer-context details p{max-width:100ch}.ei-app .ei-primer-context summary{cursor:pointer;font-weight:700;font-size:13px}@media(max-width:850px){.ea-app .ea-layout{grid-template-columns:1fr}.ea-app .ea-shell{padding:0 12px 22px}.ea-app .ea-scene{height:290px}.ea-app .ea-islands small{font-size:10px}.ea-app .ea-islands button{padding:9px}.ea-app .ea-pair{grid-template-columns:1fr}.ea-app .ei-header{padding:20px 14px}.ea-app .ea-controls{gap:14px}}@media(prefers-reduced-motion:reduce){.ea-app *{scroll-behavior:auto}}
+  `;
+
+  function ArchipelagoProbe(props) {
+    var R = props.React, h = R.createElement, beakState = R.useState(.5), shellState = R.useState(.5), beak = beakState[0], shell = shellState[0];
+    var bird = { species: 'birds', genes: [beak, beak] }, plant = { species: 'plants', genes: [shell, shell] };
+    var probability = ArchipelagoModel.crack(beak, shell), birdWeight = ArchipelagoModel.fitness(bird, [plant], props.rain, props.settings), plantWeight = ArchipelagoModel.fitness(plant, [bird], props.rain, props.settings);
+    return h('section', { className: 'ei-card ei-stack', 'data-reciprocal-probe': true, 'aria-labelledby': 'ea-probe-title' },
+      h('h2', { id: 'ea-probe-title' }, ax('probe_title', 'Try one encounter · feel the tradeoff')),
+      h('p', { className: 'ea-note' }, ax('probe_help', 'Move a hypothetical beak or shell. See how each changes the other species’ breeding weight. These practice traits never change your organisms or consume the expedition’s randomness.')),
+      h('svg', { viewBox: '0 0 450 120', role: 'img', 'aria-label': ax('probe_picture', 'A schematic bird faces a seed. Beak size and shell thickness represent the two practice traits.'), style: { width: '100%', height: 120, background: '#edf3e6', borderRadius: 12 } },
+        h('ellipse', { cx: 100, cy: 73, rx: 38, ry: 28, fill: '#865b40' }), h('circle', { cx: 133, cy: 43, r: 24, fill: '#66513e' }), h('circle', { cx: 141, cy: 36, r: 4, fill: '#162d2a' }), h('path', { d: 'M150,42L' + (168 + beak * 42) + ',54L150,' + (53 + beak * 12) + 'Z', fill: '#c89640' }),
+        h('circle', { cx: 334, cy: 62, r: 31, fill: '#e4c18c', stroke: '#8c663d', strokeWidth: 2 + shell * 12 }), h('path', { d: 'M328,49Q320,65 337,78', fill: 'none', stroke: '#b28950', strokeWidth: 3 }),
+        h('path', { d: 'M221,61L272,61M266,55L272,61L266,67', fill: 'none', stroke: '#456d62', strokeWidth: 2 })),
+      h('div', { className: 'ea-controls ei-stack' },
+        h('label', { htmlFor: 'ea-probe-beak' }, archTrait('birds') + ': ' + (beak * 100).toFixed(0) + '/100', h('input', { id: 'ea-probe-beak', type: 'range', min: 0, max: 1, step: .01, value: beak, onChange: function(e) { beakState[1](Number(e.target.value)); } })),
+        h('label', { htmlFor: 'ea-probe-shell' }, archTrait('plants') + ': ' + (shell * 100).toFixed(0) + '/100', h('input', { id: 'ea-probe-shell', type: 'range', min: 0, max: 1, step: .01, value: shell, onChange: function(e) { shellState[1](Number(e.target.value)); } }))),
+      h('p', { className: 'ea-note', 'data-probe-opening': probability }, ax('opening', 'Modeled opening probability') + ': ' + (probability * 100).toFixed(1) + '%'),
+      h('div', { className: 'ea-counts' }, h('div', null, h('strong', { 'data-probe-bird-weight': birdWeight }, birdWeight.toFixed(3)), h('small', null, ax('bird_weight', 'Bird relative breeding weight'))), h('div', null, h('strong', { 'data-probe-plant-weight': plantWeight }, plantWeight.toFixed(3)), h('small', null, ax('plant_weight', 'Plant relative breeding weight')))),
+      h('p', { className: 'ea-micro' }, archIslandName(props.island) + ' · ' + ax('probe_settings', 'uses next-round rainfall and selection settings. Weights are relative parent-sampling scores, not survival probabilities. This one-pair probe omits dispersal; actual rounds evaluate all local partners.')),
+      h('p', { className: 'ea-note' }, ax('probe_cost', 'Try the strongest beak or hardest shell. Does a more extreme trait always improve its own breeding weight? Habitat selection and construction costs can oppose the benefit.')));
+  }
+
+
+  function ArchipelagoStory(props) {
+    var R = props.React, h = R.createElement, model = ArchipelagoModel;
+    var stageState = R.useState(0), stage = stageState[0], lensState = R.useState('trait'), lens = lensState[0], childState = R.useState(null);
+    var trace = R.useMemo(function() { return model.story(props.world, props.generation, props.island, props.species); }, [props.world, props.generation, props.island, props.species]);
+    var names = [ax('story_residents', 'Original residents'), ax('story_dispersal', 'After sea crossings'), ax('story_expected', 'Expected inheritance'), ax('story_parents', 'Parent lottery'), ax('story_copies', 'Allele lottery'), ax('story_newborns', 'Recorded newborns')];
+    var reasons = [
+      ax('story_why_residents', 'Start with the original residents of this island in the previous generation. Their genes have not changed.'),
+      ax('story_why_dispersal', 'Some residents leave, some individuals arrive. This is the mean of the actual breeding pool after all crossings, before any parent is chosen.'),
+      ax('story_why_expected', 'What mean would random inheritance give, on average, with this recorded pool and these breeding weights? This exact expectation accounts for two distinct parents per offspring. It is calculated before mutation; it is not an extra generation.'),
+      ax('story_why_parents', 'The actual parent lottery can depart from its expectation. Weight each parent by the number of copies it contributed, then use that parent’s two-copy mean. This isolates parent-sampling chance from the next allele-copy lottery.'),
+      ax('story_why_copies', 'Each chosen parent contributes one randomly chosen allele copy. These are the actual inherited copies before trait mutation. Even the same parents can produce a different average through this inheritance lottery.'),
+      ax('story_why_newborns', 'These are the recorded newborns. The final difference is the actual effect of trait mutations, including reflection at the trait bounds. The neutral marker never mutates in this model.')
+    ];
+    function format(v) { return v === null ? '—' : lens === 'trait' ? (v * 100).toFixed(2) : v.toFixed(4); }
+    function delta(v) { if (v === null) return '—'; var scaled = lens === 'trait' ? v * 100 : v; return (scaled > 0 ? '+' : '') + scaled.toFixed(lens === 'trait' ? 2 : 4); }
+    if (!trace) return h('section', { className: 'ei-card ei-stack ea-story', 'aria-labelledby': 'ea-story-title', 'data-generation-story': 'founders' }, h('h2', { id: 'ea-story-title' }, ax('story_title', 'What changed this generation?')), h('p', { className: 'ea-note' }, ax('story_first', 'The founders have arrived. Record a generation, then follow the crossings, parent choices and allele copies that made the new cohort.')), h('button', { type: 'button', onClick: props.world.generation ? function() { props.onVisit(1); } : props.onAdvance }, props.world.generation ? ax('story_visit_first', 'See the first recorded round') : ax('story_begin', 'Record the first generation')));
+    var current = trace.stages[stage], child = trace.newborns.filter(function(c) { return c.id === childState[0]; })[0] || trace.newborns[0];
+    var total = trace.stages[5][lens] === null || trace.stages[0][lens] === null ? null : trace.stages[5][lens] - trace.stages[0][lens];
+    return h('section', { className: 'ei-card ei-stack ea-story', 'aria-labelledby': 'ea-story-title', 'data-generation-story': props.generation, 'data-story-lens': lens },
+      h('div', { className: 'ea-story-heading' }, h('div', null, h('div', { className: 'ea-badge' }, archIslandName(props.island) + ' · G' + (props.generation - 1) + ' → G' + props.generation), h('h2', { id: 'ea-story-title' }, ax('story_title', 'What changed this generation?'))), h('label', { htmlFor: 'ea-story-species' }, ax('story_species', 'Follow a species'), h('select', { id: 'ea-story-species', value: props.species, onChange: function(e) { props.onSpecies(e.target.value); } }, model.species.map(function(sp) { return h('option', { key: sp, value: sp }, archSpecies(sp)); })))),
+      h('p', { className: 'ea-note' }, ax('story_intro', 'A rising trait mean does not tell you which mechanism caused the change. Follow this recorded round, then trace a real newborn’s inherited copies.')),
+      h('div', { className: 'ea-species-buttons', role: 'group', 'aria-label': ax('story_lens', 'Choose what to trace') }, h('button', { type: 'button', 'aria-pressed': lens === 'trait', onClick: function() { lensState[1]('trait'); } }, archTrait(props.species)), h('button', { type: 'button', 'aria-pressed': lens === 'marker', onClick: function() { lensState[1]('marker'); } }, ax('story_marker', 'Neutral marker A frequency'))),
+      h('div', { className: 'ea-story-counts' }, trace.counts.residents + ' ' + ax('story_start_count', 'original residents') + ' − ' + trace.counts.departures + ' ' + ax('story_left_count', 'departures') + ' + ' + trace.counts.arrivals + ' ' + ax('story_arrived_count', 'arrivals') + ' = ' + trace.counts.pool + ' ' + ax('story_pool_count', 'potential parents')),
+      h('p', { className: 'ea-micro' }, lens === 'trait' ? ax('story_units_trait', 'Trait means use a 0–100 scale. Changes are points on that scale.') : ax('story_units_marker', 'A frequencies use a 0–1 scale. Changes are frequency differences.')),
+      h('div', { className: 'ea-story-stages', role: 'group', 'aria-label': ax('story_stages_label', 'Explore the stages of this recorded round') }, trace.stages.map(function(s, i) { return h('button', { key: s.key, type: 'button', 'data-story-stage': s.key, 'data-story-value': s[lens] === null ? undefined : s[lens], 'aria-pressed': stage === i, onClick: function() { stageState[1](i); } }, h('span', { className: 'ea-story-number' }, i + 1), h('span', { className: 'ea-story-stage-name' }, names[i], s.key === 'expected' && h('small', null, ax('story_expectation_tag', 'Calculated expectation'))), h('strong', null, format(s[lens])), h('span', { className: 'ea-story-meter', 'aria-hidden': 'true' }, h('span', { style: { width: (s[lens] === null ? 0 : s[lens] * 100) + '%' } })), h('small', null, i ? 'Δ ' + delta(s[lens + 'Delta']) : ax('story_baseline', 'Starting mean'))); })),
+      h('div', { className: 'ea-story-detail', 'aria-live': 'polite', 'aria-atomic': 'true', 'data-story-detail': current.key }, h('strong', null, names[stage]), h('p', { className: 'ea-note' }, reasons[stage]), h('p', { className: 'ea-note' }, ax('story_stage_change', 'Change from the previous step') + ': ' + delta(current[lens + 'Delta'])), stage === 2 && lens === 'marker' && h('p', { className: 'ea-note' }, ax('story_marker_association', 'This marker has no direct breeding advantage. An expected shift can arise because, in this finite pool, marker copies happen to be associated with traits that affect parent weights. That does not make A a beneficial allele.')), stage === 2 && !trace.settings.selection && h('p', { className: 'ea-note' }, ax('story_equal_weights', 'Selection was off in this recorded round: every potential parent had equal weight. The expected mean matches the pool mean; the actual lottery can still change it.')), stage === 5 && h('p', { className: 'ea-note' }, trace.mutationEvents + ' ' + ax('story_mutation_count', 'trait-copy mutation events in this cohort. Event count is not the direction or size of the mean change.'))),
+      h('div', { className: 'ea-story-total' }, h('strong', null, ax('story_total', 'Total recorded change') + ': ' + delta(total)), h('span', null, trace.counts.offspring + ' ' + ax('story_cohort_count', 'newborns in this cohort'))),
+      !trace.counts.offspring && h('p', { className: 'ea-note' }, ax('story_empty', 'Fewer than two potential parents remained. No newborn cohort exists here, so reproductive expectations and its mean are undefined.')),
+      h('p', { className: 'ea-micro' }, ax('story_boundary', 'This is a bookkeeping explanation conditional on the recorded dispersal and breeding weights, not a unique causal decomposition of evolution. Parent and allele sampling contribute to genetic drift. Use controlled future comparisons to investigate causes across runs.')),
+
+      child && h('details', { className: 'ea-copy-trail' }, h('summary', null, ax('story_trace', 'Follow a real newborn’s copies')), h('label', { htmlFor: 'ea-story-child' }, ax('story_choose_child', 'Choose a newborn from this island'), h('select', { id: 'ea-story-child', value: child.id, onChange: function(e) { childState[1](Number(e.target.value)); } }, trace.newborns.map(function(c) { return h('option', { key: c.id, value: c.id }, '#' + c.id); }))), h('div', { className: 'ea-story-copy-pair' }, child.copies.map(function(copy, i) { return h('div', { key: i, 'data-story-copy': i, 'data-copy-parent': copy.parent, 'data-copy-from': copy.from, 'data-copy-before': copy.traitBeforeMutation, 'data-copy-after': copy.traitAfterMutation, 'data-copy-marker': copy.marker }, h('strong', null, ax('story_parent_label', 'Parent') + ' #' + copy.parent), h('p', { className: 'ea-note' }, archIslandName(copy.from) + (copy.from === props.island ? ' · ' + ax('story_local_parent', 'local parent') : ' → ' + archIslandName(props.island) + ' · ' + ax('story_migrant_parent', 'migrant parent'))), h('p', { className: 'ea-note' }, ax('story_trait_copy', 'Trait copy') + ' ' + (copy.traitCopy + 1) + ': ' + copy.traitBeforeMutation.toFixed(4) + ' → ' + copy.traitAfterMutation.toFixed(4)), h('p', { className: 'ea-micro' }, copy.mutation === null ? ax('story_copy_same', 'Unchanged trait copy') : ax('story_copy_mutation', 'Recorded trait mutation')), h('p', { className: 'ea-note' }, ax('story_marker_copy', 'Independently chosen marker copy') + ' ' + (copy.markerCopy + 1) + ': ' + (copy.marker ? 'A' : 'a'))); })), h('button', { type: 'button', onClick: function() { props.onInspect(child.id); } }, ax('story_inspect_child', 'Meet this newborn and its family'))),
+      h('details', null, h('summary', null, ax('story_origins', 'Which islands supplied the newborn alleles?')), h('div', { className: 'ea-table-wrap', role: 'region', tabIndex: 0, 'aria-label': ax('scrollable_table', 'Scrollable recorded data table') }, h('table', null, h('caption', null, ax('story_origin_caption', 'Actual transmitted neutral marker copies, by the parent’s island before this round')), h('thead', null, h('tr', null, [ax('story_origin', 'Parent origin'), ax('story_copies_total', 'Copies'), 'A', 'a'].map(function(label) { return h('th', { key: label, scope: 'col' }, label); }))), h('tbody', null, trace.routes.map(function(route) { return h('tr', { key: route.from, 'data-story-origin': route.from }, h('th', { scope: 'row' }, archIslandName(route.from)), h('td', null, route.copies), h('td', null, route.A), h('td', null, route.a)); })))), h('p', { className: 'ea-micro' }, ax('story_origins_limit', 'Origin describes the parent’s location one generation ago, not an allele’s ultimate ancestry. Each newborn has two marker copies. Arrival counts alone do not measure gene flow.'))),
+      h('details', null, h('summary', null, ax('story_math', 'How is the expected mean calculated?')), h('p', { className: 'ea-note' }, ax('story_math_explanation', 'For weights wᵢ and total W, a parent’s expected share of inherited copies is ½[wᵢ/W + Σⱼ≠ᵢ(wⱼ/W)×wᵢ/(W−wⱼ)]. The first term is its chance as first parent; the second averages its chance as second parent after excluding the first. Multiply these shares by each parent’s mean to obtain expected inheritance. The marker and trait copies are independently chosen.'))));
+  }
+
+  function ArchipelagoLab(props) {
+    var R = props.React, h = R.createElement, model = ArchipelagoModel;
+    var worldState = R.useState(function() { return model.restore(props.saved) || model.restore(lsGet('evoLab.archipelago.v1', null)) || model.create(2026); }), world = worldState[0];
+    var savedStudy = lsGet('evoLab.archipelago.study.v1', {}), studyRef = R.useRef(savedStudy && typeof savedStudy === 'object' ? savedStudy : {});
+    var cursorState = R.useState(world.generation), cursor = cursorState[0], frame = world.history[cursor];
+    var islandState = R.useState(0), island = islandState[0], spState = R.useState('birds'), sp = spState[0], selectedState = R.useState(null), selected = selectedState[0];
+    var overviewState = R.useState(true), comparisonState = R.useState(null), comparison = comparisonState[0], forecastState = R.useState((typeof props.prediction === 'string' ? props.prediction : typeof studyRef.current.prediction === 'string' ? studyRef.current.prediction : '').slice(0, 500)), forecast = forecastState[0];
+    var explanationState = R.useState((typeof props.explanation === 'string' ? props.explanation : typeof studyRef.current.explanation === 'string' ? studyRef.current.explanation : '').slice(0, 6000)), explanation = explanationState[0], statusState = R.useState(''), inspector = R.useRef(null);
+    var live = cursor === world.generation, population = frame.demes[island][sp], resident = model.find(world, selected), row = model.stats(population), allDiversity = model.diversity(frame, sp);
+    var round = frame.round, migrations = round ? round.migrants : [], contributors = migrations.filter(function(m) { return m.gametes > 0; });
+    R.useEffect(function() { lsSet('evoLab.archipelago.study.v1', { prediction: forecast, explanation: explanation }); }, [forecast, explanation]);
+    var currentRef = R.useRef(world); currentRef.current = world;
+    function save(next) { currentRef.current = next; worldState[1](next); props.onSave(next); lsSet('evoLab.archipelago.v1', next); }
+    function change(key, v) { var next = Object.assign({}, currentRef.current, { settings: Object.assign({}, currentRef.current.settings) }); next.settings[key] = v; save(next); }
+    function pick(item) { islandState[1](item.island); spState[1](item.species); selectedState[1](item.id); overviewState[1](false); }
+    function visit(g) { cursorState[1](g); selectedState[1](null); }
+    function advance() { var next = model.step(currentRef.current); save(next); visit(next.generation); statusState[1](ax('round_ready', 'A new generation is recorded. Compare both species and inspect the migrants that contributed alleles.')); }
+    function openComparison(kind) { comparisonState[1](model.compare(world, kind, 5)); }
+    function record() {
+      var text = 'Island Connections · fictional two-species genetics model · seed ' + world.seed + ' · G' + cursor + '\n' + archSpecies(sp) + ':\n';
+      allDiversity.rows.forEach(function(s, i) { text += ArchipelagoModel.islands[i].name + ': n=' + s.size + ', trait mean=' + archNumber(s.mean) + ', marker A frequency=' + archNumber(s.p) + ', H=2p(1-p)=' + archNumber(s.H) + '.\n'; });
+      text += 'Mean within-island marker H=' + archNumber(allDiversity.within) + '; pooled marker H=' + archNumber(allDiversity.pooled) + '; island A-frequency range=' + archNumber(allDiversity.contrast) + '.\n';
+      text += 'Recorded round: ' + (round ? JSON.stringify(round.settings) : 'founding sample') + '. Arrivals=' + migrations.length + '; migrants that reproduced=' + contributors.length + '; inherited migrant marker copies=' + contributors.reduce(function(n, m) { return n + m.gametes; }, 0) + '.\n';
+      var generationStory = model.story(world, cursor, island, sp);
+      if (generationStory) {
+        text += 'Recorded generation story for ' + ArchipelagoModel.islands[island].name + ' (trait means /100; marker A frequency 0–1):\n';
+        var stageNames = ['Original residents', 'After sea crossings', 'Expected inheritance before mutation', 'Actual parent lottery mean', 'Inherited copies before mutation', 'Recorded newborns'];
+        generationStory.stages.forEach(function(s, i) { text += stageNames[i] + ': trait=' + archNumber(s.trait === null ? null : s.trait * 100, 4) + ', marker A=' + archNumber(s.marker, 6) + '.\n'; });
+        text += 'Parent origins one generation earlier: ' + generationStory.routes.map(function(r) { return ArchipelagoModel.islands[r.from].name + ': ' + r.copies + ' copies (A=' + r.A + ', a=' + r.a + ')'; }).join('; ') + '.\n';
+        text += generationStory.mutationEvents + ' trait-copy mutation events in this cohort. Conditional on recorded dispersal and weights; not a unique causal decomposition.\n';
+      }
+      if (resident) text += 'Inspected #' + resident.organism.id + ': born G' + resident.generation + ' on ' + ArchipelagoModel.islands[resident.island].name + '; parents=' + resident.organism.parents.join(',') + '; trait alleles=' + resident.organism.genes.join(',') + '; neutral marker alleles=' + resident.organism.marker.join(',') + '.\n';
+      if (comparison) { text += 'Private comparison G' + comparison.start + '→G' + comparison.end + ': ' + comparison.kind + '.\n'; ['a', 'b'].forEach(function(k) { var w = comparison[k], d = model.diversity(w.history[w.generation], sp); text += k.toUpperCase() + ' settings=' + JSON.stringify(w.settings) + '; within H=' + archNumber(d.within) + '; marker frequency range=' + archNumber(d.contrast) + '.\n'; }); }
+      text += 'My prediction: ' + forecast + '\nMy explanation: ' + explanation + '\nLimits: 24 offspring per established island/species; relative breeding weights, not ecological population dynamics. One neutral marker is not genome-wide diversity. Trait divergence does not test reproductive isolation. A single pair of runs cannot establish a general effect.';
+      props.onFinding(text); statusState[1](ax('saved', 'Island evidence and your explanation are saved in the Learning Journal.'));
+    }
+    function chart() {
+      var width = 640, height = 190, end = Math.max(1, world.generation), lines = ['birds', 'plants'].map(function(species) { return { sp: species, points: world.history.map(function(f) { var mean = model.stats(f.demes[island][species]).mean; return mean === null ? null : [38 + f.generation / end * 570, 150 - mean * 120]; }) }; });
+      return h('svg', { viewBox: '0 0 ' + width + ' ' + height, className: 'ea-chart', role: 'img', 'aria-label': ax('chart_label', 'Recorded mean beak strength and seed-shell hardness by generation on the selected island. Exact values are in the table.') },
+        [0, .5, 1].map(function(v) { return h('g', { key: v }, h('line', { x1: 38, x2: 608, y1: 150 - v * 120, y2: 150 - v * 120, stroke: '#cedccd' }), h('text', { x: 7, y: 154 - v * 120 }, String(v * 100))); }),
+        lines.map(function(line) { var path = '', previous = false; line.points.forEach(function(p) { if (!p) previous = false; else { path += (previous ? 'L' : 'M') + p.join(','); previous = true; } }); return h('path', { key: line.sp, d: path, fill: 'none', stroke: line.sp === 'birds' ? '#95562c' : '#34746c', strokeWidth: 3 }); }),
+        h('line', { x1: 38 + cursor / end * 570, x2: 38 + cursor / end * 570, y1: 22, y2: 157, stroke: '#314b42', strokeDasharray: '4 4' }), h('text', { x: 38, y: 177 }, 'G0'), h('text', { x: 585, y: 177 }, 'G' + world.generation));
+    }
+    function map() {
+      var positions = [[105, 107], [295, 152], [470, 78]];
+      return h('svg', { className: 'ea-map', viewBox: '0 0 600 245', role: 'img', 'aria-label': ax('map_label', 'Ember and Tide are nearest; Mist is more isolated. Short routes have higher dispersal probability. Choose islands with the buttons above.') },
+        [[0, 1], [1, 2], [0, 2]].map(function(pair) { var a = positions[pair[0]], b = positions[pair[1]]; return h('g', { key: pair.join() }, h('path', { className: 'ea-route', d: 'M' + a.join(',') + 'Q' + ((a[0] + b[0]) / 2) + ',' + (Math.min(a[1], b[1]) - 28) + ' ' + b.join(',') }), h('text', { x: (a[0] + b[0]) / 2, y: (a[1] + b[1]) / 2 - 18, textAnchor: 'middle' }, model.distances[pair[0]][pair[1]] + ' ' + ax('distance_units', 'units'))); }),
+        positions.map(function(p, i) { return h('g', { key: i }, h('ellipse', { cx: p[0], cy: p[1], rx: i === 2 ? 49 : 61, ry: i === 2 ? 35 : 31, fill: model.islands[i].color, stroke: island === i ? '#263f34' : '#cabb92', strokeWidth: island === i ? 4 : 2 }), h('ellipse', { cx: p[0] + 3, cy: p[1] - 3, rx: 31, ry: 19, fill: 'none', stroke: '#e5ddbc', strokeWidth: 1 }), h('path', { d: 'M' + (p[0] - 18) + ',' + p[1] + 'l20,-19 22,24z', fill: '#617059' }), h('text', { x: p[0], y: p[1] + 55, textAnchor: 'middle' }, archIslandName(i))); }),
+        h('text', { x: 15, y: 231 }, ax('map_not_scale', 'Conceptual distances · not a map of the real Galápagos')));
+    }
+    var chosenMovement = resident && migrations.filter(function(m) { return m.id === resident.organism.id; })[0];
+    var children = resident ? world.history.filter(function(f) { return f.generation === resident.generation + 1; }).flatMap(function(f) { return f.demes.flatMap(function(d, i) { return d[resident.organism.species].filter(function(o) { return o.parents.indexOf(resident.organism.id) >= 0; }).map(function(o) { return { organism: o, island: i }; }); }); }) : [];
+    return h('div', { className: 'ei-app ea-app', 'data-archipelago': true }, h('style', null, islandCSS + archipelagoCSS),
+      h('header', { className: 'ei-header' }, h('div', { className: 'ei-title' }, h('div', { className: 'ei-kicker' }, ax('eyebrow', 'EvoLab / advanced field expedition')), h('h1', null, ax('title', 'Island Connections')), h('p', null, ax('subtitle', 'Two species. Three islands. Evolution with moving targets.'))), h('div', { className: 'ei-row' }, h('button', { type: 'button', onClick: props.onPrimer }, ax('primer', '← Living Island primer')), h('button', { type: 'button', onClick: props.onJournal }, ax('journal', 'Field journal ↗')))),
+      h('div', { className: 'ea-shell' },
+        h('div', { className: 'ea-intro' }, h('strong', null, ax('question', 'Can the same species evolve differently on different islands?')), h('p', { className: 'ea-prominent' }, ax('intro', 'Seedwing birds eat the seeds of Shellseed plants. Stronger beaks help birds open shells; harder shells protect seeds, but both traits have costs. Both species inherit their traits. Rainfall differs across islands, and birds and seeds can disperse across the sea.')), h('p', { className: 'ea-micro' }, ax('fiction', 'Fictional species and a simplified genetics experiment, inspired by island biogeography. This does not recreate Darwin’s finches or a measured Galápagos ecosystem.'))),
+        h('div', { className: 'ea-stepbar' }, h('div', null, h('strong', { 'data-arch-generation': cursor }, 'G' + cursor), ' / G' + world.generation, h('div', { className: 'ea-badge' }, live ? ax('present', 'Present generation') : ax('archive', 'Recorded generation · settings below apply to the next round'))), h('div', { className: 'ei-row' }, !live && h('button', { type: 'button', onClick: function() { visit(world.generation); } }, ax('return', 'Return to present')), h('button', { type: 'button', className: 'ei-primary', disabled: !live || world.generation >= model.limit, onClick: advance }, ax('advance', 'Advance one generation')))),
+        h('div', { className: 'ea-layout', style: { marginTop: 16 } },
+          h('div', { className: 'ea-main' },
+            h('div', { className: 'ea-islands', role: 'group', 'aria-label': ax('choose_island', 'Choose an island') }, model.islands.map(function(item, i) { return h('button', { key: i, type: 'button', 'data-arch-island': i, 'aria-pressed': island === i, onClick: function() { islandState[1](i); selectedState[1](null); overviewState[1](false); } }, h('strong', null, archIslandName(i)), h('small', null, ax('habitat_' + i, item.description))); })),
+            h(ArchipelagoScene, { React: R, seed: world.seed, frame: frame, island: island, selected: selected, overview: overviewState[0], onOverview: function() { overviewState[1](!overviewState[0]); }, onPick: pick }),
+            h('p', { className: 'ea-stage-caption' }, ax('visual_note', 'Beak size represents inherited beak strength; seed size represents shell hardness schematically. Positions and scenic highlands do not add local selection. Each island shares its own rainfall and partner populations.')),
+            h('details', { className: 'ei-card' }, h('summary', null, ax('routes', 'Explore island geography')), map(), h('p', { className: 'ea-note' }, ax('route_help', 'Dispersal probability falls with route distance. Seeds disperse at 30% of the birds’ rate. These are teaching assumptions; wind, currents, barriers and dispersal ability vary in nature.'))),
+            h(ArchipelagoProbe, { React: R, island: island, rain: world.settings.rainfall[island], settings: world.settings }),
+            h(ArchipelagoStory, { React: R, world: world, generation: cursor, island: island, species: sp, onAdvance: advance, onVisit: visit, onSpecies: function(s) { spState[1](s); selectedState[1](null); }, onInspect: function(id) { selectedState[1](id); overviewState[1](false); setTimeout(function() { if (inspector.current) { inspector.current.scrollIntoView({ block: 'nearest' }); inspector.current.focus({ preventScroll: true }); } }, 0); } }),
+            h('section', { className: 'ei-card ei-stack', 'aria-labelledby': 'ea-history-title' }, h('h2', { id: 'ea-history-title' }, ax('history', 'Watch both species through time')), h('div', { className: 'ea-legend' }, h('span', { style: { color: '#95562c' } }, '● ' + archTrait('birds')), h('span', { style: { color: '#34746c' } }, '● ' + archTrait('plants'))), chart(), h('div', { className: 'ea-timeline' }, h('label', { htmlFor: 'ea-generation' }, ax('generation', 'Visit a recorded generation') + ': G' + cursor), h('input', { id: 'ea-generation', type: 'range', min: 0, max: world.generation, value: cursor, onChange: function(e) { visit(Number(e.target.value)); } })), h('p', { className: 'ea-note' }, ax('reciprocal_note', 'Coevolution means reciprocal evolutionary influence. Both lines changing is not enough evidence by itself: compare partner-dependent breeding weights and a control with reciprocal trait selection off.')),
+              h('details', null, h('summary', null, ax('exact_history', 'Read exact recorded trait means')), h('div', { className: 'ea-table-wrap', role: 'region', tabIndex: 0, 'aria-label': ax('scrollable_table', 'Scrollable recorded data table') }, h('table', null, h('caption', null, archIslandName(island) + ' · ' + ax('trait_scale', 'inherited trait means, 0–100')), h('thead', null, h('tr', null, h('th', { scope: 'col' }, ax('generation_short', 'Generation')), h('th', { scope: 'col' }, archTrait('birds')), h('th', { scope: 'col' }, archTrait('plants')))), h('tbody', null, world.history.map(function(f) { return h('tr', { key: f.generation }, h('th', { scope: 'row' }, 'G' + f.generation), h('td', null, archNumber(model.stats(f.demes[island].birds).mean === null ? null : model.stats(f.demes[island].birds).mean * 100, 1)), h('td', null, archNumber(model.stats(f.demes[island].plants).mean === null ? null : model.stats(f.demes[island].plants).mean * 100, 1))); })))))),
+            h('section', { className: 'ei-card ei-stack', 'aria-labelledby': 'ea-diversity-title', 'data-arch-diversity': sp }, h('h2', { id: 'ea-diversity-title' }, ax('diversity', 'Read the genetic map')), h('p', { className: 'ea-note' }, ax('marker_intro', 'A neutral A/a marker is inherited separately from the trait locus and has no direct effect on breeding weight. Follow its allele frequency to distinguish genetic variation from differences in appearance.')),
+              h('div', { className: 'ea-species-buttons', role: 'group', 'aria-label': ax('choose_species', 'Choose a species') }, model.species.map(function(s) { return h('button', { key: s, type: 'button', 'aria-pressed': sp === s, onClick: function() { spState[1](s); selectedState[1](null); } }, archSpecies(s)); })),
+              h('div', { className: 'ea-table-wrap', role: 'region', tabIndex: 0, 'aria-label': ax('scrollable_table', 'Scrollable recorded data table') }, h('table', null, h('caption', null, archSpecies(sp) + ' · G' + cursor), h('thead', null, h('tr', null, [ax('island', 'Island'), ax('population', 'Residents'), archTrait(sp) + ' /100', ax('frequency', 'A frequency'), ax('marker_h', 'Marker diversity H')].map(function(label) { return h('th', { key: label, scope: 'col' }, label); }))), h('tbody', null, allDiversity.rows.map(function(s, i) { return h('tr', { key: i, 'data-arch-deme': i }, h('th', { scope: 'row' }, archIslandName(i)), h('td', null, s.size), h('td', { 'data-arch-mean': s.mean === null ? undefined : s.mean }, archNumber(s.mean === null ? null : s.mean * 100, 1)), h('td', { 'data-marker-p': s.p === null ? undefined : s.p }, archNumber(s.p)), h('td', { 'data-marker-h': s.H === null ? undefined : s.H }, archNumber(s.H))); })))),
+              h('div', { className: 'ea-counts' }, h('div', null, h('strong', { 'data-marker-within': allDiversity.within }, archNumber(allDiversity.within)), h('small', null, ax('within', 'Mean within-island H'))), h('div', null, h('strong', { 'data-marker-pooled': allDiversity.pooled }, archNumber(allDiversity.pooled)), h('small', null, ax('pooled', 'Pooled archipelago H')))),
+              h('p', { className: 'ea-note' }, ax('h_explanation', 'H = 2p(1−p): the probability that two independently sampled marker copies differ, using this sample’s allele frequency. Its maximum is 0.5 for this two-allele marker. Pooled H can stay high when each island has lost variation. One marker does not measure genome-wide diversity; isolation need not increase diversity within an island.'))),
+            h('section', { className: 'ei-card ei-stack', 'aria-labelledby': 'ea-migrants-title' }, h('h2', { id: 'ea-migrants-title' }, ax('migrants', 'Crossing the sea · passing on genes')), h('div', { className: 'ea-counts' }, h('div', null, h('strong', { 'data-migrant-arrivals': migrations.length }, migrations.length), h('small', null, ax('arrivals', 'Individual arrivals in this round'))), h('div', null, h('strong', { 'data-migrant-parents': contributors.length }, contributors.length), h('small', null, ax('contributors', 'Arriving migrants that reproduced')))), h('p', { className: 'ea-note' }, ax('movement_not_flow', 'Migration changes where an individual is. Gene flow into the offspring cohort requires that migrant to reproduce and transmit alleles. Not every arrival contributes. Counts combine both species across all islands.')),
+              !round ? h('p', { className: 'ea-note' }, ax('founding_note', 'G0 records founding samples from the same ancestral pools, before any dispersal round.')) : !migrations.length ? h('p', { className: 'ea-note' }, ax('no_arrivals', 'No individuals crossed in this recorded round.')) : h('div', { className: 'ea-movement-list' }, migrations.map(function(m) { return h('button', { key: m.id, type: 'button', 'data-migrant': m.id, onClick: function() { selectedState[1](m.id); spState[1](m.species); islandState[1](m.to); overviewState[1](false); setTimeout(function() { if (inspector.current) { inspector.current.scrollIntoView({ block: 'nearest' }); inspector.current.focus({ preventScroll: true }); } }, 0); } }, '#' + m.id + ' · ' + archSpecies(m.species) + ' · ' + archIslandName(m.from) + ' → ' + archIslandName(m.to), h('small', { style: { display: 'block' } }, m.gametes ? m.gametes + ' ' + ax('gametes', 'gametes contributed to offspring; marker copies A/a: ') + m.markerCopies[1] + '/' + m.markerCopies[0] : ax('no_gametes', 'Arrived, but left no offspring in this round'))); }))),
+            h('section', { className: 'ei-card ei-stack ea-fork', 'aria-labelledby': 'ea-fork-title', 'data-arch-comparison': true }, h('h2', { id: 'ea-fork-title' }, ax('fork', 'Test two possible futures')), h('p', { className: 'ea-note' }, ax('fork_intro', 'Copy the present generation and run five private generations. Change one setting, keep the starting individuals and other settings identical. Your expedition stays unchanged.')), h('div', { className: 'ei-row' }, h('button', { type: 'button', disabled: world.generation >= model.limit, onClick: function() { openComparison('migration'); } }, ax('test_migration', 'Test island connections')), h('button', { type: 'button', disabled: world.generation >= model.limit || !world.settings.selection, onClick: function() { openComparison('reciprocal'); } }, ax('test_reciprocal', 'Test reciprocal selection'))), comparison && h('div', { className: 'ea-result' }, h('h3', null, 'G' + comparison.start + ' → G' + comparison.end + ' · ' + archSpecies(sp)), h('div', { className: 'ea-pair' }, ['a', 'b'].map(function(key) { var w = comparison[key], d = model.diversity(w.history[w.generation], sp); return h('div', { key: key, 'data-future': key }, h('strong', null, key.toUpperCase() + ' · ' + (comparison.kind === 'migration' ? key === 'a' ? ax('isolated', 'Isolated islands') : ax('connected', 'Connected islands') : key === 'a' ? ax('partner_off', 'Partner trait effects off') : ax('partner_on', 'Reciprocal trait selection'))), h('p', { className: 'ea-note' }, ax('within', 'Mean within-island H') + ': ' + archNumber(d.within)), h('p', { className: 'ea-note' }, ax('contrast', 'Island A-frequency range') + ': ' + archNumber(d.contrast)), d.rows.map(function(s, i) { return h('p', { key: i, className: 'ea-micro' }, archIslandName(i) + ': ' + archTrait(sp) + ' ' + archNumber(s.mean === null ? null : s.mean * 100, 1)); })); })), h('p', { className: 'ea-note' }, ax('fork_limit', 'This is one stochastic pair, not a guaranteed pattern or a statistical test. Changing dispersal also changes who can breed; the random trajectories can differ. Repeat with fresh seeds before generalizing. With partner effects off, both species still evolve under habitat selection and drift.')))),
+            h('section', { className: 'ei-card ei-stack', 'aria-labelledby': 'ea-note-title' }, h('h2', { id: 'ea-note-title' }, ax('notebook', 'Make a claim with evidence')), h('label', { htmlFor: 'ea-explanation' }, ax('explain_prompt', 'Use a number, a mechanism and a model limit')), h('textarea', { id: 'ea-explanation', className: 'ea-explanation', value: explanation, onChange: function(e) { var text = e.target.value.slice(0, 6000); explanationState[1](text); props.onExplanation(text); } }), h('button', { type: 'button', onClick: record }, ax('save', 'Save island evidence to journal')))),
+          h('div', { className: 'ea-sidebar' },
+            h('section', { className: 'ei-card ei-stack ea-controls', 'aria-labelledby': 'ea-settings-title' }, h('h2', { id: 'ea-settings-title' }, ax('settings', 'Set the next generation')), h('p', { className: 'ea-micro' }, ax('settings_note', 'Controls set upcoming rounds. Recorded generations retain their original conditions. Breeding weights are relative parent-sampling scores, not survival probabilities.')),
+              h('label', { htmlFor: 'ea-migration' }, ax('migration', 'Dispersal scale') + ': ' + world.settings.migration.toFixed(2), h('input', { id: 'ea-migration', type: 'range', min: 0, max: .4, step: .01, value: world.settings.migration, onChange: function(e) { change('migration', Number(e.target.value)); } })), h('p', { className: 'ea-micro' }, ax('scale_note', 'Scale × exp(−distance/6) per route; seeds also × 0.3. Scale zero isolates all islands.')),
+              h('label', { className: 'ea-check' }, h('input', { type: 'checkbox', checked: world.settings.reciprocal, disabled: !world.settings.selection, onChange: function(e) { change('reciprocal', e.target.checked); } }), ax('reciprocal', 'Reciprocal trait selection')),
+              h('label', { className: 'ea-check' }, h('input', { type: 'checkbox', checked: world.settings.selection, onChange: function(e) { change('selection', e.target.checked); } }), ax('selection', 'Trait-dependent breeding weights')),
+              !world.settings.selection && h('p', { className: 'ea-note' }, ax('neutral', 'Every resident has equal breeding weight. Finite sampling, inheritance, dispersal and mutation remain; partner and rainfall traits have no fitness effect.')),
+              model.islands.map(function(item, i) { return h('label', { key: i, htmlFor: 'ea-rain-' + i }, archIslandName(i) + ' · ' + ax('rainfall', 'Rainfall index') + ': ' + world.settings.rainfall[i].toFixed(2), h('input', { id: 'ea-rain-' + i, type: 'range', min: 0, max: 1, step: .05, value: world.settings.rainfall[i], onChange: function(e) { var values = world.settings.rainfall.slice(); values[i] = Number(e.target.value); change('rainfall', values); } })); }),
+              h('label', { htmlFor: 'ea-mutation' }, ax('mutation', 'Trait mutation probability per allele') + ': ' + world.settings.mutation.toFixed(3), h('input', { id: 'ea-mutation', type: 'range', min: 0, max: .05, step: .005, value: world.settings.mutation, onChange: function(e) { change('mutation', Number(e.target.value)); } }))),
+            h('section', { className: 'ei-card ei-stack ea-forecast', 'aria-labelledby': 'ea-predict-title' }, h('h2', { id: 'ea-predict-title' }, ax('predict', 'Predict before you advance')), h('p', { className: 'ea-note' }, ax('predict_help', 'Try isolating the islands. Will marker diversity change within each island, between islands, or both? Or predict what happens when birds face harder seeds.')), h('label', { htmlFor: 'ea-prediction' }, ax('prediction', 'My prediction')), h('input', { id: 'ea-prediction', type: 'text', maxLength: 500, value: forecast, onChange: function(e) { forecastState[1](e.target.value); props.onPrediction(e.target.value); } })),
+            h('section', { className: 'ei-card ei-stack ea-inspector', ref: inspector, tabIndex: -1, 'aria-labelledby': 'ea-resident-title', 'data-arch-inspector': selected || '' }, h('h2', { id: 'ea-resident-title' }, archIslandName(island) + ' · ' + archSpecies(sp)), h('p', { className: 'ea-note' }, ax('inspect', 'Meet an individual. Compare its inherited alleles, its actual parents and the offspring it left.')),
+              h('label', { htmlFor: 'ea-resident' }, ax('resident', 'Choose a resident of this generation')), h('select', { id: 'ea-resident', value: population.some(function(o) { return o.id === selected; }) ? selected : '', onChange: function(e) { selectedState[1](Number(e.target.value)); overviewState[1](false); } }, h('option', { value: '' }, ax('choose_resident', 'Choose a resident…')), population.map(function(o) { return h('option', { key: o.id, value: o.id }, '#' + o.id + ' · ' + archTrait(sp) + ' ' + (model.value(o) * 100).toFixed(1)); })),
+              resident && h('div', { className: 'ei-stack' }, h('strong', null, '#' + resident.organism.id + ' · ' + archSpecies(resident.organism.species)), h('p', { className: 'ea-micro' }, ax('born', 'Born') + ' G' + resident.generation + ' · ' + archIslandName(resident.island)), resident.generation !== cursor && h('div', { className: 'ea-trip' }, h('p', { className: 'ea-note' }, ax('ancestor_view', 'This individual is from an earlier cohort. The map still shows the selected generation.')), h('button', { type: 'button', onClick: function() { cursorState[1](resident.generation); islandState[1](resident.island); spState[1](resident.organism.species); overviewState[1](false); } }, ax('visit_birth', 'Visit this individual’s birth generation'))),
+                h('div', { className: 'ea-alleles' }, h('div', null, h('strong', null, archTrait(resident.organism.species)), (model.value(resident.organism) * 100).toFixed(1) + '/100', h('small', { style: { display: 'block' } }, resident.organism.genes.map(function(v) { return v.toFixed(4); }).join(' + ') + ' ÷ 2')), h('div', null, h('strong', null, ax('marker', 'Neutral marker')), resident.organism.marker.map(function(v) { return v ? 'A' : 'a'; }).join('/'))),
+                chosenMovement && h('div', { className: 'ea-trip' }, archIslandName(chosenMovement.from) + ' → ' + archIslandName(chosenMovement.to), h('p', { className: 'ea-note' }, chosenMovement.gametes ? chosenMovement.gametes + ' ' + ax('passed_pairs', 'gametes passed to actual offspring in this round.') : ax('arrived_no_birth', 'This individual arrived but was not a parent in this offspring cohort.'))),
+                !resident.organism.parents.length ? h('p', { className: 'ea-note' }, ax('founder', 'Founder sampled from the shared ancestral pool. Parents before arrival are not modeled.')) : h('div', null, h('strong', null, ax('parents', 'Two actual parents')), resident.organism.parents.map(function(id, index) { var p = model.find(world, id), inheritance = resident.organism.inheritance[index]; return h('div', { key: id, className: 'ea-result' }, h('button', { type: 'button', onClick: function() { selectedState[1](id); } }, '#' + id + ' · ' + archIslandName(p.island)), h('p', { className: 'ea-micro' }, ax('parent_copy', 'Inherited trait copy') + ' ' + (inheritance.copy + 1) + ': ' + p.organism.genes[inheritance.copy].toFixed(4) + ' → ' + resident.organism.genes[index].toFixed(4) + (inheritance.delta === null ? ' · ' + ax('unchanged_copy', 'unchanged') : ' · ' + ax('mutated_copy', 'mutation during inheritance')))); })),
+                h('strong', null, children.length + ' ' + ax('recorded_children', 'recorded offspring')), !children.length && h('p', { className: 'ea-micro' }, resident.generation === world.generation ? ax('not_run', 'This individual’s breeding round has not run yet.') : ax('no_children', 'No recorded offspring from this individual.')), h('div', { className: 'ea-members' }, children.map(function(child) { return h('button', { key: child.organism.id, type: 'button', onClick: function() { selectedState[1](child.organism.id); } }, '#' + child.organism.id); })),
+                round && h('details', null, h('summary', null, ax('weights', 'Inspect recorded breeding weight')), (round.contributions.filter(function(c) { return c.species === resident.organism.species; }).flatMap(function(c) { return c.members.filter(function(m) { return m.id === resident.organism.id; }).map(function(m) { return h('p', { key: m.id, className: 'ea-note' }, archIslandName(c.island) + ' · ' + ax('relative_weight', 'relative weight') + ': ' + m.weight.toFixed(6)); }); })), h('p', { className: 'ea-micro' }, ax('weight_note', 'Weights bias parent sampling within the same species and island. They are not survival probabilities. Partner populations were evaluated together before either species reproduced.')))),
+              h('p', { className: 'ea-note' }, ax('individual_fixed', 'Individuals keep their genes. Evolution appears when different inherited combinations become more or less common in later cohorts.'))),
+            h('details', { className: 'ei-card ei-stack' }, h('summary', null, ax('new_expedition', 'Start a different expedition')), h('p', { className: 'ea-note' }, ax('restart_note', 'These buttons replace only the advanced expedition. Your Living Island primer and journal remain saved.')), h('button', { type: 'button', onClick: function() { var next = model.create((world.seed + 1) >>> 0); save(next); visit(0); comparisonState[1](null); forecastState[1](''); props.onPrediction(''); } }, ax('fresh', 'New seed · full founding populations')), h('button', { type: 'button', onClick: function() { var next = model.create((world.seed + 1) >>> 0, true); next.settings.migration = 0; save(next); visit(0); comparisonState[1](null); forecastState[1](''); props.onPrediction(''); } }, ax('founder_experiment', 'New seed · six founders on Mist')), h('p', { className: 'ea-micro' }, ax('founder_limit', 'Mist starts with six of each species, randomly sampled from the same source pools. Established demes produce 24 offspring per round; a changed founding allele frequency is a sampling effect, not a mutation caused by need.'))))),
+        statusState[0] && h('p', { className: 'ei-callout', role: 'status', style: { marginTop: 16 } }, statusState[0]),
+        h('details', { className: 'ei-card ea-model-card ei-stack' }, h('summary', null, ax('model', 'What this advanced model can and cannot teach')), h('p', { className: 'ea-note' }, ax('model_genetics', 'Each fictional species has one additive diploid trait locus and a separate neutral A/a marker. Two distinct parents are sampled with relative breeding weights; each contributes one randomly chosen copy at each locus. Mutation changes trait copies symmetrically during inheritance, independently of environmental need. The marker does not mutate. There is no linkage, dominance, sex structure or self-fertilization.')),
+          h('p', { className: 'ea-note' }, ax('model_order', 'Each round: disperse existing individuals simultaneously; evaluate both partner distributions and local rainfall; sample parents; inherit and sometimes mutate copies; record the new cohorts. Shorter routes have higher dispersal probabilities. Arrivals and transmitted migrant alleles are recorded separately.')),
+          h('p', { className: 'ea-note' }, ax('model_equations', 'Opening probability = 0.08 + 0.84/(1+exp(−10×(beak−shell))). Bird reproduction weights increase with mean opening success; plant weights decrease with mean seed consumption. Strong beaks and hard shells have quadratic costs. Broad rainfall-dependent trait optima provide separate habitat selection. All coefficients and rainfall optima are illustrative choices, not measurements of real species.')),
+          h('p', { className: 'ea-note ea-limit' }, ax('model_demography', 'This is a finite-population genetics model: each deme with at least two potential parents produces exactly 24 offspring of that species. Population sizes do not track food depletion, predator-prey cycles, plant age, seed banks, competition or extinction risk. It does not simulate a complete ecosystem. Coevolution need not form an endless arms race; tradeoffs, drift and geography can produce varied trajectories.')),
+          h('p', { className: 'ea-note ea-limit' }, ax('speciation_limit', 'Different island traits or marker frequencies are divergence, not proof of new species. Reproductive isolation and hybrid compatibility are not tested. The neutral marker is one locus; its diversity is not a genome-wide estimate. Multiple seeds and controlled comparisons are needed before claiming a general pattern.')),
+          h('div', { className: 'ei-row' }, h('a', { className: 'ea-link', href: 'https://evolution.berkeley.edu/evolution-101/mechanisms-the-processes-of-evolution/coevolution/', target: '_blank', rel: 'noopener noreferrer' }, ax('source_coevo', 'UC Berkeley: reciprocal coevolution')), h('a', { className: 'ea-link', href: 'https://www.galapagos.org/about_galapagos/biodiversity/', target: '_blank', rel: 'noopener noreferrer' }, ax('source_islands', 'Galápagos Conservancy: habitats and diversity'))))));
+  }
+
   function LivingIsland(props) {
     var R = props.React, h = R.createElement;
     function tx(k, fb) { return __alloT('stem.evolab.island_' + k, fb); }
@@ -3306,13 +3762,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
     }
     function traitLine(key) { var v = selected ? IslandModel.value(selected, key) : 0; return h('div', { key: key, className: 'ei-trait' }, h('span', null, labels[key]), h('strong', null, fmt(v)), h('div', { className: 'ei-meter', 'aria-hidden': true }, h('span', { style: { width: v * 100 + '%', background: colors[key] } }))); }
     return h('div', { className: 'ei-app', ref: islandRoot, 'data-living-island': true },
-      h('style', null, islandCSS),
+      h('style', null, islandCSS + archipelagoCSS),
       h('header', { className: 'ei-header' }, h('div', { className: 'ei-title' },
         h('div', { className: 'ei-kicker' }, tx('eyebrow', 'EvoLab / field expedition 01')),
         h('h1', null, tx('title', 'Living Island')),
         h('p', null, tx('subtitle', 'Small creatures. Changing worlds. An evolutionary story you can follow.'))),
         h('div', { className: 'ei-row' }, h('button', { type: 'button', onClick: function() { setPlaying(false); props.onMenu(); } }, tx('all_labs', '← All EvoLab activities')), h('button', { type: 'button', onClick: function() { setPlaying(false); props.onJournal(); } }, tx('journal', 'Field journal ↗')))),
       h('div', { className: 'ei-shell' },
+        h('div', { className: 'ei-primer-context', 'data-primer-context': true },
+          h('strong', null, tx('primer_species', 'Meet spriglets · fictional organisms, not rabbits')),
+          h('p', null, tx('primer_scope', 'A first investigation of inherited variation, selection and chance in one population. The rabbit-like shape is an illustration; this model does not represent rabbit biology or a real Galápagos ecosystem.')),
+          h('div', { className: 'ei-row' }, h('button', { type: 'button', onClick: function() { setPlaying(false); stopReel(); props.onAdvanced(); } }, tx('advanced_enter', 'Explore Island Connections · advanced →'))),
+          h('details', null, h('summary', null, tx('primer_read_model', 'Read this model before drawing conclusions')),
+            h('p', null, tx('primer_keep', 'Individuals keep their genes. Each offspring inherits one allele per modeled locus from each of two distinct parents. Mutations during inheritance are not directed toward a needed trait. Trait-based differences bias survival, while chance still affects who survives and reproduces.')),
+            h('p', null, tx('primer_assumptions', 'Three independent additive loci, short non-overlapping generations, a 60-resident cap and deliberately high mutation settings are teaching choices. Real coat, insulation and leg traits can involve many genes and environmental effects; rabbit generations overlap. The trait-spread score is the average standard deviation of modeled traits, not a measure of genome-wide genetic diversity.')),
+            h('p', null, tx('primer_hare', 'A real snowshoe hare can molt from a brown summer coat to a white winter coat within its life. That seasonal change does not change its inherited genes. This primer does not model seasonal molting or other phenotypic plasticity. Renaming spriglets as real rabbits or hares would require a different biological model.')),
+            h('a', { href: 'https://www.nps.gov/articles/snowshoe-hare.htm', target: '_blank', rel: 'noopener noreferrer', className: 'ei-small' }, tx('primer_hare_source', 'National Park Service: seasonal snowshoe-hare coats')),
+            h('p', null, tx('primer_no_local', 'The whole population experiences one chosen habitat. Walking, plants and terrain are scenery; an animal does not survive better by standing near water or in shade. Predators and food affect a formula but are not evolving populations. Habitat differences are hypothetical pressures, not a measured account of Galápagos wildlife.')),
+            h('p', null, tx('primer_goal', 'Useful questions: What variation was already present? Which parents left offspring? What changed across generations? This primer cannot test coevolution, migration, reproductive isolation or speciation. Use the advanced archipelago for reciprocal selection and gene flow, and real observations to test claims about nature.')))),
         !comparing && h('nav', { className: 'ei-discovery-nav', 'aria-label': tx('discovery_nav', 'Explore the expedition') },
           h('button', { type: 'button', ref: compassButton, className: 'ei-compass-launch', 'aria-expanded': compassOpen, 'aria-controls': compassOpen ? 'ei-discovery-compass' : undefined, onClick: compassOpen ? closeCompass : openCompass }, tx('compass_title', 'Discovery compass')),
           h('button', { type: 'button', ref: introButton, onClick: reopenIntro }, tx('intro_title', 'Your first discovery')),
@@ -3351,7 +3818,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               onReplay: function(trait) { changeLens(trait); setReplayTrait(trait); showPhase('survivors'); revealIslandScene(); revealDesk('evidence', replayRef); },
               onInspect: function(id) { setDesk('explore'); visitOrganism(id); reveal(stageRef); } }) :
             h('div', { className: 'ei-loop', 'aria-label': tx('generation_summary', 'Generation summary') },
-              [[frame.population.length, phase === 'offspring' ? tx('residents', 'Spriglets now') : tx('replay_offspring', 'Offspring') + ' · G' + cursor], [cursor ? frame.survivors.length : '—', tx('breeders', 'Breeding survivors')], [frame.mutations, tx('mutations', 'New allele mutations')], [fmt(frame.stats.diversity), tx('diversity', 'Trait diversity (mean SD)')]].map(function(s, i) { return h('div', { key: i }, h('strong', null, s[0]), h('small', null, s[1])); }))),
+              [[frame.population.length, phase === 'offspring' ? tx('residents', 'Spriglets now') : tx('replay_offspring', 'Offspring') + ' · G' + cursor], [cursor ? frame.survivors.length : '—', tx('breeders', 'Breeding survivors')], [frame.mutations, tx('mutations', 'New allele mutations')], [fmt(frame.stats.diversity), tx('diversity', 'Trait spread (mean SD)')]].map(function(s, i) { return h('div', { key: i }, h('strong', null, s[0]), h('small', null, s[1])); }))),
           h('aside', { className: 'ei-desk', 'aria-label': tx('desk_title', 'Expedition field desk') },
             h('div', { className: 'ei-desk-heading' }, h('div', { className: 'ei-kicker' }, tx('desk_title', 'Expedition field desk')), h('small', null, tx('desk_hint', 'Choose one thing to explore'))),
             h('div', { className: 'ei-desk-tabs', ref: deskTabsRef, role: 'tablist', 'aria-label': tx('desk_tabs', 'Field desk views') }, deskTabs.map(function(tab, index) {
@@ -3459,7 +3926,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
   window.StemLab.registerTool('evoLab', {
     name: 'EvoLab — Evolution',
     icon: '\uD83D\uDC12',
-    desc: 'Explore Living Island, a generative 3D evolution expedition with inherited traits, family tracking, changing habitats, and a generation timeline. Continue into 17 focused activities on natural selection, population genetics, ancestry, and scientific investigation.',
+    desc: 'Explore Living Island, a 3D evolution primer with inherited traits, family tracking and recorded generations. Expand into Island Connections for two-species reciprocal selection, island geography and traceable gene flow. Continue into 17 focused activities on natural selection, population genetics, ancestry, and scientific investigation.',
     category: 'biology',
     aliases: ['evolution', 'natural selection', 'Darwin', 'Hardy-Weinberg'],
     render: function(ctx) {
@@ -3640,7 +4107,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       };
       var getNote = function(moduleId) { var p = _progressRef.current; var n = p && p.notes && p.notes[moduleId]; return n && typeof n === 'object' && typeof n.text === 'string' ? n : null; };
       var saveNote = function(moduleId, text, cer) {
-        var clean = String(text == null ? '' : text).slice(0, 2000);
+        var clean = String(text == null ? '' : text).slice(0, moduleId === 'archipelagoEvidence' ? 12000 : 2000);
         var parts = cer && typeof cer === 'object' ? { claim: String(cer.claim || '').slice(0, 600), evidence: String(cer.evidence || '').slice(0, 600), reasoning: String(cer.reasoning || '').slice(0, 600) } : null;
         writeProgress(function(p) {
           if (clean.trim()) { var rec = { text: clean, at: new Date().toISOString() }; if (parts) rec.cer = parts; p.notes[moduleId] = rec; }
@@ -3777,6 +4244,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       ];
       var MODULE_TITLES = {
         livingIsland: 'Living Island',
+        archipelagoEvidence: ax('note_label', 'Island Connections · geographic and coevolution evidence'),
         livingIslandData: 'Living Island — recorded evidence',
         livingIslandHighlights: t('stem.evolab.island_note_highlights', 'Living Island · collected moments'),
         livingIslandTraitTrail: t('stem.evolab.island_note_trait_trail', 'Living Island · family trait evidence'),
@@ -5005,6 +5473,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       // ─────────────────────────────────────────────────────
       function MainMenu() {
         var bigCards = [
+          { id: 'archipelago', title: ax('title', 'Island Connections'), icon: '🏝️',
+            subtitle: ax('menu_subtitle', 'Advanced: reciprocal selection and island genetics'),
+            desc: ax('menu_description', 'Follow fictional seed-eating birds and seed plants across three volcanic islands. Trace inherited alleles, reciprocal trait selection, dispersal, founder samples and within-island genetic variation. Test two private futures from the same real individuals.'),
+            bullets: [ax('menu_one', 'Three island habitats and distance-dependent dispersal'), ax('menu_two', 'Two interacting species with inherited traits and costs'), ax('menu_three', 'Actual migrants, parents and transmitted marker alleles'), ax('menu_four', 'Divergence evidence without declaring new species')], color: 'from-teal-500 to-emerald-700', ring: 'ring-teal-500/40' },
           {
             id: 'predatorVision', title: t('stem.evolab.predator_vision', 'Predator Vision'), icon: '👁️',
             subtitle: t('stem.evolab.you_are_the_selection_pressure', 'YOU are the selection pressure'),
@@ -17291,10 +17763,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       // ─────────────────────────────────────────────────────
       // MAIN VIEW DISPATCH
       // ─────────────────────────────────────────────────────
+      if (view === 'archipelago') return h(ArchipelagoLab, {
+        React: React, saved: d.archipelago, explanation: d.archipelagoExplanation, prediction: d.archipelagoPrediction,
+        onSave: function(world) { upd('archipelago', world); },
+        onExplanation: function(text) { upd('archipelagoExplanation', text); },
+        onPrediction: function(text) { upd('archipelagoPrediction', text); },
+        onPrimer: function() { goto('livingIsland'); }, onJournal: function() { goto('journal'); },
+        onFinding: function(text) { saveNote('archipelagoEvidence', text); }
+      });
       if (view === 'livingIsland') return h(LivingIsland, {
         React: React, saved: d.island, study: d.islandStudy,
         onSave: function(world) { upd('island', world); },
         onStudy: function(study) { upd('islandStudy', study); },
+        onAdvanced: function() { goto('archipelago'); },
         onMenu: function() { goto('menu'); },
         onJournal: function() { goto('journal'); },
         onFinding: function(text, investigation) { var noteKeys = { cold: 'livingIslandCold', family: 'livingIslandFamily', drift: 'livingIslandDrift', comparison: 'livingIslandComparison', detective: 'livingIslandDetective', traitTrail: 'livingIslandTraitTrail', highlights: 'livingIslandHighlights', forecast: 'livingIslandForecast', chanceTrials: 'livingIslandChanceTrials', chanceResident: 'livingIslandChanceResident', cohorts: 'livingIslandCohorts', populations: 'livingIslandPopulations', countOdds: 'livingIslandCountOdds', habitatTrail: 'livingIslandHabitatTrail' }; saveNote(Object.prototype.hasOwnProperty.call(noteKeys, investigation) ? noteKeys[investigation] : 'livingIslandData', text); },

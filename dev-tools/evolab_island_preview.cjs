@@ -15,7 +15,7 @@ const assets = {
 };
 const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Living Island · EvoLab preview</title><link rel="stylesheet" href="/app.css"><style>body{margin:0;background:#f2f4eb}#preview{min-height:100vh}</style></head><body><div id="preview"></div><script src="/react.js"></script><script src="/react-dom.js"></script><script src="/three.js"></script><script src="/evolab.js"></script><script>
 function Preview(){
-  var state=React.useState({evoLab:{view:'livingIsland'}}),data=state[0],setData=state[1];
+  var state=React.useState({evoLab:{view:new URLSearchParams(location.search).get('preview')==='archipelago'?'archipelago':'livingIsland'}}),data=state[0],setData=state[1];
   return window.StemLab.renderTool('evoLab',{
     React:React,toolData:data,t:function(k,fb){return fb==null?k:fb;},
     update:function(id,key,value){setData(function(old){var next=Object.assign({},old);next[id]=Object.assign({},old[id]);next[id][key]=value;return next;});},
