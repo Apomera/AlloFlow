@@ -1,0 +1,557 @@
+{
+  "completed": true,
+  "sourceHash": "ab5188a6750916d832da0f0278a3e7e334a3453c84b0f200048ce79861b22b13",
+  "uiHash": "ac3c9457375540576b5dc1a068f8e2c0d4c99d2e4ba73296abea2331394d89fb",
+  "baselineHash": "bcc35fe1750d9977de5e43e40adf2241d43779ed74f708d86324d3db2ac62255",
+  "captures": [
+    {
+      "phase": "baseline",
+      "name": "face",
+      "file": "baseline-face.png",
+      "hash": "240e8778565de13a6e1750fe5a0a5833674113674173c53a47d51271ecfbb447",
+      "statistics": {
+        "width": 1280,
+        "height": 800,
+        "warmPixels": 25692,
+        "meanLuminance": 6.217535229252393,
+        "clippedWhiteFraction": 0,
+        "bounds": {
+          "width": 1227,
+          "height": 451
+        }
+      }
+    },
+    {
+      "phase": "baseline",
+      "name": "face-diffuse",
+      "file": "baseline-face-diffuse.png",
+      "hash": "dd2f1df51c6af98381dc30673280c9918dd6eb800fa41b94f493afb021ca1651",
+      "statistics": {
+        "width": 1280,
+        "height": 800,
+        "warmPixels": 25011,
+        "meanLuminance": 5.831318565345836,
+        "clippedWhiteFraction": 0,
+        "bounds": {
+          "width": 714,
+          "height": 382
+        }
+      }
+    },
+    {
+      "phase": "baseline",
+      "name": "side-x",
+      "file": "baseline-side-x.png",
+      "hash": "ad6e62f21d1aa2628d8f7565cb416aad6c69cd71012cbb7cbc1f66926d8fd6d0",
+      "statistics": {
+        "width": 1280,
+        "height": 800,
+        "warmPixels": 1414,
+        "meanLuminance": 3.9388277253802633,
+        "clippedWhiteFraction": 0,
+        "bounds": {
+          "width": 657,
+          "height": 725
+        }
+      }
+    },
+    {
+      "phase": "baseline",
+      "name": "side-x-diffuse",
+      "file": "baseline-side-x-diffuse.png",
+      "hash": "3654baef93c9d1cbd1ec84ee80cf411c5f60ab9b61a30849655fafb598f31926",
+      "statistics": {
+        "width": 1280,
+        "height": 800,
+        "warmPixels": 14,
+        "meanLuminance": 3.7536420773334287,
+        "clippedWhiteFraction": 0,
+        "bounds": {
+          "width": 626,
+          "height": 379
+        }
+      }
+    },
+    {
+      "phase": "baseline",
+      "name": "side-z",
+      "file": "baseline-side-z.png",
+      "hash": "0cca8a3feb04635e2dc1d77e93c8df1f2e03ebba7e880b57c6041bd712298d67",
+      "statistics": {
+        "width": 1280,
+        "height": 800,
+        "warmPixels": 555,
+        "meanLuminance": 3.982533660927004,
+        "clippedWhiteFraction": 0,
+        "bounds": {
+          "width": 983,
+          "height": 597
+        }
+      }
+    },
+    {
+      "phase": "baseline",
+      "name": "side-z-diffuse",
+      "file": "baseline-side-z-diffuse.png",
+      "hash": "d55e8c978626474558a4433a6fa37b368471e294524e45790299a5389354b391",
+      "statistics": {
+        "width": 1280,
+        "height": 800,
+        "warmPixels": 12,
+        "meanLuminance": 3.7536207800678034,
+        "clippedWhiteFraction": 0,
+        "bounds": {
+          "width": 62,
+          "height": 6
+        }
+      }
+    },
+    {
+      "phase": "baseline",
+      "name": "oblique",
+      "file": "baseline-oblique.png",
+      "hash": "c4907d6059ad18cdc5238741632940f64bd5aaf16e2a7cb163dc604e0e286c5a",
+      "statistics": {
+        "width": 1280,
+        "height": 800,
+        "warmPixels": 10731,
+        "meanLuminance": 4.71178893499164,
+        "clippedWhiteFraction": 0,
+        "bounds": {
+          "width": 993,
+          "height": 601
+        }
+      }
+    },
+    {
+      "phase": "baseline",
+      "name": "oblique-diffuse",
+      "file": "baseline-oblique-diffuse.png",
+      "hash": "78d6ca576f11c57a1a8682f8bd4d8dde6c9ea19191e197b20bef6726d92506c0",
+      "statistics": {
+        "width": 1280,
+        "height": 800,
+        "warmPixels": 8976,
+        "meanLuminance": 4.507796075023844,
+        "clippedWhiteFraction": 0,
+        "bounds": {
+          "width": 701,
+          "height": 322
+        }
+      }
+    },
+    {
+      "phase": "baseline",
+      "name": "low-exposure",
+      "file": "baseline-low-exposure.png",
+      "hash": "d6886458c9f1f704198f884bf8bbb7d553e20ded91c432b4d1d5c62fd401dfd5",
+      "statistics": {
+        "width": 1280,
+        "height": 800,
+        "warmPixels": 623,
+        "meanLuminance": 3.828172826161348,
+        "clippedWhiteFraction": 0,
+        "bounds": {
+          "width": 641,
+          "height": 721
+        }
+      }
+    },
+    {
+      "phase": "baseline",
+      "name": "relativity",
+      "file": "baseline-relativity.png",
+      "hash": "831a6c4e508275c1aecab1c542895db94b8ecadf3d28eae5bbe76e6b0a00145a",
+      "statistics": {
+        "width": 1280,
+        "height": 800,
+        "warmPixels": 15238,
+        "meanLuminance": 4.711603339484812,
+        "clippedWhiteFraction": 0,
+        "bounds": {
+          "width": 1037,
+          "height": 662
+        }
+      }
+    },
+    {
+      "phase": "baseline",
+      "name": "spiral",
+      "file": "baseline-spiral.png",
+      "hash": "58dc30a951263e0a5346287e11f07e4821496e42e0e1be967f0dcbb7339f9a7a",
+      "statistics": {
+        "width": 1280,
+        "height": 800,
+        "warmPixels": 3468,
+        "meanLuminance": 12.239254793154029,
+        "clippedWhiteFraction": 0.000041015625,
+        "bounds": {
+          "width": 1014,
+          "height": 680
+        }
+      }
+    },
+    {
+      "phase": "baseline",
+      "name": "nebula",
+      "file": "baseline-nebula.png",
+      "hash": "66b34d5d3e0446730e23f9ac85289fb1fd2a15444c3a78dd7854adc2303a4ebd",
+      "statistics": {
+        "width": 1280,
+        "height": 800,
+        "warmPixels": 6407,
+        "meanLuminance": 8.806899345385386,
+        "clippedWhiteFraction": 0.0000205078125,
+        "bounds": {
+          "width": 1194,
+          "height": 790
+        }
+      }
+    },
+    {
+      "phase": "refined",
+      "name": "face",
+      "file": "refined-face.png",
+      "hash": "1d08cc784523cca61e43e24d890e79b8e6cea1ea392d62e941ac740dafca4aef",
+      "statistics": {
+        "width": 1280,
+        "height": 800,
+        "warmPixels": 25905,
+        "meanLuminance": 6.236350436089506,
+        "clippedWhiteFraction": 0,
+        "bounds": {
+          "width": 1227,
+          "height": 451
+        }
+      }
+    },
+    {
+      "phase": "refined",
+      "name": "face-diffuse",
+      "file": "refined-face-diffuse.png",
+      "hash": "3fc65afb93e12b611ad77b9d4d41e96c53ba137fad755895b4bec6f83e027dce",
+      "statistics": {
+        "width": 1280,
+        "height": 800,
+        "warmPixels": 25010,
+        "meanLuminance": 5.831317654213025,
+        "clippedWhiteFraction": 0,
+        "bounds": {
+          "width": 714,
+          "height": 382
+        }
+      }
+    },
+    {
+      "phase": "refined",
+      "name": "side-x",
+      "file": "refined-side-x.png",
+      "hash": "28721dfa8e816b739312e507b38d3468b54e1f27f25d48be6cbb338f0f5c31ea",
+      "statistics": {
+        "width": 1280,
+        "height": 800,
+        "warmPixels": 20876,
+        "meanLuminance": 5.525015058654165,
+        "clippedWhiteFraction": 0,
+        "bounds": {
+          "width": 695,
+          "height": 744
+        }
+      }
+    },
+    {
+      "phase": "refined",
+      "name": "side-x-diffuse",
+      "file": "refined-side-x-diffuse.png",
+      "hash": "9f7ec0a1ba385f7a8752109c58fa26fb8cf42ab0d7f2bb2f0b6b16707bc6e4c6",
+      "statistics": {
+        "width": 1280,
+        "height": 800,
+        "warmPixels": 17428,
+        "meanLuminance": 5.207934125247791,
+        "clippedWhiteFraction": 0,
+        "bounds": {
+          "width": 689,
+          "height": 367
+        }
+      }
+    },
+    {
+      "phase": "refined",
+      "name": "side-z",
+      "file": "refined-side-z.png",
+      "hash": "325cbd0aa486be200de9c56cc7f8ea16cf0833dd35d1efe86e6944cf6cdbcc78",
+      "statistics": {
+        "width": 1280,
+        "height": 800,
+        "warmPixels": 25608,
+        "meanLuminance": 6.0153810430865535,
+        "clippedWhiteFraction": 0,
+        "bounds": {
+          "width": 983,
+          "height": 597
+        }
+      }
+    },
+    {
+      "phase": "refined",
+      "name": "side-z-diffuse",
+      "file": "refined-side-z-diffuse.png",
+      "hash": "ba085c5a12de83ada8797e036e76804943ab4fa6cabb24f263d7a03a3ce62901",
+      "statistics": {
+        "width": 1280,
+        "height": 800,
+        "warmPixels": 24285,
+        "meanLuminance": 5.773782167484769,
+        "clippedWhiteFraction": 0,
+        "bounds": {
+          "width": 704,
+          "height": 390
+        }
+      }
+    },
+    {
+      "phase": "refined",
+      "name": "oblique",
+      "file": "refined-oblique.png",
+      "hash": "7c140d7d03b7df4d69cd8a0dbf3af906c91fb7a16bfe3dca2e85b182dbccffe8",
+      "statistics": {
+        "width": 1280,
+        "height": 800,
+        "warmPixels": 24341,
+        "meanLuminance": 5.880555383127603,
+        "clippedWhiteFraction": 0,
+        "bounds": {
+          "width": 993,
+          "height": 612
+        }
+      }
+    },
+    {
+      "phase": "refined",
+      "name": "oblique-diffuse",
+      "file": "refined-oblique-diffuse.png",
+      "hash": "db6d19576475c0b737eb95aa3102d97d895c92b028cb135e4be0a64908c9c9bf",
+      "statistics": {
+        "width": 1280,
+        "height": 800,
+        "warmPixels": 21255,
+        "meanLuminance": 5.520309295767275,
+        "clippedWhiteFraction": 0,
+        "bounds": {
+          "width": 708,
+          "height": 369
+        }
+      }
+    },
+    {
+      "phase": "refined",
+      "name": "low-exposure",
+      "file": "refined-low-exposure.png",
+      "hash": "85b577c02adf1dc8cd0281b3afb02d15195f23bc390df9893e021572e078cd3f",
+      "statistics": {
+        "width": 1280,
+        "height": 800,
+        "warmPixels": 12136,
+        "meanLuminance": 4.529573767601984,
+        "clippedWhiteFraction": 0,
+        "bounds": {
+          "width": 676,
+          "height": 734
+        }
+      }
+    },
+    {
+      "phase": "refined",
+      "name": "relativity",
+      "file": "refined-relativity.png",
+      "hash": "9f6a4ff1420dd20ddc6bf60abcee120073be0fc78c8f8964baec18b367d0a127",
+      "statistics": {
+        "width": 1280,
+        "height": 800,
+        "warmPixels": 34488,
+        "meanLuminance": 5.985714959303696,
+        "clippedWhiteFraction": 0,
+        "bounds": {
+          "width": 1040,
+          "height": 662
+        }
+      }
+    },
+    {
+      "phase": "refined",
+      "name": "spiral",
+      "file": "refined-spiral.png",
+      "hash": "58dc30a951263e0a5346287e11f07e4821496e42e0e1be967f0dcbb7339f9a7a",
+      "statistics": {
+        "width": 1280,
+        "height": 800,
+        "warmPixels": 3468,
+        "meanLuminance": 12.239254793154029,
+        "clippedWhiteFraction": 0.000041015625,
+        "bounds": {
+          "width": 1014,
+          "height": 680
+        }
+      }
+    },
+    {
+      "phase": "refined",
+      "name": "nebula",
+      "file": "refined-nebula.png",
+      "hash": "66b34d5d3e0446730e23f9ac85289fb1fd2a15444c3a78dd7854adc2303a4ebd",
+      "statistics": {
+        "width": 1280,
+        "height": 800,
+        "warmPixels": 6407,
+        "meanLuminance": 8.806899345385386,
+        "clippedWhiteFraction": 0.0000205078125,
+        "bounds": {
+          "width": 1194,
+          "height": 790
+        }
+      }
+    }
+  ],
+  "checks": [
+    "All three point buffers preserve their frozen baseline bytes",
+    "spiral fixed view matches baseline pixels exactly",
+    "nebula fixed view matches baseline pixels exactly",
+    "Side-on diffuse halos retain breadth; face-on extent stays within 3%",
+    "Paused pixels and look-only geometry remain stable",
+    "Two textures, buffers, and programs released per scene; no page or WebGL errors"
+  ],
+  "comparisons": [
+    {
+      "name": "side-x",
+      "baseline": {
+        "width": 1280,
+        "height": 800,
+        "warmPixels": 14,
+        "meanLuminance": 3.7536420773334287,
+        "clippedWhiteFraction": 0,
+        "bounds": {
+          "width": 626,
+          "height": 379
+        }
+      },
+      "refined": {
+        "width": 1280,
+        "height": 800,
+        "warmPixels": 17428,
+        "meanLuminance": 5.207934125247791,
+        "clippedWhiteFraction": 0,
+        "bounds": {
+          "width": 689,
+          "height": 367
+        }
+      }
+    },
+    {
+      "name": "side-z",
+      "baseline": {
+        "width": 1280,
+        "height": 800,
+        "warmPixels": 12,
+        "meanLuminance": 3.7536207800678034,
+        "clippedWhiteFraction": 0,
+        "bounds": {
+          "width": 62,
+          "height": 6
+        }
+      },
+      "refined": {
+        "width": 1280,
+        "height": 800,
+        "warmPixels": 24285,
+        "meanLuminance": 5.773782167484769,
+        "clippedWhiteFraction": 0,
+        "bounds": {
+          "width": 704,
+          "height": 390
+        }
+      }
+    },
+    {
+      "name": "face",
+      "baseline": {
+        "width": 1280,
+        "height": 800,
+        "warmPixels": 25011,
+        "meanLuminance": 5.831318565345836,
+        "clippedWhiteFraction": 0,
+        "bounds": {
+          "width": 714,
+          "height": 382
+        }
+      },
+      "refined": {
+        "width": 1280,
+        "height": 800,
+        "warmPixels": 25010,
+        "meanLuminance": 5.831317654213025,
+        "clippedWhiteFraction": 0,
+        "bounds": {
+          "width": 714,
+          "height": 382
+        }
+      }
+    }
+  ],
+  "errors": [],
+  "resources": [
+    {
+      "phase": "baseline",
+      "createdTextures": 2,
+      "deletedTextures": 2,
+      "createdBuffers": 2,
+      "deletedBuffers": 2,
+      "createdPrograms": 2,
+      "deletedPrograms": 2,
+      "subUploads": 0,
+      "error": 0
+    },
+    {
+      "phase": "refined",
+      "createdTextures": 2,
+      "deletedTextures": 2,
+      "createdBuffers": 2,
+      "deletedBuffers": 2,
+      "createdPrograms": 2,
+      "deletedPrograms": 2,
+      "subUploads": 322,
+      "error": 0
+    }
+  ],
+  "geometry": [
+    {
+      "phase": "baseline",
+      "pausedUploads": 0,
+      "frozenPixels": "c4907d6059ad18cdc5238741632940f64bd5aaf16e2a7cb163dc604e0e286c5a",
+      "lookReusedSurface": true
+    },
+    {
+      "phase": "refined",
+      "pausedUploads": 322,
+      "frozenPixels": "7c140d7d03b7df4d69cd8a0dbf3af906c91fb7a16bfe3dca2e85b182dbccffe8",
+      "lookReusedSurface": true
+    }
+  ],
+  "pointHashes": {
+    "19203": "d918319e8229e8005107e8535f7fcb2f1b092f070f42395fcffa739d0905c3e4",
+    "36400": "f5dbc73e3ae0b2751dcf15f6fffce2753ae4994b089c62d020975e414889b2ab",
+    "41470": "156c66d7c6805406f2d231fb18affab8e613952ec32b5fdf9e9e805104966b85"
+  },
+  "served": [
+    {
+      "file": "universe_flight_scene.js",
+      "status": 200,
+      "hash": "ab5188a6750916d832da0f0278a3e7e334a3453c84b0f200048ce79861b22b13"
+    },
+    {
+      "file": "stem_tool_universe.js",
+      "status": 200,
+      "hash": "ac3c9457375540576b5dc1a068f8e2c0d4c99d2e4ba73296abea2331394d89fb"
+    }
+  ]
+}

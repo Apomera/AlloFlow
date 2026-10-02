@@ -829,9 +829,52 @@
     cloudAtlasBytes = data;
     return data;
   }
+  // Project a fixed, rounded stellar distribution onto a plane facing the
+  // observer. This diffuse-light proxy is an orthographic shape approximation;
+  // the individual points retain their world-space depth and perspective.
+  function ellipticalView(model, observer) {
+    var delta=model.center.map(function(value,i){return value-observer[i];});
+    var distance=Math.hypot(delta[0],delta[1],delta[2]);
+    if (distance<model.radius*1e-8) return {major:[0,0,0],minor:[0,0,0]};
+    var n=delta.map(function(value){return value/distance;});
+    var horizontal=Math.hypot(n[0],n[2]);
+    var right=horizontal>1e-8?[n[2]/horizontal,0,-n[0]/horizontal]:[1,0,0];
+    var up=[n[1]*right[2]-n[2]*right[1],n[2]*right[0]-n[0]*right[2],n[0]*right[1]-n[1]*right[0]];
+    var ct=Math.cos(model.tilt),st=Math.sin(model.tilt),cr=Math.cos(model.turn),sr=Math.sin(model.turn);
+    var axes=[[cr,sr,0],[-ct*sr,ct*cr,st],[st*sr,-st*cr,ct]];
+    // The generated points have relative spreads near (1, 0.70, 0.72).
+    // Their diffuse halo keeps that thickness instead of becoming a flat disk.
+    var weights=[1,0.49,0.5184],rr=0,uu=0,ru=0;
+    axes.forEach(function(axis,i){
+      var r=axis[0]*right[0]+axis[1]*right[1]+axis[2]*right[2];
+      var u=axis[0]*up[0]+axis[1]*up[1]+axis[2]*up[2];
+      rr+=weights[i]*r*r;uu+=weights[i]*u*u;ru+=weights[i]*r*u;
+    });
+    var spread=Math.hypot(rr-uu,2*ru),angle=0.5*Math.atan2(2*ru,rr-uu);
+    var ca=Math.cos(angle),sa=Math.sin(angle);
+    var major=model.radius*Math.sqrt(Math.max(0,(rr+uu+spread)*0.5));
+    // The existing atlas already has a 0.72 minor-axis profile; undo that
+    // factor in the proxy so the projected shape is not flattened twice.
+    var minor=model.radius*Math.sqrt(Math.max(0,(rr+uu-spread)*0.5))/0.72;
+    return {major:right.map(function(value,i){return major*(value*ca+up[i]*sa);}),
+      minor:right.map(function(value,i){return minor*(-value*sa+up[i]*ca);})};
+  }
+  function writeEllipticalSurface(values, range, observer) {
+    var shape=ellipticalView(range.model,observer),offset=range.offset;
+    function vertex(u,v) {
+      var x=(u*2-1)*1.22,z=(v*2-1)*1.22;
+      for(var axis=0;axis<3;axis++) values[offset+axis]=range.model.center[axis]+x*shape.major[axis]+z*shape.minor[axis];
+      offset+=5;
+    }
+    for(var j=0;j<8;j++)for(var k=0;k<8;k++) {
+      var u=k/8,v=j/8,u1=(k+1)/8,v1=(j+1)/8;
+      vertex(u,v);vertex(u1,v);vertex(u1,v1);vertex(u,v);vertex(u1,v1);vertex(u,v1);
+    }
+  }
   function galaxyGeometry(models) {
-    var values=[],segments=8;
+    var values=[],segments=8,ellipticals=[];
     models.forEach(function(model){
+      if(model.elliptical) ellipticals.push({model:model,offset:values.length,count:segments*segments*6*5});
       var tile = Math.max(0, GALAXY_STYLES.indexOf(model.style || (model.elliptical ? 'elliptical' : 'spiral')));
       var first = GALAXY_GUTTER + 0.5, span = GALAXY_TILE_SIZE - GALAXY_GUTTER * 2 - 1;
       function vertex(u,v){
@@ -845,7 +888,7 @@
         vertex(u,v);vertex(u1,v);vertex(u1,v1);vertex(u,v);vertex(u1,v1);vertex(u,v1);
       }
     });
-    return new Float32Array(values);
+    return {points:new Float32Array(values),ellipticals:ellipticals};
   }
   var GALAXY_VERTEX = [
     'precision highp float; attribute vec3 a_position; attribute vec2 a_uv;',
@@ -978,6 +1021,7 @@
     var settings = { mode: 'explore', region: 'neighborhood', speed: 2, beta: 0.9, timeScale: 1, running: false, compareRest: false, fov: 70, exposure: 1, quality: 'auto', orbitRate: 3, orbitDirection: 1, smoothTravel: false, flybyRate: 1 };
     var state, gl, program, buffer, pointCount = 0, uniforms = {}, disposed = false, lost = false;
     var galaxyProgram, galaxyBuffer, galaxyTexture, cloudTexture, galaxyCount = 0, galaxyUniforms = {};
+    var galaxySurfaces = null, galaxyObserver = null;
     var pointAttributes = [], galaxyAttributes = [];
     var pointMax = 512;
     var raf = 0, lastFrame = 0, lastTelemetry = -Infinity, inView = true;
@@ -1126,10 +1170,20 @@
       pointCount = data.points.length / 9;
       gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
       gl.bufferData(gl.ARRAY_BUFFER, data.points, gl.STATIC_DRAW);
-      var surfaces = galaxyGeometry(data.galaxies);
-      galaxyCount = surfaces.length / 5;
+      galaxySurfaces = galaxyGeometry(data.galaxies); galaxyObserver = null;
+      galaxyCount = galaxySurfaces.points.length / 5;
       gl.bindBuffer(gl.ARRAY_BUFFER, galaxyBuffer);
-      gl.bufferData(gl.ARRAY_BUFFER, surfaces, gl.STATIC_DRAW);
+      gl.bufferData(gl.ARRAY_BUFFER, galaxySurfaces.points, gl.STATIC_DRAW);
+    }
+    function updateEllipticals() {
+      if (!galaxySurfaces || !galaxySurfaces.ellipticals.length) return;
+      if (galaxyObserver && state.position.every(function(value,i){return value===galaxyObserver[i];})) return;
+      gl.bindBuffer(gl.ARRAY_BUFFER,galaxyBuffer);
+      galaxySurfaces.ellipticals.forEach(function(range){
+        writeEllipticalSurface(galaxySurfaces.points,range,state.position);
+        gl.bufferSubData(gl.ARRAY_BUFFER,range.offset*4,galaxySurfaces.points.subarray(range.offset,range.offset+range.count));
+      });
+      galaxyObserver=state.position.slice();
     }
     function resize() {
       if (disposed) return;
@@ -1166,6 +1220,7 @@
       // Diffuse emission sits beneath the resolved stars. Dark lanes are reduced
       // emission in this illustrative disk, not a volumetric extinction model.
       if (galaxyCount) {
+        updateEllipticals();
         pointAttributes.forEach(function(a) { gl.disableVertexAttribArray(a[0]); });
         gl.useProgram(galaxyProgram); attributes(galaxyAttributes, galaxyBuffer, 20); camera(galaxyUniforms);
         gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, galaxyTexture);
@@ -1316,6 +1371,7 @@
         if (program) gl.deleteProgram(program);
         shaders.forEach(function (shader) { gl.deleteShader(shader); });
       }
+      galaxySurfaces = null; galaxyObserver = null; galaxyCount = 0;
       options = {};
     }
     function snapshot() {

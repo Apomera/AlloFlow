@@ -1,0 +1,156 @@
+{
+  "completed": true,
+  "verifiedAt": "2026-10-02T03:05:36.772Z",
+  "sourceHash": "ab5188a6750916d832da0f0278a3e7e334a3453c84b0f200048ce79861b22b13",
+  "uiHash": "ac3c9457375540576b5dc1a068f8e2c0d4c99d2e4ba73296abea2331394d89fb",
+  "testHash": "5102523da895524bec2f00e6999d4080fb71b66bf981aab2e914aff5add557f7",
+  "reportHash": "b785dbfb6a6b16ccd0b50bb28b7eee6b28dabf131c659bccfd138a2877ab3105",
+  "focusedTests": 132,
+  "focusedTestFiles": 5,
+  "focusedTestExitCode": 0,
+  "focusedTestDurationSeconds": 24.99,
+  "projectionBrowser": {
+    "completed": true,
+    "workflowGroups": 6,
+    "actualCaptures": 24,
+    "pageErrors": 0
+  },
+  "groupBrowser": {
+    "completed": true,
+    "workflowGroups": 10,
+    "accessibilityScopes": 9,
+    "actualCaptures": 13,
+    "pageErrors": 0
+  },
+  "contextualHighlights": [
+    {
+      "routeId": "halo",
+      "id": "arm",
+      "name": "Spiral arm",
+      "seconds": 12,
+      "description": "Look across the tilted disk as the cluster comes into view.",
+      "targetId": "galactic-center",
+      "highlightId": "arm"
+    },
+    {
+      "routeId": "halo",
+      "id": "cluster",
+      "name": "Cluster pass",
+      "seconds": 18,
+      "description": "Compare the nearby warm stars with the distant spiral.",
+      "targetId": "halo-cluster-2",
+      "highlightId": "cluster"
+    },
+    {
+      "routeId": "halo",
+      "id": "panorama",
+      "name": "Galaxy panorama",
+      "seconds": 32,
+      "description": "Look back across the spiral from the halo.",
+      "targetId": "galactic-center",
+      "highlightId": "panorama"
+    },
+    {
+      "routeId": "nebula",
+      "id": "approach",
+      "name": "Blue cloud approach",
+      "seconds": 8,
+      "description": "See the blue glow against the distant stellar field.",
+      "targetId": "blue-nebula",
+      "highlightId": "approach"
+    },
+    {
+      "routeId": "nebula",
+      "id": "filaments",
+      "name": "Among the filaments",
+      "seconds": 12,
+      "description": "Look around the layered blue emission region.",
+      "targetId": "blue-nebula",
+      "highlightId": "filaments"
+    },
+    {
+      "routeId": "nebula",
+      "id": "violet",
+      "name": "Violet cloud reveal",
+      "seconds": 36,
+      "description": "Look toward the violet cloud after the curved passage.",
+      "targetId": "violet-nebula",
+      "highlightId": "violet"
+    },
+    {
+      "routeId": "group",
+      "id": "spiral",
+      "name": "Spiral skim",
+      "seconds": 12,
+      "description": "Look across the tilted arms of the nearby spiral.",
+      "targetId": "near-galaxy",
+      "highlightId": "spiral"
+    },
+    {
+      "routeId": "group",
+      "id": "elliptical",
+      "name": "Golden elliptical pass",
+      "seconds": 30,
+      "description": "Compare the smooth warm halo with the nearby spiral.",
+      "targetId": "golden-elliptical",
+      "highlightId": "elliptical"
+    },
+    {
+      "routeId": "group",
+      "id": "panorama",
+      "name": "Galaxy group panorama",
+      "seconds": 44,
+      "description": "Look back across the spiral and elliptical together.",
+      "targetId": "golden-elliptical",
+      "highlightId": "panorama"
+    }
+  ],
+  "ellipticalProjection": {
+    "projection": "orthographic covariance",
+    "bodyRatios": [
+      1,
+      0.7,
+      0.72
+    ],
+    "atlasMinorRatio": 0.72
+  },
+  "evidenceHashes": {
+    "reports/universe-flight-2026-09-29/elliptical-depth/check.json": "b3623b3195af0d5b9589610c0df8a2f3d4fb072266a68a6c01225a6a2326f0fc",
+    "reports/universe-flight-2026-09-29/elliptical-depth/group/check.json": "58e2dfc63013ecf2af1e9dbbfe6121df5d6229b25517da0be3801bddf2c89768",
+    "reports/universe-flight-2026-09-29/elliptical-depth/focused-tests.txt": "17d82908065a4f08f319dbcf0fbbf368992a59e9d0b8ec59e1e2b7c5428decd2",
+    "reports/universe-flight-2026-09-29/elliptical-depth/geometry-atlas-audit.json": "5541736d9508872434e326d77050b4a6f168db456629bde3dc17d5b6fccfd37c"
+  },
+  "harnessHashes": {
+    "dev-tools/universe_flight_elliptical_check.cjs": "fe303c520f90a907812328bbf3a50d5b5c2f7247ae082cd2ad4c15b83c7b7e1b",
+    "dev-tools/universe_flight_group_check.cjs": "d7e9016e54f187848f9d55abe29f1164b77dcc52c8d7010eca872d9a9ba71e9b"
+  },
+  "selectedCaptureHashes": {
+    "reports/universe-flight-2026-09-29/elliptical-depth/baseline-side-x.png": "ad6e62f21d1aa2628d8f7565cb416aad6c69cd71012cbb7cbc1f66926d8fd6d0",
+    "reports/universe-flight-2026-09-29/elliptical-depth/refined-side-x.png": "28721dfa8e816b739312e507b38d3468b54e1f27f25d48be6cbb338f0f5c31ea",
+    "reports/universe-flight-2026-09-29/elliptical-depth/refined-side-z.png": "325cbd0aa486be200de9c56cc7f8ea16cf0833dd35d1efe86e6944cf6cdbcc78",
+    "reports/universe-flight-2026-09-29/elliptical-depth/refined-oblique.png": "7c140d7d03b7df4d69cd8a0dbf3af906c91fb7a16bfe3dca2e85b182dbccffe8",
+    "reports/universe-flight-2026-09-29/elliptical-depth/refined-face.png": "1d08cc784523cca61e43e24d890e79b8e6cea1ea392d62e941ac740dafca4aef",
+    "reports/universe-flight-2026-09-29/elliptical-depth/refined-relativity.png": "9f6a4ff1420dd20ddc6bf60abcee120073be0fc78c8f8964baec18b367d0a127",
+    "reports/universe-flight-2026-09-29/elliptical-depth/group/group-current-320.png": "300d8ed328f15fd8d920b737b7a5da7f8522ffead5ed611cca6b0351f0504339",
+    "reports/universe-flight-2026-09-29/elliptical-depth/group/group-current-568.png": "1e4675a873e5ce7e7ca768bf7d01cadf6b9e33f7702a2644e75306ed963cba81",
+    "reports/universe-flight-2026-09-29/elliptical-depth/group/group-elliptical-orbit.png": "6e2c9e6d8a01bbd8b63a9fce89376e7e285609f0d244add3a08ca4d7886dac4d"
+  },
+  "mirrorsMatch": true,
+  "syntaxChecks": 7,
+  "served": [
+    {
+      "file": "universe_flight_scene.js",
+      "status": 200,
+      "hash": "ab5188a6750916d832da0f0278a3e7e334a3453c84b0f200048ce79861b22b13"
+    },
+    {
+      "file": "stem_tool_universe.js",
+      "status": 200,
+      "hash": "ac3c9457375540576b5dc1a068f8e2c0d4c99d2e4ba73296abea2331394d89fb"
+    }
+  ],
+  "preview": {
+    "url": "http://127.0.0.1:3187/reports/universe-flight-2026-09-29/preview.html?enhanced=30#universe-flight"
+  },
+  "limitations": "Generated teaching scenery; orthographic diffuse-light approximation. Functional and scoped accessibility checks do not measure frame rate or constitute a complete accessibility audit."
+}
