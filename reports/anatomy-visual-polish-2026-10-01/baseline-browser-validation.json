@@ -1,0 +1,2056 @@
+{
+  "visualPolish": {
+    "errors": [],
+    "screens": [
+      {
+        "area": "desktop-explore",
+        "dimensions": {
+          "width": 1280,
+          "scroll": 1280
+        },
+        "metrics": {
+          "width": 1128,
+          "height": 1526.03125,
+          "clientWidth": 1128,
+          "scrollWidth": 1128,
+          "text": [
+            {
+              "tag": "H4",
+              "text": "❤️ Circulatory",
+              "font": "18px",
+              "lineHeight": "27px",
+              "color": "rgb(23, 37, 59)",
+              "height": 27,
+              "width": 124.140625
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Focus model",
+              "font": "11px",
+              "lineHeight": "16.5px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 87.671875
+            },
+            {
+              "tag": "BUTTON",
+              "text": "2D",
+              "font": "11px",
+              "lineHeight": "12.65px",
+              "color": "rgb(255, 255, 255)",
+              "height": 44,
+              "width": 165
+            },
+            {
+              "tag": "BUTTON",
+              "text": "3D",
+              "font": "11px",
+              "lineHeight": "12.65px",
+              "color": "rgb(82, 97, 118)",
+              "height": 44,
+              "width": 165
+            },
+            {
+              "tag": "BUTTON",
+              "text": "+",
+              "font": "14px",
+              "lineHeight": "21px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 51.484375
+            },
+            {
+              "tag": "BUTTON",
+              "text": "←",
+              "font": "14px",
+              "lineHeight": "21px",
+              "color": "rgb(148, 163, 184)",
+              "height": 44,
+              "width": 47.140625
+            },
+            {
+              "tag": "BUTTON",
+              "text": "↑",
+              "font": "14px",
+              "lineHeight": "21px",
+              "color": "rgb(148, 163, 184)",
+              "height": 44,
+              "width": 47.140625
+            },
+            {
+              "tag": "BUTTON",
+              "text": "↓",
+              "font": "14px",
+              "lineHeight": "21px",
+              "color": "rgb(148, 163, 184)",
+              "height": 44,
+              "width": 47.140625
+            },
+            {
+              "tag": "BUTTON",
+              "text": "→",
+              "font": "14px",
+              "lineHeight": "21px",
+              "color": "rgb(148, 163, 184)",
+              "height": 44,
+              "width": 47.140625
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Focus",
+              "font": "11px",
+              "lineHeight": "16.5px",
+              "color": "rgb(23, 37, 59)",
+              "height": 36,
+              "width": 159.5
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Reset",
+              "font": "11px",
+              "lineHeight": "16.5px",
+              "color": "rgb(148, 163, 184)",
+              "height": 36,
+              "width": 159.5
+            },
+            {
+              "tag": "BUTTON",
+              "text": "⛶",
+              "font": "16px",
+              "lineHeight": "24px",
+              "color": "rgb(226, 232, 240)",
+              "height": 34,
+              "width": 34
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Read →",
+              "font": "12px",
+              "lineHeight": "18px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 65.03125
+            },
+            {
+              "tag": "BUTTON",
+              "text": "4 · Cell scaleCell Microdissection",
+              "font": "16px",
+              "lineHeight": "24px",
+              "color": "rgb(30, 27, 75)",
+              "height": 94.25,
+              "width": 83.75
+            },
+            {
+              "tag": "P",
+              "text": "Current route: Circulatory → Heart → Heart deep dive → Cell Microdissection.",
+              "font": "11px",
+              "lineHeight": "15.4px",
+              "color": "rgb(71, 85, 105)",
+              "height": 30.78125,
+              "width": 350
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Organ dissection",
+              "font": "11px",
+              "lineHeight": "16.5px",
+              "color": "rgb(55, 48, 163)",
+              "height": 34,
+              "width": 113.328125
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Cell scale",
+              "font": "11px",
+              "lineHeight": "16.5px",
+              "color": "rgb(55, 48, 163)",
+              "height": 34,
+              "width": 113.328125
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Microscope",
+              "font": "11px",
+              "lineHeight": "16.5px",
+              "color": "rgb(55, 48, 163)",
+              "height": 34,
+              "width": 113.34375
+            },
+            {
+              "tag": "BUTTON",
+              "text": "← Previous",
+              "font": "12px",
+              "lineHeight": "16.2px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 292.25
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Next →",
+              "font": "12px",
+              "lineHeight": "16.2px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 292.25
+            },
+            {
+              "tag": "P",
+              "text": "Circulatory / anterior",
+              "font": "11px",
+              "lineHeight": "16.5px",
+              "color": "rgb(82, 97, 118)",
+              "height": 16.5,
+              "width": 632
+            },
+            {
+              "tag": "H4",
+              "text": "Heart",
+              "font": "23px",
+              "lineHeight": "27.6px",
+              "color": "rgb(2, 6, 23)",
+              "height": 27.59375,
+              "width": 60.984375
+            },
+            {
+              "tag": "BUTTON",
+              "text": "🔊 Hear it",
+              "font": "11px",
+              "lineHeight": "16.5px",
+              "color": "rgb(67, 56, 202)",
+              "height": 22.5,
+              "width": 71.265625
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Show on atlas",
+              "font": "12px",
+              "lineHeight": "18px",
+              "color": "rgb(51, 65, 85)",
+              "height": 44,
+              "width": 103.765625
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Practice this structure",
+              "font": "12px",
+              "lineHeight": "18px",
+              "color": "rgb(17, 94, 89)",
+              "height": 44,
+              "width": 151.671875
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Deep dive",
+              "font": "12px",
+              "lineHeight": "18px",
+              "color": "rgb(190, 18, 60)",
+              "height": 44,
+              "width": 80.765625
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Compare",
+              "font": "12px",
+              "lineHeight": "18px",
+              "color": "rgb(109, 40, 217)",
+              "height": 44,
+              "width": 74.96875
+            },
+            {
+              "tag": "BUTTON",
+              "text": "← Structures",
+              "font": "12px",
+              "lineHeight": "18px",
+              "color": "rgb(51, 65, 85)",
+              "height": 44,
+              "width": 96.515625
+            },
+            {
+              "tag": "P",
+              "text": "Function🔊",
+              "font": "11px",
+              "lineHeight": "16.5px",
+              "color": "rgb(71, 85, 105)",
+              "height": 22.5,
+              "width": 632
+            },
+            {
+              "tag": "BUTTON",
+              "text": "🔊",
+              "font": "11px",
+              "lineHeight": "16.5px",
+              "color": "rgb(67, 56, 202)",
+              "height": 22.5,
+              "width": 33.109375
+            },
+            {
+              "tag": "P",
+              "text": "A muscular pump with four chambers. The right side sends blood toward the lungs; the left side sends",
+              "font": "14px",
+              "lineHeight": "23.8px",
+              "color": "rgb(51, 65, 85)",
+              "height": 47.59375,
+              "width": 632
+            },
+            {
+              "tag": "P",
+              "text": "🧠 Myth buster🔊",
+              "font": "11px",
+              "lineHeight": "16.5px",
+              "color": "rgb(134, 25, 143)",
+              "height": 22.5,
+              "width": 610
+            },
+            {
+              "tag": "BUTTON",
+              "text": "🔊",
+              "font": "11px",
+              "lineHeight": "16.5px",
+              "color": "rgb(67, 56, 202)",
+              "height": 22.5,
+              "width": 33.109375
+            },
+            {
+              "tag": "P",
+              "text": "Many people think: “The heart sits on the left side of the chest.”",
+              "font": "14px",
+              "lineHeight": "23.8px",
+              "color": "rgb(51, 65, 85)",
+              "height": 23.796875,
+              "width": 610
+            },
+            {
+              "tag": "P",
+              "text": "Actually: The heart sits almost in the middle of the chest, behind the breastbone. Its tip tilts to ",
+              "font": "14px",
+              "lineHeight": "23.8px",
+              "color": "rgb(51, 65, 85)",
+              "height": 47.59375,
+              "width": 610
+            },
+            {
+              "tag": "P",
+              "text": "Clinical context",
+              "font": "13px",
+              "lineHeight": "20.8px",
+              "color": "rgb(159, 18, 57)",
+              "height": 20.796875,
+              "width": 98.703125
+            },
+            {
+              "tag": "BUTTON",
+              "text": "🔊",
+              "font": "11px",
+              "lineHeight": "16.5px",
+              "color": "rgb(51, 65, 85)",
+              "height": 44,
+              "width": 44
+            },
+            {
+              "tag": "P",
+              "text": "MI (heart attack): coronary artery occlusion. Heart failure, arrhythmias, valvular disease. Leading ",
+              "font": "13px",
+              "lineHeight": "20.8px",
+              "color": "rgb(51, 65, 85)",
+              "height": 41.59375,
+              "width": 606
+            },
+            {
+              "tag": "P",
+              "text": "These references support the system grouping and any specifically listed detail. They do not certify",
+              "font": "12px",
+              "lineHeight": "18px",
+              "color": "rgb(15, 23, 42)",
+              "height": 36,
+              "width": 610
+            },
+            {
+              "tag": "P",
+              "text": "Explore processes that involve this structure.",
+              "font": "11px",
+              "lineHeight": "15.4px",
+              "color": "rgb(71, 85, 105)",
+              "height": 15.390625,
+              "width": 214.453125
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Explore all links",
+              "font": "11px",
+              "lineHeight": "16.5px",
+              "color": "rgb(3, 105, 161)",
+              "height": 32,
+              "width": 101.84375
+            },
+            {
+              "tag": "P",
+              "text": "No direct process link has been authored for this structure yet. Explore all links to browse other s",
+              "font": "11px",
+              "lineHeight": "15.4px",
+              "color": "rgb(100, 116, 139)",
+              "height": 15.390625,
+              "width": 610
+            },
+            {
+              "tag": "P",
+              "text": "How well do you know this?",
+              "font": "13px",
+              "lineHeight": "20.8px",
+              "color": "rgb(15, 23, 42)",
+              "height": 20.796875,
+              "width": 171.046875
+            },
+            {
+              "tag": "P",
+              "text": "No scored answers recorded yet. Confidence is your self-rating, not a mastery score.",
+              "font": "13px",
+              "lineHeight": "20.8px",
+              "color": "rgb(15, 23, 42)",
+              "height": 20.796875,
+              "width": 612
+            },
+            {
+              "tag": "BUTTON",
+              "text": "! Need practice",
+              "font": "13px",
+              "lineHeight": "20.8px",
+              "color": "rgb(51, 65, 85)",
+              "height": 44,
+              "width": 114.3125
+            },
+            {
+              "tag": "BUTTON",
+              "text": "~ Learning",
+              "font": "13px",
+              "lineHeight": "20.8px",
+              "color": "rgb(255, 255, 255)",
+              "height": 44,
+              "width": 88.140625
+            },
+            {
+              "tag": "BUTTON",
+              "text": "OK Got it",
+              "font": "13px",
+              "lineHeight": "20.8px",
+              "color": "rgb(51, 65, 85)",
+              "height": 44,
+              "width": 78.46875
+            },
+            {
+              "tag": "LABEL",
+              "text": "✍ In your own words: Heart",
+              "font": "13px",
+              "lineHeight": "20.8px",
+              "color": "rgb(15, 23, 42)",
+              "height": 20.796875,
+              "width": 610
+            },
+            {
+              "tag": "P",
+              "text": "Explain what the Heart does as if to a friend. Your note shows up again on its flashcard.",
+              "font": "13px",
+              "lineHeight": "20.8px",
+              "color": "rgb(15, 23, 42)",
+              "height": 20.796875,
+              "width": 610
+            },
+            {
+              "tag": "BUTTON",
+              "text": "🔊",
+              "font": "11px",
+              "lineHeight": "18.15px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 44
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Study Term (+5 RP)",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 136.1875
+            },
+            {
+              "tag": "P",
+              "text": "The bones of the skull protect the brain and support the face.",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(23, 37, 59)",
+              "height": 23.09375,
+              "width": 576
+            },
+            {
+              "tag": "BUTTON",
+              "text": "🔊",
+              "font": "11px",
+              "lineHeight": "18.15px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 44
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Study Term (+5 RP)",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 136.1875
+            },
+            {
+              "tag": "P",
+              "text": "A small U-shaped neck bone that anchors muscles used by the tongue and throat.",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(23, 37, 59)",
+              "height": 23.09375,
+              "width": 576
+            },
+            {
+              "tag": "BUTTON",
+              "text": "🔊",
+              "font": "11px",
+              "lineHeight": "18.15px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 44
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Study Term (+5 RP)",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 136.1875
+            },
+            {
+              "tag": "P",
+              "text": "A brain region that helps coordinate movement and balance.",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(23, 37, 59)",
+              "height": 23.09375,
+              "width": 576
+            },
+            {
+              "tag": "BUTTON",
+              "text": "🔊",
+              "font": "11px",
+              "lineHeight": "18.15px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 44
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Study Term (+5 RP)",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 136.1875
+            },
+            {
+              "tag": "P",
+              "text": "An arterial ring at the base of the brain that can provide alternative routes for blood flow.",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(23, 37, 59)",
+              "height": 23.09375,
+              "width": 576
+            },
+            {
+              "tag": "BUTTON",
+              "text": "🔊",
+              "font": "11px",
+              "lineHeight": "18.15px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 44
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Study Term (+5 RP)",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 136.1875
+            },
+            {
+              "tag": "P",
+              "text": "The shoulder muscle whose different parts help lift and move the upper arm.",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(23, 37, 59)",
+              "height": 23.09375,
+              "width": 576
+            },
+            {
+              "tag": "BUTTON",
+              "text": "🔊",
+              "font": "11px",
+              "lineHeight": "18.15px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 44
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Study Term (+5 RP)",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 136.1875
+            },
+            {
+              "tag": "P",
+              "text": "A deep muscle connecting the lower spine to the femur that helps flex the hip.",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(23, 37, 59)",
+              "height": 23.09375,
+              "width": 576
+            },
+            {
+              "tag": "BUTTON",
+              "text": "🔊",
+              "font": "11px",
+              "lineHeight": "18.15px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 44
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Study Term (+5 RP)",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 136.1875
+            },
+            {
+              "tag": "P",
+              "text": "Small air sacs where oxygen and carbon dioxide pass between air and nearby blood.",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(23, 37, 59)",
+              "height": 23.09375,
+              "width": 576
+            },
+            {
+              "tag": "BUTTON",
+              "text": "🔊",
+              "font": "11px",
+              "lineHeight": "18.15px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 44
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Study Term (+5 RP)",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 136.1875
+            },
+            {
+              "tag": "P",
+              "text": "A kidney unit that filters blood plasma and modifies the filtrate through reabsorption and secretion",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(23, 37, 59)",
+              "height": 46.1875,
+              "width": 576
+            },
+            {
+              "tag": "BUTTON",
+              "text": "🔊",
+              "font": "11px",
+              "lineHeight": "18.15px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 44
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Study Term (+5 RP)",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 136.1875
+            },
+            {
+              "tag": "P",
+              "text": "Small projections of the intestinal lining that increase the surface available for absorbing nutrien",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(23, 37, 59)",
+              "height": 46.1875,
+              "width": 576
+            },
+            {
+              "tag": "BUTTON",
+              "text": "🔊",
+              "font": "11px",
+              "lineHeight": "18.15px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 44
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Study Term (+5 RP)",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 136.1875
+            },
+            {
+              "tag": "H3",
+              "text": "Did you know?",
+              "font": "15px",
+              "lineHeight": "22.5px",
+              "color": "rgb(120, 53, 15)",
+              "height": 22.5,
+              "width": 108.296875
+            },
+            {
+              "tag": "P",
+              "text": "Think through the question, then compare with the explanation. You can read first if this is new to ",
+              "font": "13px",
+              "lineHeight": "20.8px",
+              "color": "rgb(113, 63, 18)",
+              "height": 20.796875,
+              "width": 648
+            },
+            {
+              "tag": "P",
+              "text": "Why are capillary walls much thinner than arterial walls?",
+              "font": "13px",
+              "lineHeight": "20.8px",
+              "color": "rgb(66, 32, 6)",
+              "height": 20.796875,
+              "width": 648
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Show explanation",
+              "font": "13px",
+              "lineHeight": "19.5px",
+              "color": "rgb(113, 63, 18)",
+              "height": 44,
+              "width": 127.515625
+            },
+            {
+              "tag": "BUTTON",
+              "text": "🔊",
+              "font": "13px",
+              "lineHeight": "19.5px",
+              "color": "rgb(113, 63, 18)",
+              "height": 44,
+              "width": 43.859375
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Previous idea",
+              "font": "13px",
+              "lineHeight": "19.5px",
+              "color": "rgb(113, 63, 18)",
+              "height": 44,
+              "width": 102.25
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Next idea",
+              "font": "13px",
+              "lineHeight": "19.5px",
+              "color": "rgb(113, 63, 18)",
+              "height": 44,
+              "width": 80.6875
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Memory aids (2)",
+              "font": "16px",
+              "lineHeight": "24px",
+              "color": "rgb(15, 23, 42)",
+              "height": 44,
+              "width": 678
+            }
+          ]
+        }
+      },
+      {
+        "area": "phone-explore",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "metrics": {
+          "width": 304,
+          "height": 3079.6875,
+          "clientWidth": 304,
+          "scrollWidth": 304,
+          "text": [
+            {
+              "tag": "H4",
+              "text": "❤️ Circulatory",
+              "font": "16px",
+              "lineHeight": "24px",
+              "color": "rgb(23, 37, 59)",
+              "height": 24,
+              "width": 124.140625
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Focus model",
+              "font": "11px",
+              "lineHeight": "16.5px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 87.671875
+            },
+            {
+              "tag": "BUTTON",
+              "text": "2D",
+              "font": "11px",
+              "lineHeight": "12.65px",
+              "color": "rgb(255, 255, 255)",
+              "height": 44,
+              "width": 113
+            },
+            {
+              "tag": "BUTTON",
+              "text": "3D",
+              "font": "11px",
+              "lineHeight": "12.65px",
+              "color": "rgb(82, 97, 118)",
+              "height": 44,
+              "width": 113
+            },
+            {
+              "tag": "BUTTON",
+              "text": "−",
+              "font": "14px",
+              "lineHeight": "21px",
+              "color": "rgb(148, 163, 184)",
+              "height": 44,
+              "width": 33.21875
+            },
+            {
+              "tag": "BUTTON",
+              "text": "+",
+              "font": "14px",
+              "lineHeight": "21px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 33.21875
+            },
+            {
+              "tag": "BUTTON",
+              "text": "←",
+              "font": "14px",
+              "lineHeight": "21px",
+              "color": "rgb(148, 163, 184)",
+              "height": 44,
+              "width": 32.140625
+            },
+            {
+              "tag": "BUTTON",
+              "text": "↑",
+              "font": "14px",
+              "lineHeight": "21px",
+              "color": "rgb(148, 163, 184)",
+              "height": 44,
+              "width": 32.140625
+            },
+            {
+              "tag": "BUTTON",
+              "text": "↓",
+              "font": "14px",
+              "lineHeight": "21px",
+              "color": "rgb(148, 163, 184)",
+              "height": 44,
+              "width": 32.140625
+            },
+            {
+              "tag": "BUTTON",
+              "text": "→",
+              "font": "14px",
+              "lineHeight": "21px",
+              "color": "rgb(148, 163, 184)",
+              "height": 44,
+              "width": 32.140625
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Focus",
+              "font": "11px",
+              "lineHeight": "16.5px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 104.5
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Reset",
+              "font": "11px",
+              "lineHeight": "16.5px",
+              "color": "rgb(148, 163, 184)",
+              "height": 44,
+              "width": 104.5
+            },
+            {
+              "tag": "BUTTON",
+              "text": "⛶",
+              "font": "16px",
+              "lineHeight": "24px",
+              "color": "rgb(226, 232, 240)",
+              "height": 44,
+              "width": 44
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Read →",
+              "font": "12px",
+              "lineHeight": "18px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 65.03125
+            },
+            {
+              "tag": "BUTTON",
+              "text": "3 · Tissue / regionHeart deep dive",
+              "font": "16px",
+              "lineHeight": "24px",
+              "color": "rgb(30, 27, 75)",
+              "height": 68,
+              "width": 117.5
+            },
+            {
+              "tag": "BUTTON",
+              "text": "4 · Cell scaleCell Microdissection",
+              "font": "16px",
+              "lineHeight": "24px",
+              "color": "rgb(30, 27, 75)",
+              "height": 68,
+              "width": 117.5
+            },
+            {
+              "tag": "P",
+              "text": "Current route: Circulatory → Heart → Heart deep dive → Cell Microdissection.",
+              "font": "11px",
+              "lineHeight": "15.4px",
+              "color": "rgb(71, 85, 105)",
+              "height": 30.78125,
+              "width": 240
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Organ dissection",
+              "font": "11px",
+              "lineHeight": "16.5px",
+              "color": "rgb(55, 48, 163)",
+              "height": 40,
+              "width": 240
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Cell scale",
+              "font": "11px",
+              "lineHeight": "16.5px",
+              "color": "rgb(55, 48, 163)",
+              "height": 40,
+              "width": 240
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Microscope",
+              "font": "11px",
+              "lineHeight": "16.5px",
+              "color": "rgb(55, 48, 163)",
+              "height": 40,
+              "width": 240
+            },
+            {
+              "tag": "BUTTON",
+              "text": "← Previous",
+              "font": "12px",
+              "lineHeight": "16.2px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 112.25
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Next →",
+              "font": "12px",
+              "lineHeight": "16.2px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 112.25
+            },
+            {
+              "tag": "P",
+              "text": "Circulatory / anterior",
+              "font": "11px",
+              "lineHeight": "16.5px",
+              "color": "rgb(82, 97, 118)",
+              "height": 16.5,
+              "width": 266
+            },
+            {
+              "tag": "H4",
+              "text": "Heart",
+              "font": "23px",
+              "lineHeight": "27.6px",
+              "color": "rgb(2, 6, 23)",
+              "height": 27.59375,
+              "width": 60.984375
+            },
+            {
+              "tag": "BUTTON",
+              "text": "🔊 Hear it",
+              "font": "11px",
+              "lineHeight": "16.5px",
+              "color": "rgb(67, 56, 202)",
+              "height": 22.5,
+              "width": 71.265625
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Show on atlas",
+              "font": "12px",
+              "lineHeight": "18px",
+              "color": "rgb(51, 65, 85)",
+              "height": 44,
+              "width": 103.765625
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Practice this structure",
+              "font": "12px",
+              "lineHeight": "18px",
+              "color": "rgb(17, 94, 89)",
+              "height": 44,
+              "width": 151.671875
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Deep dive",
+              "font": "12px",
+              "lineHeight": "18px",
+              "color": "rgb(190, 18, 60)",
+              "height": 44,
+              "width": 80.765625
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Compare",
+              "font": "12px",
+              "lineHeight": "18px",
+              "color": "rgb(109, 40, 217)",
+              "height": 44,
+              "width": 74.96875
+            },
+            {
+              "tag": "BUTTON",
+              "text": "← Structures",
+              "font": "12px",
+              "lineHeight": "18px",
+              "color": "rgb(51, 65, 85)",
+              "height": 44,
+              "width": 96.515625
+            },
+            {
+              "tag": "P",
+              "text": "Function🔊",
+              "font": "11px",
+              "lineHeight": "16.5px",
+              "color": "rgb(71, 85, 105)",
+              "height": 22.5,
+              "width": 266
+            },
+            {
+              "tag": "BUTTON",
+              "text": "🔊",
+              "font": "11px",
+              "lineHeight": "16.5px",
+              "color": "rgb(67, 56, 202)",
+              "height": 22.5,
+              "width": 33.109375
+            },
+            {
+              "tag": "P",
+              "text": "A muscular pump with four chambers. The right side sends blood toward the lungs; the left side sends",
+              "font": "14px",
+              "lineHeight": "23.8px",
+              "color": "rgb(51, 65, 85)",
+              "height": 118.984375,
+              "width": 266
+            },
+            {
+              "tag": "P",
+              "text": "🧠 Myth buster🔊",
+              "font": "11px",
+              "lineHeight": "16.5px",
+              "color": "rgb(134, 25, 143)",
+              "height": 22.5,
+              "width": 244
+            },
+            {
+              "tag": "BUTTON",
+              "text": "🔊",
+              "font": "11px",
+              "lineHeight": "16.5px",
+              "color": "rgb(67, 56, 202)",
+              "height": 22.5,
+              "width": 33.109375
+            },
+            {
+              "tag": "P",
+              "text": "Many people think: “The heart sits on the left side of the chest.”",
+              "font": "14px",
+              "lineHeight": "23.8px",
+              "color": "rgb(51, 65, 85)",
+              "height": 47.59375,
+              "width": 244
+            },
+            {
+              "tag": "P",
+              "text": "Actually: The heart sits almost in the middle of the chest, behind the breastbone. Its tip tilts to ",
+              "font": "14px",
+              "lineHeight": "23.8px",
+              "color": "rgb(51, 65, 85)",
+              "height": 118.984375,
+              "width": 244
+            },
+            {
+              "tag": "P",
+              "text": "Clinical context",
+              "font": "13px",
+              "lineHeight": "20.8px",
+              "color": "rgb(159, 18, 57)",
+              "height": 20.796875,
+              "width": 98.703125
+            },
+            {
+              "tag": "BUTTON",
+              "text": "🔊",
+              "font": "11px",
+              "lineHeight": "16.5px",
+              "color": "rgb(51, 65, 85)",
+              "height": 44,
+              "width": 44
+            },
+            {
+              "tag": "P",
+              "text": "MI (heart attack): coronary artery occlusion. Heart failure, arrhythmias, valvular disease. Leading ",
+              "font": "13px",
+              "lineHeight": "20.8px",
+              "color": "rgb(51, 65, 85)",
+              "height": 83.1875,
+              "width": 240
+            },
+            {
+              "tag": "P",
+              "text": "System membership: Circulatory",
+              "font": "12px",
+              "lineHeight": "18px",
+              "color": "rgb(15, 23, 42)",
+              "height": 18,
+              "width": 244
+            },
+            {
+              "tag": "P",
+              "text": "These references support the system grouping and any specifically listed detail. They do not certify",
+              "font": "12px",
+              "lineHeight": "18px",
+              "color": "rgb(15, 23, 42)",
+              "height": 72,
+              "width": 244
+            },
+            {
+              "tag": "P",
+              "text": "Explore processes that involve this structure.",
+              "font": "11px",
+              "lineHeight": "15.4px",
+              "color": "rgb(71, 85, 105)",
+              "height": 15.390625,
+              "width": 244
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Explore all links",
+              "font": "11px",
+              "lineHeight": "16.5px",
+              "color": "rgb(3, 105, 161)",
+              "height": 40,
+              "width": 244
+            },
+            {
+              "tag": "P",
+              "text": "No direct process link has been authored for this structure yet. Explore all links to browse other s",
+              "font": "11px",
+              "lineHeight": "15.4px",
+              "color": "rgb(100, 116, 139)",
+              "height": 46.171875,
+              "width": 244
+            },
+            {
+              "tag": "P",
+              "text": "How well do you know this?",
+              "font": "13px",
+              "lineHeight": "20.8px",
+              "color": "rgb(15, 23, 42)",
+              "height": 20.796875,
+              "width": 171.046875
+            },
+            {
+              "tag": "P",
+              "text": "No scored answers recorded yet. Confidence is your self-rating, not a mastery score.",
+              "font": "13px",
+              "lineHeight": "20.8px",
+              "color": "rgb(15, 23, 42)",
+              "height": 62.390625,
+              "width": 246
+            },
+            {
+              "tag": "BUTTON",
+              "text": "! Need practice",
+              "font": "13px",
+              "lineHeight": "20.8px",
+              "color": "rgb(51, 65, 85)",
+              "height": 44,
+              "width": 114.3125
+            },
+            {
+              "tag": "BUTTON",
+              "text": "~ Learning",
+              "font": "13px",
+              "lineHeight": "20.8px",
+              "color": "rgb(255, 255, 255)",
+              "height": 44,
+              "width": 88.140625
+            },
+            {
+              "tag": "BUTTON",
+              "text": "OK Got it",
+              "font": "13px",
+              "lineHeight": "20.8px",
+              "color": "rgb(51, 65, 85)",
+              "height": 44,
+              "width": 78.46875
+            },
+            {
+              "tag": "LABEL",
+              "text": "✍ In your own words: Heart",
+              "font": "13px",
+              "lineHeight": "20.8px",
+              "color": "rgb(15, 23, 42)",
+              "height": 20.796875,
+              "width": 244
+            },
+            {
+              "tag": "P",
+              "text": "Explain what the Heart does as if to a friend. Your note shows up again on its flashcard.",
+              "font": "13px",
+              "lineHeight": "20.8px",
+              "color": "rgb(15, 23, 42)",
+              "height": 62.390625,
+              "width": 244
+            },
+            {
+              "tag": "P",
+              "text": "The main artery carrying blood from the left ventricle to the body.",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(23, 37, 59)",
+              "height": 69.28125,
+              "width": 210
+            },
+            {
+              "tag": "BUTTON",
+              "text": "🔊",
+              "font": "11px",
+              "lineHeight": "18.15px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 44
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Study Term (+5 RP)",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 136.1875
+            },
+            {
+              "tag": "P",
+              "text": "The bones of the skull protect the brain and support the face.",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(23, 37, 59)",
+              "height": 46.1875,
+              "width": 210
+            },
+            {
+              "tag": "BUTTON",
+              "text": "🔊",
+              "font": "11px",
+              "lineHeight": "18.15px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 44
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Study Term (+5 RP)",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 136.1875
+            },
+            {
+              "tag": "P",
+              "text": "A small U-shaped neck bone that anchors muscles used by the tongue and throat.",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(23, 37, 59)",
+              "height": 69.28125,
+              "width": 210
+            },
+            {
+              "tag": "BUTTON",
+              "text": "🔊",
+              "font": "11px",
+              "lineHeight": "18.15px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 44
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Study Term (+5 RP)",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 136.1875
+            },
+            {
+              "tag": "P",
+              "text": "A brain region that helps coordinate movement and balance.",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(23, 37, 59)",
+              "height": 69.28125,
+              "width": 210
+            },
+            {
+              "tag": "BUTTON",
+              "text": "🔊",
+              "font": "11px",
+              "lineHeight": "18.15px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 44
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Study Term (+5 RP)",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 136.1875
+            },
+            {
+              "tag": "P",
+              "text": "An arterial ring at the base of the brain that can provide alternative routes for blood flow.",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(23, 37, 59)",
+              "height": 69.28125,
+              "width": 210
+            },
+            {
+              "tag": "BUTTON",
+              "text": "🔊",
+              "font": "11px",
+              "lineHeight": "18.15px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 44
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Study Term (+5 RP)",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 136.1875
+            },
+            {
+              "tag": "P",
+              "text": "The shoulder muscle whose different parts help lift and move the upper arm.",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(23, 37, 59)",
+              "height": 69.28125,
+              "width": 210
+            },
+            {
+              "tag": "BUTTON",
+              "text": "🔊",
+              "font": "11px",
+              "lineHeight": "18.15px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 44
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Study Term (+5 RP)",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 136.1875
+            },
+            {
+              "tag": "P",
+              "text": "A deep muscle connecting the lower spine to the femur that helps flex the hip.",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(23, 37, 59)",
+              "height": 69.28125,
+              "width": 210
+            },
+            {
+              "tag": "BUTTON",
+              "text": "🔊",
+              "font": "11px",
+              "lineHeight": "18.15px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 44
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Study Term (+5 RP)",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 136.1875
+            },
+            {
+              "tag": "P",
+              "text": "Small air sacs where oxygen and carbon dioxide pass between air and nearby blood.",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(23, 37, 59)",
+              "height": 69.28125,
+              "width": 210
+            },
+            {
+              "tag": "BUTTON",
+              "text": "🔊",
+              "font": "11px",
+              "lineHeight": "18.15px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 44
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Study Term (+5 RP)",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 136.1875
+            },
+            {
+              "tag": "P",
+              "text": "A kidney unit that filters blood plasma and modifies the filtrate through reabsorption and secretion",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(23, 37, 59)",
+              "height": 92.375,
+              "width": 210
+            },
+            {
+              "tag": "BUTTON",
+              "text": "🔊",
+              "font": "11px",
+              "lineHeight": "18.15px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 44
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Study Term (+5 RP)",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 136.1875
+            },
+            {
+              "tag": "P",
+              "text": "Small projections of the intestinal lining that increase the surface available for absorbing nutrien",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(23, 37, 59)",
+              "height": 69.28125,
+              "width": 210
+            },
+            {
+              "tag": "BUTTON",
+              "text": "🔊",
+              "font": "11px",
+              "lineHeight": "18.15px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 44
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Study Term (+5 RP)",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 136.1875
+            },
+            {
+              "tag": "H3",
+              "text": "Did you know?",
+              "font": "15px",
+              "lineHeight": "22.5px",
+              "color": "rgb(120, 53, 15)",
+              "height": 22.5,
+              "width": 108.296875
+            },
+            {
+              "tag": "P",
+              "text": "Think through the question, then compare with the explanation. You can read first if this is new to ",
+              "font": "13px",
+              "lineHeight": "20.8px",
+              "color": "rgb(113, 63, 18)",
+              "height": 62.390625,
+              "width": 274
+            },
+            {
+              "tag": "P",
+              "text": "Why are capillary walls much thinner than arterial walls?",
+              "font": "13px",
+              "lineHeight": "20.8px",
+              "color": "rgb(66, 32, 6)",
+              "height": 41.59375,
+              "width": 274
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Show explanation",
+              "font": "13px",
+              "lineHeight": "19.5px",
+              "color": "rgb(113, 63, 18)",
+              "height": 44,
+              "width": 127.515625
+            },
+            {
+              "tag": "BUTTON",
+              "text": "🔊",
+              "font": "13px",
+              "lineHeight": "19.5px",
+              "color": "rgb(113, 63, 18)",
+              "height": 44,
+              "width": 43.859375
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Previous idea",
+              "font": "13px",
+              "lineHeight": "19.5px",
+              "color": "rgb(113, 63, 18)",
+              "height": 44,
+              "width": 102.25
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Next idea",
+              "font": "13px",
+              "lineHeight": "19.5px",
+              "color": "rgb(113, 63, 18)",
+              "height": 44,
+              "width": 80.6875
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Memory aids (2)",
+              "font": "16px",
+              "lineHeight": "24px",
+              "color": "rgb(15, 23, 42)",
+              "height": 44,
+              "width": 304
+            }
+          ]
+        }
+      },
+      {
+        "area": "phone-tour",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "metrics": {
+          "width": 304,
+          "height": 790.90625,
+          "clientWidth": 302,
+          "scrollWidth": 302,
+          "text": [
+            {
+              "tag": "H4",
+              "text": "Guided tour: ❤️ Circulatory",
+              "font": "20px",
+              "lineHeight": "28px",
+              "color": "rgb(6, 95, 70)",
+              "height": 28,
+              "width": 274
+            },
+            {
+              "tag": "P",
+              "text": "Locate each structure, connect its shape or position to its function, then recall what you learned.",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(15, 23, 42)",
+              "height": 69.28125,
+              "width": 274
+            },
+            {
+              "tag": "LABEL",
+              "text": "Choose a tourSkeletalMuscularCirculatoryNervousOrgan SystemsRespiratoryEndocrineLymphaticIntegumenta",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(15, 23, 42)",
+              "height": 72.09375,
+              "width": 274
+            },
+            {
+              "tag": "LABEL",
+              "text": "Go to step1. The Heart2. The Aorta3. Coronary Arteries4. The Carotid Arteries",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(15, 23, 42)",
+              "height": 72.09375,
+              "width": 274
+            },
+            {
+              "tag": "H5",
+              "text": "Coronary Arteries",
+              "font": "14px",
+              "lineHeight": "20px",
+              "color": "rgb(6, 78, 59)",
+              "height": 20,
+              "width": 240
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Show marker on diagram",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(6, 95, 70)",
+              "height": 44,
+              "width": 184.09375
+            },
+            {
+              "tag": "P",
+              "text": "The coronary arteries supply the heart muscle. A severe, sustained reduction in this supply can dama",
+              "font": "15px",
+              "lineHeight": "26.25px",
+              "color": "rgb(51, 65, 85)",
+              "height": 157.5,
+              "width": 240
+            },
+            {
+              "tag": "BUTTON",
+              "text": "🔊",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(67, 56, 202)",
+              "height": 44,
+              "width": 37.234375
+            },
+            {
+              "tag": "BUTTON",
+              "text": "← Previous",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(6, 95, 70)",
+              "height": 44,
+              "width": 104.390625
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Next →",
+              "font": "14px",
+              "lineHeight": "23.1px",
+              "color": "rgb(255, 255, 255)",
+              "height": 44,
+              "width": 79.765625
+            }
+          ]
+        }
+      },
+      {
+        "area": "phone-pathway",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "metrics": {
+          "width": 304,
+          "height": 871.984375,
+          "clientWidth": 302,
+          "scrollWidth": 302,
+          "text": [
+            {
+              "tag": "H4",
+              "text": "🛤 Physiological Pathways",
+              "font": "20px",
+              "lineHeight": "26px",
+              "color": "rgb(159, 18, 57)",
+              "height": 52,
+              "width": 196.90625
+            },
+            {
+              "tag": "P",
+              "text": "Trace step-by-step how blood flows, air moves, food digests, or nerve signals travel through the bod",
+              "font": "14px",
+              "lineHeight": "22.4px",
+              "color": "rgb(30, 41, 59)",
+              "height": 67.171875,
+              "width": 274
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Back to pathways",
+              "font": "14px",
+              "lineHeight": "21px",
+              "color": "rgb(71, 85, 105)",
+              "height": 44,
+              "width": 131.078125
+            },
+            {
+              "tag": "LABEL",
+              "text": "Go to step1. Right Atrium2. Right Ventricle3. Pulmonary Arteries4. Lung Capillaries5. Pulmonary Vein",
+              "font": "14px",
+              "lineHeight": "22.4px",
+              "color": "rgb(30, 41, 59)",
+              "height": 71.390625,
+              "width": 274
+            },
+            {
+              "tag": "H5",
+              "text": "4. Lung Capillaries",
+              "font": "17px",
+              "lineHeight": "24.65px",
+              "color": "rgb(185, 28, 28)",
+              "height": 24.640625,
+              "width": 238
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Show marker on diagram",
+              "font": "14px",
+              "lineHeight": "21px",
+              "color": "rgb(159, 18, 57)",
+              "height": 44,
+              "width": 184.09375
+            },
+            {
+              "tag": "P",
+              "text": "In the alveolar capillaries, CO2 is released and O2 is picked up through the thin alveolar membrane.",
+              "font": "15px",
+              "lineHeight": "24px",
+              "color": "rgb(30, 41, 59)",
+              "height": 96,
+              "width": 238
+            },
+            {
+              "tag": "P",
+              "text": "What this marker shows: The alveoli marker locates the exchange region. Blood stays in surrounding c",
+              "font": "15px",
+              "lineHeight": "24px",
+              "color": "rgb(30, 41, 59)",
+              "height": 136,
+              "width": 238
+            },
+            {
+              "tag": "BUTTON",
+              "text": "🔊",
+              "font": "14px",
+              "lineHeight": "21px",
+              "color": "rgb(67, 56, 202)",
+              "height": 44,
+              "width": 37.234375
+            },
+            {
+              "tag": "BUTTON",
+              "text": "← Previous",
+              "font": "14px",
+              "lineHeight": "21px",
+              "color": "rgb(159, 18, 57)",
+              "height": 44,
+              "width": 104.390625
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Next →",
+              "font": "14px",
+              "lineHeight": "21px",
+              "color": "rgb(255, 255, 255)",
+              "height": 44,
+              "width": 79.765625
+            }
+          ]
+        }
+      },
+      {
+        "area": "phone-cards",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "metrics": {
+          "width": 304,
+          "height": 880.140625,
+          "clientWidth": 302,
+          "scrollWidth": 302,
+          "text": [
+            {
+              "tag": "H4",
+              "text": "🃏 Anatomy Flashcards",
+              "font": "18px",
+              "lineHeight": "25.2px",
+              "color": "rgb(23, 37, 59)",
+              "height": 25.1875,
+              "width": 199.390625
+            },
+            {
+              "tag": "P",
+              "text": "Skeletal · Recall the function, reveal it, then rate your confidence.",
+              "font": "14px",
+              "lineHeight": "22.4px",
+              "color": "rgb(71, 85, 105)",
+              "height": 44.78125,
+              "width": 274
+            },
+            {
+              "tag": "BUTTON",
+              "text": "All structures",
+              "font": "14px",
+              "lineHeight": "22.4px",
+              "color": "rgb(255, 255, 255)",
+              "height": 44,
+              "width": 114.734375
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Due for review (1)",
+              "font": "14px",
+              "lineHeight": "22.4px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 146.640625
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Refresh round",
+              "font": "14px",
+              "lineHeight": "22.4px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 120.171875
+            },
+            {
+              "tag": "P",
+              "text": "Rated this round: 0 / 23",
+              "font": "13px",
+              "lineHeight": "19.5px",
+              "color": "rgb(23, 37, 59)",
+              "height": 19.5,
+              "width": 248
+            },
+            {
+              "tag": "P",
+              "text": "STRUCTURE NAME",
+              "font": "11px",
+              "lineHeight": "16.5px",
+              "color": "rgb(71, 85, 105)",
+              "height": 16.5,
+              "width": 242
+            },
+            {
+              "tag": "H5",
+              "text": "Ribs (1-12)",
+              "font": "22px",
+              "lineHeight": "30.8px",
+              "color": "rgb(23, 37, 59)",
+              "height": 30.796875,
+              "width": 242
+            },
+            {
+              "tag": "BUTTON",
+              "text": "🔊 Hear it",
+              "font": "11px",
+              "lineHeight": "16.5px",
+              "color": "rgb(67, 56, 202)",
+              "height": 22.5,
+              "width": 71.265625
+            },
+            {
+              "tag": "P",
+              "text": "Answer hidden",
+              "font": "11px",
+              "lineHeight": "16.5px",
+              "color": "rgb(71, 85, 105)",
+              "height": 16.5,
+              "width": 242
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Reveal function",
+              "font": "14px",
+              "lineHeight": "22.4px",
+              "color": "rgb(255, 255, 255)",
+              "height": 58.78125,
+              "width": 117
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Locate this card",
+              "font": "14px",
+              "lineHeight": "22.4px",
+              "color": "rgb(23, 37, 59)",
+              "height": 58.78125,
+              "width": 117
+            },
+            {
+              "tag": "P",
+              "text": "Inspect this structure on the atlas, then return to the same card. Your place and ratings stay saved",
+              "font": "13px",
+              "lineHeight": "21.45px",
+              "color": "rgb(71, 85, 105)",
+              "height": 64.3125,
+              "width": 242
+            },
+            {
+              "tag": "BUTTON",
+              "text": "← Previous",
+              "font": "14px",
+              "lineHeight": "22.4px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 133
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Next →",
+              "font": "14px",
+              "lineHeight": "22.4px",
+              "color": "rgb(255, 255, 255)",
+              "height": 44,
+              "width": 133
+            },
+            {
+              "tag": "BUTTON",
+              "text": "🎲 Random",
+              "font": "14px",
+              "lineHeight": "22.4px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 133
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Next unrated",
+              "font": "14px",
+              "lineHeight": "22.4px",
+              "color": "rgb(23, 37, 59)",
+              "height": 44,
+              "width": 133
+            },
+            {
+              "tag": "P",
+              "text": "1 card(s) marked Need practice are at the front of this deck.",
+              "font": "14px",
+              "lineHeight": "22.4px",
+              "color": "rgb(71, 85, 105)",
+              "height": 44.78125,
+              "width": 274
+            },
+            {
+              "tag": "P",
+              "text": "Cards stay in this round as you rate them. Your place is kept for each system, level, and deck. Refr",
+              "font": "12px",
+              "lineHeight": "16px",
+              "color": "rgb(71, 85, 105)",
+              "height": 64,
+              "width": 252
+            },
+            {
+              "tag": "P",
+              "text": "With this card focused: arrows move between cards, Space reveals or hides the function. After reveal",
+              "font": "12px",
+              "lineHeight": "16px",
+              "color": "rgb(71, 85, 105)",
+              "height": 64,
+              "width": 252
+            }
+          ]
+        }
+      }
+    ],
+    "finalState": {
+      "complexity": 3,
+      "view": "anterior",
+      "_bodyView3d": false,
+      "_startHereDismissed": true,
+      "_activeTab": "flashcards",
+      "system": "skeletal",
+      "_flashcardScope": "all",
+      "_structureConfidence": {
+        "ribs": "practice"
+      },
+      "_confidenceAt": {
+        "ribs": 1790893272501
+      },
+      "_systemsExplored": {
+        "skeletal": true
+      },
+      "_viewsUsed": {
+        "anterior": true
+      }
+    }
+  }
+}
