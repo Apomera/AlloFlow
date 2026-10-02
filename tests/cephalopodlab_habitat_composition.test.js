@@ -37,6 +37,9 @@ function reverseApprovedPlantFlow(value){
   for(const change of approvedPlantFlowChanges){assert.equal(value.split(change.after).length,2,'Approved plant flow guard missing or changed: '+change.name);value=value.replace(change.after,change.before);}
   return value;
 }
+// Literal reversal admits only the observed solid-rock caster policy; frozen geometry/RNG bytes remain protected.
+const approvedRockShadowPolicy={"before":"          var rockMesh = new THREE.Mesh(rockGeo, new THREE.MeshStandardMaterial({ color: rockTint.clone().convertSRGBToLinear(), roughness: 0.92, flatShading: false }));","after":"          var rockMesh = new THREE.Mesh(rockGeo, new THREE.MeshStandardMaterial({ color: rockTint.clone().convertSRGBToLinear(), roughness: 0.92, flatShading: false, shadowSide: THREE.DoubleSide }));"};
+function reverseApprovedRockShadowPolicy(value){assert.equal(value.split(approvedRockShadowPolicy.after).length,2,'Approved rock shadow face guard missing or changed');return value.replace(approvedRockShadowPolicy.after,approvedRockShadowPolicy.before);}
 const reefHelpers=region('function createCLReefFootprint(','function createCLHuntAnimal(');
 const composition=region('        // Five rock-rooted groves','        function updateGround(){');
 const terrain=region('        function terrainHeight(','        function distance3(');
@@ -94,13 +97,21 @@ function verifySite(fixture,mesh,near=null,min=0,max=78){
 function sameResources(rows){for(const row of rows){assert.equal(row.mesh.geometry,row.geometry);assert.equal(row.mesh.material,row.material);assert.deepEqual(row.mesh.rotation.toArray(),row.rotation);assert.equal(row.mesh.instanceMatrix?.array,row.instances);if(row.instances)assert.equal(Buffer.from(row.instances.buffer).toString('hex'),row.instanceBytes);for(const [name,before] of Object.entries(row.buffers)){const actual=row.geometry.attributes[name];assert.equal(actual,before.attribute);assert.equal(actual.array,before.array);assert.equal(Buffer.from(actual.array.buffer,actual.array.byteOffset,actual.array.byteLength).toString('hex'),before.bytes);}}}
 
 describe('Cephalopod Hunter deterministic habitat composition',()=>{
-  it('preserves baseline random call sites, plant geometry and spawn bytes after reversing only approved water flow',()=>{
+  it('preserves baseline random call sites, plant geometry and spawn bytes after reversing only approved water flow and rock shadow faces',()=>{
     const randomLines=value=>value.split('\n').filter(line=>line.includes('Math.random'));
     assert.deepEqual(randomLines(source),original.randomLines);
     const protectedRegions=[['plantFactoryAndFlex','      function shadeCLHuntPlantFlex(','      function createCLHuntMarineSnowGeometry('],['grassSpawn','        var grass = [];','        // Terrain-conforming caustics:'],['kelpSpawn','        var kelpStrands = [];','        // ─── Hydrothermal vent'],['rockSpawn','        var rocks = [];','        // ─── Curved branching coral colonies'],['coralFactoryAndSpawn','        // ─── Curved branching coral colonies','        // ─── Sea grass']];
     assert.deepEqual(original.protectedRegions.map(entry=>entry.name),protectedRegions.map(entry=>entry[0]));
-    for(const [name,start,end] of protectedRegions){const live=region(start,end),restored=name==='plantFactoryAndFlex'?reverseApprovedPlantFlow(live):live;assert.equal(sha(restored),original.protectedRegions.find(entry=>entry.name===name).sha256,'Baseline owned region drifted: '+name);}
+    for(const [name,start,end] of protectedRegions){const live=region(start,end),restored=name==='plantFactoryAndFlex'?reverseApprovedPlantFlow(live):name==='rockSpawn'?reverseApprovedRockShadowPolicy(live):live;assert.equal(sha(restored),original.protectedRegions.find(entry=>entry.name===name).sha256,'Baseline owned region drifted: '+name);}
   });
+
+  it('casts solid reef rocks from both faces while keeping opaque receivers and other habitat material policies',()=>{
+    for(const seed of [2741,73,12345]){const fixture=construct(seed);try{
+      assert.ok(fixture.rocks.length>0);assert.equal(new Set(fixture.rocks.map(rock=>rock.geometry)).size,fixture.rocks.length);assert.equal(new Set(fixture.rocks.map(rock=>rock.material)).size,fixture.rocks.length);
+      for(const rock of fixture.rocks){assert.equal(rock.material.shadowSide,THREE.DoubleSide,'Solid reef rock must cast both surface faces');assert.equal(rock.material.side,THREE.FrontSide,'Rock surface receiver remains FrontSide');assert.equal(rock.material.type,'MeshStandardMaterial');assert.equal(rock.material.transparent,false);assert.equal(rock.material.opacity,1);assert.equal(rock.castShadow,true);assert.equal(rock.receiveShadow,true);}
+      for(const mesh of fixture.corals.concat(fixture.grass.map(plant=>plant.mesh),fixture.kelp.map(plant=>plant.mesh)))assert.equal(mesh.material.shadowSide,null,'Other habitat caster policy remains stock');
+    }finally{release(fixture.scene);}}
+  },90000);
 
   it('retains actual plant spawn order and all 525 owned random draws, resource counts, heights, yaw and phase',()=>{
     const rng=stream(),plain=new Function('THREE','Math',plantHelpers+';var scene=new THREE.Scene();'+grassSpawn+kelpSpawn+';return{scene:scene,grass:grass,kelp:kelpStrands};')(THREE,rng.math);

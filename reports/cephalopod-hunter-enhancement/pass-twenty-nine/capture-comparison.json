@@ -1,0 +1,472 @@
+{
+  "version": 2,
+  "baselineSHA256": "9aa7ce02c22844fda042e27d7d2b0a50716c7f5d3717157a1052bf87d61cc671",
+  "runtimeSHA256": "794ff1f18ecc2dd2fc966a204f088a3b0e4fb708f7f6595f1a84a5f3af49911b",
+  "pairs": [
+    {
+      "name": "squid-approach-desktop",
+      "label": "1280px fine-pointer desktop on touch-capable Windows hardware",
+      "input": {
+        "maxTouchPoints": 10,
+        "coarse": false,
+        "anyCoarse": false,
+        "fine": true,
+        "anyFine": true,
+        "touchLayout": false,
+        "clientWidth": 1200
+      },
+      "steps": [
+        {
+          "ticks": 20,
+          "worldSHA256": "805e24359e25128ed356c6e9ecfe1dc40dc3a847afe24d9157777d0c371d5bc0",
+          "worldNodes": 552,
+          "matchedWorldPlayerCameraPose": true,
+          "beforeProjection": {
+            "canvas": {
+              "x": 40,
+              "y": 280.1875,
+              "width": 1200,
+              "height": 707,
+              "aspect": 1.6973125884016973,
+              "fitsViewport": true
+            },
+            "cameraAspect": 1.6973125884016973
+          },
+          "afterProjection": {
+            "canvas": {
+              "x": 40,
+              "y": 280.1875,
+              "width": 1200,
+              "height": 720,
+              "aspect": 1.6666666666666667,
+              "fitsViewport": true
+            },
+            "cameraAspect": 1.6666666666666667
+          }
+        },
+        {
+          "ticks": 36,
+          "worldSHA256": "485c14bf0879076f550d243a1da26d35555661685fcf46c81dad6f47eb26de9e",
+          "worldNodes": 552,
+          "matchedWorldPlayerCameraPose": true,
+          "beforeProjection": {
+            "canvas": {
+              "x": 40,
+              "y": 280.1875,
+              "width": 1200,
+              "height": 707,
+              "aspect": 1.6973125884016973,
+              "fitsViewport": true
+            },
+            "cameraAspect": 1.6973125884016973
+          },
+          "afterProjection": {
+            "canvas": {
+              "x": 40,
+              "y": 280.1875,
+              "width": 1200,
+              "height": 720,
+              "aspect": 1.6666666666666667,
+              "fitsViewport": true
+            },
+            "cameraAspect": 1.6666666666666667
+          }
+        },
+        {
+          "ticks": 40,
+          "worldSHA256": "f3d2553c31a5e6c975b5d8cebd2e6db1174931663d19ec4ecfded6bb1dd2948b",
+          "worldNodes": 552,
+          "matchedWorldPlayerCameraPose": true,
+          "beforeProjection": {
+            "canvas": {
+              "x": 40,
+              "y": 280.1875,
+              "width": 1200,
+              "height": 707,
+              "aspect": 1.6973125884016973,
+              "fitsViewport": true
+            },
+            "cameraAspect": 1.6973125884016973
+          },
+          "afterProjection": {
+            "canvas": {
+              "x": 40,
+              "y": 280.1875,
+              "width": 1200,
+              "height": 720,
+              "aspect": 1.6666666666666667,
+              "fitsViewport": true
+            },
+            "cameraAspect": 1.6666666666666667
+          }
+        }
+      ],
+      "projectionChangeIntentional": true,
+      "before": {
+        "canvas": {
+          "x": 40,
+          "y": 280.1875,
+          "width": 1200,
+          "height": 707,
+          "aspect": 1.6973125884016973,
+          "fitsViewport": true
+        },
+        "prompt": {
+          "x": 56,
+          "y": 794.1875,
+          "width": 1168,
+          "height": 31
+        },
+        "dock": {
+          "x": 48,
+          "y": 839.1875,
+          "width": 1184,
+          "height": 140
+        }
+      },
+      "after": {
+        "canvas": {
+          "x": 40,
+          "y": 280.1875,
+          "width": 1200,
+          "height": 720,
+          "aspect": 1.6666666666666667,
+          "fitsViewport": true
+        },
+        "prompt": {
+          "x": 549.9453125,
+          "y": 909.1875,
+          "width": 180.109375,
+          "height": 31
+        },
+        "dock": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        }
+      }
+    },
+    {
+      "name": "squid-approach-phone",
+      "label": "390x844 touch phone",
+      "input": {
+        "maxTouchPoints": 1,
+        "coarse": true,
+        "anyCoarse": true,
+        "fine": false,
+        "anyFine": false,
+        "touchLayout": true,
+        "clientWidth": 350
+      },
+      "steps": [
+        {
+          "ticks": 20,
+          "worldSHA256": "b75ef888c48dcc7df4bd256ea5ad2a39f224f5221d85e9ee92f15879b52e55ab",
+          "worldNodes": 548,
+          "matchedWorldPlayerCameraPose": true,
+          "beforeProjection": {
+            "canvas": {
+              "x": 20,
+              "y": 236.78125,
+              "width": 350,
+              "height": 595,
+              "aspect": 0.5882352941176471,
+              "fitsViewport": true
+            },
+            "cameraAspect": 0.5882352941176471
+          },
+          "afterProjection": {
+            "canvas": {
+              "x": 20,
+              "y": 236.78125,
+              "width": 350,
+              "height": 595,
+              "aspect": 0.5882352941176471,
+              "fitsViewport": true
+            },
+            "cameraAspect": 0.5882352941176471
+          }
+        },
+        {
+          "ticks": 36,
+          "worldSHA256": "817b82eac6ac280fc6af39f77333e301fdd5e93094ecf9d27548b8c4de893663",
+          "worldNodes": 548,
+          "matchedWorldPlayerCameraPose": true,
+          "beforeProjection": {
+            "canvas": {
+              "x": 20,
+              "y": 236.78125,
+              "width": 350,
+              "height": 595,
+              "aspect": 0.5882352941176471,
+              "fitsViewport": true
+            },
+            "cameraAspect": 0.5882352941176471
+          },
+          "afterProjection": {
+            "canvas": {
+              "x": 20,
+              "y": 236.78125,
+              "width": 350,
+              "height": 595,
+              "aspect": 0.5882352941176471,
+              "fitsViewport": true
+            },
+            "cameraAspect": 0.5882352941176471
+          }
+        },
+        {
+          "ticks": 40,
+          "worldSHA256": "f7a38c740d51dccdf1b6288b68f9e016d6b6de4e20fc153910dc75018cf230a9",
+          "worldNodes": 548,
+          "matchedWorldPlayerCameraPose": true,
+          "beforeProjection": {
+            "canvas": {
+              "x": 20,
+              "y": 236.78125,
+              "width": 350,
+              "height": 595,
+              "aspect": 0.5882352941176471,
+              "fitsViewport": true
+            },
+            "cameraAspect": 0.5882352941176471
+          },
+          "afterProjection": {
+            "canvas": {
+              "x": 20,
+              "y": 236.78125,
+              "width": 350,
+              "height": 595,
+              "aspect": 0.5882352941176471,
+              "fitsViewport": true
+            },
+            "cameraAspect": 0.5882352941176471
+          }
+        }
+      ],
+      "projectionChangeIntentional": false,
+      "before": {
+        "canvas": {
+          "x": 20,
+          "y": 236.78125,
+          "width": 350,
+          "height": 595,
+          "aspect": 0.5882352941176471,
+          "fitsViewport": true
+        },
+        "prompt": {
+          "x": 36,
+          "y": 590.78125,
+          "width": 318,
+          "height": 31
+        },
+        "dock": {
+          "x": 28,
+          "y": 683.78125,
+          "width": 334,
+          "height": 140
+        }
+      },
+      "after": {
+        "canvas": {
+          "x": 20,
+          "y": 236.78125,
+          "width": 350,
+          "height": 595,
+          "aspect": 0.5882352941176471,
+          "fitsViewport": true
+        },
+        "prompt": {
+          "x": 176,
+          "y": 630,
+          "width": 185.984375,
+          "height": 49.78125
+        },
+        "dock": {
+          "x": 28,
+          "y": 630,
+          "width": 334,
+          "height": 193.78125
+        }
+      }
+    },
+    {
+      "name": "squid-narrow-phone",
+      "label": "320x568 touch phone",
+      "input": {
+        "maxTouchPoints": 1,
+        "coarse": true,
+        "anyCoarse": true,
+        "fine": false,
+        "anyFine": false,
+        "touchLayout": true,
+        "clientWidth": 280
+      },
+      "steps": [
+        {
+          "ticks": 20,
+          "worldSHA256": "b75ef888c48dcc7df4bd256ea5ad2a39f224f5221d85e9ee92f15879b52e55ab",
+          "worldNodes": 548,
+          "matchedWorldPlayerCameraPose": true,
+          "beforeProjection": {
+            "canvas": {
+              "x": 20,
+              "y": 24.375,
+              "width": 280,
+              "height": 531,
+              "aspect": 0.527306967984934,
+              "fitsViewport": true
+            },
+            "cameraAspect": 0.527306967984934
+          },
+          "afterProjection": {
+            "canvas": {
+              "x": 20,
+              "y": 24.375,
+              "width": 280,
+              "height": 531,
+              "aspect": 0.527306967984934,
+              "fitsViewport": true
+            },
+            "cameraAspect": 0.527306967984934
+          }
+        }
+      ],
+      "projectionChangeIntentional": false,
+      "before": {
+        "canvas": {
+          "x": 20,
+          "y": 24.375,
+          "width": 280,
+          "height": 531,
+          "aspect": 0.527306967984934,
+          "fitsViewport": true
+        },
+        "prompt": {
+          "x": 36,
+          "y": 329.375,
+          "width": 248,
+          "height": 16
+        },
+        "dock": {
+          "x": 28,
+          "y": 407.375,
+          "width": 264,
+          "height": 140
+        }
+      },
+      "after": {
+        "canvas": {
+          "x": 20,
+          "y": 24.375,
+          "width": 280,
+          "height": 531,
+          "aspect": 0.527306967984934,
+          "fitsViewport": true
+        },
+        "prompt": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "dock": {
+          "x": 28,
+          "y": 407.375,
+          "width": 264,
+          "height": 140
+        }
+      }
+    },
+    {
+      "name": "squid-landscape-phone",
+      "label": "844x390 touch phone",
+      "input": {
+        "maxTouchPoints": 1,
+        "coarse": true,
+        "anyCoarse": true,
+        "fine": false,
+        "anyFine": false,
+        "touchLayout": true,
+        "clientWidth": 804
+      },
+      "steps": [
+        {
+          "ticks": 20,
+          "worldSHA256": "b75ef888c48dcc7df4bd256ea5ad2a39f224f5221d85e9ee92f15879b52e55ab",
+          "worldNodes": 548,
+          "matchedWorldPlayerCameraPose": true,
+          "beforeProjection": {
+            "canvas": {
+              "x": 20,
+              "y": 0.1875,
+              "width": 804,
+              "height": 377,
+              "aspect": 2.13262599469496,
+              "fitsViewport": true
+            },
+            "cameraAspect": 2.13262599469496
+          },
+          "afterProjection": {
+            "canvas": {
+              "x": 20,
+              "y": 0.1875,
+              "width": 804,
+              "height": 377,
+              "aspect": 2.13262599469496,
+              "fitsViewport": true
+            },
+            "cameraAspect": 2.13262599469496
+          }
+        }
+      ],
+      "projectionChangeIntentional": false,
+      "before": {
+        "canvas": {
+          "x": 20,
+          "y": 0.1875,
+          "width": 804,
+          "height": 377,
+          "aspect": 2.13262599469496,
+          "fitsViewport": true
+        },
+        "prompt": {
+          "x": 36,
+          "y": 199.1875,
+          "width": 772,
+          "height": 16
+        },
+        "dock": {
+          "x": 28,
+          "y": 229.1875,
+          "width": 788,
+          "height": 140
+        }
+      },
+      "after": {
+        "canvas": {
+          "x": 20,
+          "y": 0.1875,
+          "width": 804,
+          "height": 377,
+          "aspect": 2.13262599469496,
+          "fitsViewport": true
+        },
+        "prompt": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "dock": {
+          "x": 28,
+          "y": 229.1875,
+          "width": 788,
+          "height": 140
+        }
+      }
+    }
+  ],
+  "scope": "All recorded requested ticks, full world transforms, player pose, and camera position/quaternion match in four natural pairs. Responsive layout/projection changes are intentional. No actor placement or camera-pose writes in these captures. Wide native touch capacity is recorded alongside advertised fine-pointer desktop input."
+}

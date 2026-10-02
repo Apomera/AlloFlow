@@ -1,8 +1,9 @@
 import { test, expect, Page, CDPSession } from '@playwright/test';
 import { GlHarness, looksBlank } from './helpers/stem_gl_harness';
 
-// Integrate under tests/e2e. This suite observes the served production runtime;
-// no layout CSS, actor placement, input handlers, or capability flags are replaced.
+// This suite observes the served production runtime. Explicit actor placement
+// fixtures establish reachability; production layout CSS, input handlers and
+// capability flags remain intact.
 const harness = new GlHarness({
   toolFile: (process.env.CEPHALOPOD_MODEL_SOURCE || 'stem_lab/stem_tool_cephalopodlab.js').replace(/\\/g, '/'),
   toolId: 'cephalopodLab', width: 900, height: 1000, layout: 'document',
@@ -176,6 +177,192 @@ async function assertLayout(page: Page) {
   for (const name of [ui.forward, ui.jet, ui.hunt, ui.interact, ui.tools]) expect(layout.buttons.some(b => b.name === name), 'Initial usable action: ' + name).toBe(true);
   return layout;
 }
+
+
+// Observe the actual visible overlays and projected mantle. The oracle does not
+// copy the production grid dimensions, selectors for layout modes, or panel order.
+async function viewingSpace(page: Page) {
+  return page.evaluate(() => {
+    const w = window as any, stage = document.querySelector('.cl-hunt-stage')!, canvas = document.querySelector('canvas[role=application]')!, camera = w.__mobileCamera;
+    const rec = w.__glRecorder.records.filter((r: any) => r.scene && r.canvas.isConnected).at(-1), player = rec.scene.getObjectByName('cl-player'), mantle = player.getObjectByName('cl-mantle');
+    if (!mantle?.geometry?.attributes.position || !camera) throw new Error('Actual rendered mantle and camera are required');
+    function rect(el: Element) { const b = el.getBoundingClientRect(); return { left: b.left, right: b.right, top: b.top, bottom: b.bottom, width: b.width, height: b.height }; }
+    function painted(el: Element) { const b = el.getBoundingClientRect(), style = getComputedStyle(el); return b.width > 0 && b.height > 0 && style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity) > 0 && !el.closest('[hidden]'); }
+    function intersect(a: any, b: any) { return { left: Math.max(a.left, b.left), right: Math.min(a.right, b.right), top: Math.max(a.top, b.top), bottom: Math.min(a.bottom, b.bottom) }; }
+    function area(a: any) { return Math.max(0, a.right - a.left) * Math.max(0, a.bottom - a.top); }
+    // Sweep union area, rather than adding overlapping parent/child rectangles.
+    function unionArea(rectangles: any[], domain: any) {
+      const clipped = rectangles.map(r => intersect(r, domain)).filter(r => area(r) > 0), xs = [...new Set(clipped.flatMap(r => [r.left, r.right]))].sort((a, b) => a - b);
+      let total = 0;
+      for (let i = 1; i < xs.length; i++) {
+        const mid = (xs[i - 1] + xs[i]) / 2, ys = clipped.filter(r => r.left < mid && r.right > mid).map(r => [r.top, r.bottom]).sort((a, b) => a[0] - b[0]);
+        let covered = 0, end = -Infinity;
+        for (const [top, bottom] of ys) { covered += Math.max(0, bottom - Math.max(top, end)); end = Math.max(end, bottom); }
+        total += (xs[i] - xs[i - 1]) * covered;
+      }
+      return total;
+    }
+    const c = rect(canvas), bank = rect(stage.querySelector('[aria-label="Dive actions"]')!), promptEl = stage.querySelector('.cl-hunt-action-prompt')!, prompt = rect(promptEl);
+    const attr = mantle.geometry.attributes.position, point = new w.THREE.Vector3(), projected = { left: Infinity, right: -Infinity, top: Infinity, bottom: -Infinity };
+    let projectedVertices = 0;
+    for (let i = 0; i < attr.count; i++) {
+      point.fromBufferAttribute(attr, i); mantle.localToWorld(point); point.project(camera);
+      if (!Number.isFinite(point.x + point.y + point.z) || point.z < -1 || point.z > 1) continue;
+      const x = c.left + (point.x + 1) * c.width / 2, y = c.top + (1 - point.y) * c.height / 2;
+      projected.left = Math.min(projected.left, x); projected.right = Math.max(projected.right, x); projected.top = Math.min(projected.top, y); projected.bottom = Math.max(projected.bottom, y); projectedVertices++;
+    }
+    const buttons = [...stage.querySelectorAll('button')].filter(painted).map(el => ({ name: el.textContent!.trim(), ...rect(el) }));
+    const panels = [...stage.querySelectorAll('.cl-hunt-hud,.cl-hunt-mission,.cl-hunt-caption')].filter(painted).map(rect), overlays = [...buttons, ...panels];
+    if (painted(promptEl)) overlays.push(prompt);
+    const central = { left: c.left + c.width * .25, right: c.right - c.width * .25, top: c.top + c.height * .30, bottom: c.top + c.height * .70 };
+    return { canvas: c, bank, prompt, text: promptEl.textContent || '', promptPainted: painted(promptEl), projected, projectedVertices,
+      promptMantleOverlap: area(intersect(prompt, projected)), mantleButtonOverlaps: buttons.filter(b => area(intersect(projected, b)) > 1).map(b => b.name), promptButtonOverlaps: buttons.filter(b => area(intersect(prompt, b)) > 1).map(b => b.name),
+      buttons, overlays, clearCanvasRatio: 1 - unionArea(overlays, c) / area(c), clearCentralRatio: 1 - unionArea(overlays, central) / area(central),
+      promptColors: [promptEl, ...promptEl.querySelectorAll('span')].map(el => getComputedStyle(el).color), promptBackground: getComputedStyle(promptEl).backgroundColor };
+  });
+}
+async function presentReachablePrompt(page: Page, cue: 'touch' | 'desktop' = 'touch') {
+  // A layout fixture puts one actual free shelter within real interaction reach.
+  // Actor placement is explicit test setup; production prompt logic, canvas,
+  // camera, CSS and input handlers remain the served runtime.
+  await page.evaluate(() => {
+    const w = window as any, scene = w.__glRecorder.records.filter((r: any) => r.scene && r.canvas.isConnected).at(-1).scene, player = scene.getObjectByName('cl-player');
+    const shelter = scene.children.find((o: any) => o.userData.shelterType === 'conch' && o.userData.state === 'free');
+    if (!shelter) throw new Error('Actual free conch is required for the prompt fixture');
+    shelter.position.set(player.position.x + .2, player.position.y - .1, player.position.z + .3);
+  });
+  await step(page, 3); await frames(page, 4);
+  await expect(page.locator('.cl-hunt-action-prompt')).toContainText(cue === 'desktop' ? /\[G\].*pick up/i : /Interact.*pick up/i);
+  await expect.poll(() => page.locator('.cl-hunt-action-prompt').evaluate(el => Number(getComputedStyle(el).opacity))).toBeGreaterThan(.99);
+}
+function verifyViewingSpace(probe: any, checkMantle: boolean) {
+  expect(probe.text.trim()).not.toBe(''); expect(probe.promptPainted).toBe(true);
+  expect(probe.projectedVertices).toBeGreaterThan(0);
+  expect(Object.values(probe.projected).every(Number.isFinite)).toBe(true);
+  expect(probe.prompt.left, 'The action hint must stay inside the rendered action bank').toBeGreaterThanOrEqual(probe.bank.left - .5);
+  expect(probe.prompt.right, 'The action hint must stay inside the rendered action bank').toBeLessThanOrEqual(probe.bank.right + .5);
+  expect(probe.prompt.top).toBeGreaterThanOrEqual(probe.canvas.top - .5); expect(probe.prompt.bottom).toBeLessThanOrEqual(probe.canvas.bottom + .5);
+  expect(probe.promptButtonOverlaps, 'The hint must not paint over a touch action').toEqual([]);
+  // Keep a useful amount of rendered ocean even on the smallest tested phone.
+  expect(probe.clearCanvasRatio, 'At least one quarter of the live canvas must remain free of opaque UI').toBeGreaterThan(.25);
+  if (checkMantle) {
+    expect(probe.promptMantleOverlap, 'The live mantle must remain clear of the context hint').toBeLessThanOrEqual(1);
+    expect(probe.mantleButtonOverlaps, 'Touch actions must remain beside the live mantle').toEqual([]);
+  }
+}
+
+test('the contextual hint stays beside reachable portrait actions and releases its space when native ascent leaves reach', async ({ page }, testInfo) => {
+  test.setTimeout(300000); const evidence = [];
+  for (const viewport of [{ width: 390, height: 844 }, { width: 320, height: 568 }]) {
+    await page.setViewportSize(viewport); await mount(page); const owner = await snapshot(page);
+    await presentReachablePrompt(page); const filled = await viewingSpace(page); await assertLayout(page); verifyViewingSpace(filled, viewport.width === 390);
+    await touch(page, 'touchStart', [await point(page, 'Rise', 61)]); await step(page, 28); await touch(page, 'touchEnd'); await step(page, 3); await frames(page, 4);
+    await expect(page.locator('.cl-hunt-action-prompt')).toBeEmpty(); const empty = await viewingSpace(page);
+    expect(empty.prompt.width * empty.prompt.height, 'An empty context hint must not reserve a painted row').toBe(0);
+    expect(filled.bank.height).toBeGreaterThan(empty.bank.height + 10); await assertLayout(page); sameOwner(await snapshot(page), owner);
+    await touch(page, 'touchStart', [await point(page, 'Dive', 62)]); await step(page, 28); await touch(page, 'touchEnd'); await step(page, 3);
+    await presentReachablePrompt(page); const returned = await viewingSpace(page); verifyViewingSpace(returned, viewport.width === 390); await assertLayout(page); sameOwner(await snapshot(page), owner);
+    evidence.push({ viewport, filled, empty, returned });
+    await harness.unmount(page); expect(await harness.leakedAfterUnmount(page)).toEqual([]);
+  }
+  await testInfo.attach('actual-portrait-prompt-viewing-space', { body: JSON.stringify(evidence), contentType: 'application/json' });
+});
+
+test('the integrated action bank preserves larger text, contrast, rotation and paused inspection in the same world', async ({ page }, testInfo) => {
+  test.setTimeout(300000); await mount(page); const owner = await snapshot(page), evidence = [];
+  await showTools(page); await tap(page, ui.settings);
+  await page.getByLabel('Larger text', { exact: true }).check(); await page.getByLabel('High contrast', { exact: true }).check(); await page.getByLabel('Reduced motion', { exact: true }).check();
+  await tap(page, ui.resume); await play(page);
+  for (const viewport of [{ width: 390, height: 844 }, { width: 844, height: 390 }, { width: 320, height: 568 }]) {
+    await page.setViewportSize(viewport); await frames(page, 5); await page.locator('.cl-hunt-stage').scrollIntoViewIfNeeded(); await frames(page, 5);
+    await presentReachablePrompt(page); const probe = await viewingSpace(page); verifyViewingSpace(probe, viewport.width !== 320); await assertLayout(page);
+    expect(probe.promptColors.every((color: string) => color === 'rgb(255, 255, 255)')).toBe(true); expect(probe.promptBackground).toBe('rgb(0, 0, 0)');
+    await expect(page.locator('.cl-hunt-stage')).toHaveClass(/cl-large-text/); await expect(page.locator('.cl-hunt-stage')).toHaveClass(/cl-high-contrast/);
+    await tap(page, 'Pause'); await step(page, 3); const paused = await snapshot(page);
+    await showTools(page); await tap(page, ui.inspect); await expect(page.getByRole('region', { name: 'Specimen inspection', exact: true })).toBeVisible(); await step(page, 4);
+    const frozen = await snapshot(page); expect(frozen.position).toEqual(paused.position); expect(frozen.time).toBe(paused.time); expect(frozen.energy).toBe(paused.energy); expect(frozen.score).toBe(paused.score); sameOwner(frozen, owner);
+    await tap(page, ui.return); await step(page, 3); await expect(page.locator('[data-hud=burn]')).toHaveText('Paused'); await expect(page.locator(canvas)).toBeFocused();
+    const closed = await snapshot(page); expect(closed.position).toEqual(paused.position); expect(closed.time).toBe(paused.time); sameOwner(closed, owner);
+    await play(page); await presentReachablePrompt(page); const restored = await viewingSpace(page); verifyViewingSpace(restored, viewport.width !== 320); await assertLayout(page);
+    evidence.push({ viewport, probe, paused, frozen, closed, restored });
+  }
+  await testInfo.attach('actual-accessible-action-bank-and-inspection', { body: JSON.stringify(evidence), contentType: 'application/json' });
+});
+
+test.describe('fine pointer responsive layout transitions', () => {
+  test.use({ hasTouch: false, isMobile: false, viewport: { width: 1280, height: 1000 } });
+  test('compact actions restore their original desktop owners and clear a held key when the viewport widens', async ({ page }, testInfo) => {
+    test.setTimeout(240000);
+    // Use the default native fine-pointer browser context. Physical touch
+    // availability is recorded separately from the advertised pointer type.
+    // No navigator properties or pointer media queries are replaced.
+    await mount(page); const owner = await snapshot(page);
+    const desktop = await page.evaluate(() => {
+      const w = window as any, stage = document.querySelector('.cl-hunt-stage')!, controls = stage.querySelector('.cl-hunt-controls')!, prompt = stage.querySelector('.cl-hunt-action-prompt')!, pad = stage.querySelector('.cl-hunt-pad')!;
+      w.__mobileDesktopNodes = { stage, controls, prompt, controlOrder: [...controls.children], movementOrder: [...pad.children] };
+      return { touch: stage.classList.contains('cl-hunt-touch-enabled'), maxTouchPoints: navigator.maxTouchPoints, coarse: matchMedia('(pointer: coarse)').matches,
+        anyCoarse: matchMedia('(any-pointer: coarse)').matches, fine: matchMedia('(pointer: fine)').matches, anyFine: matchMedia('(any-pointer: fine)').matches,
+        controlsAtStage: controls.parentElement === stage, promptAtStage: prompt.parentElement === stage,
+        controlNames: [...controls.children].map(el => el.textContent!.trim()), movementNames: [...pad.children].map(el => el.textContent!.trim()) };
+    });
+    await testInfo.attach('native-desktop-input-profile', { body: JSON.stringify(desktop), contentType: 'application/json' });
+    expect(desktop.touch).toBe(false);
+    expect(Number.isFinite(desktop.maxTouchPoints) && Number.isInteger(desktop.maxTouchPoints)).toBe(true); expect(desktop.maxTouchPoints).toBeGreaterThanOrEqual(0);
+    expect(desktop.coarse).toBe(false); expect(desktop.anyCoarse).toBe(false); expect(desktop.fine || desktop.anyFine, 'The native desktop profile must advertise a fine pointer').toBe(true);
+    expect(desktop.controlsAtStage).toBe(true); expect(desktop.promptAtStage).toBe(true);
+    await page.setViewportSize({ width: 320, height: 568 }); await frames(page, 5); await page.locator('.cl-hunt-stage').scrollIntoViewIfNeeded(); await frames(page, 5);
+    await presentReachablePrompt(page); await assertLayout(page); const compact = await viewingSpace(page); verifyViewingSpace(compact, false);
+    const compactMovement = await page.locator('[aria-label="Movement and depth"] button').allTextContents();
+    expect(compactMovement, 'Narrow visual movement pairs must also read in the same DOM order').toEqual(['Forward', 'Back', 'Left', 'Right', 'Rise', 'Dive']);
+    await page.locator(canvas).focus(); const beforeMove = await snapshot(page); await page.keyboard.down('KeyW'); await step(page, 4); const moving = await snapshot(page);
+    expect(horizontalDistance(moving.position, beforeMove.position)).toBeGreaterThan(.04);
+    // Resize through the actual fine-pointer breakpoint while the native key
+    // remains down. A stale input must not continue in the restored desktop UI.
+    await page.setViewportSize({ width: 1280, height: 1000 }); await frames(page, 6); await step(page, 6); const restored = await snapshot(page); await page.keyboard.up('KeyW');
+    releasedPose(restored.position, moving.position); sameOwner(restored, owner); await expect(page.locator(canvas)).toBeFocused();
+    const owners = await page.evaluate(() => {
+      const w = window as any, prior = w.__mobileDesktopNodes, stage = document.querySelector('.cl-hunt-stage')!, controls = stage.querySelector('.cl-hunt-controls')!, prompt = stage.querySelector('.cl-hunt-action-prompt')!, pad = stage.querySelector('.cl-hunt-pad')!;
+      return { touch: stage.classList.contains('cl-hunt-touch-enabled'), controlsSame: controls === prior.controls, promptSame: prompt === prior.prompt,
+        controlsAtStage: controls.parentElement === prior.stage, promptAtStage: prompt.parentElement === prior.stage,
+        controlOrder: prior.controlOrder.length === controls.children.length && prior.controlOrder.every((el: Element, i: number) => controls.children[i] === el),
+        movementOrder: prior.movementOrder.length === pad.children.length && prior.movementOrder.every((el: Element, i: number) => pad.children[i] === el),
+        touchStageHeight: (stage as HTMLElement).style.getPropertyValue('--cl-touch-stage-height'), touchDisplay: getComputedStyle(stage.querySelector('.cl-hunt-touch')!).display };
+    });
+    expect(owners).toEqual({ touch: false, controlsSame: true, promptSame: true, controlsAtStage: true, promptAtStage: true, controlOrder: true, movementOrder: true, touchStageHeight: '', touchDisplay: 'none' });
+    for (const name of ['View', 'Inspect [F]', 'Help / settings', 'Next target [T]', 'Strike [E]', 'Explore depths']) await expect(page.getByRole('button', { name, exact: true })).toBeVisible();
+    // Both overlays come from ordinary production updates: First Dive is
+    // earned at mount, and the existing conch fixture supplies a reachable hint.
+    await presentReachablePrompt(page, 'desktop'); await frames(page, 5);
+    const desktopFeedback = await page.evaluate(() => {
+      const stage = document.querySelector('.cl-hunt-stage')!, prompt = stage.querySelector('.cl-hunt-action-prompt')!;
+      const popup = [...stage.children].find(el => el.classList.contains('cl-hunt-feedback') && el.textContent?.includes('Saved to your field notes'));
+      if (!popup) throw new Error('Actual earned First Dive feedback is required');
+      function bounds(el: Element) { const r = el.getBoundingClientRect(); return { top: r.top, bottom: r.bottom, left: r.left, right: r.right, width: r.width, height: r.height }; }
+      return { popup: bounds(popup), prompt: bounds(prompt), stage: bounds(stage), popupText: popup.textContent, promptText: prompt.textContent,
+        popupOpacity: Number(getComputedStyle(popup).opacity), promptOpacity: Number(getComputedStyle(prompt).opacity), popupDisplay: getComputedStyle(popup).display };
+    });
+    expect(desktopFeedback.popupText).toContain('First Dive'); expect(desktopFeedback.promptText).toMatch(/\[G\].*pick up/i);
+    expect(desktopFeedback.popupDisplay).not.toBe('none'); expect(desktopFeedback.popupOpacity).toBeGreaterThan(.99); expect(desktopFeedback.promptOpacity).toBeGreaterThan(.99);
+    expect(desktopFeedback.popup.height).toBeGreaterThan(0); expect(desktopFeedback.prompt.height).toBeGreaterThan(0);
+    expect(desktopFeedback.popup.bottom + 7, 'Earned achievement feedback must remain above the actual contextual hint').toBeLessThanOrEqual(desktopFeedback.prompt.top);
+    expect(desktopFeedback.popup.top).toBeGreaterThanOrEqual(desktopFeedback.stage.top); sameOwner(await snapshot(page), owner);
+    const focusTransitions = [];
+    for (const readout of [{ selector: '.cl-hunt-hud', tabs: 1 }, { selector: '.cl-hunt-mission', tabs: 2 }]) {
+      await page.setViewportSize({ width: 320, height: 568 }); await frames(page, 5); await page.locator('.cl-hunt-stage').scrollIntoViewIfNeeded(); await frames(page, 5);
+      await expect(page.locator(readout.selector)).toHaveAttribute('tabindex', '0'); await page.locator(canvas).focus();
+      for (let n = 0; n < readout.tabs; n++) await page.keyboard.press('Tab');
+      await expect(page.locator(readout.selector), 'Native Tab must reach the touch readout before the responsive transition').toBeFocused();
+      const focused = await snapshot(page);
+      await page.setViewportSize({ width: 1280, height: 1000 }); await frames(page, 6);
+      await expect(page.locator(canvas), 'A readout that loses its touch-only tab stop must return focus to the dive canvas').toBeFocused();
+      expect(await page.locator(readout.selector).getAttribute('tabindex')).toBeNull(); const fallback = await snapshot(page); sameOwner(fallback, owner);
+      expect(fallback.position).toEqual(focused.position); expect(fallback.time).toBe(focused.time); expect(fallback.energy).toBe(focused.energy); expect(fallback.score).toBe(focused.score);
+      focusTransitions.push({ readout: readout.selector, nativeTabs: readout.tabs, focused, fallback });
+    }
+    const geometry = await controlLayout(page); expect(geometry.cameraFinite).toBe(true); expect(geometry.sideways).toBe(false); expect(geometry.cameraAspect).toBeCloseTo(geometry.canvas.width / geometry.canvas.height, 5);
+    await testInfo.attach('actual-fine-pointer-owner-restoration', { body: JSON.stringify({ desktop, compact, compactMovement, beforeMove, moving, restored, owners, desktopFeedback, focusTransitions, geometry }), contentType: 'application/json' });
+  });
+});
 
 test('portrait controls fit after one supported whole-stage entry scroll at 320 and 390 without individual action scrolling', async ({ page }, testInfo) => {
   const evidence = [];

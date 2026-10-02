@@ -12547,7 +12547,7 @@ function createCLHuntFish(T,index){
           rockGeo.computeVertexNormals();
           var ROCK_TINTS = [0x55483a, 0x3f4d3d, 0x5c4f3f, 0x46524a, 0x4a3f36];
           var rockTint = new THREE.Color(ROCK_TINTS[Math.floor(Math.random() * ROCK_TINTS.length)]).offsetHSL(0,0,(Math.random()-0.5)*0.05);
-          var rockMesh = new THREE.Mesh(rockGeo, new THREE.MeshStandardMaterial({ color: rockTint.clone().convertSRGBToLinear(), roughness: 0.92, flatShading: false }));
+          var rockMesh = new THREE.Mesh(rockGeo, new THREE.MeshStandardMaterial({ color: rockTint.clone().convertSRGBToLinear(), roughness: 0.92, flatShading: false, shadowSide: THREE.DoubleSide }));
           if(renderer.capabilities.isWebGL2||renderer.extensions.has('OES_standard_derivatives')){
             rockMesh.material.extensions={derivatives:true};
             rockMesh.material.onBeforeCompile=shadeCLHuntRockSurface;
@@ -15256,6 +15256,7 @@ function createCLHuntFish(T,index){
         uiStyle.textContent='.cl-hunt-stage{font-family:system-ui,sans-serif;isolation:isolate}.cl-hunt-stage button,.cl-hunt-stage select{font:600 12px system-ui;color:#e6f6f4;background:#112f40;border:1px solid #507a83;border-radius:8px;padding:9px 12px;min-height:38px;cursor:pointer}.cl-hunt-stage button:focus-visible,.cl-hunt-stage select:focus-visible{outline:3px solid #fde68a;outline-offset:2px}.cl-hunt-stage button:active{background:#32626c}.cl-hunt-controls{position:absolute;bottom:10px;left:12px;right:12px;display:flex;gap:6px;justify-content:center;flex-wrap:wrap;z-index:6}.cl-hunt-touch{display:none;position:absolute;bottom:12px;left:12px;right:12px;justify-content:space-between;align-items:end;gap:8px;z-index:7;pointer-events:none}.cl-hunt-touch button{min-width:42px;min-height:44px;touch-action:none;pointer-events:auto}.cl-hunt-pad{display:grid;grid-template-columns:repeat(3,44px);gap:4px}.cl-hunt-actions{display:grid;grid-template-columns:repeat(2,auto);gap:4px}.cl-hunt-dialog{position:absolute;inset:12px;background:#0a2232f5;color:#ecf9f8;border:1px solid #64888f;border-radius:14px;padding:20px;z-index:12;overflow:auto}.cl-hunt-dialog[hidden]{display:none}.cl-hunt-dialog label{display:flex;gap:10px;align-items:center;margin:12px 0;font-size:14px}.cl-hunt-stage.cl-large-text .cl-hunt-hud{font-size:16px!important}.cl-hunt-stage.cl-large-text [data-sub]{font-size:14px!important}.cl-hunt-stage.cl-high-contrast .cl-hunt-hud{background:#000!important;border-color:#fff!important}';
         uiStyle.textContent+=".cl-hunt-tools-toggle{display:none}.cl-hunt-mobile-tools[hidden]{display:none}.cl-hunt-mobile-tools:not([hidden]){display:block}.cl-hunt-touch-enabled{height:var(--cl-touch-stage-height,72vh)!important;min-height:0!important}.cl-hunt-touch-enabled button,.cl-hunt-touch-enabled select{min-height:44px;min-width:44px;box-sizing:border-box}.cl-hunt-touch-enabled .cl-hunt-touch{display:flex;bottom:8px;left:8px;right:8px;gap:8px}.cl-hunt-touch-enabled .cl-hunt-touch button{padding:3px 2px;font-size:11px;line-height:1.2;overflow-wrap:anywhere;white-space:pre-line}.cl-hunt-touch-enabled .cl-hunt-pad{grid-template-columns:repeat(3,44px);gap:4px;flex:0 0 140px}.cl-hunt-touch-enabled .cl-hunt-pad button:first-child{padding-inline:0;white-space:nowrap;letter-spacing:-.15px}.cl-hunt-touch-enabled .cl-hunt-actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;flex:1;min-width:0;max-width:240px}.cl-hunt-touch-enabled .cl-hunt-controls{left:8px;right:8px;bottom:var(--cl-primary-bottom,156px);gap:6px;justify-content:flex-end;flex-wrap:nowrap}.cl-hunt-touch-enabled .cl-hunt-controls button{padding:6px 10px;font-size:12px;flex:1;max-width:120px}.cl-hunt-touch-enabled .cl-hunt-controls .cl-hunt-desktop{display:none}.cl-hunt-touch-enabled .cl-hunt-tools-toggle{display:block}.cl-hunt-touch-enabled .cl-hunt-hud{width:calc(100% - 16px)!important;box-sizing:border-box;left:8px!important;top:8px!important;min-width:0!important;font-size:11px!important;padding:6px 8px!important;line-height:1.3!important;max-height:var(--cl-hud-max,160px);overflow:auto;overscroll-behavior:contain;pointer-events:auto;display:flex;flex-wrap:wrap;align-content:start}.cl-hunt-touch-enabled .cl-hud-vitals,.cl-hunt-touch-enabled .cl-hud-summary{display:inline-flex!important;flex-wrap:nowrap!important;gap:7px!important;margin-right:7px}.cl-hunt-touch-enabled .cl-hud-identity{order:0;flex-basis:100%}.cl-hunt-touch-enabled .cl-hud-vitals,.cl-hunt-touch-enabled .cl-hud-summary{order:1}.cl-hunt-touch-enabled [data-hud=status]{order:2;flex-basis:100%}.cl-hunt-touch-enabled .cl-hud-activity-row{order:3;flex-basis:100%}.cl-hunt-touch-enabled .cl-hud-threat-row{order:4;flex-basis:100%}.cl-hunt-touch-enabled [data-hud=depth]{order:5;flex-basis:100%}.cl-hunt-touch-enabled [data-hud=substrate]{order:6;flex-basis:100%}.cl-hunt-touch-enabled .cl-hud-context{display:block!important;font-size:11px!important;margin:2px 0!important;line-height:1.3}.cl-hunt-touch-enabled .cl-hunt-hud [data-hud=status]:empty{display:none}.cl-hunt-touch-enabled .cl-hunt-hud [data-hud=status],.cl-hunt-touch-enabled .cl-hunt-hud [data-hud=activity],.cl-hunt-touch-enabled .cl-hunt-hud [data-hud=threat]{font-size:11px!important;line-height:1.3!important}.cl-hunt-touch-enabled .cl-hunt-mission{top:var(--cl-mission-top,120px)!important;left:8px!important;right:8px!important;max-width:none!important;font-size:12px!important;padding:6px 8px!important;line-height:1.3;max-height:var(--cl-mission-max,100px);overflow:auto;overscroll-behavior:contain;pointer-events:auto;display:flex;flex-direction:column}.cl-hunt-touch-enabled .cl-target-readout{order:0;display:flex;flex-direction:column;border-top:0;margin-top:0;padding-top:0}.cl-hunt-touch-enabled .cl-target-readout[hidden]{display:none}.cl-hunt-touch-enabled .cl-target-readout [data-target=action]{order:0}.cl-hunt-touch-enabled .cl-target-readout [data-target=detail]{order:1;margin:3px 0 0}.cl-hunt-touch-enabled .cl-mission-brief{order:1}.cl-hunt-touch-enabled .cl-mission-brief:not([hidden])+.cl-target-readout{margin-bottom:5px}.cl-hunt-touch-enabled.cl-large-text .cl-hunt-hud,.cl-hunt-touch-enabled.cl-large-text .cl-hunt-mission{font-size:14px!important}.cl-hunt-touch-enabled.cl-large-text .cl-hud-context,.cl-hunt-touch-enabled.cl-large-text .cl-hunt-hud [data-sub]{font-size:14px!important}.cl-hunt-touch-enabled .cl-hunt-caption{top:var(--cl-feedback-top,180px)!important;left:8px;right:8px!important;width:auto!important;max-height:var(--cl-feedback-height,60px)!important}.cl-hunt-touch-enabled .cl-hunt-dialog{inset:8px;padding:12px;box-sizing:border-box;overscroll-behavior:contain}.cl-hunt-touch-enabled .cl-hunt-dialog input{min-width:24px;min-height:24px}.cl-hunt-touch-enabled .cl-hunt-dialog label{min-height:44px;margin:6px 0}.cl-hunt-mobile-tools-header{display:flex;align-items:center;justify-content:space-between;gap:10px;position:sticky;top:-12px;background:#0a2232;padding:8px 0;z-index:1}.cl-hunt-mobile-tools-header h2{font-size:17px;margin:0}.cl-hunt-mobile-tools-header p{font-size:12px;color:#bddbdf;margin:3px 0 0}.cl-hunt-mobile-secondary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0 14px}.cl-hunt-mobile-details{display:grid;gap:7px;border-top:1px solid #64888f;padding-top:12px;font-size:13px;line-height:1.4;overflow-wrap:anywhere}.cl-hunt-mobile-details h3{font-size:14px;margin:0}.cl-hunt-mobile-details .cl-hunt-map{position:static!important;width:110px!important;height:110px!important;justify-self:start}.cl-hunt-mobile-details [data-target=detail]{font-size:13px;color:#bed8df}.cl-hunt-wide-touch .cl-hunt-hud{width:calc(50% - 12px)!important}.cl-hunt-wide-touch .cl-hunt-mission{top:8px!important;left:calc(50% + 4px)!important;max-height:var(--cl-hud-max,140px)}.cl-hunt-wide-touch .cl-hunt-actions{grid-template-columns:repeat(3,minmax(0,1fr));max-width:440px}.cl-hunt-wide-touch .cl-hunt-controls{left:160px;bottom:calc(14px + var(--cl-touch-actions-height,92px))}.cl-hunt-wide-touch .cl-hunt-controls button{flex:0 1 120px}.cl-hunt-touch-enabled .cl-inspection-tools button{min-height:44px;min-width:44px}.cl-hunt-touch-enabled .cl-inspection-tools{max-height:45%;overflow:auto}.cl-hunt-touch-enabled .cl-inspection-title{top:8px;left:10px;right:10px}.cl-high-contrast .cl-hunt-mobile-tools{background:#000;border-color:#fff}.cl-large-text .cl-hunt-mobile-details{font-size:15px}.cl-large-text .cl-hunt-mobile-details [data-tool-detail]{font-size:15px!important}";
         uiStyle.textContent+=".cl-hunt-touch-enabled .cl-hunt-settings:not([hidden]){display:flex;flex-direction:column;overflow:hidden}.cl-hunt-touch-enabled .cl-hunt-settings-content{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain}.cl-hunt-touch-enabled .cl-hunt-settings-actions{display:flex;gap:8px;flex:0 0 auto;padding-top:12px;border-top:1px solid #64888f}.cl-hunt-touch-enabled .cl-hunt-settings-actions button{flex:1}";
+        uiStyle.textContent+=".cl-hunt-touch-enabled .cl-hunt-actions{grid-template-columns:repeat(3,minmax(44px,1fr));max-width:440px}.cl-hunt-touch-enabled .cl-hunt-controls{display:contents}.cl-hunt-touch-enabled .cl-hunt-controls button{padding:3px 2px;font-size:11px;line-height:1.2;max-width:none}.cl-hunt-touch-enabled .cl-hunt-action-prompt{position:static!important;left:auto!important;bottom:auto!important;transform:none!important;grid-column:1/-1;width:100%!important;min-width:0;padding:5px 7px;box-sizing:border-box;white-space:normal;overflow-wrap:anywhere;font:700 12px/1.3 system-ui,sans-serif;text-align:center;box-shadow:0 2px 8px #00111d66}.cl-hunt-touch-enabled .cl-hunt-action-prompt:empty{display:none}.cl-hunt-compact-touch .cl-hunt-pad{grid-template-columns:repeat(2,44px);flex-basis:92px}.cl-hunt-compact-touch .cl-hunt-pad button{grid-column:auto!important;grid-row:auto}.cl-hunt-touch-enabled.cl-hunt-wide-touch .cl-hunt-actions{max-width:min(440px,calc(50% - 56px))}.cl-hunt-wide-touch .cl-hunt-action-prompt{max-width:300px;justify-self:end}.cl-hunt-touch-enabled.cl-large-text .cl-hunt-action-prompt{font-size:14px!important}.cl-high-contrast .cl-hunt-action-prompt{background:#000!important;border-color:#fff!important;color:#fff!important}.cl-high-contrast .cl-hunt-action-prompt span{color:#fff!important}";
         stage.appendChild(uiStyle);
         controlPanel=document.createElement('div');controlPanel.className='cl-hunt-controls';stage.appendChild(controlPanel);
         function uiButton(label,fn,parent){var b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=fn;(parent||controlPanel).appendChild(b);return b;}
@@ -15316,6 +15317,13 @@ function createCLHuntFish(T,index){
         }
         holdButton('Forward','KeyW',pad,'2');holdButton('Left','KeyA',pad,'1');holdButton('Back','KeyS',pad,'2');holdButton('Right','KeyD',pad,'3');
         holdButton('Rise','KeyQ',pad,'1');holdButton('Dive','KeyZ',pad,'3');
+        var touchMovementOrder=Array.prototype.slice.call(pad.children);
+        function updateTouchMovementOrder(compact){
+          var order=compact?[touchMovementOrder[0],touchMovementOrder[2],touchMovementOrder[1],touchMovementOrder[3],touchMovementOrder[4],touchMovementOrder[5]]:touchMovementOrder;
+          if(order.every(function(button,index){return pad.children[index]===button;}))return;
+          var focused=document.activeElement;clearInput();order.forEach(function(button){pad.appendChild(button);});
+          if(order.indexOf(focused)>=0)focused.focus({preventScroll:true});
+        }
         holdButton('Jet','Space',actions);holdButton('Strike / hold','KeyE',actions);
         if(capabilities.ink)touchInkButton=holdButton('Ink','KeyI',actions);
         holdButton('Interact','KeyG',actions);
@@ -15336,16 +15344,21 @@ function createCLHuntFish(T,index){
         var mobileTargetDetail=document.createElement('div');mobileTargetDetail.setAttribute('data-tool-detail','target');mobileTargetDetail.hidden=true;mobileDetails.appendChild(mobileTargetDetail);
         var mobileDetailSlots=[];
         [hudNodes.score.parentElement,hudNodes.time.parentElement,hudNodes.burn,hudNodes.ink,minimap].forEach(function(node){var slot=document.createComment('Hunter detail position');node.parentNode.insertBefore(slot,node);mobileDetailSlots.push({node:node,slot:slot});});
+        var mobileControlSlot=document.createComment('Hunter controls position'),mobilePromptSlot=document.createComment('Hunter prompt position');
+        controlPanel.parentNode.insertBefore(mobileControlSlot,controlPanel);actionPrompt.parentNode.insertBefore(mobilePromptSlot,actionPrompt);
         var mobileToolsWasPaused=false,usingTouchLayout=false;
         var mobileToolsButton=uiButton('Tools',openMobileTools);mobileToolsButton.className='cl-hunt-tools-toggle';mobileToolsButton.setAttribute('aria-controls',mobileToolsPanel.id);mobileToolsButton.setAttribute('aria-expanded','false');
         function moveMobileDetails(touch){
-          if(usingTouchLayout===touch)return;usingTouchLayout=touch;
+          if(usingTouchLayout===touch)return;var focused=document.activeElement,hadStageFocus=stage.contains(focused);clearInput();usingTouchLayout=touch;
           if(!touch){var toolsWereOpen=!mobileToolsPanel.hidden;closeMobileTools(false);if(toolsWereOpen)canvasEl.focus();}
+          if(touch){actions.insertBefore(controlPanel,actions.firstChild);actions.insertBefore(actionPrompt,controlPanel);}
+          else{mobileControlSlot.parentNode.insertBefore(controlPanel,mobileControlSlot.nextSibling);mobilePromptSlot.parentNode.insertBefore(actionPrompt,mobilePromptSlot.nextSibling);}
           mobileSecondaryButtons.forEach(function(button){if(touch)mobileSecondary.appendChild(button);});
-          if(!touch)desktopControlOrder.forEach(function(button){controlPanel.insertBefore(button,mobileToolsButton);});
+          if(!touch)desktopControlOrder.forEach(function(button){controlPanel.appendChild(button);});
           mobileDetailSlots.forEach(function(entry){if(touch)mobileDetails.appendChild(entry.node);else entry.slot.parentNode.insertBefore(entry.node,entry.slot.nextSibling);});
           forageButton.textContent=touch?'Forage':'Forage [R]';inspectButton.textContent=touch?'Inspect':'Inspect [F]';
           if(touch){hud.tabIndex=0;missionHud.tabIndex=0;}else{hud.removeAttribute('tabindex');missionHud.removeAttribute('tabindex');}
+          if(hadStageFocus&&focused!==canvasEl){if(focused.isConnected&&focused.getClientRects().length&&focused.tabIndex>=0){focused.focus({preventScroll:true});if(document.activeElement!==focused)canvasEl.focus({preventScroll:true});}else canvasEl.focus({preventScroll:true});}
         }
         function openMobileTools(){
           if(!usingTouchLayout||gameState.gameOver||inspection.active)return;
@@ -15584,7 +15597,7 @@ function createCLHuntFish(T,index){
         }
         function preyCandidates(){var list=crabs.filter(function(c){return c.userData.alive;});fishSchools.forEach(function(s){s.fish.forEach(function(f){if(f.userData.alive)list.push(f);});});return list;}
         function cycleTarget(){gameState.observationUntil=0;var list=preyCandidates().filter(function(p){return p.position.distanceTo(octopus.position)<28;}).sort(function(a,b){return a.position.distanceToSquared(octopus.position)-b.position.distanceToSquared(octopus.position);});targetCycle=explicitTarget&&selectedPrey?list.indexOf(selectedPrey)+1:0;selectedPrey=list.length?list[targetCycle%list.length]:null;explicitTarget=!!selectedPrey;clAnnounce(selectedPrey?clHuntInputCue('Target selected. Move into range and press E.','Target selected. Move into range and tap Strike / hold.'):'No prey nearby. Follow the reef toward the yellow map markers.');canvasEl.focus();}
-        var observeButton=uiButton('Observe',function(){closeMobileTools(false);var nearest=preyCandidates().sort(function(a,b){return a.position.distanceToSquared(octopus.position)-b.position.distanceToSquared(octopus.position);})[0];var msg=species.name+'. '+(gameState.inDen?'Sheltered in a den. ':'In open water. ')+(nearest?'Nearest prey '+nearest.position.distanceTo(octopus.position).toFixed(0)+' metres away. ':'No prey nearby. ')+Math.round(gameState.camoEff*100)+' percent camouflage. '+(gameState.threatText||'No predator has detected you.');clAnnounce(msg);pushCaption(msg,'observation');missionBrief.textContent=msg;missionBrief.hidden=false;targetReadout.hidden=true;lastMissionText=msg;gameState.observationUntil=gameNow+6000;canvasEl.focus();});desktopControlOrder.push(observeButton);mobileSecondaryButtons.push(observeButton);
+        var observeButton=uiButton('Observe',function(){closeMobileTools(false);var nearest=preyCandidates().sort(function(a,b){return a.position.distanceToSquared(octopus.position)-b.position.distanceToSquared(octopus.position);})[0];var msg=species.name+'. '+(gameState.inDen?'Sheltered in a den. ':'In open water. ')+(nearest?'Nearest prey '+nearest.position.distanceTo(octopus.position).toFixed(0)+' metres away. ':'No prey nearby. ')+Math.round(gameState.camoEff*100)+' percent camouflage. '+(gameState.threatText||'No predator has detected you.');clAnnounce(msg);pushCaption(msg,'observation');missionBrief.textContent=msg;missionBrief.hidden=false;targetReadout.hidden=true;lastMissionText=msg;gameState.observationUntil=gameNow+6000;canvasEl.focus();});desktopControlOrder=Array.prototype.slice.call(controlPanel.children);mobileSecondaryButtons.push(observeButton);
         applyLiveAccess();
 
         // Spatial cover and readable prey intent. All thresholds are game rules.
@@ -17631,29 +17644,38 @@ function createCLHuntFish(T,index){
         captions.classList.add('cl-hunt-caption');
         function layoutVar(name,value){if(stage.style.getPropertyValue(name)!==value)stage.style.setProperty(name,value);}
         function scheduleHuntLayout(){if(disposed||huntLayoutFrame!==null)return;huntLayoutFrame=requestAnimationFrame(function(){huntLayoutFrame=null;if(!disposed)onResize();});}
+        function naturalHuntOverlayHeight(el){
+          var value=el.style.getPropertyValue('max-height'),priority=el.style.getPropertyPriority('max-height');
+          el.style.setProperty('max-height','none','important');var height=el.offsetHeight;
+          if(value)el.style.setProperty('max-height',value,priority);else el.style.removeProperty('max-height');return height;
+        }
         function onResize(){
           if(disposed)return;
           var nW=canvasEl.clientWidth||800,viewHeight=huntViewport&&huntViewport.height||window.innerHeight||720;
           var coarse=!!(window.matchMedia&&(window.matchMedia('(pointer: coarse)').matches||window.matchMedia('(any-pointer: coarse)').matches));
-          var touch=nW<600||coarse||!!navigator.maxTouchPoints;
-          stage.classList.toggle('cl-hunt-small',nW<600);stage.classList.toggle('cl-hunt-touch-enabled',touch);stage.classList.toggle('cl-hunt-wide-touch',touch&&nW>=600);
-          if(touch){var rect=stage.getBoundingClientRect(),intersects=rect.top<viewHeight&&rect.bottom>0,available=intersects?viewHeight-Math.max(0,rect.top)-12:viewHeight-24;if(inspection.active)available=Math.max(available,inspectionTitle.offsetTop+inspectionTitle.offsetHeight+inspectionTools.offsetHeight+140);layoutVar('--cl-touch-stage-height',Math.max(1,Math.min(720,Math.floor(available)))+'px');}
-          else stage.style.removeProperty('--cl-touch-stage-height');
-          moveMobileDetails(touch);
+          var fine=!!(window.matchMedia&&(window.matchMedia('(pointer: fine)').matches||window.matchMedia('(any-pointer: fine)').matches));
+          var touch=nW<600||coarse||(!fine&&!!navigator.maxTouchPoints);
+          stage.classList.toggle('cl-hunt-small',nW<600);stage.classList.toggle('cl-hunt-touch-enabled',touch);stage.classList.toggle('cl-hunt-wide-touch',touch&&nW>=600);stage.classList.toggle('cl-hunt-compact-touch',touch&&nW<330);
+          moveMobileDetails(touch);updateTouchMovementOrder(touch&&nW<330);
+          if(touch){
+            var rect=stage.getBoundingClientRect(),intersects=rect.top<viewHeight&&rect.bottom>0,available=intersects?viewHeight-Math.max(0,rect.top)-12:viewHeight-24;
+            if(inspection.active)available=Math.max(available,inspectionTitle.offsetTop+inspectionTitle.offsetHeight+inspectionTools.offsetHeight+140);
+            else if(rect.top< -1||rect.bottom>viewHeight+1){var hudNatural=naturalHuntOverlayHeight(hud),missionNatural=naturalHuntOverlayHeight(missionHud),topNatural=8+(nW>=600?Math.max(hudNatural,missionNatural):hudNatural+missionNatural+6),minimum=topNatural+touchPanel.offsetHeight+16+140;available=Math.max(available,Math.min(Math.max(1,viewHeight-24),minimum));}
+            layoutVar('--cl-touch-stage-height',Math.max(1,Math.min(720,Math.floor(available)))+'px');
+          }else stage.style.removeProperty('--cl-touch-stage-height');
           var nH=canvasEl.clientHeight||500;
           if(touch){
-            layoutVar('--cl-primary-bottom',(touchPanel.offsetHeight+14)+'px');layoutVar('--cl-touch-actions-height',actions.offsetHeight+'px');
-            var stageRect=stage.getBoundingClientRect(),dockTop=Math.min(controlPanel.getBoundingClientRect().top,touchPanel.getBoundingClientRect().top),dockHeight=Math.ceil(stageRect.bottom-dockTop)+8;
+            layoutVar('--cl-touch-actions-height',actions.offsetHeight+'px');
+            var stageRect=stage.getBoundingClientRect(),dockTop=touchPanel.getBoundingClientRect().top,dockHeight=Math.ceil(stageRect.bottom-dockTop)+8;
             var topBudget=Math.max(76,Math.floor(nH-dockHeight-90)),wide=nW>=600;
             layoutVar('--cl-hud-max',(wide?topBudget:Math.max(58,Math.floor(topBudget*0.70)))+'px');
             var hudBottom=hud.offsetTop+hud.offsetHeight;
             layoutVar('--cl-mission-top',(hudBottom+6)+'px');layoutVar('--cl-mission-max',Math.max(38,topBudget-hud.offsetHeight-6)+'px');
             if(mobileTargetDetail.hidden!==targetReadout.hidden)mobileTargetDetail.hidden=targetReadout.hidden;if(mobileTargetDetail.textContent!==targetDetail.textContent)mobileTargetDetail.textContent=targetDetail.textContent;
             var topBottom=wide?Math.max(hudBottom,missionHud.offsetTop+missionHud.offsetHeight):missionHud.offsetTop+missionHud.offsetHeight;
-            actionPrompt.style.bottom=(dockHeight+4)+'px';actionPrompt.style.width='calc(100% - 32px)';
-            layoutVar('--cl-feedback-top',(topBottom+6)+'px');layoutVar('--cl-feedback-height',Math.max(24,Math.min(76,nH-dockHeight-topBottom-actionPrompt.offsetHeight-14))+'px');
+            layoutVar('--cl-feedback-top',(topBottom+6)+'px');layoutVar('--cl-feedback-height',Math.max(24,Math.min(76,nH-dockHeight-topBottom-14))+'px');
           }else{
-            layoutVar('--cl-mission-top',(hud.offsetHeight+22)+'px');actionPrompt.style.bottom=(10+controlPanel.offsetHeight+12)+'px';actionPrompt.style.width='auto';
+            layoutVar('--cl-mission-top',(hud.offsetHeight+22)+'px');var promptBottom=10+controlPanel.offsetHeight+12;actionPrompt.style.bottom=promptBottom+'px';actionPrompt.style.width='auto';bioPopup.style.bottom=(promptBottom+actionPrompt.offsetHeight+8)+'px';
           }
           actionPrompt.style.boxSizing='border-box';actionPrompt.style.textAlign='center';bioPopup.style.display=touch?'none':'block';tutorial.style.display='none';
           if(mobileToolsPanel&&!mobileToolsPanel.hidden)pauseOverlay.style.display='none';
@@ -17662,7 +17684,7 @@ function createCLHuntFish(T,index){
         window.addEventListener('resize',scheduleHuntLayout);window.addEventListener('scroll',scheduleHuntLayout,{passive:true});
         if(huntViewport){huntViewport.addEventListener('resize',scheduleHuntLayout);huntViewport.addEventListener('scroll',scheduleHuntLayout);}
         onResize();
-        try{if(typeof ResizeObserver!=='undefined'){resizeObs=new ResizeObserver(scheduleHuntLayout);[stage,hud,missionHud,controlPanel,touchPanel,actions].forEach(function(el){resizeObs.observe(el);});}}catch(e){resizeObs=null;}
+        try{if(typeof ResizeObserver!=='undefined'){resizeObs=new ResizeObserver(scheduleHuntLayout);[stage,hud,missionHud,controlPanel,touchPanel,actions,actionPrompt,bioPopup].forEach(function(el){resizeObs.observe(el);});}}catch(e){resizeObs=null;}
         try{if(typeof MutationObserver!=='undefined'){hudMutationObs=new MutationObserver(scheduleHuntLayout);[hud,missionHud,mobileDetails].forEach(function(el){hudMutationObs.observe(el,{childList:true,characterData:true,subtree:true,attributes:true,attributeFilter:['hidden']});});}}catch(e){hudMutationObs=null;}
 
         // ─── Cleanup ───
@@ -17681,7 +17703,8 @@ function createCLHuntFish(T,index){
           if(missionHud && missionHud.parentElement) missionHud.remove();
           if(touchPanel && touchPanel.parentElement) touchPanel.remove();
           if(mobileToolsPanel&&mobileToolsPanel.parentElement)mobileToolsPanel.remove();
-          releaseTouchInputs();stage.classList.remove('cl-hunt-touch-enabled','cl-hunt-wide-touch','cl-hunt-small');
+          releaseTouchInputs();stage.classList.remove('cl-hunt-touch-enabled','cl-hunt-wide-touch','cl-hunt-small','cl-hunt-compact-touch');
+          if(mobileControlSlot.parentNode)mobileControlSlot.remove();if(mobilePromptSlot.parentNode)mobilePromptSlot.remove();
           ['--cl-touch-stage-height','--cl-primary-bottom','--cl-touch-actions-height','--cl-hud-max','--cl-mission-max','--cl-feedback-top','--cl-feedback-height'].forEach(function(name){stage.style.removeProperty(name);});
           if(huntLayoutFrame!==null){cancelAnimationFrame(huntLayoutFrame);huntLayoutFrame=null;}
           if(hudMutationObs)hudMutationObs.disconnect();

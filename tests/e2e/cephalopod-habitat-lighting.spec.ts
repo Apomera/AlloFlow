@@ -36,6 +36,10 @@ async function mount(page: Page, quality: 'low' | 'balanced', diagnostic = false
     w.__hlPlayer = w.__hlScene.getObjectByName('cl-player');
     w.__hlPlants = w.__hlScene.children.filter((m: any) => ['cl-seagrass', 'cl-kelp'].includes(m.name));
     w.__hlSand = w.__hlScene.getObjectByName('cl-seafloor'); w.__hlCaustics = w.__hlScene.getObjectByName('cl-caustics');
+    w.__hlRocks=w.__hlScene.children.filter((mesh:any)=>mesh.isMesh&&mesh.userData.substrate==='rock'&&mesh.geometry?.type==='SphereGeometry');
+    if(!w.__hlRocks.length)throw new Error('Expected actual solid reef rock casters');
+    w.__hlRockOwned=w.__hlRocks.map((mesh:any)=>({mesh,geometry:mesh.geometry,material:mesh.material,attributes:Object.entries(mesh.geometry.attributes).map(([name,attribute]:[string,any])=>({name,attribute,array:attribute.array,version:attribute.version})),index:mesh.geometry.index,indexArray:mesh.geometry.index?.array}));
+    w.__hlRockDepthDraws=new Map();w.__hlRockShadowWrapped=false;
     w.__hlBackdrop = w.__hlScene.children.find((m: any) => m.isMesh && m.material.uniforms?.topColor && m.material.uniforms?.bottomColor);
     w.__hlSurface = w.__hlScene.children.find((m: any) => m.isMesh && m.geometry.type === 'PlaneGeometry' && m.geometry.parameters.width === 400);
     w.__hlShafts = []; w.__hlRays = [];
@@ -69,7 +73,16 @@ async function mount(page: Page, quality: 'low' | 'balanced', diagnostic = false
     });
     w.__hlEpoch = 0; w.__hlPending = []; w.__hlSamples = {}; w.__hlSelected = {}; w.__hlNativeBuffers = new Map(); w.__hlNativeStable = true; w.__hlNativeIssues = [];
     const afterScene = w.__hlScene.onAfterRender;
-    w.__hlScene.onAfterRender = function (renderer: any, scene: any, camera: any) { afterScene.call(this, renderer, scene, camera); w.__hlRenderer = renderer; w.__hlCamera = camera; };
+    w.__hlScene.onAfterRender = function (renderer: any, scene: any, camera: any) {
+      afterScene.call(this, renderer, scene, camera);w.__hlRenderer=renderer;w.__hlCamera=camera;
+      if(w.__hlRockShadowWrapped)return;w.__hlRockShadowWrapped=true;
+      const direct=renderer.renderBufferDirect,sun=scene.children.find((light:any)=>light.isDirectionalLight);
+      renderer.renderBufferDirect=function(shadowCamera:any,renderScene:any,geometry:any,material:any,object:any,group:any){
+        const result=direct.apply(this,arguments);
+        if(shadowCamera===sun.shadow.camera&&w.__hlRocks.includes(object)){const gl=renderer.getContext(),program=gl.getParameter(gl.CURRENT_PROGRAM);w.__hlRockDepthDraws.set(object.uuid,{uuid:object.uuid,sourceMaterialUUID:object.material.uuid,sourceShadowSide:object.material.shadowSide,submittedDepthSide:material.side,cullEnabled:gl.isEnabled(gl.CULL_FACE),linked:!!program&&gl.getProgramParameter(program,gl.LINK_STATUS),castShadow:object.castShadow,epoch:w.__hlEpoch});}
+        return result;
+      };
+    };
     function watch(mesh: any, kind: string) {
       const before = mesh.onBeforeRender, after = mesh.onAfterRender;
       mesh.onBeforeRender = function (renderer: any, scene: any, camera: any, geometry: any, material: any, group: any) {
@@ -117,6 +130,7 @@ async function mount(page: Page, quality: 'low' | 'balanced', diagnostic = false
           bindings, type: material.type, key: material.customProgramCacheKey(), opacity: material.opacity, blended: gl.isEnabled(gl.BLEND), depthWrite: gl.getParameter(gl.DEPTH_WRITEMASK),
           motion: uniform('clPlantMotion'), downwelling: uniform('clSandDownwelling'), top: uniform('topColor'), bottom: uniform('bottomColor'), submittedOpacity: uniform('opacity'),
           ambient: uniform('ambientLightColor'), keyLight: uniform('directionalLights[0].color'), skyFill: uniform('hemisphereLights[0].skyColor'), groundFill: uniform('hemisphereLights[0].groundColor'),
+          shadowBias: uniform('directionalLightShadows[0].shadowBias'), shadowNormalBias: uniform('directionalLightShadows[0].shadowNormalBias'),
           linked: gl.getProgramParameter(program, gl.LINK_STATUS), shaders: gl.getAttachedShaders(program).map((shader: any) => ({ compiled: gl.getShaderParameter(shader, gl.COMPILE_STATUS), source: gl.getShaderSource(shader) })) };
       };
     }
@@ -166,6 +180,7 @@ function rendered(rows: Awaited<ReturnType<typeof native>>, quality: 'low' | 'ba
     } else if (row.kind === 'sand') {
       expect(row.type).toBe('MeshStandardMaterial'); expect(source).toContain('clSandDownwelling');
       expect(row.key).toBe('cl-sand-downwelling-v24');
+      if(quality==='balanced'){expect(row.shadowBias).toBeCloseTo(-0.0007,8);expect(row.shadowNormalBias).toBeCloseTo(0.03,7);}else{expect(row.shadowBias).toBeNull();expect(row.shadowNormalBias).toBeNull();}
       expect(row.downwelling).toBeGreaterThanOrEqual(0); expect(row.downwelling).toBeLessThanOrEqual(1);
       for (const color of [row.ambient, row.keyLight, row.skyFill, row.groundFill]) { expect(color).toHaveLength(3); expect(color.every(Number.isFinite)).toBe(true); }
       expect(row.blended).toBe(false); expect(row.depthWrite).toBe(true);
@@ -195,6 +210,8 @@ async function state(page: Page) {
       rays: [...w.__hlRays, ...w.__hlShafts].map((m: any) => ({ opacity: m.material.opacity, rotation: m.rotation.toArray() })), shafts: w.__hlShafts.length, legacyRays: w.__hlRays.length, forcedFX: w.__hlForcedFX,
       shaftSkip: !!navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4 || matchMedia('(prefers-reduced-motion: reduce)').matches || /SwiftShader|llvmpipe|Software/i.test(rendererName), rendererName,
       shadows: w.__hlRenderer.shadowMap.enabled, exposure: w.__hlRenderer.toneMappingExposure, composer: !!w.__hlRenderer._alloComposer,
+      rockCasters:w.__hlRocks.map((mesh:any)=>({uuid:mesh.uuid,materialUUID:mesh.material.uuid,shadowSide:mesh.material.shadowSide,surfaceSide:mesh.material.side,castShadow:mesh.castShadow,receiveShadow:mesh.receiveShadow})),
+      rockDepthDraws:[...w.__hlRockDepthDraws.values()],rockResourcesStable:w.__hlRockOwned.every((row:any)=>row.mesh.geometry===row.geometry&&row.mesh.material===row.material&&row.mesh.geometry.index===row.index&&row.mesh.geometry.index?.array===row.indexArray&&row.attributes.every((entry:any)=>row.geometry.attributes[entry.name]===entry.attribute&&entry.attribute.array===entry.array&&entry.attribute.version===entry.version)),
       stable: w.__hlOwned.every((r: any) => r.mesh.geometry === r.geometry && r.mesh.material === r.material && r.material.map === r.map && r.material.customProgramCacheKey() === r.key && r.geometry.index === r.index && r.index.array === r.indexArray && r.mesh.instanceMatrix === r.instances && r.instances?.array === r.instanceArray && Object.entries(r.attrs).every(([name, old]: [string, any]) => r.geometry.attributes[name] === old.attr && old.attr.array === old.array)),
       plantBuffers: w.__hlOwned.filter((r: any) => r.motion).every((r: any) => Object.values(r.attrs).every((old: any) => old.attr.version === old.version && old.values.every((v: number, i: number) => v === old.array[i])) && (!r.instanceValues || r.instanceValues.every((v: number, i: number) => v === r.instanceArray[i]))),
       finite: w.__hlOwned.every((r: any) => r.mesh.matrixWorld.elements.every(Number.isFinite) && Object.values(r.geometry.attributes).every((a: any) => Array.from(a.array).every(Number.isFinite))),
@@ -216,6 +233,9 @@ function stable(value: Awaited<ReturnType<typeof state>>, quality: 'low' | 'bala
   expect(value.disposed).toEqual(Array(value.resources).fill(0));
   expect(value.lights.map((l: any) => l.type).sort()).toEqual(['AmbientLight', 'DirectionalLight', 'HemisphereLight']);
   expect(value.shadows).toBe(quality === 'balanced'); expect(value.exposure).toBe(1.18); expect(value.composer).toBe(false);
+  expect(value.rockResourcesStable,'Rock surface and shadow caster resource identities').toBe(true);expect(value.rockCasters.length).toBeGreaterThan(0);
+  expect(value.rockCasters.every((rock:any)=>rock.shadowSide===2&&rock.surfaceSide===0&&rock.castShadow&&rock.receiveShadow),'Solid reef rocks must cast both faces while surface receivers stay FrontSide').toBe(true);
+  if(quality==='balanced'){expect(value.rockDepthDraws.length,'Actual solid reef-rock shadow depth draws').toBeGreaterThan(0);for(const draw of value.rockDepthDraws){expect(draw).toMatchObject({sourceShadowSide:2,submittedDepthSide:2,cullEnabled:false,linked:true,castShadow:true});expect(value.rockCasters.some((rock:any)=>rock.uuid===draw.uuid&&rock.materialUUID===draw.sourceMaterialUUID),'Depth draw uses an actual original rock material').toBe(true);}}else expect(value.rockDepthDraws).toEqual([]);
   expect(value.shafts).toBe(value.forcedFX ? 7 : value.shaftSkip ? 0 : 7); expect(value.legacyRays).toBe(quality === 'low' ? 0 : 4);
 }
 
