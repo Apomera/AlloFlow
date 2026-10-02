@@ -33848,7 +33848,14 @@
       "guidance_quiz_opened": "Cuestionario abierto. Tu posición y tus respuestas guardadas se conservan.",
       "guidance_scope_help": "Las estructuras vistas, los sistemas, el cuestionario y las insignias abarcan todo tu trabajo guardado. Los conteos de confianza y las recomendaciones corresponden a esta vista.",
       "activity_switch_saved_quiz": "La pregunta {number} está guardada",
-      "activity_switch_saved_help": "Tu respuesta y tu puntaje se conservan mientras usas otras actividades. Vuelve cuando quieras."
+      "activity_switch_saved_help": "Tu respuesta y tu puntaje se conservan mientras usas otras actividades. Vuelve cuando quieras.",
+      "connection_journey_from": "Comenzaste en {structure}",
+      "connection_journey_return": "Volver a {structure}",
+      "connection_journey_inspect": "Explorar la anatomía",
+      "connection_journey_help": "Ubica una estructura en el diagrama y vuelve a esta conexión. Los marcadores muestran la anatomía; no simulan este proceso.",
+      "connection_journey_marker": "Ubicar {structure} · {system}",
+      "connection_journey_current": "En el diagrama: {structure} · {system}",
+      "connection_journey_resume": "Volver a {connection}"
     },
     "dna": {
       "back_to_tools": "Volver a las herramientas",

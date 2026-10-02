@@ -564,6 +564,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       ".anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-detail-navigation{--anatomy-ui-panel:var(--practice-panel);--anatomy-ui-ink:var(--practice-ink);--anatomy-ui-muted:var(--detail-muted);--anatomy-ui-border:var(--practice-border);--anatomy-ui-soft:var(--practice-soft)}.anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-detail-navigation>span{color:var(--detail-muted)}.anatomy-tool-shell[data-reading-mode=true] [data-anatomy-structure-detail] :is(.anatomy-confidence,.anatomy-own-words,.anatomy-detail-navigation) :is(p,label,button,span,bdi,textarea){font-size:17px!important;line-height:1.7!important}",
       ".anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-myth-buster{--myth-heading:#86198f;--myth-claim:#9f1239;--myth-fact:#166534;background:var(--practice-soft)!important;color:var(--practice-ink);border-color:var(--practice-border)!important;padding:12px}.anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-myth-buster p{color:var(--practice-ink)!important;font-size:14px;line-height:1.75}.anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-myth-buster .anatomy-myth-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;color:var(--myth-heading)!important;text-transform:none;margin-block-end:8px}.anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-myth-heading button{min-width:44px;min-height:44px;flex-shrink:0}.anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-myth-claim{color:var(--myth-claim)!important}.anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-myth-fact{color:var(--myth-fact)!important}.theme-dark .anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-myth-buster{--myth-heading:#f0abfc;--myth-claim:#fda4af;--myth-fact:#86efac}.theme-contrast .anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-myth-buster{--myth-heading:#000;--myth-claim:#000;--myth-fact:#000}.anatomy-tool-shell[data-reading-mode=true] [data-anatomy-structure-detail] .anatomy-myth-buster :is(p,span){font-size:17px!important;line-height:1.7!important}",
       ".anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-relation-map{background:var(--practice-soft);color:var(--practice-ink);border-color:var(--practice-border);padding:12px}.anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-relation-header strong{font-size:15px;line-height:1.6;color:var(--practice-ink)}.anatomy-tool-shell [data-anatomy-structure-detail] :is(.anatomy-relation-header p,.anatomy-relation-caption){font-size:14px;line-height:1.7;color:var(--detail-muted)}.anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-relation-node{background:var(--practice-panel);border-color:var(--practice-border);color:var(--practice-ink);text-align:start;padding:10px}.anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-relation-node[data-kind=structure]{border-inline-start:3px solid var(--practice-nav)}.anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-relation-node span{color:var(--detail-muted)!important;font-size:12px;line-height:1.6;letter-spacing:0;text-transform:none}.anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-relation-node strong{color:var(--practice-ink);font-size:14px;line-height:1.6}.anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-relation-arrow{color:var(--practice-nav);font-size:17px}.anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-relation-branches{border-color:var(--practice-border)}.anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-relation-map button{min-height:44px;background:var(--practice-panel);color:var(--practice-nav);border-color:var(--practice-border);font-size:14px;line-height:1.6;white-space:normal;overflow-wrap:anywhere}.anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-relation-map button:hover{background:var(--practice-nav-soft);border-color:var(--practice-nav)}.anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-relation-map button:focus-visible{outline:3px solid var(--practice-nav);outline-offset:3px}.anatomy-tool-shell[data-reading-mode=true] [data-anatomy-structure-detail] .anatomy-relation-map :is(p,span,strong,button){font-size:17px!important;line-height:1.7!important}@media(max-width:600px){.anatomy-tool-shell[data-reading-mode=true] .anatomy-structure-detail-actions button{grid-column:span 3;overflow-wrap:normal}.anatomy-tool-shell[data-reading-mode=true] .anatomy-structure-detail-actions .anatomy-detail-back-list{grid-column:1/-1}}",
+      ".anatomy-tool-shell .anatomy-relation-arrow{pointer-events:none}.anatomy-tool-shell .anatomy-connection-origin{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-block:12px;padding:14px;border:1px solid var(--practice-border);border-inline-start:4px solid var(--practice-nav);border-radius:12px;background:var(--practice-soft);color:var(--practice-ink);min-width:0;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-connection-model-context .anatomy-connection-origin strong,.anatomy-tool-shell [data-anatomy-connections-panel] .anatomy-connection-origin strong{color:var(--practice-ink)}.anatomy-tool-shell .anatomy-connection-origin>div{flex:1 1 180px;min-width:0}.anatomy-tool-shell .anatomy-connection-origin p{margin:0;font-size:14px;line-height:1.7;color:var(--practice-ink)!important}.anatomy-tool-shell .anatomy-connection-origin-topic{margin-block-start:4px!important}.anatomy-tool-shell .anatomy-connection-origin button{min-height:44px;padding:10px 14px;border:1px solid var(--practice-nav);border-radius:8px;background:var(--practice-nav)!important;color:var(--practice-panel)!important;font-size:14px;font-weight:800;line-height:1.6;white-space:normal;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-connection-model-context .anatomy-route-return{width:100%;font-size:14px;line-height:1.6;background:var(--practice-panel);color:var(--practice-nav);border-color:var(--practice-border)}.anatomy-tool-shell .anatomy-connection-anatomy{margin-block:16px;padding:14px;border:1px solid var(--practice-border);border-radius:12px;background:var(--practice-soft);color:var(--practice-ink);min-width:0;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-connection-anatomy h6{font-size:17px;font-weight:800;line-height:1.5;margin:0;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-connection-anatomy p{font-size:14px;line-height:1.7;color:var(--practice-ink)!important}.anatomy-tool-shell .anatomy-connection-marker-group{margin-block-start:14px;min-width:0}.anatomy-tool-shell .anatomy-connection-marker-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:8px}.anatomy-tool-shell .anatomy-connection-marker-list button{display:flex;align-items:center;gap:8px;min-width:0;min-height:44px;padding:10px 12px;text-align:start;border:1px solid var(--practice-border);border-radius:8px;background:var(--practice-panel)!important;color:var(--practice-ink)!important;font-size:14px;line-height:1.6;white-space:normal;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-connection-marker-list button[aria-pressed=true]{background:var(--practice-nav-soft)!important;color:var(--practice-nav)!important;border-color:var(--practice-nav)!important;box-shadow:inset 0 0 0 1px var(--practice-nav)}.anatomy-tool-shell .anatomy-connection-current{padding-block-start:10px;border-block-start:1px solid var(--practice-border);font-weight:700}.anatomy-tool-shell :is(.anatomy-connection-origin,.anatomy-connection-anatomy) button:focus-visible{outline:3px solid var(--practice-nav);outline-offset:3px}.anatomy-tool-shell[data-reading-mode=true] :is(.anatomy-connection-origin,.anatomy-connection-anatomy,.anatomy-connection-model-context) :is(p,strong,span,h6,button){font-size:17px!important;line-height:1.7!important}@media(max-width:600px){.anatomy-tool-shell .anatomy-connection-origin button{width:100%}.anatomy-tool-shell .anatomy-connection-origin{padding:12px}.anatomy-tool-shell .anatomy-connection-anatomy{padding:12px}}@media(forced-colors:active){.anatomy-tool-shell :is(.anatomy-connection-origin,.anatomy-connection-anatomy){border-color:CanvasText}.anatomy-tool-shell .anatomy-connection-origin button,.anatomy-tool-shell .anatomy-connection-marker-list button[aria-pressed=true]{background:ButtonFace!important;color:ButtonText!important;border-color:Highlight!important;box-shadow:none}.anatomy-tool-shell .anatomy-connection-marker-list button[aria-pressed=true]{outline:2px solid Highlight;outline-offset:2px}}",
     ].join('');
     document.head.appendChild(st);
   })();
@@ -6387,8 +6388,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           setLabToolData(function(previous){var state=previous.anatomy||{};if(state._activeTab!=='connections'||state._expandedConn!==connection.id)return previous;var answers=validConnectionConcepts(state._connectionConcepts);if(answers[connection.id])return previous;answers[connection.id]=optionId;return Object.assign({},previous,{anatomy:Object.assign({},state,{_connectionConcepts:{version:1,answers:answers}})});});
           var correct=optionId===connection.correct;playSound(correct?'quizCorrect':'quizWrong');if(typeof announceToSR==='function')announceToSR((correct?t("stem.anatomy.link_ref_correct","Correct. "):t("stem.anatomy.link_ref_incorrect","Review this idea. "))+connection.explanation);
         }
-        function focusConnection(){setTimeout(function(){var panel=document.querySelector('[data-anatomy-connection-open="true"]');if(panel){panel.focus({preventScroll:true});panel.scrollIntoView({block:'start',behavior:'auto'});}},0);}
-        function showConnectionDiagram(systemId,title){showAnatomySystem(systemId,title);setTimeout(function(){var panel=document.querySelector('[data-anatomy-model-shell]');if(panel){panel.focus({preventScroll:true});panel.scrollIntoView({block:'start',behavior:'auto'});}},0);}
+        function focusConnection(){queueConnectionFocus(expandedConnectionId,connectionNavigationSnapshot,'connection');}
+        function showConnectionDiagram(systemId,connection){navigateConnectionDiagram(connection,systemId,null);}
         var expandedConnectionId = typeof d._expandedConn === 'string' && connectionIds.indexOf(d._expandedConn) !== -1 ? d._expandedConn : null;
         var CONNECTION_STRUCTURES={
           conn_1:['alveoli','lungs','pulm_art'],
@@ -6403,14 +6404,113 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           conn_10:['bone_marrow','pelvis','sternum','ribs','vertebral','femur','humerus']
         };
         var selectedSystemConnections=sel?CONNECTIONS.filter(function(connection){return (CONNECTION_STRUCTURES[connection.id]||[]).indexOf(sel.id)!==-1;}):[];
-        function openRelationshipConnection(connection) {
-          if (!connection || connectionIds.indexOf(connection.id) === -1) return;
-          var nextConnectionsViewed = Object.assign({}, connectionsViewed);
-          nextConnectionsViewed[connection.id] = true;
-          updMulti({ _activeTab: 'connections', _expandedConn: connection.id, _connectionsViewed: nextConnectionsViewed });
-          focusConnection();
-          playSound('connectionView');
-          if (typeof announceToSR === 'function') announceToSR(__alloFill(__alloT('stem.anatomy.sr_opening_connection_details', 'Opening {value1} connection details.'), { value1: connection.title }));
+        // Connection detours own only diagram/navigation fields. Practice and writing stay live.
+        function validConnectionOrigin(raw) {
+          if (!raw || typeof raw!=='object' || Array.isArray(raw) || raw.version!==1 || typeof raw.token!=='string' || !raw.token.length || raw.token.length>128) return null;
+          var connection=CONNECTIONS.find(function(item){return item.id===raw.connectionId;}), system=typeof raw.systemId==='string'&&Object.prototype.hasOwnProperty.call(SYSTEMS,raw.systemId)?SYSTEMS[raw.systemId]:null;
+          if (!connection || !system || (CONNECTION_STRUCTURES[connection.id]||[]).indexOf(raw.structureId)===-1) return null;
+          var structure=system.structures.find(function(item){return item.id===raw.structureId;});
+          if (!structure || ['anterior','posterior'].indexOf(raw.view)===-1 || [1,2,3].indexOf(raw.complexity)===-1 || !passesAnatomyLevel(structure,raw.complexity)) return null;
+          if (structure.v!=='b' && structure.v!==(raw.view==='anterior'?'a':'p')) return null;
+          if (typeof raw.search!=='string' || raw.search.length>200 || ['all','unseen','review','mastered','notes'].indexOf(raw.studyFilter)===-1) return null;
+          if (raw.entry!=='process' && raw.entry!=='partner' || raw.bodyView3d!==undefined && typeof raw.bodyView3d!=='boolean') return null;
+          if (raw.entry==='partner' ? connection.systems.indexOf(raw.partnerSystemId)===-1 || raw.partnerSystemId===raw.systemId : raw.partnerSystemId!==null) return null;
+          return {version:1,token:raw.token,connectionId:connection.id,structureId:structure.id,systemId:raw.systemId,view:raw.view,complexity:raw.complexity,search:raw.search,studyFilter:raw.studyFilter,entry:raw.entry,partnerSystemId:raw.partnerSystemId,bodyView3d:raw.bodyView3d===true};
+        }
+        function connectionNavigationSignature(state) {
+          return JSON.stringify([state._activeTab,state.system,state.view,state.complexity,state.selectedStructure,state.search,state._studyFilter,state._expandedConn,state._bodyView3d,state._body3dStyle,state._anatomyModelFocus,state._showClinical,state._connectionNavigationToken,validConnectionOrigin(state._connectionStudyOrigin)]);
+        }
+        var connectionNavigationSnapshot=connectionNavigationSignature(d);
+        var connectionStudyOrigin=validConnectionOrigin(d._connectionStudyOrigin);
+        if (activeTab!=='connections' || !connectionStudyOrigin || connectionStudyOrigin.connectionId!==expandedConnectionId) connectionStudyOrigin=null;
+        function connectionNavigationSurface(signature) {
+          var panel=document.querySelector('[data-anatomy-connections-panel]'), detail=document.querySelector('[data-anatomy-structure-detail]');
+          return panel && panel.getAttribute('data-anatomy-connection-navigation')===signature ? panel : detail && detail.getAttribute('data-anatomy-connection-navigation')===signature ? detail : null;
+        }
+        function queueConnectionFocus(connectionId,signature,place,origin,sourceElement) {
+          var focusOrigin=sourceElement||document.activeElement;
+          setTimeout(function(){
+            var surface=connectionNavigationSurface(signature); if(!surface)return;
+            var target=place==='model'?document.querySelector('[data-anatomy-model-shell]'):place==='origin'&&origin?
+              surface.querySelector(origin.entry==='partner'?'[data-anatomy-relationship-partner="'+origin.partnerSystemId+'"][data-anatomy-relationship-connection="'+origin.connectionId+'"]':'[data-anatomy-relationship-process="'+origin.connectionId+'"]'):
+              surface.querySelector('[data-anatomy-connection="'+connectionId+'"][data-anatomy-connection-open="true"]');
+            if(!target && place==='origin')target=surface.querySelector('[data-anatomy-structure-detail-heading]');
+            var focusUnchanged=document.activeElement===focusOrigin || document.activeElement===document.body&&focusOrigin&&!focusOrigin.isConnected;
+            if(target&&target.isConnected&&focusUnchanged){target.focus({preventScroll:true});target.scrollIntoView({block:'start',behavior:'auto'});}
+          },0);
+        }
+        function updateConnectionNavigation(makePatch,onAccepted) {
+          var accepted=null, focusOrigin=document.activeElement;
+          setLabToolData(function(previous){
+            var state=previous.anatomy||{}; if(connectionNavigationSignature(state)!==connectionNavigationSnapshot)return previous;
+            var patch=makePatch(state); if(!patch)return previous;
+            patch._connectionNavigationToken=Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);
+            var next=Object.assign({},state,patch); accepted={signature:connectionNavigationSignature(next),focusOrigin:focusOrigin};
+            return Object.assign({},previous,{anatomy:next});
+          });
+          setTimeout(function(){if(accepted&&connectionNavigationSurface(accepted.signature)&&onAccepted)onAccepted(accepted);},0);
+        }
+        function connectionOriginPatch(connection,state,entry,partnerSystemId) {
+          if(activeTab!=='explore') {var saved=validConnectionOrigin(state._connectionStudyOrigin);return saved&&saved.connectionId===connection.id?saved:null;}
+          if(!sel || (CONNECTION_STRUCTURES[connection.id]||[]).indexOf(sel.id)===-1)return null;
+          return validConnectionOrigin({version:1,token:Date.now().toString(36)+'-'+Math.random().toString(36).slice(2),connectionId:connection.id,structureId:sel.id,systemId:sysKey,view:view,complexity:complexity,search:searchValue,
+            studyFilter:['all','unseen','review','mastered','notes'].indexOf(state._studyFilter)!==-1?state._studyFilter:'all',entry:entry==='partner'?'partner':'process',partnerSystemId:entry==='partner'?partnerSystemId:null,bodyView3d:bodyView3d});
+        }
+        function connectionDiagramPatch(systemId,structure) {
+          var patch={system:systemId,selectedStructure:structure?structure.id:null,search:'',_anatomySearchIndex:0,_studyFilter:'all',_anatomyModelFocus:false,_bodyView3d:false};
+          if(structure){patch.view=structure.v==='p'?'posterior':structure.v==='a'?'anterior':view;patch.complexity=Math.max(complexity,anatomyStructureComplexity(structure));}
+          return patch;
+        }
+        function openRelationshipConnection(connection,entry,partnerSystemId) {
+          if(!connection || connectionIds.indexOf(connection.id)===-1 || ['explore','connections'].indexOf(activeTab)===-1)return;
+          if(entry==='partner' && (connection.systems.indexOf(partnerSystemId)===-1 || partnerSystemId===sysKey))return;
+          updateConnectionNavigation(function(state){
+            var viewed=safeFlagMap(state._connectionsViewed,connectionIds);viewed[connection.id]=true;
+            var origin=connectionOriginPatch(connection,state,entry,partnerSystemId);if(activeTab==='explore'&&!origin)return null;
+            var patch={_activeTab:'connections',_expandedConn:connection.id,_connectionsViewed:viewed,_connectionStudyOrigin:origin,_anatomyModelFocus:false};
+            if(entry==='partner')Object.assign(patch,connectionDiagramPatch(partnerSystemId,null));return patch;
+          },function(accepted){
+            playSound('connectionView');if(typeof announceToSR==='function')announceToSR(__alloFill(__alloT('stem.anatomy.sr_opening_connection_details','Opening {value1} connection details.'),{value1:connection.title}));
+            queueConnectionFocus(connection.id,accepted.signature,entry==='partner'?'model':'connection',null,accepted.focusOrigin);
+          });
+        }
+        function toggleRelationshipConnection(connection) {
+          if(activeTab!=='connections')return;
+          if(expandedConnectionId!==connection.id){openRelationshipConnection(connection);return;}
+          updateConnectionNavigation(function(state){var viewed=safeFlagMap(state._connectionsViewed,connectionIds);viewed[connection.id]=true;return {_expandedConn:null,_connectionsViewed:viewed};},function(){playSound('connectionView');});
+        }
+        function navigateConnectionDiagram(connection,systemId,structureId) {
+          if(activeTab!=='connections' || !connection || expandedConnectionId!==connection.id || connection.systems.indexOf(systemId)===-1)return;
+          var structure=structureId?SYSTEMS[systemId].structures.find(function(item){return item.id===structureId && (CONNECTION_STRUCTURES[connection.id]||[]).indexOf(item.id)!==-1;}):null;
+          if(structureId&&!structure)return;
+          updateConnectionNavigation(function(){return connectionDiagramPatch(systemId,structure);},function(accepted){
+            playSound('systemSelect');if(typeof announceToSR==='function')announceToSR(structure?t('stem.anatomy.connection_journey_current','On diagram: {structure} · {system}').replace('{structure}',structure.name).replace('{system}',SYSTEMS[systemId].name):__alloFill(__alloT('stem.anatomy.sr_showing_diagram_for','Showing {value1} diagram for {value2}.'),{value1:SYSTEMS[systemId].name,value2:connection.title}));
+            queueConnectionFocus(connection.id,accepted.signature,'model',null,accepted.focusOrigin);
+          });
+        }
+        function returnConnectionOrigin() {
+          if(!connectionStudyOrigin)return;
+          updateConnectionNavigation(function(state){var origin=validConnectionOrigin(state._connectionStudyOrigin);if(!origin||origin.token!==connectionStudyOrigin.token||state._activeTab!=='connections'||state._expandedConn!==origin.connectionId)return null;
+            return {_activeTab:'explore',system:origin.systemId,view:origin.view,complexity:origin.complexity,selectedStructure:origin.structureId,search:origin.search,_studyFilter:origin.studyFilter,_bodyView3d:origin.bodyView3d,_anatomyModelFocus:false,_connectionStudyOrigin:null};
+          },function(accepted){if(typeof announceToSR==='function')announceToSR(t('stem.anatomy.connection_journey_return','Back to {structure}').replace('{structure}',SYSTEMS[connectionStudyOrigin.systemId].structures.find(function(item){return item.id===connectionStudyOrigin.structureId;}).name));queueConnectionFocus(connectionStudyOrigin.connectionId,accepted.signature,'origin',connectionStudyOrigin,accepted.focusOrigin);});
+        }
+        function renderConnectionOrigin(place) {
+          if(!connectionStudyOrigin)return null;
+          var structure=SYSTEMS[connectionStudyOrigin.systemId].structures.find(function(item){return item.id===connectionStudyOrigin.structureId;}), connection=CONNECTIONS.find(function(item){return item.id===connectionStudyOrigin.connectionId;});
+          return h('div',{className:'anatomy-connection-origin','data-anatomy-connection-origin':structure.id,'data-anatomy-connection-origin-place':place},
+            h('div',null,h('p',null,h('strong',null,t('stem.anatomy.connection_journey_from','Started at {structure}').replace('{structure}',structure.name))),h('p',{className:'anatomy-connection-origin-topic',dir:'auto'},connection.title)),
+            h('button',{type:'button','data-anatomy-connection-origin-return':structure.id,onClick:returnConnectionOrigin},t('stem.anatomy.connection_journey_return','Back to {structure}').replace('{structure}',structure.name)));
+        }
+        function renderConnectionAnatomy(connection) {
+          var groups=connection.systems.map(function(systemId){return {systemId:systemId,structures:SYSTEMS[systemId].structures.filter(function(item){return (CONNECTION_STRUCTURES[connection.id]||[]).indexOf(item.id)!==-1;})};}).filter(function(group){return group.structures.length;});
+          if(!groups.length)return null;var id='anatomy-connection-markers-'+connection.id;
+          return h('section',{className:'anatomy-connection-anatomy','data-anatomy-connection-anatomy':connection.id,'aria-labelledby':id},
+            h('h6',{id:id},t('stem.anatomy.connection_journey_inspect','Inspect the anatomy')),
+            h('p',{id:id+'-help'},t('stem.anatomy.connection_journey_help','Locate a structure on the diagram, then return to this connection. The markers show anatomy; they do not simulate this process.')),
+            groups.map(function(group){return h('div',{key:group.systemId,className:'anatomy-connection-marker-group',role:'group','aria-label':SYSTEMS[group.systemId].name},h('p',null,h('strong',null,SYSTEMS[group.systemId].name)),
+              h('div',{className:'anatomy-connection-marker-list'},group.structures.map(function(structure){return h('button',{key:structure.id,type:'button','data-anatomy-connection-marker':structure.id,'data-anatomy-connection-marker-system':group.systemId,'aria-describedby':id+'-help','aria-pressed':sysKey===group.systemId&&!!sel&&sel.id===structure.id,'aria-label':t('stem.anatomy.connection_journey_marker','Locate {structure} · {system}').replace('{structure}',structure.name).replace('{system}',SYSTEMS[group.systemId].name),onClick:function(){navigateConnectionDiagram(connection,group.systemId,structure.id);}},h('span',{'aria-hidden':true},'◎'),h('span',{dir:'auto'},structure.name));})));
+            }),
+            groups.some(function(group){return group.systemId===sysKey&&sel&&group.structures.some(function(structure){return structure.id===sel.id;});})?h('p',{className:'anatomy-connection-current',role:'status','data-anatomy-connection-current':selectedStructureId},t('stem.anatomy.connection_journey_current','On diagram: {structure} · {system}').replace('{structure}',sys.structures.find(function(item){return item.id===selectedStructureId;}).name).replace('{system}',sys.name)):null);
         }
 
         // ── Clinical cases state ──
@@ -13350,15 +13450,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 var partnerSystemIds=connection.systems.filter(function(id){return id!==sysKey&&SYSTEMS[id];});
                 return h('div', { key: connection.id, className: 'anatomy-relation-branch', role: 'listitem', 'data-relationship-connection': connection.id },
                   h('button', {
-                    type: 'button', className: 'anatomy-relation-node', 'data-kind': 'process',
+                    type: 'button', className: 'anatomy-relation-node', 'data-kind': 'process', 'data-anatomy-relationship-process':connection.id,
                     'aria-label': __alloFill(__alloT('stem.anatomy.a11y_open_connection_details', 'Open {value1} connection details'), { value1: connection.title }),
                     onClick: function() { openRelationshipConnection(connection); }
                   }, h('span', null, t("stem.anatomy.ref2_direct_process","Related process")), h('strong', null, connection.icon + ' ' + connection.title)),
                   h('span', { className: 'anatomy-relation-arrow', 'aria-hidden': 'true' }, '\u2192'),
                   partnerSystemIds.map(function(partnerSystemId){var partnerSystem=SYSTEMS[partnerSystemId];return h('button', {
-                    key:partnerSystemId,type: 'button', className: 'anatomy-relation-node', 'data-kind': 'partner',
+                    key:partnerSystemId,type: 'button', className: 'anatomy-relation-node', 'data-kind': 'partner', 'data-anatomy-relationship-partner':partnerSystemId, 'data-anatomy-relationship-connection':connection.id,
                     'aria-label': __alloFill(__alloT('stem.anatomy.a11y_open_system_diagram_from', 'Open {value1} system diagram from {value2}'), { value1: partnerSystem.name, value2: connection.title }),
-                    onClick: function() { showAnatomySystem(partnerSystemId, connection.title); }
+                    onClick: function() { openRelationshipConnection(connection,'partner',partnerSystemId); }
                   }, h('span', { style: { color: '#475569' } }, t("stem.anatomy.ref2_participating_system","Participating system")), h('strong', null, partnerSystem.icon + ' ' + partnerSystem.name));})
                 );
               })
@@ -15558,7 +15658,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             !focusedAnatomyWorkspace && h('div', { className: 'anatomy-body-shell', 'data-anatomy-model-shell': 'true', tabIndex: -1, role: 'group', 'aria-label': t('stem.anatomy.explorer_atlas_region', 'Interactive anatomy atlas'), style: { borderColor: sys.accent + '24' } },
               h('div', { className: 'anatomy-body-header' },
                 showClinical && clinicalCaseIds.indexOf(d._caseDiagramReturn)!==-1 && CLINICAL_CASES.some(function(cs){return cs.id===d._caseDiagramReturn&&cs.system===sysKey;}) && h('button',{type:'button',className:'anatomy-route-return','data-anatomy-case-return':d._caseDiagramReturn,onClick:function(){focusClinicalCase(d._caseDiagramReturn);}},t("stem.anatomy.case_ref_return","Return to case")),
-                activeTab === 'connections' && expandedConnectionId ? h('button',{type:'button',className:'anatomy-route-return','data-anatomy-connection-return':true,onClick:focusConnection},t("stem.anatomy.link_ref_return","Return to connection")) : activeTab==='tour'&&currentTourStep&&h('button',{type:'button',className:'anatomy-route-return','data-anatomy-tour-return':true,onClick:focusTourStep},t('stem.anatomy.tour_ref_return', "Return to tour step")),
+                activeTab === 'connections' && expandedConnectionId ? h('div',{className:'anatomy-connection-model-context'},renderConnectionOrigin('model'),h('button',{type:'button',className:'anatomy-route-return','data-anatomy-connection-return':true,onClick:focusConnection},t('stem.anatomy.connection_journey_resume','Return to {connection}').replace('{connection}',CONNECTIONS.find(function(item){return item.id===expandedConnectionId;}).title))) : activeTab==='tour'&&currentTourStep&&h('button',{type:'button',className:'anatomy-route-return','data-anatomy-tour-return':true,onClick:focusTourStep},t('stem.anatomy.tour_ref_return', "Return to tour step")),
                 activeTab === 'pathways' && activePathway && h('button', {type:'button',className:'anatomy-route-return','data-anatomy-pathway-return':true,onClick:focusCurrentPathway},t('stem.anatomy.route_return_step','Return to pathway step')),
                 h('div', { className: 'anatomy-body-title-row' },
                   h('div', { className: 'anatomy-body-title' },
@@ -16211,7 +16311,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     // Keep the selected structure's system accent within the themed reading surface.
                     h('div', {
                       className: 'anatomy-structure-detail rounded-xl border-2 p-4 space-y-3',
-                      role: 'region', 'aria-labelledby': 'anatomy-structure-detail-title', 'data-anatomy-structure-detail': sel.id, 'data-anatomy-browser-context':browserContext,
+                      role: 'region', 'aria-labelledby': 'anatomy-structure-detail-title', 'data-anatomy-structure-detail': sel.id, 'data-anatomy-connection-navigation':connectionNavigationSnapshot, 'data-anatomy-browser-context':browserContext,
                       style: {
                         borderColor: sys.accent + '50',
                         '--anatomy-detail-accent': sys.accent
@@ -16708,21 +16808,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 )
               ) : activeTab === 'connections' ? (
                 // Connections Panel
-                h('section',{className:'anatomy-connections-panel','data-anatomy-connections-panel':true,'aria-labelledby':'anatomy-connections-title'},
+                h('section',{className:'anatomy-connections-panel','data-anatomy-connections-panel':true,'data-anatomy-connection-navigation':connectionNavigationSnapshot,'aria-labelledby':'anatomy-connections-title'},
                   h('h4',{id:'anatomy-connections-title'},t("stem.anatomy.link_ref_title","How body systems work together")),
+                  renderConnectionOrigin('connection'),
                   h('p',null,t("stem.anatomy.link_ref_intro","Read a connection, predict what happens, then check the explanation. You can use the text while answering.")),
                   h('p',{className:'anatomy-connection-progress',role:'status'},t("stem.anatomy.link_ref_progress","{explored} explored · {answered} answered · {correct} correct of {total}").replace('{explored}',String(Object.keys(connectionsViewed).length)).replace('{answered}',String(connectionChecksAnswered)).replace('{correct}',String(connectionChecksCorrect)).replace('{total}',String(CONNECTIONS.length))),
                   h('label',{className:'anatomy-route-jump',htmlFor:'anatomy-connection-select'},t("stem.anatomy.link_ref_choose","Choose a connection"),h('select',{id:'anatomy-connection-select',value:expandedConnectionId||'',onChange:function(event){var conn=CONNECTIONS.find(function(c){return c.id===event.target.value;});if(conn)openRelationshipConnection(conn);}},h('option',{value:''},t("stem.anatomy.link_ref_choose_prompt","Select a topic")),CONNECTIONS.map(function(c){return h('option',{key:c.id,value:c.id},c.title);}))),
                   CONNECTIONS.map(function(conn){var isExpanded=expandedConnectionId===conn.id,chosen=connectionChecks[conn.id],detailsId='anatomy-connection-'+conn.id;return h('article',{key:conn.id,className:'anatomy-connection-card','data-anatomy-connection':conn.id,'data-anatomy-connection-open':isExpanded?'true':'false',tabIndex:-1},
-                    h('h5',null,h('button',{type:'button','data-anatomy-connection-toggle':conn.id,'aria-label':(isExpanded?t("stem.anatomy.link_ref_collapse","Collapse {title}"):t("stem.anatomy.link_ref_expand","Expand {title}")).replace('{title}',conn.title),'aria-expanded':isExpanded,'aria-controls':detailsId,onClick:function(){var connectionPatch = { _expandedConn: isExpanded?null:conn.id,_connectionsViewed:Object.assign({},connectionsViewed)};connectionPatch._connectionsViewed[conn.id]=true;updMulti(connectionPatch);playSound('connectionView');}},h('span',{'aria-hidden':true},conn.icon+' '),conn.title,h('span',{'aria-hidden':true,className:'anatomy-learning-chevron','data-open':isExpanded?'true':'false'}))),
+                    h('h5',null,h('button',{type:'button','data-anatomy-connection-toggle':conn.id,'aria-label':(isExpanded?t("stem.anatomy.link_ref_collapse","Collapse {title}"):t("stem.anatomy.link_ref_expand","Expand {title}")).replace('{title}',conn.title),'aria-expanded':isExpanded,'aria-controls':detailsId,onClick:function(){toggleRelationshipConnection(conn);}},h('span',{'aria-hidden':true},conn.icon+' '),conn.title,h('span',{'aria-hidden':true,className:'anatomy-learning-chevron','data-open':isExpanded?'true':'false'}))),
                     h('p',{className:'anatomy-connection-systems'},conn.systems.map(function(id){return SYSTEMS[id].name;}).join(' + ')),
                     isExpanded?h('div',{id:detailsId,role:'region','aria-label':t("stem.anatomy.link_ref_details","{title} details").replace('{title}',conn.title)},h('p',null,conn.desc),h('p',{className:'anatomy-connection-example'},h('strong',null,t("stem.anatomy.link_ref_example","Example: ")),conn.example),
                       ttsBtn(conn.desc+' '+conn.example,t("stem.anatomy.link_ref_read","Read this connection aloud")),
                       h('fieldset',{'data-anatomy-connection-check':conn.id,'data-answered':chosen?'true':'false'},h('legend',null,conn.question),
                         connectionCheckOptions(conn).map(function(option){var correct=chosen&&option.id===conn.correct,wrong=chosen===option.id&&!correct;return h('button',{key:option.id,type:'button','data-anatomy-connection-option':option.id,'data-answer-state':correct?'correct':wrong?'incorrect':'open',disabled:!!chosen,'aria-pressed':chosen===option.id,onClick:function(){answerConnectionCheck(conn,option.id);}},(correct?'✓ ':wrong?'✕ ':'')+option.label);}),
                         chosen?h('div',{'data-anatomy-connection-feedback':chosen===conn.correct?'correct':'incorrect',role:'status'},h('strong',null,chosen===conn.correct?t("stem.anatomy.link_ref_correct","Correct. "):t("stem.anatomy.link_ref_incorrect","Review this idea. ")),h('p',null,conn.explanation),h('p',null,t("stem.anatomy.link_ref_answer","Best answer: ")+conn.choices.find(function(o){return o.id===conn.correct;}).label)):null),
+                      renderConnectionAnatomy(conn),
                       h('a',{className:'anatomy-route-reference',href:conn.reference,target:'_blank',rel:'noopener noreferrer'},t("stem.anatomy.link_ref_source","Read the source")),
-                      h('div',{className:'anatomy-connection-diagrams',role:'group','aria-label':t("stem.anatomy.link_ref_diagrams","Connected system diagrams")},conn.systems.map(function(id){return h('button',{key:id,type:'button','data-anatomy-connection-diagram':id,'aria-label':t("stem.anatomy.link_ref_diagram_label","Show {system} diagram for {connection}").replace('{system}',SYSTEMS[id].name).replace('{connection}',conn.title),'aria-pressed':sysKey===id,onClick:function(){showConnectionDiagram(id,conn.title);}},t("stem.anatomy.link_ref_view","Show {system} diagram").replace('{system}',SYSTEMS[id].name));}))
+                      h('div',{className:'anatomy-connection-diagrams',role:'group','aria-label':t("stem.anatomy.link_ref_diagrams","Connected system diagrams")},conn.systems.map(function(id){return h('button',{key:id,type:'button','data-anatomy-connection-diagram':id,'aria-label':t("stem.anatomy.link_ref_diagram_label","Show {system} diagram for {connection}").replace('{system}',SYSTEMS[id].name).replace('{connection}',conn.title),'aria-pressed':sysKey===id,onClick:function(){showConnectionDiagram(id,conn);}},t("stem.anatomy.link_ref_view","Show {system} diagram").replace('{system}',SYSTEMS[id].name));}))
                     ):null
                   );})
                 )

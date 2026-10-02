@@ -1,0 +1,15 @@
+{
+  "sourceFiles": [
+    "stem_lab/stem_tool_anatomy.js",
+    "desktop/web-app/public/stem_lab/stem_tool_anatomy.js"
+  ],
+  "sourceLfSha256": "b3b67756b50a104b9bca9ac7ca689decc2fbd0ba7dc876614af61c529e784df5",
+  "byteIdentical": true,
+  "capturedBeforeRun": true,
+  "capturedAfterRun": true,
+  "sourceUnchanged": true,
+  "tests": 254,
+  "passed": 254,
+  "failed": 0,
+  "success": true
+}

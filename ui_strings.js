@@ -18129,7 +18129,14 @@
       "explain_homeostasis_model_limit": "Explain why a reference-range flag alone cannot diagnose a person.",
       "homeostasis_model_limit": "Teaching model only, not a clinical score or diagnosis. Real interpretation depends on age, context, symptoms, measurement method, trends, and rate of change.",
       "explanation_input": "Homeostasis explanation",
-      "hypothesis_input": "Homeostasis hypothesis"
+      "hypothesis_input": "Homeostasis hypothesis",
+      "connection_journey_from": "Started at {structure}",
+      "connection_journey_return": "Back to {structure}",
+      "connection_journey_inspect": "Inspect the anatomy",
+      "connection_journey_help": "Locate a structure on the diagram, then return to this connection. The markers show anatomy; they do not simulate this process.",
+      "connection_journey_marker": "Locate {structure} · {system}",
+      "connection_journey_current": "On diagram: {structure} · {system}",
+      "connection_journey_resume": "Return to {connection}"
     },
     "angles": {
       "tab_measure_angles": "Measure angles",

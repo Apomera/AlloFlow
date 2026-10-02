@@ -34661,7 +34661,14 @@
       "guidance_quiz_opened": "Quiz ouvert. Ta progression et tes réponses enregistrées sont conservées.",
       "guidance_scope_help": "Les structures vues, les systèmes, le quiz et les badges couvrent tout ton travail enregistré. Les nombres d’évaluations de confiance et les conseils s’appliquent à cette vue.",
       "activity_switch_saved_quiz": "Question {number} enregistrée",
-      "activity_switch_saved_help": "Ta réponse et ton score sont conservés pendant que tu utilises d’autres activités. Reviens quand tu veux."
+      "activity_switch_saved_help": "Ta réponse et ton score sont conservés pendant que tu utilises d’autres activités. Reviens quand tu veux.",
+      "connection_journey_from": "Point de départ : {structure}",
+      "connection_journey_return": "Revenir à {structure}",
+      "connection_journey_inspect": "Explorer l’anatomie",
+      "connection_journey_help": "Repère une structure sur le schéma, puis reviens à cette connexion. Les repères indiquent l’anatomie ; ils ne simulent pas ce processus.",
+      "connection_journey_marker": "Repérer {structure} · {system}",
+      "connection_journey_current": "Sur le schéma : {structure} · {system}",
+      "connection_journey_resume": "Revenir à {connection}"
     },
     "dna": {
       "back_to_tools": "Retour aux outils",

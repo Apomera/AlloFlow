@@ -1,0 +1,49 @@
+{
+  "namespace": "stem.anatomy",
+  "date": "2026-10-02",
+  "english": {
+    "connection_journey_from": "Started at {structure}",
+    "connection_journey_return": "Back to {structure}",
+    "connection_journey_inspect": "Inspect the anatomy",
+    "connection_journey_help": "Locate a structure on the diagram, then return to this connection. The markers show anatomy; they do not simulate this process.",
+    "connection_journey_marker": "Locate {structure} · {system}",
+    "connection_journey_current": "On diagram: {structure} · {system}",
+    "connection_journey_resume": "Return to {connection}"
+  },
+  "translations": {
+    "french": {
+      "connection_journey_from": "Point de départ : {structure}",
+      "connection_journey_return": "Revenir à {structure}",
+      "connection_journey_inspect": "Explorer l’anatomie",
+      "connection_journey_help": "Repère une structure sur le schéma, puis reviens à cette connexion. Les repères indiquent l’anatomie ; ils ne simulent pas ce processus.",
+      "connection_journey_marker": "Repérer {structure} · {system}",
+      "connection_journey_current": "Sur le schéma : {structure} · {system}",
+      "connection_journey_resume": "Revenir à {connection}"
+    },
+    "spanish_latin_america": {
+      "connection_journey_from": "Comenzaste en {structure}",
+      "connection_journey_return": "Volver a {structure}",
+      "connection_journey_inspect": "Explorar la anatomía",
+      "connection_journey_help": "Ubica una estructura en el diagrama y vuelve a esta conexión. Los marcadores muestran la anatomía; no simulan este proceso.",
+      "connection_journey_marker": "Ubicar {structure} · {system}",
+      "connection_journey_current": "En el diagrama: {structure} · {system}",
+      "connection_journey_resume": "Volver a {connection}"
+    },
+    "arabic": {
+      "connection_journey_from": "بدأت عند {structure}",
+      "connection_journey_return": "العودة إلى {structure}",
+      "connection_journey_inspect": "استكشف التشريح",
+      "connection_journey_help": "حدّد موضع بنية في الرسم، ثم عُد إلى هذا الترابط. تُبيّن العلامات مواضع البنى التشريحية، ولا تحاكي هذه العملية.",
+      "connection_journey_marker": "حدّد موضع {structure} · {system}",
+      "connection_journey_current": "في الرسم: {structure} · {system}",
+      "connection_journey_resume": "العودة إلى {connection}"
+    }
+  },
+  "coverage": {
+    "languageCount": 3,
+    "keysPerLanguage": 7,
+    "translatedValues": 21,
+    "desktopMirrors": true
+  },
+  "scope": "Connection journey controls. Anatomy structure and system names retain their existing catalog translations."
+}

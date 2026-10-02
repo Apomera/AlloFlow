@@ -32423,7 +32423,14 @@
       "guidance_quiz_opened": "تم فتح الاختبار. يظل موضعك وإجاباتك المحفوظة محفوظين.",
       "guidance_scope_help": "تشمل البنى المشاهدة والأنظمة والاختبار والشارات كل عملك المحفوظ. أما أعداد تقييمات الثقة والاقتراحات فتنطبق على هذا العرض.",
       "activity_switch_saved_quiz": "السؤال {number} محفوظ",
-      "activity_switch_saved_help": "تُحفظ إجابتك ودرجتك أثناء استخدامك للأنشطة الأخرى. عد متى أردت."
+      "activity_switch_saved_help": "تُحفظ إجابتك ودرجتك أثناء استخدامك للأنشطة الأخرى. عد متى أردت.",
+      "connection_journey_from": "بدأت عند {structure}",
+      "connection_journey_return": "العودة إلى {structure}",
+      "connection_journey_inspect": "استكشف التشريح",
+      "connection_journey_help": "حدّد موضع بنية في الرسم، ثم عُد إلى هذا الترابط. تُبيّن العلامات مواضع البنى التشريحية، ولا تحاكي هذه العملية.",
+      "connection_journey_marker": "حدّد موضع {structure} · {system}",
+      "connection_journey_current": "في الرسم: {structure} · {system}",
+      "connection_journey_resume": "العودة إلى {connection}"
     },
     "dna": {
       "back_to_tools": "العودة إلى الأدوات",

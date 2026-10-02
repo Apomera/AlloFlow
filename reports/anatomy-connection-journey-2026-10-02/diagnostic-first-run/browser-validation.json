@@ -1,0 +1,333 @@
+{
+  "metadata": {
+    "sourceLfSha256": "5a8972f21d30abf9a460da6e1da1130bc9b19c1608a9f616631de2571e081493",
+    "startedAt": "2026-10-02T11:16:37.142Z"
+  },
+  "processJourney": {
+    "errors": [],
+    "scans": [],
+    "steps": [
+      {
+        "label": "origin",
+        "system": "skeletal",
+        "view": "anterior",
+        "complexity": 3,
+        "selected": "femur",
+        "activeTab": "explore",
+        "savedWork": {
+          "quizIdx": 3,
+          "quizScore": 2,
+          "quizFeedback": {
+            "correct": true,
+            "selected": 0,
+            "questionKey": "saved-question"
+          },
+          "_quizAttempts": 4,
+          "_quizActivityReturn": {
+            "questionKey": "saved-question",
+            "token": "saved-question-token",
+            "index": 3,
+            "score": 2,
+            "attempts": 4
+          },
+          "_flashcardDeck": [
+            "skull",
+            "ribs",
+            "femur"
+          ],
+          "_flashcardDeckContext": "skeletal:3:all:skull,ribs,femur",
+          "_flashcardRoundContext": "skeletal:3:all:skull,ribs,femur",
+          "_flashcardIdx": 1,
+          "_flashcardFlipped": true,
+          "_flashcardRoundRated": {
+            "skull": true
+          },
+          "_flashcardRounds": {
+            "skeletal:3:all": {
+              "context": "skeletal:3:all:skull,ribs,femur",
+              "deckIds": [
+                "skull",
+                "ribs",
+                "femur"
+              ],
+              "index": 1,
+              "rated": {
+                "skull": true
+              }
+            }
+          },
+          "_structureNotes": {
+            "femur": "The femur supports the leg and is involved in movement.",
+            "biceps": "My biceps note stays with this structure."
+          },
+          "_structureConfidence": {
+            "femur": "learning"
+          },
+          "_confidenceAt": {
+            "femur": 1800000000000
+          },
+          "_compareStructure": "tibia"
+        }
+      },
+      {
+        "label": "opened connection",
+        "system": "skeletal",
+        "view": "anterior",
+        "complexity": 3,
+        "selected": "femur",
+        "activeTab": "connections",
+        "savedWork": {
+          "quizIdx": 3,
+          "quizScore": 2,
+          "quizFeedback": {
+            "correct": true,
+            "selected": 0,
+            "questionKey": "saved-question"
+          },
+          "_quizAttempts": 4,
+          "_quizActivityReturn": {
+            "questionKey": "saved-question",
+            "token": "saved-question-token",
+            "index": 3,
+            "score": 2,
+            "attempts": 4
+          },
+          "_flashcardDeck": [
+            "skull",
+            "ribs",
+            "femur"
+          ],
+          "_flashcardDeckContext": "skeletal:3:all:skull,ribs,femur",
+          "_flashcardRoundContext": "skeletal:3:all:skull,ribs,femur",
+          "_flashcardIdx": 1,
+          "_flashcardFlipped": true,
+          "_flashcardRoundRated": {
+            "skull": true
+          },
+          "_flashcardRounds": {
+            "skeletal:3:all": {
+              "context": "skeletal:3:all:skull,ribs,femur",
+              "deckIds": [
+                "skull",
+                "ribs",
+                "femur"
+              ],
+              "index": 1,
+              "rated": {
+                "skull": true
+              }
+            }
+          },
+          "_structureNotes": {
+            "femur": "The femur supports the leg and is involved in movement.",
+            "biceps": "My biceps note stays with this structure."
+          },
+          "_structureConfidence": {
+            "femur": "learning"
+          },
+          "_confidenceAt": {
+            "femur": 1800000000000
+          },
+          "_compareStructure": "tibia"
+        }
+      },
+      {
+        "label": "muscular diagram",
+        "system": "muscular",
+        "view": "anterior",
+        "complexity": 3,
+        "selected": null,
+        "activeTab": "connections",
+        "savedWork": {
+          "quizIdx": 3,
+          "quizScore": 2,
+          "quizFeedback": {
+            "correct": true,
+            "selected": 0,
+            "questionKey": "saved-question"
+          },
+          "_quizAttempts": 4,
+          "_quizActivityReturn": {
+            "questionKey": "saved-question",
+            "token": "saved-question-token",
+            "index": 3,
+            "score": 2,
+            "attempts": 4
+          },
+          "_flashcardDeck": [
+            "skull",
+            "ribs",
+            "femur"
+          ],
+          "_flashcardDeckContext": "skeletal:3:all:skull,ribs,femur",
+          "_flashcardRoundContext": "skeletal:3:all:skull,ribs,femur",
+          "_flashcardIdx": 1,
+          "_flashcardFlipped": true,
+          "_flashcardRoundRated": {
+            "skull": true
+          },
+          "_flashcardRounds": {
+            "skeletal:3:all": {
+              "context": "skeletal:3:all:skull,ribs,femur",
+              "deckIds": [
+                "skull",
+                "ribs",
+                "femur"
+              ],
+              "index": 1,
+              "rated": {
+                "skull": true
+              }
+            }
+          },
+          "_structureNotes": {
+            "femur": "The femur supports the leg and is involved in movement.",
+            "biceps": "My biceps note stays with this structure."
+          },
+          "_structureConfidence": {
+            "femur": "learning"
+          },
+          "_confidenceAt": {
+            "femur": 1800000000000
+          },
+          "_compareStructure": "tibia"
+        }
+      },
+      {
+        "label": "biceps marker",
+        "system": "muscular",
+        "view": "anterior",
+        "complexity": 3,
+        "selected": "biceps",
+        "activeTab": "connections",
+        "savedWork": {
+          "quizIdx": 3,
+          "quizScore": 2,
+          "quizFeedback": {
+            "correct": true,
+            "selected": 0,
+            "questionKey": "saved-question"
+          },
+          "_quizAttempts": 4,
+          "_quizActivityReturn": {
+            "questionKey": "saved-question",
+            "token": "saved-question-token",
+            "index": 3,
+            "score": 2,
+            "attempts": 4
+          },
+          "_flashcardDeck": [
+            "skull",
+            "ribs",
+            "femur"
+          ],
+          "_flashcardDeckContext": "skeletal:3:all:skull,ribs,femur",
+          "_flashcardRoundContext": "skeletal:3:all:skull,ribs,femur",
+          "_flashcardIdx": 1,
+          "_flashcardFlipped": true,
+          "_flashcardRoundRated": {
+            "skull": true
+          },
+          "_flashcardRounds": {
+            "skeletal:3:all": {
+              "context": "skeletal:3:all:skull,ribs,femur",
+              "deckIds": [
+                "skull",
+                "ribs",
+                "femur"
+              ],
+              "index": 1,
+              "rated": {
+                "skull": true
+              }
+            }
+          },
+          "_structureNotes": {
+            "femur": "The femur supports the leg and is involved in movement.",
+            "biceps": "My biceps note stays with this structure."
+          },
+          "_structureConfidence": {
+            "femur": "learning"
+          },
+          "_confidenceAt": {
+            "femur": 1800000000000
+          },
+          "_compareStructure": "tibia"
+        }
+      },
+      {
+        "label": "returned to origin",
+        "system": "skeletal",
+        "view": "anterior",
+        "complexity": 3,
+        "selected": "femur",
+        "activeTab": "explore",
+        "savedWork": {
+          "quizIdx": 3,
+          "quizScore": 2,
+          "quizFeedback": {
+            "correct": true,
+            "selected": 0,
+            "questionKey": "saved-question"
+          },
+          "_quizAttempts": 4,
+          "_quizActivityReturn": {
+            "questionKey": "saved-question",
+            "token": "saved-question-token",
+            "index": 3,
+            "score": 2,
+            "attempts": 4
+          },
+          "_flashcardDeck": [
+            "skull",
+            "ribs",
+            "femur"
+          ],
+          "_flashcardDeckContext": "skeletal:3:all:skull,ribs,femur",
+          "_flashcardRoundContext": "skeletal:3:all:skull,ribs,femur",
+          "_flashcardIdx": 1,
+          "_flashcardFlipped": true,
+          "_flashcardRoundRated": {
+            "skull": true
+          },
+          "_flashcardRounds": {
+            "skeletal:3:all": {
+              "context": "skeletal:3:all:skull,ribs,femur",
+              "deckIds": [
+                "skull",
+                "ribs",
+                "femur"
+              ],
+              "index": 1,
+              "rated": {
+                "skull": true
+              }
+            }
+          },
+          "_structureNotes": {
+            "femur": "The femur supports the leg and is involved in movement.",
+            "biceps": "My biceps note stays with this structure."
+          },
+          "_structureConfidence": {
+            "femur": "learning"
+          },
+          "_confidenceAt": {
+            "femur": 1800000000000
+          },
+          "_compareStructure": "tibia"
+        }
+      }
+    ],
+    "captures": [
+      "desktop-expanded-connection.png",
+      "desktop-marker-return.png"
+    ],
+    "returnedToExactButton": true
+  },
+  "partnerJourney": {
+    "errors": [],
+    "scans": [],
+    "steps": [],
+    "captures": []
+  }
+}
