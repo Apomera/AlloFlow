@@ -2178,7 +2178,7 @@ describe('Universe flight galaxy group flyby', () => {
     scene.set({ fov: 91, exposure: 0.55, quality: 'low', beta: 0.73, compareRest: true, speed: 1234, smoothTravel: true });
     expect(scene.seekFlybyHighlight(last.id)).toBe(true);
     const later = scene.snapshot(), preferences = { ...later.settings };
-    expect(scene.frameTarget(route.targetId, 1 / 3)).toBe(true);
+    expect(scene.frameTarget(last.targetId, 1 / 3)).toBe(true);
     expect(telemetry.framing.canUndo).toBe(true);
     expect(scene.seekFlybyHighlight(first.id)).toBe(true);
     const earlier = scene.snapshot(), events = pauseEvents.length;
@@ -2210,7 +2210,7 @@ describe('Universe flight galaxy group flyby', () => {
     expect(Object.keys(saved).sort()).toEqual(['settings', 'state', 'targetId', 'version']);
     expect(Object.keys(saved.settings).sort()).toEqual(['beta', 'compareRest', 'exposure', 'fov', 'mode', 'quality', 'region']);
     expect(saved.settings.region).toBe('cosmic');
-    expect(saved.targetId).toBe('near-galaxy');
+    expect(saved.targetId).toBe('golden-elliptical');
     saved.state.position[0] = 1e20; saved.settings.region = 'galaxy';
     expect(scene.snapshot()).toEqual(expected);
     expect(scene.restore(expected)).toBe(true);
@@ -2285,11 +2285,16 @@ describe('Universe flight scenic highlights', () => {
     expect(routes.map(route => route.highlights.map(highlight => highlight.id))).toEqual([
       ['arm', 'cluster', 'panorama'], ['approach', 'filaments', 'violet'], ['spiral', 'elliptical', 'panorama'],
     ]);
+    expect(routes.map(route => route.highlights.map(highlight => highlight.targetId))).toEqual([
+      ['galactic-center', 'halo-cluster-2', 'galactic-center'],
+      ['blue-nebula', 'blue-nebula', 'violet-nebula'],
+      ['near-galaxy', 'golden-elliptical', 'golden-elliptical'],
+    ]);
     for (const route of routes) {
       let previous = 0;
       expect(new Set(route.highlights.map(highlight => highlight.id)).size).toBe(route.highlights.length);
       for (const highlight of route.highlights) {
-        expect(Object.keys(highlight).sort()).toEqual(['description', 'id', 'name', 'seconds']);
+        expect(Object.keys(highlight).sort()).toEqual(['description', 'id', 'name', 'seconds', 'targetId']);
         expect(typeof highlight.name).toBe('string');
         expect(highlight.name.trim().length).toBeGreaterThan(0);
         expect(typeof highlight.description).toBe('string');
@@ -2297,7 +2302,9 @@ describe('Universe flight scenic highlights', () => {
         expect(Number.isFinite(highlight.seconds)).toBe(true);
         expect(highlight.seconds).toBeGreaterThan(previous);
         expect(highlight.seconds).toBeLessThan(route.durationSeconds);
+        expect(flight.landmarks(route.region).some(item => item.id === highlight.targetId)).toBe(true);
         previous = highlight.seconds;
+        highlight.targetId = 'changed';
         highlight.id = 'changed'; highlight.name = 'Changed';
         highlight.description = 'Changed'; highlight.seconds = 1e20;
       }
@@ -2324,6 +2331,10 @@ describe('Universe flight scenic highlights', () => {
         pauses.length = 0; pauseEvents.length = 0;
         expect(scene.seekFlybyHighlight(highlight.id)).toBe(true);
         const actual = scene.snapshot().state;
+        expect(scene.snapshot().targetId).toBe(highlight.targetId);
+        expect(telemetry.target.id).toBe(highlight.targetId);
+        const landmark = flight.landmarks(route.region).find(item => item.id === highlight.targetId);
+        expect(telemetry.target.distanceLy).toBeCloseTo(Math.hypot(...landmark.position.map((value, index) => value - actual.position[index])), 8);
         actual.position.forEach((value, index) => expect(value).toBeCloseTo(expected.position[index], 8));
         expect(actual.distanceLy).toBeCloseTo(expected.distanceLy, 7);
         expect(Math.sin(actual.yaw)).toBeCloseTo(Math.sin(expected.yaw), 10);
@@ -2341,7 +2352,7 @@ describe('Universe flight scenic highlights', () => {
         expect(pauseEvents[0][1]).toMatchObject({
           kind: 'flyby-highlight',
           routeId, routeName: route.name, highlightId: highlight.id, highlightName: highlight.name,
-          position: actual.position,
+          targetId: highlight.targetId, targetName: telemetry.target.name, position: actual.position,
         });
         advance(5000);
         expect(scene.snapshot().state).toEqual(actual);
@@ -2355,7 +2366,7 @@ describe('Universe flight scenic highlights', () => {
     scene.set({ fov: 91, exposure: 0.55, quality: 'low', beta: 0.73, compareRest: true, speed: 1234, smoothTravel: true });
     expect(scene.seekFlybyHighlight(last.id)).toBe(true);
     const later = scene.snapshot(), preferences = { ...later.settings };
-    expect(scene.frameTarget(route.targetId, 1 / 3)).toBe(true);
+    expect(scene.frameTarget(last.targetId, 1 / 3)).toBe(true);
     expect(telemetry.framing.canUndo).toBe(true);
     expect(telemetry.flyby.autoLook).toBe(false);
     expect(scene.seekFlybyHighlight(first.id)).toBe(true);
@@ -2397,6 +2408,8 @@ describe('Universe flight scenic highlights', () => {
       const previousCompletions = pauseEvents.filter(([, detail]) => detail?.kind === 'flyby').length;
       for (const highlight of [route.highlights[1], route.highlights[0]]) {
         expect(scene.seekFlybyHighlight(highlight.id)).toBe(true);
+        expect(scene.snapshot().targetId).toBe(highlight.targetId);
+        expect(telemetry.target.id).toBe(highlight.targetId);
         expect(telemetry.flyby).toMatchObject({ active: true, completed: false, elapsedSeconds: highlight.seconds });
         expect(scene.snapshot().state.distanceLy).toBeLessThan(completed.state.distanceLy);
         const paused = scene.snapshot();

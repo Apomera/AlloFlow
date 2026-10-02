@@ -295,8 +295,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
       props.highlights&&props.highlights.length>0&&h('div',{className:'uf-flyby-highlights',role:'group','aria-labelledby':prefix+'-flyby-highlights-title'},
         h('h5',{id:prefix+'-flyby-highlights-title'},label('flyby_highlights_title','Jump to a paused highlight')),
         h('p',{className:'uf-note'},label('flyby_highlights_help','Jump pauses travel and moves route progress to that moment. Start travel continues from there.')),
-        props.highlights.map(function(item){return h('button',{key:item.id,type:'button','data-flyby-highlight':item.id,disabled:!props.ready,onClick:function(){props.onHighlight(item.id);}},
-          h('strong',null,label('flyby_'+flyby.id+'_highlight_'+item.id,item.name)),h('small',null,label('flyby_'+flyby.id+'_highlight_'+item.id+'_detail',item.description)));})));
+        props.highlights.map(function(item){var current=!props.running&&flyby.active&&Math.abs(flyby.elapsedSeconds-item.seconds)<0.000001;return h('button',{key:item.id,type:'button','data-flyby-highlight':item.id,'aria-current':current?'true':undefined,disabled:!props.ready,onClick:function(){props.onHighlight(item.id);}},
+          h('strong',null,label('flyby_'+flyby.id+'_highlight_'+item.id,item.name)),h('small',null,current&&h('span',{className:'uf-flyby-current'},label('flyby_highlight_current','Paused here')+' · '),label('flyby_'+flyby.id+'_highlight_'+item.id+'_detail',item.description)));})));
   }
 
   function UniverseFlightJourneyCheckpoint(props) {
@@ -1235,6 +1235,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
   [data-universe-tool] .uf-flyby-highlights h5{margin:0;color:#e3eef6;font-size:12px;line-height:1.5;}
   [data-universe-tool] .uf-flyby-highlights .uf-note{margin:0 0 3px;}
   [data-universe-tool] .uf-flyby-highlights button{display:flex;flex-direction:column;gap:4px;min-height:44px;text-align:start;white-space:normal;min-width:0;}
+  [data-universe-tool] .uf-flyby-highlights button[aria-current="true"]{border-color:#84e1d5;background:#1a3c48;box-shadow:inset 3px 0 0 #84e1d5;}
+  [data-universe-tool] .uf-flyby-current{color:#99eade;font-weight:700;}
   [data-universe-tool] .uf-flyby-highlights strong{font-size:11px;}
   [data-universe-tool] .uf-flyby-highlights small{font-size:10px;font-weight:400;line-height:1.5;color:#c6d9e7;}
   [data-universe-tool] .uf-flyby-view{margin:9px 0 0;color:#c3d3e1;font-size:10px;line-height:1.5;}

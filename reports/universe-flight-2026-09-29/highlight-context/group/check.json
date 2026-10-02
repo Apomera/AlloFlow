@@ -1,0 +1,2269 @@
+{
+  "completed": true,
+  "sourceHash": "bcc35fe1750d9977de5e43e40adf2241d43779ed74f708d86324d3db2ac62255",
+  "uiHash": "ac3c9457375540576b5dc1a068f8e2c0d4c99d2e4ba73296abea2331394d89fb",
+  "checks": [
+    "Native travel reaches the curved intergalactic crossing with real camera movement and changing renderer pixels",
+    "Native Group launch and all three exact paused highlights preserve display settings and return canvas focus",
+    "Free look retains moving route progress and Follow restores its authored view",
+    "Natural completion pauses once at the authored endpoint and completed/backward highlights reopen a resumable route",
+    "Saved observations clear route motion; fullscreen native launch and End retain their focus handoff",
+    "Normal controls retain selected lens and Slow pace; Group phase honors clean view and fullscreen controls",
+    "Phone and short landscape highlights remain reachable with 44px targets and unobstructed phase cues",
+    "The elliptical highlight selects its matching destination for native inspection and a moving orbit",
+    "Fullscreen physical-mode launch explicitly switches into the generated exploration scene",
+    "Group route adds no graphics resources and closing disposes the existing textures, buffers, and programs"
+  ],
+  "captures": [
+    {
+      "name": "group-start",
+      "pixelHash": "a0d5b8763daf3359e268ee158429bb49aa68ef41159d9d3ad79659c5bb29979c",
+      "width": 1280,
+      "height": 800,
+      "stats": {
+        "mean": 3.582322897306745,
+        "clippedWhiteFraction": 0,
+        "luminousFraction": 0.024085817786315116,
+        "colorFraction": 0.017367049969739232,
+        "max": 250
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -448077.46719668934,
+            399148.2252326885,
+            -1045577.8835838533
+          ],
+          "yaw": 0.4048770618097377,
+          "pitch": -0.33707805986132666,
+          "distanceLy": 4901.174346084319,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "near-galaxy"
+      }
+    },
+    {
+      "name": "group-crossing",
+      "pixelHash": "d8f9064be791f087653cffd788bf893bfbdb2c0a92f8f5bc2e8fd8eb0a929d42",
+      "width": 1280,
+      "height": 800,
+      "stats": {
+        "mean": 3.8365554105297774,
+        "clippedWhiteFraction": 0,
+        "luminousFraction": 0.03194484645949004,
+        "colorFraction": 0.02628739836328711,
+        "max": 237
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            436139.75159521756,
+            364703.5740741645,
+            312329.054075118
+          ],
+          "yaw": 4.476722136987316,
+          "pitch": -0.8136315880283125,
+          "distanceLy": 1770376.257650538,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "near-galaxy"
+      }
+    },
+    {
+      "name": "group-spiral",
+      "pixelHash": "ed737e9d79226d350145406dcfcfb423a40c860252fb2b88d4eb8800d7fdde9a",
+      "width": 1280,
+      "height": 800,
+      "stats": {
+        "mean": 9.235257518262904,
+        "clippedWhiteFraction": 0,
+        "luminousFraction": 0.21143944776289592,
+        "colorFraction": 0.176117674920401,
+        "max": 246
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            3800.993548201688,
+            204667.20352500066,
+            -21799.8971191808
+          ],
+          "yaw": -0.17262299110657067,
+          "pitch": -1.4630939016137092,
+          "distanceLy": 1194256.9640433749,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "near-galaxy"
+      }
+    },
+    {
+      "name": "group-elliptical",
+      "pixelHash": "e875e45a33ff3903065c345c2f696ba0f8f50ef904ed03a11ee875ab9a7a38b4",
+      "width": 1280,
+      "height": 800,
+      "stats": {
+        "mean": 6.146764258956856,
+        "clippedWhiteFraction": 0,
+        "luminousFraction": 0.08532659702304204,
+        "colorFraction": 0.03654097483532002,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            720000,
+            410000,
+            565000
+          ],
+          "yaw": 0.2736593210820904,
+          "pitch": 0.4417733155472801,
+          "distanceLy": 2160583.4405737584,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "golden-elliptical"
+      }
+    },
+    {
+      "name": "group-panorama",
+      "pixelHash": "4c90fdc175499de1add01e71045aa34d79fe458d7948ba06ac555a0c1c25bbc5",
+      "width": 1280,
+      "height": 800,
+      "stats": {
+        "mean": 3.503442149295682,
+        "clippedWhiteFraction": 0,
+        "luminousFraction": 0.02059486531765036,
+        "colorFraction": 0.014130463384469646,
+        "max": 246
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            1220075.2125317845,
+            1101203.4267783898,
+            -482445.2588986326
+          ],
+          "yaw": -0.7787208485114655,
+          "pitch": -0.6026017328474189,
+          "distanceLy": 3713467.250913006,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "golden-elliptical"
+      }
+    },
+    {
+      "name": "group-completed",
+      "pixelHash": "1cda83582396ae4299a90d6af4e26da93e55b71534707d2c29cb5d64d7a9270f",
+      "width": 1280,
+      "height": 800,
+      "stats": {
+        "mean": 3.367456702532898,
+        "clippedWhiteFraction": 0,
+        "luminousFraction": 0.016928488101816522,
+        "colorFraction": 0.011718373110894754,
+        "max": 242
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            1250000,
+            1200000,
+            -800000
+          ],
+          "yaw": 5.625893991177362,
+          "pitch": -0.5702127376627119,
+          "distanceLy": 4048123.2443415783,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "golden-elliptical"
+      }
+    },
+    {
+      "name": "group-revisited",
+      "pixelHash": "e875e45a33ff3903065c345c2f696ba0f8f50ef904ed03a11ee875ab9a7a38b4",
+      "width": 1280,
+      "height": 800,
+      "stats": {
+        "mean": 6.146764258956856,
+        "clippedWhiteFraction": 0,
+        "luminousFraction": 0.08532659702304204,
+        "colorFraction": 0.03654097483532002,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            720000,
+            410000,
+            565000
+          ],
+          "yaw": 0.2736593210820904,
+          "pitch": 0.4417733155472801,
+          "distanceLy": 2160583.4405737584,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "golden-elliptical"
+      }
+    },
+    {
+      "name": "group-backward",
+      "pixelHash": "ed737e9d79226d350145406dcfcfb423a40c860252fb2b88d4eb8800d7fdde9a",
+      "width": 1280,
+      "height": 800,
+      "stats": {
+        "mean": 9.235257518262904,
+        "clippedWhiteFraction": 0,
+        "luminousFraction": 0.21143944776289592,
+        "colorFraction": 0.176117674920401,
+        "max": 246
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            3800.993548201688,
+            204667.20352500066,
+            -21799.8971191808
+          ],
+          "yaw": -0.17262299110657067,
+          "pitch": -1.4630939016137092,
+          "distanceLy": 1194256.9640433749,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "near-galaxy"
+      }
+    },
+    {
+      "name": "group-normal-composed",
+      "pixelHash": "f21e509ae76ee2e57cd2134a678d3cfc379d91c3c042fcee7ff3e7c03164605e",
+      "width": 940,
+      "height": 440,
+      "stats": {
+        "mean": 6.129393981536256,
+        "clippedWhiteFraction": 0,
+        "luminousFraction": 0.08475237228649421,
+        "colorFraction": 0.03587677109060185,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 53,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            720000,
+            410000,
+            565000
+          ],
+          "yaw": 0.2736593210820904,
+          "pitch": 0.4417733155472801,
+          "distanceLy": 2160583.4405737584,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "golden-elliptical"
+      }
+    },
+    {
+      "name": "group-highlight-320",
+      "pixelHash": "6c1751d962b6cfef279cea17f7203fce5b4e42738c9a8bc5e39555af05507533",
+      "width": 320,
+      "height": 740,
+      "stats": {
+        "mean": 3.4125860607678016,
+        "clippedWhiteFraction": 0,
+        "luminousFraction": 0.01884293768209164,
+        "colorFraction": 0.012524121230466532,
+        "max": 226
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            1220075.2125317845,
+            1101203.4267783898,
+            -482445.2588986326
+          ],
+          "yaw": -0.7787208485114655,
+          "pitch": -0.6026017328474189,
+          "distanceLy": 3713467.250913006,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "golden-elliptical"
+      }
+    },
+    {
+      "name": "group-highlight-568",
+      "pixelHash": "5978e0fa032f8fa39a05885b3a2f396223aa32fba6c7963eec43d36450b64186",
+      "width": 568,
+      "height": 320,
+      "stats": {
+        "mean": 3.4585297196270406,
+        "clippedWhiteFraction": 0,
+        "luminousFraction": 0.021396950319724543,
+        "colorFraction": 0.014707329070339399,
+        "max": 212
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            1220075.2125317845,
+            1101203.4267783898,
+            -482445.2588986326
+          ],
+          "yaw": -0.7787208485114655,
+          "pitch": -0.6026017328474189,
+          "distanceLy": 3713467.250913006,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "golden-elliptical"
+      }
+    },
+    {
+      "name": "group-context-elliptical",
+      "pixelHash": "e875e45a33ff3903065c345c2f696ba0f8f50ef904ed03a11ee875ab9a7a38b4",
+      "width": 1280,
+      "height": 800,
+      "stats": {
+        "mean": 6.146764258956856,
+        "clippedWhiteFraction": 0,
+        "luminousFraction": 0.08532659702304204,
+        "colorFraction": 0.03654097483532002,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            720000,
+            410000,
+            565000
+          ],
+          "yaw": 0.2736593210820904,
+          "pitch": 0.4417733155472801,
+          "distanceLy": 2160583.4405737584,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "golden-elliptical"
+      }
+    },
+    {
+      "name": "group-elliptical-orbit",
+      "pixelHash": "1e02290582abf4316f9ef34d07e3d22f280147df6ff1c4b1e11a0a611aebb5ad",
+      "width": 1280,
+      "height": 800,
+      "stats": {
+        "mean": 6.1509400696384375,
+        "clippedWhiteFraction": 0,
+        "luminousFraction": 0.08530905454832513,
+        "colorFraction": 0.03661114473418765,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            719255.1309152409,
+            410000,
+            565210.136914101
+          ],
+          "yaw": 0.2762738592081628,
+          "pitch": 0.44177331554728,
+          "distanceLy": 2161357.383606101,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "golden-elliptical"
+      }
+    }
+  ],
+  "accessibility": [
+    {
+      "name": "group-desktop-controls",
+      "violations": []
+    },
+    {
+      "name": "group-completed-checkpoint",
+      "violations": []
+    },
+    {
+      "name": "group-completed-controls",
+      "violations": []
+    },
+    {
+      "name": "group-320-normal",
+      "violations": []
+    },
+    {
+      "name": "group-320-fullscreen",
+      "violations": []
+    },
+    {
+      "name": "group-320-current-stop",
+      "violations": []
+    },
+    {
+      "name": "group-568-normal",
+      "violations": []
+    },
+    {
+      "name": "group-568-fullscreen",
+      "violations": []
+    },
+    {
+      "name": "group-568-current-stop",
+      "violations": []
+    }
+  ],
+  "errors": [],
+  "jumps": [
+    {
+      "route": "group",
+      "highlight": {
+        "id": "spiral",
+        "name": "Spiral skim",
+        "seconds": 12,
+        "description": "Look across the tilted arms of the nearby spiral.",
+        "targetId": "near-galaxy"
+      },
+      "id": "spiral",
+      "before": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            436139.75159521756,
+            364703.5740741645,
+            312329.054075118
+          ],
+          "yaw": 4.476722136987316,
+          "pitch": -0.8136315880283125,
+          "distanceLy": 1770376.257650538,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "near-galaxy"
+      },
+      "eventCount": 1,
+      "accepted": true,
+      "after": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            3800.993548201688,
+            204667.20352500066,
+            -21799.8971191808
+          ],
+          "yaw": -0.17262299110657067,
+          "pitch": -1.4630939016137092,
+          "distanceLy": 1194256.9640433749,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "near-galaxy"
+      },
+      "info": {
+        "distanceLy": 1194256.9640433749,
+        "universeYears": 0,
+        "travelerYears": 0,
+        "position": [
+          3800.993548201688,
+          204667.20352500066,
+          -21799.8971191808
+        ],
+        "yaw": -0.17262299110657067,
+        "pitch": -1.4630939016137092,
+        "running": false,
+        "target": {
+          "id": "near-galaxy",
+          "name": "Nearby spiral",
+          "distanceLy": 205860.01861727398,
+          "coincident": false,
+          "guide": {
+            "screen": [
+              0.5,
+              0.5
+            ],
+            "inView": true,
+            "angleDeg": 1.987846675914698e-16,
+            "behind": false,
+            "sector": "left",
+            "arrowDeg": -180,
+            "edge": [
+              0.09999999999999998,
+              0.5
+            ]
+          },
+          "screen": [
+            0.5,
+            0.5
+          ],
+          "inView": true,
+          "doppler": 1,
+          "restAngleDeg": 83.921168132004,
+          "apparentAngleDeg": 83.921168132004
+        },
+        "navigation": {
+          "active": false,
+          "targetId": null,
+          "completed": false,
+          "alreadyWithin": false,
+          "remainingLy": 0,
+          "arrivalRadiusLy": 0,
+          "estimatedSeconds": 0,
+          "progress": 0
+        },
+        "flyby": {
+          "active": true,
+          "completed": false,
+          "id": "group",
+          "name": "Galaxy group flyby",
+          "progress": 0.25,
+          "elapsedSeconds": 12,
+          "durationSeconds": 48,
+          "autoLook": true,
+          "phase": "spiral",
+          "rate": 1
+        },
+        "orbit": {
+          "active": false,
+          "targetId": null
+        },
+        "motion": {
+          "smoothTravel": true,
+          "paceLyPerSecond": 0,
+          "targetLyPerSecond": 52351.71763225652,
+          "kind": "flyby"
+        },
+        "framing": {
+          "canLeft": false,
+          "canCenter": true,
+          "canRight": false,
+          "canUndo": false,
+          "placement": null
+        },
+        "trail": [
+          [
+            3800.993548201688,
+            204667.20352500066,
+            -21799.8971191808
+          ]
+        ],
+        "cameraMoves": 0
+      },
+      "events": [
+        {
+          "message": "Spiral skim. Travel is paused; start travel to continue from this route moment.",
+          "detail": {
+            "kind": "flyby-highlight",
+            "routeId": "group",
+            "routeName": "Galaxy group flyby",
+            "highlightId": "spiral",
+            "highlightName": "Spiral skim",
+            "seconds": 12,
+            "position": [
+              3800.993548201688,
+              204667.20352500066,
+              -21799.8971191808
+            ],
+            "targetId": "near-galaxy",
+            "targetName": "Nearby spiral"
+          }
+        }
+      ]
+    },
+    {
+      "route": "group",
+      "highlight": {
+        "id": "elliptical",
+        "name": "Golden elliptical pass",
+        "seconds": 30,
+        "description": "Compare the smooth warm halo with the nearby spiral.",
+        "targetId": "golden-elliptical"
+      },
+      "id": "elliptical",
+      "before": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            3800.993548201688,
+            204667.20352500066,
+            -21799.8971191808
+          ],
+          "yaw": -0.17262299110657067,
+          "pitch": -1.4630939016137092,
+          "distanceLy": 1194256.9640433749,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "near-galaxy"
+      },
+      "eventCount": 2,
+      "accepted": true,
+      "after": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            720000,
+            410000,
+            565000
+          ],
+          "yaw": 0.2736593210820904,
+          "pitch": 0.4417733155472801,
+          "distanceLy": 2160583.4405737584,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "golden-elliptical"
+      },
+      "info": {
+        "distanceLy": 2160583.4405737584,
+        "universeYears": 0,
+        "travelerYears": 0,
+        "position": [
+          720000,
+          410000,
+          565000
+        ],
+        "yaw": 0.2736593210820904,
+        "pitch": 0.4417733155472801,
+        "running": false,
+        "target": {
+          "id": "golden-elliptical",
+          "name": "Golden elliptical",
+          "distanceLy": 327452.2866006588,
+          "coincident": false,
+          "guide": {
+            "screen": [
+              0.5,
+              0.5000000000000001
+            ],
+            "inView": true,
+            "angleDeg": 9.54166404439055e-15,
+            "behind": false,
+            "sector": "down",
+            "arrowDeg": 90,
+            "edge": [
+              0.5,
+              0.9
+            ]
+          },
+          "screen": [
+            0.5,
+            0.5000000000000001
+          ],
+          "inView": true,
+          "doppler": 1,
+          "restAngleDeg": 29.499986778556465,
+          "apparentAngleDeg": 29.499986778556465
+        },
+        "navigation": {
+          "active": false,
+          "targetId": null,
+          "completed": false,
+          "alreadyWithin": false,
+          "remainingLy": 0,
+          "arrivalRadiusLy": 0,
+          "estimatedSeconds": 0,
+          "progress": 0
+        },
+        "flyby": {
+          "active": true,
+          "completed": false,
+          "id": "group",
+          "name": "Galaxy group flyby",
+          "progress": 0.625,
+          "elapsedSeconds": 30,
+          "durationSeconds": 48,
+          "autoLook": true,
+          "phase": "elliptical",
+          "rate": 1
+        },
+        "orbit": {
+          "active": false,
+          "targetId": null
+        },
+        "motion": {
+          "smoothTravel": true,
+          "paceLyPerSecond": 0,
+          "targetLyPerSecond": 32454.83453899992,
+          "kind": "flyby"
+        },
+        "framing": {
+          "canLeft": true,
+          "canCenter": true,
+          "canRight": true,
+          "canUndo": false,
+          "placement": null
+        },
+        "trail": [
+          [
+            720000,
+            410000,
+            565000
+          ]
+        ],
+        "cameraMoves": 0
+      },
+      "events": [
+        {
+          "message": "Golden elliptical pass. Travel is paused; start travel to continue from this route moment.",
+          "detail": {
+            "kind": "flyby-highlight",
+            "routeId": "group",
+            "routeName": "Galaxy group flyby",
+            "highlightId": "elliptical",
+            "highlightName": "Golden elliptical pass",
+            "seconds": 30,
+            "position": [
+              720000,
+              410000,
+              565000
+            ],
+            "targetId": "golden-elliptical",
+            "targetName": "Golden elliptical"
+          }
+        }
+      ]
+    },
+    {
+      "route": "group",
+      "highlight": {
+        "id": "panorama",
+        "name": "Galaxy group panorama",
+        "seconds": 44,
+        "description": "Look back across the spiral and elliptical together.",
+        "targetId": "golden-elliptical"
+      },
+      "id": "panorama",
+      "before": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            720000,
+            410000,
+            565000
+          ],
+          "yaw": 0.2736593210820904,
+          "pitch": 0.4417733155472801,
+          "distanceLy": 2160583.4405737584,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "golden-elliptical"
+      },
+      "eventCount": 3,
+      "accepted": true,
+      "after": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            1220075.2125317845,
+            1101203.4267783898,
+            -482445.2588986326
+          ],
+          "yaw": -0.7787208485114655,
+          "pitch": -0.6026017328474189,
+          "distanceLy": 3713467.250913006,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "golden-elliptical"
+      },
+      "info": {
+        "distanceLy": 3713467.250913006,
+        "universeYears": 0,
+        "travelerYears": 0,
+        "position": [
+          1220075.2125317845,
+          1101203.4267783898,
+          -482445.2588986326
+        ],
+        "yaw": -0.7787208485114655,
+        "pitch": -0.6026017328474189,
+        "running": false,
+        "target": {
+          "id": "golden-elliptical",
+          "name": "Golden elliptical",
+          "distanceLy": 1501898.3886526106,
+          "coincident": false,
+          "guide": {
+            "screen": [
+              0.7578428493548912,
+              0.33760922778932423
+            ],
+            "inView": true,
+            "angleDeg": 27.110027303198574,
+            "behind": false,
+            "sector": "right",
+            "arrowDeg": -21.486000956628214,
+            "edge": [
+              0.9,
+              0.24807791239203464
+            ]
+          },
+          "screen": [
+            0.7578428493548912,
+            0.33760922778932423
+          ],
+          "inView": true,
+          "doppler": 1,
+          "restAngleDeg": 27.47974189083286,
+          "apparentAngleDeg": 27.479741890832845
+        },
+        "navigation": {
+          "active": false,
+          "targetId": null,
+          "completed": false,
+          "alreadyWithin": false,
+          "remainingLy": 0,
+          "arrivalRadiusLy": 0,
+          "estimatedSeconds": 0,
+          "progress": 0
+        },
+        "flyby": {
+          "active": true,
+          "completed": false,
+          "id": "group",
+          "name": "Galaxy group flyby",
+          "progress": 0.9166666666666666,
+          "elapsedSeconds": 44,
+          "durationSeconds": 48,
+          "autoLook": true,
+          "phase": "reveal",
+          "rate": 1
+        },
+        "orbit": {
+          "active": false,
+          "targetId": null
+        },
+        "motion": {
+          "smoothTravel": true,
+          "paceLyPerSecond": 0,
+          "targetLyPerSecond": 147008.16161191036,
+          "kind": "flyby"
+        },
+        "framing": {
+          "canLeft": true,
+          "canCenter": true,
+          "canRight": true,
+          "canUndo": false,
+          "placement": null
+        },
+        "trail": [
+          [
+            1220075.2125317845,
+            1101203.4267783898,
+            -482445.2588986326
+          ]
+        ],
+        "cameraMoves": 0
+      },
+      "events": [
+        {
+          "message": "Galaxy group panorama. Travel is paused; start travel to continue from this route moment.",
+          "detail": {
+            "kind": "flyby-highlight",
+            "routeId": "group",
+            "routeName": "Galaxy group flyby",
+            "highlightId": "panorama",
+            "highlightName": "Galaxy group panorama",
+            "seconds": 44,
+            "position": [
+              1220075.2125317845,
+              1101203.4267783898,
+              -482445.2588986326
+            ],
+            "targetId": "golden-elliptical",
+            "targetName": "Golden elliptical"
+          }
+        }
+      ]
+    },
+    {
+      "route": "group",
+      "highlight": {
+        "id": "elliptical",
+        "name": "Golden elliptical pass",
+        "seconds": 30,
+        "description": "Compare the smooth warm halo with the nearby spiral.",
+        "targetId": "golden-elliptical"
+      },
+      "id": "elliptical",
+      "before": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            1250000,
+            1200000,
+            -800000
+          ],
+          "yaw": 5.625893991177362,
+          "pitch": -0.5702127376627119,
+          "distanceLy": 4048123.2443415783,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "golden-elliptical"
+      },
+      "eventCount": 5,
+      "accepted": true,
+      "after": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            720000,
+            410000,
+            565000
+          ],
+          "yaw": 0.2736593210820904,
+          "pitch": 0.4417733155472801,
+          "distanceLy": 2160583.4405737584,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "golden-elliptical"
+      },
+      "info": {
+        "distanceLy": 2160583.4405737584,
+        "universeYears": 0,
+        "travelerYears": 0,
+        "position": [
+          720000,
+          410000,
+          565000
+        ],
+        "yaw": 0.2736593210820904,
+        "pitch": 0.4417733155472801,
+        "running": false,
+        "target": {
+          "id": "golden-elliptical",
+          "name": "Golden elliptical",
+          "distanceLy": 327452.2866006588,
+          "coincident": false,
+          "guide": {
+            "screen": [
+              0.5,
+              0.5000000000000001
+            ],
+            "inView": true,
+            "angleDeg": 9.54166404439055e-15,
+            "behind": false,
+            "sector": "down",
+            "arrowDeg": 90,
+            "edge": [
+              0.5,
+              0.9
+            ]
+          },
+          "screen": [
+            0.5,
+            0.5000000000000001
+          ],
+          "inView": true,
+          "doppler": 1,
+          "restAngleDeg": 29.499986778556465,
+          "apparentAngleDeg": 29.499986778556465
+        },
+        "navigation": {
+          "active": false,
+          "targetId": null,
+          "completed": false,
+          "alreadyWithin": false,
+          "remainingLy": 0,
+          "arrivalRadiusLy": 0,
+          "estimatedSeconds": 0,
+          "progress": 0
+        },
+        "flyby": {
+          "active": true,
+          "completed": false,
+          "id": "group",
+          "name": "Galaxy group flyby",
+          "progress": 0.625,
+          "elapsedSeconds": 30,
+          "durationSeconds": 48,
+          "autoLook": true,
+          "phase": "elliptical",
+          "rate": 2
+        },
+        "orbit": {
+          "active": false,
+          "targetId": null
+        },
+        "motion": {
+          "smoothTravel": true,
+          "paceLyPerSecond": 0,
+          "targetLyPerSecond": 64909.66907799984,
+          "kind": "flyby"
+        },
+        "framing": {
+          "canLeft": true,
+          "canCenter": true,
+          "canRight": true,
+          "canUndo": false,
+          "placement": null
+        },
+        "trail": [
+          [
+            720000,
+            410000,
+            565000
+          ]
+        ],
+        "cameraMoves": 0
+      },
+      "events": [
+        {
+          "message": "Golden elliptical pass. Travel is paused; start travel to continue from this route moment.",
+          "detail": {
+            "kind": "flyby-highlight",
+            "routeId": "group",
+            "routeName": "Galaxy group flyby",
+            "highlightId": "elliptical",
+            "highlightName": "Golden elliptical pass",
+            "seconds": 30,
+            "position": [
+              720000,
+              410000,
+              565000
+            ],
+            "targetId": "golden-elliptical",
+            "targetName": "Golden elliptical"
+          }
+        }
+      ]
+    },
+    {
+      "route": "group",
+      "highlight": {
+        "id": "spiral",
+        "name": "Spiral skim",
+        "seconds": 12,
+        "description": "Look across the tilted arms of the nearby spiral.",
+        "targetId": "near-galaxy"
+      },
+      "id": "spiral",
+      "before": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            720000,
+            410000,
+            565000
+          ],
+          "yaw": 0.2736593210820904,
+          "pitch": 0.4417733155472801,
+          "distanceLy": 2160583.4405737584,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "golden-elliptical"
+      },
+      "eventCount": 6,
+      "accepted": true,
+      "after": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            3800.993548201688,
+            204667.20352500066,
+            -21799.8971191808
+          ],
+          "yaw": -0.17262299110657067,
+          "pitch": -1.4630939016137092,
+          "distanceLy": 1194256.9640433749,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "near-galaxy"
+      },
+      "info": {
+        "distanceLy": 1194256.9640433749,
+        "universeYears": 0,
+        "travelerYears": 0,
+        "position": [
+          3800.993548201688,
+          204667.20352500066,
+          -21799.8971191808
+        ],
+        "yaw": -0.17262299110657067,
+        "pitch": -1.4630939016137092,
+        "running": false,
+        "target": {
+          "id": "near-galaxy",
+          "name": "Nearby spiral",
+          "distanceLy": 205860.01861727398,
+          "coincident": false,
+          "guide": {
+            "screen": [
+              0.5,
+              0.5
+            ],
+            "inView": true,
+            "angleDeg": 1.987846675914698e-16,
+            "behind": false,
+            "sector": "left",
+            "arrowDeg": -180,
+            "edge": [
+              0.09999999999999998,
+              0.5
+            ]
+          },
+          "screen": [
+            0.5,
+            0.5
+          ],
+          "inView": true,
+          "doppler": 1,
+          "restAngleDeg": 83.921168132004,
+          "apparentAngleDeg": 83.921168132004
+        },
+        "navigation": {
+          "active": false,
+          "targetId": null,
+          "completed": false,
+          "alreadyWithin": false,
+          "remainingLy": 0,
+          "arrivalRadiusLy": 0,
+          "estimatedSeconds": 0,
+          "progress": 0
+        },
+        "flyby": {
+          "active": true,
+          "completed": false,
+          "id": "group",
+          "name": "Galaxy group flyby",
+          "progress": 0.25,
+          "elapsedSeconds": 12,
+          "durationSeconds": 48,
+          "autoLook": true,
+          "phase": "spiral",
+          "rate": 2
+        },
+        "orbit": {
+          "active": false,
+          "targetId": null
+        },
+        "motion": {
+          "smoothTravel": true,
+          "paceLyPerSecond": 0,
+          "targetLyPerSecond": 104703.43526451304,
+          "kind": "flyby"
+        },
+        "framing": {
+          "canLeft": false,
+          "canCenter": true,
+          "canRight": false,
+          "canUndo": false,
+          "placement": null
+        },
+        "trail": [
+          [
+            3800.993548201688,
+            204667.20352500066,
+            -21799.8971191808
+          ]
+        ],
+        "cameraMoves": 0
+      },
+      "events": [
+        {
+          "message": "Spiral skim. Travel is paused; start travel to continue from this route moment.",
+          "detail": {
+            "kind": "flyby-highlight",
+            "routeId": "group",
+            "routeName": "Galaxy group flyby",
+            "highlightId": "spiral",
+            "highlightName": "Spiral skim",
+            "seconds": 12,
+            "position": [
+              3800.993548201688,
+              204667.20352500066,
+              -21799.8971191808
+            ],
+            "targetId": "near-galaxy",
+            "targetName": "Nearby spiral"
+          }
+        }
+      ]
+    },
+    {
+      "route": "group",
+      "highlight": {
+        "id": "elliptical",
+        "name": "Golden elliptical pass",
+        "seconds": 30,
+        "description": "Compare the smooth warm halo with the nearby spiral.",
+        "targetId": "golden-elliptical"
+      },
+      "id": "elliptical",
+      "before": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 53,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -449625.69450759375,
+            399838.52270169376,
+            -1049157.7234967712
+          ],
+          "yaw": 0.40489068952351737,
+          "pitch": -0.33682123231500827,
+          "distanceLy": 940.7278801544334,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "near-galaxy"
+      },
+      "eventCount": 11,
+      "accepted": true,
+      "after": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 53,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            720000,
+            410000,
+            565000
+          ],
+          "yaw": 0.2736593210820904,
+          "pitch": 0.4417733155472801,
+          "distanceLy": 2160583.4405737584,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "golden-elliptical"
+      },
+      "info": {
+        "distanceLy": 2160583.4405737584,
+        "universeYears": 0,
+        "travelerYears": 0,
+        "position": [
+          720000,
+          410000,
+          565000
+        ],
+        "yaw": 0.2736593210820904,
+        "pitch": 0.4417733155472801,
+        "running": false,
+        "target": {
+          "id": "golden-elliptical",
+          "name": "Golden elliptical",
+          "distanceLy": 327452.2866006588,
+          "coincident": false,
+          "guide": {
+            "screen": [
+              0.5,
+              0.5000000000000002
+            ],
+            "inView": true,
+            "angleDeg": 9.54166404439055e-15,
+            "behind": false,
+            "sector": "down",
+            "arrowDeg": 90,
+            "edge": [
+              0.5,
+              0.9
+            ]
+          },
+          "screen": [
+            0.5,
+            0.5000000000000002
+          ],
+          "inView": true,
+          "doppler": 1,
+          "restAngleDeg": 29.499986778556465,
+          "apparentAngleDeg": 29.499986778556465
+        },
+        "navigation": {
+          "active": false,
+          "targetId": null,
+          "completed": false,
+          "alreadyWithin": false,
+          "remainingLy": 0,
+          "arrivalRadiusLy": 0,
+          "estimatedSeconds": 0,
+          "progress": 0
+        },
+        "flyby": {
+          "active": true,
+          "completed": false,
+          "id": "group",
+          "name": "Galaxy group flyby",
+          "progress": 0.625,
+          "elapsedSeconds": 30,
+          "durationSeconds": 48,
+          "autoLook": true,
+          "phase": "elliptical",
+          "rate": 0.5
+        },
+        "orbit": {
+          "active": false,
+          "targetId": null
+        },
+        "motion": {
+          "smoothTravel": true,
+          "paceLyPerSecond": 0,
+          "targetLyPerSecond": 16227.41726949996,
+          "kind": "flyby"
+        },
+        "framing": {
+          "canLeft": true,
+          "canCenter": true,
+          "canRight": true,
+          "canUndo": false,
+          "placement": null
+        },
+        "trail": [
+          [
+            720000,
+            410000,
+            565000
+          ]
+        ],
+        "cameraMoves": 0
+      },
+      "events": [
+        {
+          "message": "Golden elliptical pass. Travel is paused; start travel to continue from this route moment.",
+          "detail": {
+            "kind": "flyby-highlight",
+            "routeId": "group",
+            "routeName": "Galaxy group flyby",
+            "highlightId": "elliptical",
+            "highlightName": "Golden elliptical pass",
+            "seconds": 30,
+            "position": [
+              720000,
+              410000,
+              565000
+            ],
+            "targetId": "golden-elliptical",
+            "targetName": "Golden elliptical"
+          }
+        }
+      ]
+    },
+    {
+      "route": "group",
+      "highlight": {
+        "id": "panorama",
+        "name": "Galaxy group panorama",
+        "seconds": 44,
+        "description": "Look back across the spiral and elliptical together.",
+        "targetId": "golden-elliptical"
+      },
+      "id": "panorama",
+      "before": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -450000,
+            400000,
+            -1050000
+          ],
+          "yaw": 0.4048917862850834,
+          "pitch": -0.33680887779570645,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "near-galaxy"
+      },
+      "eventCount": 13,
+      "accepted": true,
+      "after": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            1220075.2125317845,
+            1101203.4267783898,
+            -482445.2588986326
+          ],
+          "yaw": -0.7787208485114655,
+          "pitch": -0.6026017328474189,
+          "distanceLy": 3713467.250913006,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "golden-elliptical"
+      },
+      "info": {
+        "distanceLy": 3713467.250913006,
+        "universeYears": 0,
+        "travelerYears": 0,
+        "position": [
+          1220075.2125317845,
+          1101203.4267783898,
+          -482445.2588986326
+        ],
+        "yaw": -0.7787208485114655,
+        "pitch": -0.6026017328474189,
+        "running": false,
+        "target": {
+          "id": "golden-elliptical",
+          "name": "Golden elliptical",
+          "distanceLy": 1501898.3886526106,
+          "coincident": false,
+          "guide": {
+            "screen": [
+              1.4540185426130972,
+              0.33760922778932423
+            ],
+            "inView": false,
+            "angleDeg": 27.110027303198574,
+            "behind": false,
+            "sector": "right",
+            "arrowDeg": -21.486000956628214,
+            "edge": [
+              0.9,
+              0.4319129492951445
+            ]
+          },
+          "screen": [
+            1.4540185426130972,
+            0.33760922778932423
+          ],
+          "inView": false,
+          "doppler": 1,
+          "restAngleDeg": 27.47974189083286,
+          "apparentAngleDeg": 27.479741890832845
+        },
+        "navigation": {
+          "active": false,
+          "targetId": null,
+          "completed": false,
+          "alreadyWithin": false,
+          "remainingLy": 0,
+          "arrivalRadiusLy": 0,
+          "estimatedSeconds": 0,
+          "progress": 0
+        },
+        "flyby": {
+          "active": true,
+          "completed": false,
+          "id": "group",
+          "name": "Galaxy group flyby",
+          "progress": 0.9166666666666666,
+          "elapsedSeconds": 44,
+          "durationSeconds": 48,
+          "autoLook": true,
+          "phase": "reveal",
+          "rate": 0.5
+        },
+        "orbit": {
+          "active": false,
+          "targetId": null
+        },
+        "motion": {
+          "smoothTravel": true,
+          "paceLyPerSecond": 0,
+          "targetLyPerSecond": 73504.08080595518,
+          "kind": "flyby"
+        },
+        "framing": {
+          "canLeft": true,
+          "canCenter": true,
+          "canRight": true,
+          "canUndo": false,
+          "placement": null
+        },
+        "trail": [
+          [
+            1220075.2125317845,
+            1101203.4267783898,
+            -482445.2588986326
+          ]
+        ],
+        "cameraMoves": 0
+      },
+      "events": [
+        {
+          "message": "Galaxy group panorama. Travel is paused; start travel to continue from this route moment.",
+          "detail": {
+            "kind": "flyby-highlight",
+            "routeId": "group",
+            "routeName": "Galaxy group flyby",
+            "highlightId": "panorama",
+            "highlightName": "Galaxy group panorama",
+            "seconds": 44,
+            "position": [
+              1220075.2125317845,
+              1101203.4267783898,
+              -482445.2588986326
+            ],
+            "targetId": "golden-elliptical",
+            "targetName": "Golden elliptical"
+          }
+        }
+      ]
+    },
+    {
+      "route": "group",
+      "highlight": {
+        "id": "panorama",
+        "name": "Galaxy group panorama",
+        "seconds": 44,
+        "description": "Look back across the spiral and elliptical together.",
+        "targetId": "golden-elliptical"
+      },
+      "id": "panorama",
+      "before": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -449991.5058457852,
+            399996.35910129495,
+            -1049980.9869304898
+          ],
+          "yaw": 0.4048917665544103,
+          "pitch": -0.336809079557487,
+          "distanceLy": 21.346282657767112,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "near-galaxy"
+      },
+      "eventCount": 15,
+      "accepted": true,
+      "after": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            1220075.2125317845,
+            1101203.4267783898,
+            -482445.2588986326
+          ],
+          "yaw": -0.7787208485114655,
+          "pitch": -0.6026017328474189,
+          "distanceLy": 3713467.250913006,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "golden-elliptical"
+      },
+      "info": {
+        "distanceLy": 3713467.250913006,
+        "universeYears": 0,
+        "travelerYears": 0,
+        "position": [
+          1220075.2125317845,
+          1101203.4267783898,
+          -482445.2588986326
+        ],
+        "yaw": -0.7787208485114655,
+        "pitch": -0.6026017328474189,
+        "running": false,
+        "target": {
+          "id": "golden-elliptical",
+          "name": "Golden elliptical",
+          "distanceLy": 1501898.3886526106,
+          "coincident": false,
+          "guide": {
+            "screen": [
+              0.7324217233621555,
+              0.33760922778932423
+            ],
+            "inView": true,
+            "angleDeg": 27.110027303198574,
+            "behind": false,
+            "sector": "right",
+            "arrowDeg": -21.486000956628214,
+            "edge": [
+              0.9,
+              0.2205239340599135
+            ]
+          },
+          "screen": [
+            0.7324217233621555,
+            0.33760922778932423
+          ],
+          "inView": true,
+          "doppler": 1,
+          "restAngleDeg": 27.47974189083286,
+          "apparentAngleDeg": 27.479741890832845
+        },
+        "navigation": {
+          "active": false,
+          "targetId": null,
+          "completed": false,
+          "alreadyWithin": false,
+          "remainingLy": 0,
+          "arrivalRadiusLy": 0,
+          "estimatedSeconds": 0,
+          "progress": 0
+        },
+        "flyby": {
+          "active": true,
+          "completed": false,
+          "id": "group",
+          "name": "Galaxy group flyby",
+          "progress": 0.9166666666666666,
+          "elapsedSeconds": 44,
+          "durationSeconds": 48,
+          "autoLook": true,
+          "phase": "reveal",
+          "rate": 0.5
+        },
+        "orbit": {
+          "active": false,
+          "targetId": null
+        },
+        "motion": {
+          "smoothTravel": true,
+          "paceLyPerSecond": 0,
+          "targetLyPerSecond": 73504.08080595518,
+          "kind": "flyby"
+        },
+        "framing": {
+          "canLeft": true,
+          "canCenter": true,
+          "canRight": true,
+          "canUndo": false,
+          "placement": null
+        },
+        "trail": [
+          [
+            1220075.2125317845,
+            1101203.4267783898,
+            -482445.2588986326
+          ]
+        ],
+        "cameraMoves": 0
+      },
+      "events": [
+        {
+          "message": "Galaxy group panorama. Travel is paused; start travel to continue from this route moment.",
+          "detail": {
+            "kind": "flyby-highlight",
+            "routeId": "group",
+            "routeName": "Galaxy group flyby",
+            "highlightId": "panorama",
+            "highlightName": "Galaxy group panorama",
+            "seconds": 44,
+            "position": [
+              1220075.2125317845,
+              1101203.4267783898,
+              -482445.2588986326
+            ],
+            "targetId": "golden-elliptical",
+            "targetName": "Golden elliptical"
+          }
+        }
+      ]
+    },
+    {
+      "route": "group",
+      "highlight": {
+        "id": "elliptical",
+        "name": "Golden elliptical pass",
+        "seconds": 30,
+        "description": "Compare the smooth warm halo with the nearby spiral.",
+        "targetId": "golden-elliptical"
+      },
+      "id": "elliptical",
+      "before": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -449996.21985501744,
+            399998.3798295491,
+            -1049991.5392113938
+          ],
+          "yaw": 0.40489177914476837,
+          "pitch": -0.3368089507234117,
+          "distanceLy": 9.499704739872362,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "near-galaxy"
+      },
+      "eventCount": 17,
+      "accepted": true,
+      "after": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            720000,
+            410000,
+            565000
+          ],
+          "yaw": 0.2736593210820904,
+          "pitch": 0.4417733155472801,
+          "distanceLy": 2160583.4405737584,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "golden-elliptical"
+      },
+      "info": {
+        "distanceLy": 2160583.4405737584,
+        "universeYears": 0,
+        "travelerYears": 0,
+        "position": [
+          720000,
+          410000,
+          565000
+        ],
+        "yaw": 0.2736593210820904,
+        "pitch": 0.4417733155472801,
+        "running": false,
+        "target": {
+          "id": "golden-elliptical",
+          "name": "Golden elliptical",
+          "distanceLy": 327452.2866006588,
+          "coincident": false,
+          "guide": {
+            "screen": [
+              0.5,
+              0.5000000000000001
+            ],
+            "inView": true,
+            "angleDeg": 9.54166404439055e-15,
+            "behind": false,
+            "sector": "down",
+            "arrowDeg": 90,
+            "edge": [
+              0.5,
+              0.9
+            ]
+          },
+          "screen": [
+            0.5,
+            0.5000000000000001
+          ],
+          "inView": true,
+          "doppler": 1,
+          "restAngleDeg": 29.499986778556465,
+          "apparentAngleDeg": 29.499986778556465
+        },
+        "navigation": {
+          "active": false,
+          "targetId": null,
+          "completed": false,
+          "alreadyWithin": false,
+          "remainingLy": 0,
+          "arrivalRadiusLy": 0,
+          "estimatedSeconds": 0,
+          "progress": 0
+        },
+        "flyby": {
+          "active": true,
+          "completed": false,
+          "id": "group",
+          "name": "Galaxy group flyby",
+          "progress": 0.625,
+          "elapsedSeconds": 30,
+          "durationSeconds": 48,
+          "autoLook": true,
+          "phase": "elliptical",
+          "rate": 0.5
+        },
+        "orbit": {
+          "active": false,
+          "targetId": null
+        },
+        "motion": {
+          "smoothTravel": true,
+          "paceLyPerSecond": 0,
+          "targetLyPerSecond": 16227.41726949996,
+          "kind": "flyby"
+        },
+        "framing": {
+          "canLeft": true,
+          "canCenter": true,
+          "canRight": true,
+          "canUndo": false,
+          "placement": null
+        },
+        "trail": [
+          [
+            720000,
+            410000,
+            565000
+          ]
+        ],
+        "cameraMoves": 0
+      },
+      "events": [
+        {
+          "message": "Golden elliptical pass. Travel is paused; start travel to continue from this route moment.",
+          "detail": {
+            "kind": "flyby-highlight",
+            "routeId": "group",
+            "routeName": "Galaxy group flyby",
+            "highlightId": "elliptical",
+            "highlightName": "Golden elliptical pass",
+            "seconds": 30,
+            "position": [
+              720000,
+              410000,
+              565000
+            ],
+            "targetId": "golden-elliptical",
+            "targetName": "Golden elliptical"
+          }
+        }
+      ]
+    }
+  ],
+  "layouts": [
+    {
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "button": {
+        "x": 57,
+        "y": 342.4375,
+        "width": 206,
+        "height": 69.390625
+      },
+      "panel": {
+        "x": 12,
+        "y": 60,
+        "width": 296,
+        "height": 530
+      },
+      "phase": {
+        "x": 16,
+        "y": 41,
+        "width": 130.296875,
+        "height": 14.5
+      },
+      "lens": {
+        "x": 166,
+        "y": 64,
+        "width": 142,
+        "height": 54
+      }
+    },
+    {
+      "viewport": {
+        "width": 568,
+        "height": 320
+      },
+      "button": {
+        "x": 271,
+        "y": 92.9375,
+        "width": 250,
+        "height": 54.390625
+      },
+      "panel": {
+        "x": 236,
+        "y": 12,
+        "width": 320,
+        "height": 164
+      },
+      "phase": {
+        "x": 16,
+        "y": 41,
+        "width": 130.296875,
+        "height": 14.5
+      },
+      "lens": {
+        "x": 414,
+        "y": 16,
+        "width": 142,
+        "height": 54
+      }
+    }
+  ],
+  "served": [
+    {
+      "url": "http://127.0.0.1:3187/stem_lab/stem_tool_universe.js",
+      "status": 200,
+      "hash": "ac3c9457375540576b5dc1a068f8e2c0d4c99d2e4ba73296abea2331394d89fb"
+    },
+    {
+      "url": "http://127.0.0.1:3187/stem_lab/universe_flight_scene.js",
+      "status": 200,
+      "hash": "bcc35fe1750d9977de5e43e40adf2241d43779ed74f708d86324d3db2ac62255"
+    }
+  ],
+  "curationOnly": false,
+  "route": {
+    "id": "group",
+    "name": "Galaxy group flyby",
+    "region": "cosmic",
+    "durationSeconds": 48,
+    "position": [
+      -450000,
+      400000,
+      -1050000
+    ],
+    "aim": [
+      0,
+      0,
+      0
+    ],
+    "fov": 60,
+    "targetId": "near-galaxy",
+    "highlights": [
+      {
+        "id": "spiral",
+        "name": "Spiral skim",
+        "seconds": 12,
+        "description": "Look across the tilted arms of the nearby spiral.",
+        "targetId": "near-galaxy"
+      },
+      {
+        "id": "elliptical",
+        "name": "Golden elliptical pass",
+        "seconds": 30,
+        "description": "Compare the smooth warm halo with the nearby spiral.",
+        "targetId": "golden-elliptical"
+      },
+      {
+        "id": "panorama",
+        "name": "Galaxy group panorama",
+        "seconds": 44,
+        "description": "Look back across the spiral and elliptical together.",
+        "targetId": "golden-elliptical"
+      }
+    ]
+  },
+  "guidedGaze": [
+    {
+      "name": "crossing",
+      "angleDegrees": 6.447070817893021
+    },
+    {
+      "name": "completed",
+      "angleDegrees": 0.399388157014643
+    }
+  ],
+  "guidedFrameCheck": {
+    "frames": 516,
+    "easingSeconds": 0.35,
+    "maximumYawError": 1.054017984003508e-14,
+    "maximumPitchError": 1.7763568394002505e-15
+  },
+  "travelDifference": {
+    "meanAbsolute": 1.6707657582588755,
+    "changedFraction": 0.0526537378628003
+  },
+  "contextActions": [
+    {
+      "highlight": {
+        "id": "elliptical",
+        "name": "Golden elliptical pass",
+        "seconds": 30,
+        "description": "Compare the smooth warm halo with the nearby spiral.",
+        "targetId": "golden-elliptical"
+      },
+      "targetId": "golden-elliptical",
+      "orbit": {
+        "active": true,
+        "targetId": "golden-elliptical"
+      },
+      "pixelHash": "1e02290582abf4316f9ef34d07e3d22f280147df6ff1c4b1e11a0a611aebb5ad"
+    }
+  ],
+  "resources": [
+    {
+      "textures": 2,
+      "deletedTextures": 2,
+      "liveTextures": 0,
+      "buffers": 2,
+      "deletedBuffers": 2,
+      "liveBuffers": 0,
+      "programs": 2,
+      "deletedPrograms": 2,
+      "livePrograms": 0,
+      "error": 0
+    }
+  ]
+}

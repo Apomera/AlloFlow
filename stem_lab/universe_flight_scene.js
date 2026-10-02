@@ -233,27 +233,27 @@
   NEBULA_FLYBY.completionTargetId = 'violet-nebula';
   NEBULA_FLYBY.completionMessage = 'Nebula passage complete. Travel is paused outside the violet emission region; look around or explore another destination.';
   HALO_FLYBY.highlights = [
-    {id:'arm',name:'Spiral arm',seconds:12,description:'Look across the tilted disk as the cluster comes into view.'},
-    {id:'cluster',name:'Cluster pass',seconds:18,description:'Compare the nearby warm stars with the distant spiral.'},
-    {id:'panorama',name:'Galaxy panorama',seconds:32,description:'Look back across the spiral from the halo.'}
+    {id:'arm',name:'Spiral arm',seconds:12,targetId:'galactic-center',description:'Look across the tilted disk as the cluster comes into view.'},
+    {id:'cluster',name:'Cluster pass',seconds:18,targetId:'halo-cluster-2',description:'Compare the nearby warm stars with the distant spiral.'},
+    {id:'panorama',name:'Galaxy panorama',seconds:32,targetId:'galactic-center',description:'Look back across the spiral from the halo.'}
   ];
   NEBULA_FLYBY.highlights = [
-    {id:'approach',name:'Blue cloud approach',seconds:8,description:'See the blue glow against the distant stellar field.'},
-    {id:'filaments',name:'Among the filaments',seconds:12,description:'Look around the layered blue emission region.'},
-    {id:'violet',name:'Violet cloud reveal',seconds:36,description:'Look toward the violet cloud after the curved passage.'}
+    {id:'approach',name:'Blue cloud approach',seconds:8,targetId:'blue-nebula',description:'See the blue glow against the distant stellar field.'},
+    {id:'filaments',name:'Among the filaments',seconds:12,targetId:'blue-nebula',description:'Look around the layered blue emission region.'},
+    {id:'violet',name:'Violet cloud reveal',seconds:36,targetId:'violet-nebula',description:'Look toward the violet cloud after the curved passage.'}
   ];
   GROUP_FLYBY.completionTargetId = 'golden-elliptical';
   GROUP_FLYBY.completionMessage = 'Galaxy group flyby complete. Travel is paused with the spiral and golden elliptical in view; look around or explore another destination.';
   GROUP_FLYBY.highlights = [
-    {id:'spiral',name:'Spiral skim',seconds:12,description:'Look across the tilted arms of the nearby spiral.'},
-    {id:'elliptical',name:'Golden elliptical pass',seconds:30,description:'Compare the smooth warm halo with the nearby spiral.'},
-    {id:'panorama',name:'Galaxy group panorama',seconds:44,description:'Look back across the spiral and elliptical together.'}
+    {id:'spiral',name:'Spiral skim',seconds:12,targetId:'near-galaxy',description:'Look across the tilted arms of the nearby spiral.'},
+    {id:'elliptical',name:'Golden elliptical pass',seconds:30,targetId:'golden-elliptical',description:'Compare the smooth warm halo with the nearby spiral.'},
+    {id:'panorama',name:'Galaxy group panorama',seconds:44,targetId:'golden-elliptical',description:'Look back across the spiral and elliptical together.'}
   ];
   function flybyRoute(id) { return Object.prototype.hasOwnProperty.call(FLYBY_ROUTES,id) ? FLYBY_ROUTES[id] : null; }
   function flybys(region) {
     return Object.keys(FLYBY_ROUTES).map(function(id){return FLYBY_ROUTES[id];}).filter(function(item){return region===undefined || region===item.region;}).map(function(item){
       return {id:item.id,name:item.name,region:item.region,durationSeconds:item.durationSeconds,position:item.position.slice(),aim:item.aim.slice(),fov:item.fov,targetId:item.targetId,
-        highlights:item.highlights.map(function(highlight){return {id:highlight.id,name:highlight.name,seconds:highlight.seconds,description:highlight.description};})};
+        highlights:item.highlights.map(function(highlight){return {id:highlight.id,name:highlight.name,seconds:highlight.seconds,description:highlight.description,targetId:highlight.targetId};})};
     });
   }
 
@@ -1569,6 +1569,8 @@
         if (disposed || lost || !gl || !program || settings.mode!=='explore' || !route || settings.region!==route.region || (!flyby.active&&!flyby.completed)) return false;
         var highlight=route.highlights.filter(function(item){return item.id===id;})[0];
         if (!highlight || !Number.isFinite(highlight.seconds) || highlight.seconds<0 || highlight.seconds>=route.durationSeconds) return false;
+        var destination=getLandmark(highlight.targetId);
+        if (!destination) return false;
         var sample=route.atTime(highlight.seconds);
         if (!sample.position.every(Number.isFinite) || !Number.isFinite(sample.yaw) || !Number.isFinite(sample.pitch) || !Number.isFinite(sample.distance)) return false;
         // This is an explicit camera jump to route progress, not elapsed travel.
@@ -1576,10 +1578,10 @@
         cancelFrame();
         state={position:sample.position.slice(),yaw:sample.yaw,pitch:sample.pitch,distanceLy:sample.distance,universeYears:0,travelerYears:0};
         flyby={active:true,completed:false,id:route.id,elapsedSeconds:highlight.seconds,autoLook:true}; flybyPace=0;
-        targetId=route.targetId; navigation={active:false,targetId:null}; orbitId=null;
+        targetId=destination.id; navigation={active:false,targetId:null}; orbitId=null;
         trail=[]; cameraMoves=[]; clearFraming();
         pauseWithMessage(highlight.name+'. Travel is paused; start travel to continue from this route moment.',
-          {kind:'flyby-highlight',routeId:route.id,routeName:route.name,highlightId:highlight.id,highlightName:highlight.name,seconds:highlight.seconds,position:state.position.slice(),targetId:targetId});
+          {kind:'flyby-highlight',routeId:route.id,routeName:route.name,highlightId:highlight.id,highlightName:highlight.name,seconds:highlight.seconds,position:state.position.slice(),targetId:targetId,targetName:destination.name});
         requestDraw(); return true;
       },
       cancelFlyby: function () { if (disposed || lost || !gl || !program) return false; return endFlyby(); },
