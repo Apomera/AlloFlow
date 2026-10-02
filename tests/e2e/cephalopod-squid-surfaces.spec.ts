@@ -7,7 +7,7 @@ const harness = new GlHarness({
 });
 const errors = new WeakMap<Page, string[]>();
 const kinds = ['mantle', 'arm', 'finLeft', 'finRight'] as const;
-const key = 'cl-squid-surface-v26-filtered';
+const key = 'cl-squid-surface-v27-mottled';
 
 async function advance(page: Page, frames: number) {
   await page.evaluate(async count => {
@@ -235,6 +235,7 @@ for (const quality of ['low', 'balanced'] as const) {
       expect(fragment).toContain('clSqDetailFilter(length(fwidth(clSqFinePos)))');
       expect(fragment).toContain('clSqDetailFilter(length(fwidth(clSqGrainPos)))');
       expect(fragment).toContain('diffuseColor.rgb*=clSqPigmentTone('); expect(fragment).toContain('roughnessFactor=clSqRoughness(');
+      expect(fragment).toContain('float clSqMottleTone('); expect(fragment).toContain('diffuseColor.rgb*=clSqMottleTone(clPatch,clDorsal,clVentral);');
     }
     expectStable(initial, initial); expectSamples(initialSamples);
     await page.keyboard.down('KeyW'); await page.keyboard.down('KeyD'); await advance(page, 7);

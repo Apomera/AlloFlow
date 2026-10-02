@@ -1,0 +1,2 @@
+const path=require('node:path');
+module.exports={testDir:path.resolve(__dirname,'../../../tests/e2e'),fullyParallel:false,workers:1,retries:0,timeout:180000,expect:{timeout:15000},reporter:[['line'],['json',{outputFile:path.join(__dirname,'native-final.json')}]],use:{browserName:'chromium',viewport:{width:1280,height:1000},deviceScaleFactor:1,actionTimeout:30000,navigationTimeout:90000,video:'off',trace:'off',screenshot:'only-on-failure'},outputDir:path.join(__dirname,'native-artifacts')};

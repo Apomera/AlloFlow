@@ -11338,13 +11338,13 @@ function createCLHuntAnimal(T, species) {
       squidBaseCompiler(shader);shader.uniforms.clSurfaceFrame=squidSurfaceFrame;
       shader.vertexShader=shader.vertexShader.replace('varying vec3 clSkinPos;','uniform mat4 clSurfaceFrame; varying vec3 clSkinPos;').replace('clSkinPos = position;','clSkinPos = (clSurfaceFrame * modelMatrix * vec4(position,1.0)).xyz;');
       // Bounded pigment cells fade only when their animal-space footprint is subpixel.
-      shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\n'+"float clSqHash(float x,float y,float z){float h=mod(x*7.0+19.0,127.0);h=mod(h*mod(h,13.0)+y*5.0+23.0,127.0);h=mod(h*mod(h,11.0)+z*3.0+31.0,127.0);return mod(h*mod(h,7.0)+17.0,127.0)/126.0;}\nfloat clSqDetailFilter(float footprint){return 1.0-smoothstep(0.35,1.10,footprint);}\nfloat clSqPigmentTone(float fine,float grain,float pigmentPatch,float dorsal,float fineAA,float grainAA){float pigment=smoothstep(0.60+pigmentPatch*0.045,0.82,fine);return 1.0-pigment*(0.07+0.09*dorsal)*fineAA-smoothstep(0.67,0.84,grain)*0.028*grainAA;}\nfloat clSqRoughness(float base,float fine,float fineAA){return clamp(base*(0.93+(0.5+(fine-0.5)*fineAA)*0.16),0.28,0.62);}").replace("float clHash(vec3 p){return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453);}",'float clHash(vec3 p){return clSqHash(p.x,p.y,p.z);}');
+      shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\n'+"float clSqHash(float x,float y,float z){float h=mod(x*7.0+19.0,127.0);h=mod(h*mod(h,13.0)+y*5.0+23.0,127.0);h=mod(h*mod(h,11.0)+z*3.0+31.0,127.0);return mod(h*mod(h,7.0)+17.0,127.0)/126.0;}\nfloat clSqDetailFilter(float footprint){return 1.0-smoothstep(0.35,1.10,footprint);}\nfloat clSqMottleTone(float pigmentPatch,float dorsal,float ventral){float strength=(0.12+0.16*dorsal)*(1.0-ventral);return 1.0+(pigmentPatch-0.5)*strength;}\nfloat clSqPigmentTone(float fine,float grain,float pigmentPatch,float dorsal,float fineAA,float grainAA){float pigment=smoothstep(0.60+pigmentPatch*0.045,0.82,fine);return 1.0-pigment*(0.07+0.09*dorsal)*fineAA-smoothstep(0.67,0.84,grain)*0.028*grainAA;}\nfloat clSqRoughness(float base,float fine,float fineAA){return clamp(base*(0.93+(0.5+(fine-0.5)*fineAA)*0.16),0.28,0.62);}").replace("float clHash(vec3 p){return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453);}",'float clHash(vec3 p){return clSqHash(p.x,p.y,p.z);}');
       // Three r128's physical shader prefix enables derivatives for Standard/Physical materials.
       var squidDerivatives=!!(renderer&&renderer.capabilities&&(renderer.capabilities.isWebGL2||(renderer.extensions&&renderer.extensions.has('OES_standard_derivatives'))));
-      shader.fragmentShader=shader.fragmentShader.replace("float mottling=clNoise(clSkinPos*13.0+vec3(0.0,clNoise(clSkinPos*5.0),0.0)); float grain=clNoise(clSkinPos*105.0); float cells=smoothstep(0.56,0.78,grain); float belly=1.0-smoothstep(-0.18,0.10,clSkinPos.y); float bands=0.5+0.5*sin(clSkinPos.z*15.0-clPhase*4.0); diffuseColor.rgb *= 0.87 + mottling*0.25 - cells*0.20 - smoothstep(0.38,0.74,mottling)*clPattern*0.26 - bands*clDisplay*0.32; diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*0.65+vec3(0.36,0.27,0.18),belly*0.30);","float clMacro=clNoise(clSkinPos*vec3(4.5,7.0,3.0)); vec3 clSqFinePos=clSkinPos*vec3(112.0,128.0,104.0); vec3 clSqGrainPos=clSkinPos*218.0; float clFine=clNoise(clSqFinePos); float clGrain=clNoise(clSqGrainPos);"+' '+(squidDerivatives?"float clSqFineAA=clSqDetailFilter(length(fwidth(clSqFinePos))); float clSqGrainAA=clSqDetailFilter(length(fwidth(clSqGrainPos)));":"float clSqFineAA=0.0; float clSqGrainAA=0.0;")+' '+"float clDorsal=smoothstep(-0.08,0.25,clSkinPos.y); float clVentral=1.0-smoothstep(-0.22,0.025,clSkinPos.y); float clPatch=smoothstep(0.24,0.80,clMacro); vec3 clPale=diffuseColor.rgb*0.22+vec3(0.29,0.23,0.20); vec3 clRed=diffuseColor.rgb*(0.91+0.20*clPatch); float clLightPatch=clamp(clVentral*0.69+(1.0-clDorsal)*(0.06+(1.0-clPatch)*0.08),0.0,0.80); diffuseColor.rgb=mix(clRed,clPale,clLightPatch); diffuseColor.rgb*=clSqPigmentTone(clFine,clGrain,clPatch,clDorsal,clSqFineAA,clSqGrainAA);");
+      shader.fragmentShader=shader.fragmentShader.replace("float mottling=clNoise(clSkinPos*13.0+vec3(0.0,clNoise(clSkinPos*5.0),0.0)); float grain=clNoise(clSkinPos*105.0); float cells=smoothstep(0.56,0.78,grain); float belly=1.0-smoothstep(-0.18,0.10,clSkinPos.y); float bands=0.5+0.5*sin(clSkinPos.z*15.0-clPhase*4.0); diffuseColor.rgb *= 0.87 + mottling*0.25 - cells*0.20 - smoothstep(0.38,0.74,mottling)*clPattern*0.26 - bands*clDisplay*0.32; diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*0.65+vec3(0.36,0.27,0.18),belly*0.30);","float clMacro=clNoise(clSkinPos*vec3(4.5,7.0,3.0)); vec3 clSqFinePos=clSkinPos*vec3(112.0,128.0,104.0); vec3 clSqGrainPos=clSkinPos*218.0; float clFine=clNoise(clSqFinePos); float clGrain=clNoise(clSqGrainPos);"+' '+(squidDerivatives?"float clSqFineAA=clSqDetailFilter(length(fwidth(clSqFinePos))); float clSqGrainAA=clSqDetailFilter(length(fwidth(clSqGrainPos)));":"float clSqFineAA=0.0; float clSqGrainAA=0.0;")+' '+"float clDorsal=smoothstep(-0.08,0.25,clSkinPos.y); float clVentral=1.0-smoothstep(-0.22,0.025,clSkinPos.y); float clPatch=smoothstep(0.24,0.80,clMacro); vec3 clPale=diffuseColor.rgb*0.22+vec3(0.29,0.23,0.20); vec3 clRed=diffuseColor.rgb*(0.91+0.20*clPatch); float clLightPatch=clamp(clVentral*0.69+(1.0-clDorsal)*(0.06+(1.0-clPatch)*0.08),0.0,0.80); diffuseColor.rgb=mix(clRed,clPale,clLightPatch); diffuseColor.rgb*=clSqPigmentTone(clFine,clGrain,clPatch,clDorsal,clSqFineAA,clSqGrainAA); diffuseColor.rgb*=clSqMottleTone(clPatch,clDorsal,clVentral);");
       shader.fragmentShader=shader.fragmentShader.replace('#include <roughnessmap_fragment>','#include <roughnessmap_fragment>\nroughnessFactor=clSqRoughness(roughnessFactor,clFine,clSqFineAA);');
     };
-    skin.customProgramCacheKey=function(){return 'cl-squid-surface-v26-filtered';};
+    skin.customProgramCacheKey=function(){return 'cl-squid-surface-v27-mottled';};
   }
   // Sepia-like mantle patches and fine pigment retain the simulation's camouflage tint.
   // The old mesh-local coordinate remains dedicated to the unchanged passing-cloud phase.
@@ -15400,13 +15400,52 @@ function createCLHuntFish(T,index){
         if(speciesId==='nautilus')labelSpecs[0]=['Shell','cl-shell'];
         else if(speciesId==='vampireSquid')labelSpecs.push(['Webbing','cl-webbing']);
         else if(capabilities.swimming)labelSpecs.push(['Fin','cl-fin-1']);
-        labelSpecs.forEach(function(spec,index){var el=document.createElement('div');el.className='cl-anatomy-label';el.textContent=spec[0];el.setAttribute('aria-hidden','true');inspectionPanel.appendChild(el);anatomyLabels.push({el:el,object:octopus.getObjectByName(spec[1]),index:index});});
+        var anatomyGuides=document.createElementNS('http://www.w3.org/2000/svg','svg');anatomyGuides.classList.add('cl-anatomy-guides');anatomyGuides.setAttribute('aria-hidden','true');inspectionPanel.appendChild(anatomyGuides);
+        labelSpecs.forEach(function(spec,index){
+          var el=document.createElement('div');el.className='cl-anatomy-label';el.textContent=spec[0];el.setAttribute('aria-hidden','true');inspectionPanel.appendChild(el);
+          var guide=document.createElementNS('http://www.w3.org/2000/svg','g'),line=document.createElementNS('http://www.w3.org/2000/svg','line'),dot=document.createElementNS('http://www.w3.org/2000/svg','circle');
+          dot.setAttribute('r','2.2');guide.appendChild(line);guide.appendChild(dot);anatomyGuides.appendChild(guide);
+          anatomyLabels.push({el:el,object:octopus.getObjectByName(spec[1]),index:index,guide:guide,line:line,dot:dot});
+        });
         var anatomyDescription=document.createElement('p');anatomyDescription.className='cl-inspection-description';anatomyDescription.textContent=labelSpecs.map(function(spec){return spec[0];}).join(' · ');inspectionTitle.appendChild(anatomyDescription);
+        // Pack measured callouts along the side rails, leaving the specimen center clear.
+        // Exhaustive side assignments stay tiny: each species has three to five labels.
+        function layoutCLAnatomyLabels(items,bounds){
+          var width=bounds.right-bounds.left,height=bounds.bottom-bounds.top,gap=7;
+          if(!items.length||!(width>0&&height>0)||items.length>8)return [];
+          var best=null,bestCost=Infinity;
+          for(var mask=0;mask<(1<<items.length);mask++){
+            var groups=[[],[]],valid=true,placed=[],cost=0;
+            items.forEach(function(item,i){
+              if(!Number.isFinite(item.x+item.y+item.width+item.height)||item.width<=0||item.height<=0||item.width>(width-gap)/2||item.height>height){valid=false;return;}
+              groups[(mask>>i)&1].push({item:item,sourceIndex:i});
+            });
+            if(!valid)continue;
+            groups.forEach(function(group,side){
+              group.sort(function(a,b){return a.item.y-b.item.y||a.item.index-b.item.index||a.sourceIndex-b.sourceIndex;});
+              var required=group.reduce(function(total,row){return total+row.item.height;},0)+Math.max(0,group.length-1)*gap;
+              if(required>height){valid=false;return;}
+              var next=bounds.top;
+              group.forEach(function(row){var item=row.item;row.top=Math.max(next,Math.min(bounds.bottom-item.height,Math.max(bounds.top,item.y-item.height/2)));next=row.top+item.height+gap;});
+              next=bounds.bottom;
+              for(var gi=group.length-1;gi>=0;gi--){var row=group[gi];row.top=Math.min(row.top,next-row.item.height);next=row.top-gap;}
+              group.forEach(function(row){
+                var item=row.item,left=side?bounds.right-item.width:bounds.left;
+                var endX=Math.max(left,Math.min(left+item.width,item.x)),endY=Math.max(row.top,Math.min(row.top+item.height,item.y));
+                cost+=Math.hypot(endX-item.x,(endY-item.y)*1.25);
+                placed[row.sourceIndex]={index:item.index,left:left,top:row.top,width:item.width,height:item.height,anchorX:item.x,anchorY:item.y,endX:endX,endY:endY};
+              });
+            });
+            if(valid&&cost<bestCost){bestCost=cost;best=placed;}
+          }
+          return best||[];
+        }
+        // End measured callout packing.
         function toggleInspection(){
           if(gameState.gameOver)return;
           if(!inspection.active){inspection.wasPaused=gameState.paused;setPaused(true);inspection.active=true;inspection.snapCamera=true;restoreInspectionRocks(true);inspection.yaw=gameState.facingAngle+1.42;inspection.pitch=0.18;inspection.touchAction=canvasEl.style.touchAction;canvasEl.style.touchAction='none';pauseOverlay.style.display='none';camera.fov=44;}
           else{inspection.active=false;restoreInspectionRocks(true);inspection.drag=null;canvasEl.style.touchAction=inspection.touchAction||'';setPaused(inspection.wasPaused);camera.fov=70;}
-          camera.updateProjectionMatrix();stage.classList.toggle('cl-inspecting',inspection.active);inspectionPanel.hidden=!inspection.active;if(inspection.active)frameInspection(true);if(targetHalo){var inspectionTarget=gameState.pendingStrike?gameState.pendingStrike.target:selectedPrey;targetHalo.visible=!inspection.active&&!!inspectionTarget&&inspectionTarget.userData.alive&&capabilities.diet!=='detritus';if(targetHalo.visible){targetHalo.position.copy(inspectionTarget.position);targetHalo.position.y+=0.06;}}canvasEl.focus();clAnnounce(inspection.active?'Inspection. Dive paused. Drag or use orbit controls to examine '+species.name+'. Escape returns.':inspection.wasPaused?'Inspection closed. Dive remains paused.':'Inspection closed. Dive resumed.');
+          camera.updateProjectionMatrix();stage.classList.toggle('cl-inspecting',inspection.active);inspectionPanel.hidden=!inspection.active;scheduleHuntLayout();if(inspection.active)frameInspection(true);if(targetHalo){var inspectionTarget=gameState.pendingStrike?gameState.pendingStrike.target:selectedPrey;targetHalo.visible=!inspection.active&&!!inspectionTarget&&inspectionTarget.userData.alive&&capabilities.diet!=='detritus';if(targetHalo.visible){targetHalo.position.copy(inspectionTarget.position);targetHalo.position.y+=0.06;}}canvasEl.focus();clAnnounce(inspection.active?'Inspection. Dive paused. Drag or use orbit controls to examine '+species.name+'. Escape returns.':inspection.wasPaused?'Inspection closed. Dive remains paused.':'Inspection closed. Dive resumed.');
         }
         function inspectKey(e){
           if(!inspection.active)return;
@@ -15423,7 +15462,7 @@ function createCLHuntFish(T,index){
         stage.addEventListener('keydown',inspectKey,true);
         canvasEl.addEventListener('pointerdown',inspectPointerDown);canvasEl.addEventListener('pointermove',inspectPointerMove);canvasEl.addEventListener('pointerup',inspectPointerUp);canvasEl.addEventListener('pointercancel',inspectPointerUp);canvasEl.addEventListener('lostpointercapture',inspectPointerUp);canvasEl.addEventListener('wheel',inspectWheel,{passive:false});
         [tutorial,captions,bioPopup,actionPrompt].forEach(function(el){el.classList.add('cl-hunt-feedback');});
-        uiStyle.textContent+='.cl-inspecting .cl-hunt-feedback{display:none!important}.cl-inspection[hidden]{display:none}.cl-inspection{position:absolute;inset:0;z-index:8;pointer-events:none;color:#ecf9f8}.cl-inspection-title{position:absolute;top:16px;left:18px;right:18px;text-shadow:0 2px 6px #00111d}.cl-inspection-title strong{font-size:22px;letter-spacing:.03em}.cl-inspection-title p{font-size:12px;margin:6px 0}.cl-inspection-description{color:#bddbdf}.cl-inspection-tools{position:absolute;bottom:14px;left:12px;right:12px;display:flex;justify-content:center;flex-wrap:wrap;gap:6px;pointer-events:auto}.cl-anatomy-label{position:absolute;border-bottom:1px solid #a4dddd;background:#071f2bde;border-radius:5px;padding:4px 8px;font-size:11px;white-space:nowrap;transform:translate(-50%,-140%)}.cl-inspecting .cl-hunt-hud,.cl-inspecting .cl-hunt-mission,.cl-inspecting .cl-hunt-map,.cl-inspecting .cl-hunt-controls,.cl-inspecting .cl-hunt-touch{display:none!important}.cl-hunt-small .cl-inspection-tools button{padding:7px 9px;min-height:38px}.cl-hunt-small .cl-inspection-title strong{font-size:18px}';
+        uiStyle.textContent+='.cl-inspecting .cl-hunt-feedback{display:none!important}.cl-inspection[hidden]{display:none}.cl-inspection{position:absolute;inset:0;z-index:8;pointer-events:none;color:#ecf9f8}.cl-inspection-title{position:absolute;top:16px;left:18px;right:18px;text-shadow:0 2px 6px #00111d}.cl-inspection-title strong{font-size:22px;letter-spacing:.03em}.cl-inspection-title p{font-size:12px;margin:6px 0}.cl-inspection-description{color:#bddbdf}.cl-inspection-tools{position:absolute;bottom:14px;left:12px;right:12px;display:flex;justify-content:center;flex-wrap:wrap;gap:6px;pointer-events:auto}.cl-anatomy-guides{position:absolute;inset:0;width:100%;height:100%;overflow:hidden;pointer-events:none}.cl-anatomy-guides line{stroke:#a4dddd;stroke-width:1.2;opacity:.82;vector-effect:non-scaling-stroke}.cl-anatomy-guides circle{fill:#c1efed;stroke:#071f2b;stroke-width:1}.cl-anatomy-label{position:absolute;box-sizing:border-box;border:1px solid #426b75;border-bottom-color:#a4dddd;background:#071f2bee;border-radius:5px;padding:4px 8px;font-size:11px;line-height:1.3;white-space:normal;transform:none}.cl-large-text .cl-anatomy-label{font-size:13px}.cl-high-contrast .cl-anatomy-label{background:#000;border-color:#fff;color:#fff}.cl-high-contrast .cl-anatomy-guides line{stroke:#fff;opacity:1}.cl-inspecting .cl-hunt-hud,.cl-inspecting .cl-hunt-mission,.cl-inspecting .cl-hunt-map,.cl-inspecting .cl-hunt-controls,.cl-inspecting .cl-hunt-touch{display:none!important}.cl-hunt-small .cl-inspection-tools button{padding:7px 9px;min-height:38px}.cl-hunt-small .cl-inspection-title strong{font-size:18px}';
         // Inspection is a paused specimen view: preserve its fitted orbit radius instead
         // of pushing the camera into the animal when nearby cover crosses the sightline.
         // Only presentation visibility changes; rock geometry and cover/collision arrays stay intact.
@@ -15481,11 +15520,24 @@ function createCLHuntFish(T,index){
           camera.lookAt(cameraLook);camera.updateMatrixWorld();
           if(inspection.active){
             octopus.updateMatrixWorld(true);
-            anatomyLabels.forEach(function(label){var obj=label.object;if(!obj){label.el.hidden=true;return;}var pt=new THREE.Vector3();
+            var canvasBounds=canvasEl.getBoundingClientRect(),panelBounds=inspectionPanel.getBoundingClientRect(),titleBounds=inspectionTitle.getBoundingClientRect(),toolsBounds=inspectionTools.getBoundingClientRect();
+            var canvasLeft=canvasBounds.left-panelBounds.left,canvasTop=canvasBounds.top-panelBounds.top;
+            var labelBounds={left:canvasLeft+12,right:canvasLeft+canvasBounds.width-12,top:Math.max(canvasTop+12,titleBounds.bottom-panelBounds.top+12),bottom:Math.min(canvasTop+canvasBounds.height-12,toolsBounds.top-panelBounds.top-12)};
+            var labelItems=[];
+            anatomyLabels.forEach(function(label){
+              label.el.hidden=true;label.guide.style.display='none';var obj=label.object;if(!inspection.labels||!obj)return;var pt=new THREE.Vector3();
               if(obj.geometry&&obj.geometry.attributes.position&&/^cl-(arm|tentacle|fin|web)/.test(obj.name)){var attr=obj.geometry.attributes.position;pt.fromBufferAttribute(attr,Math.floor(attr.count*0.68));obj.localToWorld(pt);}else obj.getWorldPosition(pt);
-              pt.project(camera);var x=(pt.x*0.5+0.5)*canvasEl.clientWidth,y=(-pt.y*0.5+0.5)*canvasEl.clientHeight;
-              label.el.hidden=!inspection.labels||pt.z>1||pt.z<0||x<50||x>canvasEl.clientWidth-50||y<105||y>canvasEl.clientHeight-100;
-              label.el.style.left=x+'px';label.el.style.top=(y+(label.index%2?30:-20))+'px';
+              pt.project(camera);var x=canvasLeft+(pt.x*0.5+0.5)*canvasBounds.width,y=canvasTop+(-pt.y*0.5+0.5)*canvasBounds.height;
+              if(!Number.isFinite(x+y+pt.z)||pt.z>1||pt.z< -1||x<canvasLeft||x>canvasLeft+canvasBounds.width||y<canvasTop||y>canvasTop+canvasBounds.height)return;
+              label.el.hidden=false;label.el.style.maxWidth=Math.max(1,Math.floor((labelBounds.right-labelBounds.left-7)/2))+'px';label.el.style.left=labelBounds.left+'px';
+              var measured=label.el.getBoundingClientRect();labelItems.push({x:x,y:y,width:measured.width,height:measured.height,index:label.index});
+            });
+            var callouts=layoutCLAnatomyLabels(labelItems,labelBounds);
+            labelItems.forEach(function(item){anatomyLabels[item.index].el.hidden=true;});
+            callouts.forEach(function(callout){
+              var label=anatomyLabels[callout.index];label.el.hidden=false;label.el.style.left=callout.left+'px';label.el.style.top=callout.top+'px';
+              label.line.setAttribute('x1',callout.anchorX);label.line.setAttribute('y1',callout.anchorY);label.line.setAttribute('x2',callout.endX);label.line.setAttribute('y2',callout.endY);label.dot.setAttribute('cx',callout.anchorX);label.dot.setAttribute('cy',callout.anchorY);
+              label.guide.style.display=Math.hypot(callout.endX-callout.anchorX,callout.endY-callout.anchorY)>=4?'':'none';
             });
           }
         }
@@ -17561,7 +17613,7 @@ function createCLHuntFish(T,index){
           var coarse=!!(window.matchMedia&&(window.matchMedia('(pointer: coarse)').matches||window.matchMedia('(any-pointer: coarse)').matches));
           var touch=nW<600||coarse||!!navigator.maxTouchPoints;
           stage.classList.toggle('cl-hunt-small',nW<600);stage.classList.toggle('cl-hunt-touch-enabled',touch);stage.classList.toggle('cl-hunt-wide-touch',touch&&nW>=600);
-          if(touch){var rect=stage.getBoundingClientRect(),intersects=rect.top<viewHeight&&rect.bottom>0,available=intersects?viewHeight-Math.max(0,rect.top)-12:viewHeight-24;layoutVar('--cl-touch-stage-height',Math.max(1,Math.min(720,Math.floor(available)))+'px');}
+          if(touch){var rect=stage.getBoundingClientRect(),intersects=rect.top<viewHeight&&rect.bottom>0,available=intersects?viewHeight-Math.max(0,rect.top)-12:viewHeight-24;if(inspection.active)available=Math.max(available,inspectionTitle.offsetTop+inspectionTitle.offsetHeight+inspectionTools.offsetHeight+140);layoutVar('--cl-touch-stage-height',Math.max(1,Math.min(720,Math.floor(available)))+'px');}
           else stage.style.removeProperty('--cl-touch-stage-height');
           moveMobileDetails(touch);
           var nH=canvasEl.clientHeight||500;

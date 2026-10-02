@@ -9,7 +9,7 @@ const begin=source.indexOf('function createCLHuntAnimal('),end=source.indexOf('/
 if(begin<0||end<=begin)throw Error('Cannot find actual production animal factory');
 const build=new Function('T','species','Math',source.slice(begin,end)+';return createCLHuntAnimal(T,species);');
 const noRandom=Object.assign(Object.create(Math),{random(){throw Error('Squid surface consumed dive RNG');}}),allocated=[];
-const key='cl-squid-surface-v26-filtered',state=(extra={})=>({moving:false,jet:false,strike:0,camo:0,substrate:'sand',display:false,reducedMotion:false,...extra});
+const key='cl-squid-surface-v27-mottled',state=(extra={})=>({moving:false,jet:false,strike:0,camo:0,substrate:'sand',display:false,reducedMotion:false,...extra});
 const webgl2={capabilities:{isWebGL2:true},extensions:{has(){throw Error('WebGL2 must not query derivative extension');}}};
 function rig(id='humboldtSquid'){const a=build(THREE,{id,bodyColor:0xbc6048},noRandom);allocated.push(a);return a;}
 function meshes(a){const out=[];a.root.traverse(o=>{if(o.isMesh)out.push(o);});return out;}
@@ -17,7 +17,7 @@ function skinMaterials(a){return [...new Set(meshes(a).map(o=>o.material).filter
 function compiled(m,renderer=webgl2){const s={vertexShader:THREE.ShaderLib.standard.vertexShader,fragmentShader:THREE.ShaderLib.standard.fragmentShader,uniforms:{}};m.onBeforeCompile(s,renderer);return s;}
 function scalarFunctions(shader){
   const defs=Array.from(shader.fragmentShader.matchAll(/float (clSq\w+)\(([^)]*)\)\{([^{}]*)\}/g));
-  if(defs.length!==4)throw Error('Expected four production squid scalar helpers');
+  if(defs.length!==5)throw Error('Expected five production squid scalar helpers');
   const js=defs.map(([,name,params,body])=>'function '+name+'('+params.replace(/float /g,'')+'){'+body.replace(/\bfloat /g,'let ')+'}').join('\n');
   const clamp=(x,a,b)=>Math.max(a,Math.min(b,x)),mod=(x,n)=>x-n*Math.floor(x/n);
   const smoothstep=(a,b,x)=>{const t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t);};
@@ -82,6 +82,32 @@ describe('Humboldt squid stable pigment finish',()=>{
       expect(f.clSqRoughness(base,fine,0)).toBe(f.clSqRoughness(base,.5,0));
       for(const aa of [0,.25,.5,.75,1]){const r=f.clSqRoughness(base,fine,aa);expect(r).toBeGreaterThanOrEqual(.28);expect(r).toBeLessThanOrEqual(.62);}
     }
+  });
+
+  it('keeps broad dorsal mottling visible independently of fine filtering and leaves the fully pale belly unchanged',()=>{
+    const shader=compiled(rig().mantleMat),f=scalarFunctions(shader);
+    expect(shader.fragmentShader).toContain('diffuseColor.rgb*=clSqMottleTone(clPatch,clDorsal,clVentral);');
+    expect(shader.fragmentShader).toContain('float strength=(0.12+0.16*dorsal)*(1.0-ventral);');
+    expect(shader.fragmentShader).not.toMatch(/clSqMottleTone\(clPatch[^;]*clSq(?:Fine|Grain)AA/);
+    for(const dorsal of [0,.25,.5,.75,1])for(const ventral of [0,.25,.5,.75,1]){
+      let previous=-Infinity;
+      for(let patch=0;patch<=1;patch+=.025){
+        const tone=f.clSqMottleTone(patch,dorsal,ventral);
+        expect(Number.isFinite(tone)).toBe(true);expect(tone).toBeGreaterThanOrEqual(.86-Number.EPSILON);expect(tone).toBeLessThanOrEqual(1.14+Number.EPSILON);
+        expect(tone).toBeGreaterThanOrEqual(previous);previous=tone;
+        if(ventral===1)expect(tone).toBe(1);
+      }
+      expect(f.clSqMottleTone(.5,dorsal,ventral)).toBe(1);
+    }
+    const dorsalContrast=f.clSqMottleTone(1,1,0)-f.clSqMottleTone(0,1,0);
+    const flankContrast=f.clSqMottleTone(1,0,0)-f.clSqMottleTone(0,0,0);
+    expect(dorsalContrast).toBeGreaterThan(.27);expect(dorsalContrast).toBeGreaterThan(flankContrast);
+    expect(f.clSqMottleTone(0,1,.75)).toBeGreaterThan(f.clSqMottleTone(0,1,0));
+    // Even the simultaneous darkest red macro patch and fully resolved fine cells retain color.
+    const dark=f.clSqMottleTone(0,1,0)*.91*f.clSqPigmentTone(1,1,0,1,1,1);
+    expect(dark).toBeGreaterThan(.63);
+    // Filtering can remove fine cells; it cannot erase the coherent broad patch.
+    expect(f.clSqMottleTone(0,1,0)*f.clSqPigmentTone(1,1,0,1,0,0)).toBeLessThan(.9);
   });
 
   it('reuses the root inverse frame and every geometry/material buffer across motion, strike and frozen updates',()=>{

@@ -1,0 +1,12 @@
+*.log
+*.json
+!validation-summary.json
+!resource-integrity.json
+!visual-review.json
+!baseline-reversal.json
+*.generated.cjs
+*.patch
+*-artifacts/
+baseline.source.cjs
+*.candidate.cjs
+*.txt
