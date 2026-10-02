@@ -1,0 +1,194 @@
+{
+  "completed": true,
+  "verifiedAt": "2026-10-02T20:33:19.059Z",
+  "sourceHash": "e452f3d425fddf3c89bb4438818ebe5bc7acf4c3a9f1d73034bab224985311d7",
+  "uiHash": "25c11847e69de8808090feda135315f467cd02ae5042cdbbeade2e393b8fd717",
+  "testHash": "a5f53e2efba0dd0536432aa7962fba5547fff1ce6222353d56cb8a9cbc10178f",
+  "reportHash": "0f9c8f3fb1af84f4fccb89779a557980575012426a266427fee95b5c5f68f39a",
+  "focusedTests": 140,
+  "focusedTestFiles": 5,
+  "focusedTestExitCode": 0,
+  "focusedTestDurationSeconds": 33.88,
+  "stellarBrowser": {
+    "completed": true,
+    "workflowGroups": 10,
+    "accessibilityScopes": 9,
+    "actualCaptures": 13,
+    "pageErrors": 0
+  },
+  "groupBrowser": {
+    "completed": true,
+    "workflowGroups": 10,
+    "accessibilityScopes": 9,
+    "actualCaptures": 13,
+    "pageErrors": 0
+  },
+  "highlightBrowser": {
+    "completed": true,
+    "workflowGroups": 7,
+    "accessibilityScopes": 16,
+    "actualCaptures": 17,
+    "pageErrors": 0
+  },
+  "contextualHighlights": [
+    {
+      "routeId": "halo",
+      "highlightId": "arm",
+      "id": "arm",
+      "name": "Spiral arm",
+      "seconds": 12,
+      "description": "Look across the tilted disk as the cluster comes into view.",
+      "targetId": "galactic-center"
+    },
+    {
+      "routeId": "halo",
+      "highlightId": "cluster",
+      "id": "cluster",
+      "name": "Cluster pass",
+      "seconds": 18,
+      "description": "Compare the nearby warm stars with the distant spiral.",
+      "targetId": "halo-cluster-2"
+    },
+    {
+      "routeId": "halo",
+      "highlightId": "panorama",
+      "id": "panorama",
+      "name": "Galaxy panorama",
+      "seconds": 32,
+      "description": "Look back across the spiral from the halo.",
+      "targetId": "galactic-center"
+    },
+    {
+      "routeId": "nebula",
+      "highlightId": "approach",
+      "id": "approach",
+      "name": "Blue cloud approach",
+      "seconds": 8,
+      "description": "See the blue glow against the distant stellar field.",
+      "targetId": "blue-nebula"
+    },
+    {
+      "routeId": "nebula",
+      "highlightId": "filaments",
+      "id": "filaments",
+      "name": "Among the filaments",
+      "seconds": 12,
+      "description": "Look around the layered blue emission region.",
+      "targetId": "blue-nebula"
+    },
+    {
+      "routeId": "nebula",
+      "highlightId": "violet",
+      "id": "violet",
+      "name": "Violet cloud reveal",
+      "seconds": 36,
+      "description": "Look toward the violet cloud after the curved passage.",
+      "targetId": "violet-nebula"
+    },
+    {
+      "routeId": "group",
+      "highlightId": "spiral",
+      "id": "spiral",
+      "name": "Spiral skim",
+      "seconds": 12,
+      "description": "Look across the tilted arms of the nearby spiral.",
+      "targetId": "near-galaxy"
+    },
+    {
+      "routeId": "group",
+      "highlightId": "elliptical",
+      "id": "elliptical",
+      "name": "Golden elliptical pass",
+      "seconds": 30,
+      "description": "Compare the smooth warm halo with the nearby spiral.",
+      "targetId": "golden-elliptical"
+    },
+    {
+      "routeId": "group",
+      "highlightId": "panorama",
+      "id": "panorama",
+      "name": "Galaxy group panorama",
+      "seconds": 44,
+      "description": "Look back across the spiral and elliptical together.",
+      "targetId": "golden-elliptical"
+    },
+    {
+      "routeId": "stellar",
+      "highlightId": "amber",
+      "id": "amber",
+      "name": "Amber photosphere",
+      "seconds": 10,
+      "description": "Pause beside the warm star to inspect its illustrative surface.",
+      "targetId": "amber-star"
+    },
+    {
+      "routeId": "stellar",
+      "highlightId": "blue",
+      "id": "blue",
+      "name": "Blue star pass",
+      "seconds": 24,
+      "description": "Compare the blue-white surface and the moving stellar background.",
+      "targetId": "blue-star"
+    },
+    {
+      "routeId": "stellar",
+      "highlightId": "pale",
+      "id": "pale",
+      "name": "Pale star reveal",
+      "seconds": 38,
+      "description": "Look across the pale star with the blue emission region beyond.",
+      "targetId": "pale-star"
+    }
+  ],
+  "stellarPassage": {
+    "durationSeconds": 46,
+    "launchExposure": 0.86,
+    "highlightSeconds": [
+      10,
+      24,
+      38
+    ],
+    "sampleCount": 46001,
+    "minimumGeneratedStellarProxyClearanceLy": 0.23111291185127564
+  },
+  "evidenceHashes": {
+    "reports/universe-flight-2026-09-29/stellar-passage/check.json": "742895a7c0aab99c3390383d90dc23f8dda97ac7e4edb038c4b4a2bddc384ec1",
+    "reports/universe-flight-2026-09-29/stellar-passage/group/check.json": "e057c9d7f11616d1ad0039abb915741e5657648c93995e777a2d037c3e301e2d",
+    "reports/universe-flight-2026-09-29/stellar-passage/highlights/check.json": "40bfbf38522c052bda111718d2b46ea105a4fb2f165f23e79c693efb2ea4dae2",
+    "reports/universe-flight-2026-09-29/stellar-passage/route-analysis.json": "252d572b7ad8ee8de9a2be71ae30cc63a25f6571b0cd649c38eca0235c126712",
+    "reports/universe-flight-2026-09-29/stellar-passage/focused-tests.txt": "fff617ec56367d24daebb9c3d2a79158f08fa03c9f5e9f3075c644ab561543d7"
+  },
+  "harnessHashes": {
+    "dev-tools/universe_flight_stellar_flyby_check.cjs": "baefc35d2938c87885888041049c2fbb1ee4273035a46247cf870a4467573a96",
+    "dev-tools/universe_flight_stellar_flyby_audit.cjs": "cd33ea9ca0dfec3820acd3d13eca466c7053755356fc3c0ecba244dc5505fb0b",
+    "dev-tools/universe_flight_group_check.cjs": "d7e9016e54f187848f9d55abe29f1164b77dcc52c8d7010eca872d9a9ba71e9b",
+    "dev-tools/universe_flight_highlights_check.cjs": "63a4b84306bb452a8be387dff4978d0f80daf844433a1b4b24abe4f4065267de"
+  },
+  "selectedCaptureHashes": {
+    "reports/universe-flight-2026-09-29/stellar-passage/stellar-amber.png": "a6bfcf9a436d03567317a2ae907b8c9b860182aa098bd3bd9c9c5fc19512f7a7",
+    "reports/universe-flight-2026-09-29/stellar-passage/stellar-blue.png": "a60d65bb3f8bdb0ad6469551a24f8f0628fc373da289fe2b00442b282b77153b",
+    "reports/universe-flight-2026-09-29/stellar-passage/stellar-pale.png": "a7148c6218e5ae3f1e06b355e71d0b8c9d7b410a1cd547f56106eee2352518f9",
+    "reports/universe-flight-2026-09-29/stellar-passage/stellar-completed.png": "0b9894b6575bece37b362911594479759d85d357ed7fac339075bce642087b7d",
+    "reports/universe-flight-2026-09-29/stellar-passage/stellar-current-320.png": "115004876dfe94aa615aa2e4ea4537badad9f749cb46a43816b7927af5794cf8",
+    "reports/universe-flight-2026-09-29/stellar-passage/stellar-current-568.png": "f59190d50624dae43ab21fffc5968aff02d77d6ae4d16891cb1e618c64f77e12",
+    "reports/universe-flight-2026-09-29/stellar-passage/stellar-blue-orbit.png": "6957d219f59ea5ae5ad90a729042898a8d07127764fcc8d1ab0de1bce45adeab"
+  },
+  "mirrorsMatch": true,
+  "syntaxChecks": 10,
+  "served": [
+    {
+      "file": "universe_flight_scene.js",
+      "status": 200,
+      "hash": "e452f3d425fddf3c89bb4438818ebe5bc7acf4c3a9f1d73034bab224985311d7"
+    },
+    {
+      "file": "stem_tool_universe.js",
+      "status": 200,
+      "hash": "25c11847e69de8808090feda135315f467cd02ae5042cdbbeade2e393b8fd717"
+    }
+  ],
+  "preview": {
+    "url": "http://127.0.0.1:3187/reports/universe-flight-2026-09-29/preview.html?enhanced=31#universe-flight"
+  },
+  "limitations": "Generated teaching scenery and authored camera travel; illustrative stellar appearance and display proxies. Functional/scoped accessibility checks do not measure frame rate or provide a complete accessibility audit."
+}

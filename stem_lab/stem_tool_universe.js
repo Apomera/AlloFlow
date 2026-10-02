@@ -263,7 +263,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
   }
 
   function flybyPhaseLabel(flyby,label) {
-    var phases=flyby.id==='nebula'?{depart:'Leaving the stellar field',filaments:'Approaching the blue filaments',passage:'Passing the blue veil',turn:'Turning toward the violet cloud',reveal:'Revealing the violet cloud',complete:'Nebula view ready'}:flyby.id==='group'?{depart:'Approaching the foreground spiral',spiral:'Sweeping around the spiral',crossing:'Crossing toward the golden elliptical',elliptical:'Passing the golden elliptical',reveal:'Revealing the galaxy group',complete:'Galaxy group view ready'}:{arm:'Skimming the spiral arm',approach:'Approaching the halo',cluster:'Passing the star cluster',turn:'Turning toward the galaxy',reveal:'Revealing the spiral',complete:'Galaxy view ready'};
+    var byRoute={
+      halo:{arm:'Skimming the spiral arm',approach:'Approaching the halo',cluster:'Passing the star cluster',turn:'Turning toward the galaxy',reveal:'Revealing the spiral',complete:'Galaxy view ready'},
+      nebula:{depart:'Leaving the stellar field',filaments:'Approaching the blue filaments',passage:'Passing the blue veil',turn:'Turning toward the violet cloud',reveal:'Revealing the violet cloud',complete:'Nebula view ready'},
+      group:{depart:'Approaching the foreground spiral',spiral:'Sweeping around the spiral',crossing:'Crossing toward the golden elliptical',elliptical:'Passing the golden elliptical',reveal:'Revealing the galaxy group',complete:'Galaxy group view ready'},
+      stellar:{depart:'Approaching the amber star',amber:'Passing the amber photosphere','to-blue':'Crossing toward the blue star',blue:'Passing the blue star','to-pale':'Crossing toward the pale star',pale:'Passing the pale star',reveal:'Looking back across the stars',complete:'Stellar view ready'}
+    },phases=byRoute[flyby.id]||byRoute.halo;
     return label((flyby.id==='halo'?'flyby_phase_':'flyby_'+flyby.id+'_phase_')+flyby.phase,phases[flyby.phase]||flyby.name||'Scenic flyby');
   }
 
@@ -272,7 +277,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
   }
 
   function flybyCheckpointHelp(event,label) {
-    return event.routeId==='nebula'?label('journey_nebula_help','Travel is paused beside the violet cloud. Look around, orbit the nebula, or save this view.'):event.routeId==='group'?label('journey_group_help','Travel is paused with the galaxies in view. Look around, orbit the golden elliptical, or save this viewpoint.'):label('journey_flyby_help','Travel is paused after the curved cluster pass. Look around, orbit the galaxy, or save this view.');
+    return event.routeId==='stellar'?label('journey_stellar_help','Travel is paused beyond the three stars. Look back, orbit a star, or save this view.'):event.routeId==='nebula'?label('journey_nebula_help','Travel is paused beside the violet cloud. Look around, orbit the nebula, or save this view.'):event.routeId==='group'?label('journey_group_help','Travel is paused with the galaxies in view. Look around, orbit the golden elliptical, or save this viewpoint.'):label('journey_flyby_help','Travel is paused after the curved cluster pass. Look around, orbit the galaxy, or save this view.');
   }
 
   function UniverseFlightFlybyControls(props) {
@@ -283,7 +288,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
       h('h4',{id:prefix+'-flyby-title'},label('flyby_'+flyby.id,flyby.name||'Scenic flyby')),
       h('div',{className:'uf-flyby-phase'},h('strong',null,flybyPhaseLabel(flyby,label)),h('span',null,percent+'%')),
       h('progress',{id:prefix+'-flyby-progress',value:percent,max:100,'aria-label':label('flyby_progress','Flyby progress')}),
-      h('p',{className:'uf-note'},completed?(flyby.id==='nebula'?label('flyby_nebula_complete_help','The violet cloud view is ready. Travel is paused; look around or save this viewpoint.'):flyby.id==='group'?label('flyby_group_complete_help','The galaxy group view is ready. Travel is paused; look around or save this viewpoint.'):label('flyby_complete_help','The galaxy view is ready. Travel is paused; look around or save this viewpoint.')):label('flyby_control_help','Pause any time. Looking around keeps the route moving and releases the guided view.')),
+      h('p',{className:'uf-note'},completed?(flyby.id==='stellar'?label('flyby_stellar_complete_help','The stellar panorama is ready. Travel is paused; revisit a close pass or save this viewpoint.'):flyby.id==='nebula'?label('flyby_nebula_complete_help','The violet cloud view is ready. Travel is paused; look around or save this viewpoint.'):flyby.id==='group'?label('flyby_group_complete_help','The galaxy group view is ready. Travel is paused; look around or save this viewpoint.'):label('flyby_complete_help','The galaxy view is ready. Travel is paused; look around or save this viewpoint.')):label('flyby_control_help','Pause any time. Looking around keeps the route moving and releases the guided view.')),
       h('label',{htmlFor:prefix+'-flyby-rate'},label('flyby_rate','Flyby pace')),
       h('select',{id:prefix+'-flyby-rate',value:props.rate,disabled:!props.ready||completed,onChange:function(e){props.onRate(Number(e.target.value));}},
         h('option',{value:0.5},label('flyby_slow','Slow · ½×')),h('option',{value:1},label('flyby_standard','Standard · 1×')),h('option',{value:2},label('flyby_fast','Fast · 2×'))),
@@ -449,14 +454,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
       h('div',{className:'uf-scenic-intro'},h(props.compact?'h4':'h3',{id:id+'-title'},label('scenic_flights_title','Take a scenic flight')),
         h('p',null,label('scenic_flights_help','Scenic camera journeys with an automatic pause at the end. Starts a fresh journey; pause and look around any time.')+(props.mode==='relativity'?' '+label('scenic_switch_mode','Switches to Free exploration.'):''))),
       h('div',{className:'uf-scenic-options'},[
+        ['stellar','Stellar close pass','Sweep beside three stars, inspect their surfaces, and look back across the glowing clouds'],
         ['galaxy','Dive toward the spiral','Arms, stars, and the central bulge'],
         ['neighborhood','Drift between stars','Nearby clusters and glowing clouds'],
         ['cosmic','Approach an island galaxy','A galaxy grows against the distant group'],
         ['halo','Halo flyby','Skim an arm, pass the cluster, and reveal the spiral'],
         ['nebula','Nebula passage','Sweep past blue filaments and turn toward the violet cloud'],
         ['group','Galaxy group flyby','Pass the spiral and golden elliptical, then reveal the group']
-      ].map(function(item,index){return h('button',{key:item[0],type:'button','data-scenic-flight':item[0],className:index===0?'uf-primary':'',disabled:!props.ready,onClick:function(){props.onLaunch(item[0]);}},
-        h('strong',null,label('scenic_flight_'+item[0],item[1])),h('small',null,label('scenic_flight_'+item[0]+'_detail',item[2])),h('span',{className:'uf-scenic-duration'},item[0]==='halo'?label('flyby_duration','36 seconds at standard pace'):item[0]==='nebula'?label('flyby_nebula_duration','40 seconds at standard pace'):item[0]==='group'?label('flyby_group_duration','48 seconds at standard pace'):label('scenic_duration','About 20 seconds')));
+      ].map(function(item,index){return h('button',{key:item[0],type:'button','data-scenic-flight':item[0],className:item[0]==='galaxy'?'uf-primary':'',disabled:!props.ready,onClick:function(){props.onLaunch(item[0]);}},
+        h('strong',null,label('scenic_flight_'+item[0],item[1])),h('small',null,label('scenic_flight_'+item[0]+'_detail',item[2])),h('span',{className:'uf-scenic-duration'},item[0]==='stellar'?label('flyby_stellar_duration','46 seconds at standard pace'):item[0]==='halo'?label('flyby_duration','36 seconds at standard pace'):item[0]==='nebula'?label('flyby_nebula_duration','40 seconds at standard pace'):item[0]==='group'?label('flyby_group_duration','48 seconds at standard pace'):label('scenic_duration','About 20 seconds')));
       })));
   }
 
@@ -670,7 +676,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
       var flight=api.flybys().filter(function(item){return item.id===id;})[0];
       if(!flight)return false;
       var saved=scene.current.snapshot(),delta=flight.aim.map(function(v,i){return v-flight.position[i];});
-      saved.settings.mode='explore';saved.settings.region=flight.region;saved.settings.compareRest=false;saved.settings.fov=flight.fov;saved.settings.exposure=1;
+      saved.settings.mode='explore';saved.settings.region=flight.region;saved.settings.compareRest=false;saved.settings.fov=flight.fov;saved.settings.exposure=id==='stellar'?0.86:1;
       saved.state={position:flight.position.slice(),yaw:Math.atan2(delta[0],delta[2]),pitch:Math.asin(delta[1]/Math.hypot.apply(Math,delta)),distanceLy:0,universeYears:0,travelerYears:0};
       saved.targetId=flight.targetId;
       if(!restoreView({title:flight.name,snapshot:saved}))return false;
@@ -1451,7 +1457,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
   [data-universe-tool] .uf-scenic-intro p{margin:0 0 12px;font-size:11px;line-height:1.6;color:#b9cde1;max-width:750px;}
   [data-universe-tool] .uf-scenic-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
   [data-universe-tool] .uf-scenic-options button{text-align:start;display:flex;flex-direction:column;gap:4px;min-width:0;}
-  [data-universe-tool] .uf-scenic-options button[data-scenic-flight="nebula"]{grid-column:1/-1;border-color:#6e6995;background:linear-gradient(110deg,#163246,#342640);}
+  [data-universe-tool] .uf-scenic-options button[data-scenic-flight="stellar"]{grid-column:1/-1;border-color:#8791ad;background:linear-gradient(110deg,#463326,#263b55 65%,#242c48);}
+  [data-universe-tool] .uf-scenic-options button[data-scenic-flight="nebula"]{border-color:#6e6995;background:linear-gradient(110deg,#163246,#342640);}
   [data-universe-tool] .uf-scenic-options strong{font-size:12px;}
   [data-universe-tool] .uf-scenic-options small{font-size:10px;font-weight:400;line-height:1.5;color:#c0d3e7;}
   [data-universe-tool] .uf-scenic-options .uf-primary small{color:#204b50;}

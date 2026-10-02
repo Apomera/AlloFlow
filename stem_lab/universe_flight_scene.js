@@ -227,7 +227,71 @@
     }
     return {id:'group',name:'Galaxy group flyby',region:'cosmic',durationSeconds:48,position:nodes[0].slice(),aim:spiral.slice(),fov:60,targetId:'near-galaxy',atTime:atTime};
   })();
-  var FLYBY_ROUTES = {halo:HALO_FLYBY,nebula:NEBULA_FLYBY,group:GROUP_FLYBY};
+  // This viewing path passes the three existing model stars, slowing beside
+  // their illustrative surfaces before looking back toward the emission region.
+  // The camera stays outside their viewing radii; this is not a stellar-size
+  // scale model or a physical spacecraft trajectory.
+  var STELLAR_FLYBY = (function () {
+    var amber=[-3.1,1,8.5], blue=[4.3,-2.2,16], pale=[0.65,2.4,24], panorama=[3,0,27];
+    var nodes=[[-7,4,-2],[-4,1.2,7.9],[-3.78,1.2,8.65],[-3.55,1.4,9.6],
+      [5,-1.4,13.7],[5.16,-1.96,15.86],[5.9,-1.9,17.5],[-1,3.8,21.4],
+      [-0.007,2.747,23.214],[1.9,4.15,25.5],[7,7,48]];
+    var tangents=[[2,-1,7],[0.5,-0.1,1.4],[0.4,0,1.8133333333333332],[3,-1,2.5],
+      [0.7,-0.4,3],[0.35,-0.2,1.807142857142857],[0.2,1.5,3],[-0.8,-0.6,2.2],
+      [0.8,3,0.6557251908396946],[1.4,1.1,4.2],[2,2,14]];
+    var times=[0,6,10,14,20,24,28,34,38,41,46], samples=[], joins=[0], length=0, previous;
+    function curve(segment,u) {
+      var u2=u*u,u3=u2*u;
+      return nodes[segment].map(function(value,i) {
+        return (2*u3-3*u2+1)*value+(u3-2*u2+u)*tangents[segment][i]+
+          (-2*u3+3*u2)*nodes[segment+1][i]+(u3-u2)*tangents[segment+1][i];
+      });
+    }
+    for(var segment=0;segment<nodes.length-1;segment++) {
+      for(var step=segment?1:0;step<=256;step++) {
+        var position=curve(segment,step/256);
+        if(previous) length+=Math.hypot(position[0]-previous[0],position[1]-previous[1],position[2]-previous[2]);
+        samples.push({distance:length,parameter:segment+step/256});previous=position;
+      }
+      joins.push(length);
+    }
+    // Arc-length timing slows at the surfaces and preserves continuous speed
+    // through the curve joins, with both departure and arrival at rest.
+    var slopes=[0],rates=[];
+    for(var interval=0;interval<times.length-1;interval++) rates.push((joins[interval+1]-joins[interval])/(times[interval+1]-times[interval]));
+    for(var j=1;j<times.length-1;j++) {
+      var left=times[j]-times[j-1],right=times[j+1]-times[j],w1=2*right+left,w2=right+2*left;
+      slopes.push((w1+w2)/(w1/rates[j-1]+w2/rates[j]));
+    }
+    slopes.push(0);
+    function atTime(seconds) {
+      var elapsed=clamp(finite(seconds,0),0,46),interval=0;
+      while(interval<times.length-2 && elapsed>times[interval+1]) interval++;
+      var width=times[interval+1]-times[interval],u=(elapsed-times[interval])/width,u2=u*u,u3=u2*u;
+      var distance=(2*u3-3*u2+1)*joins[interval]+(u3-2*u2+u)*width*slopes[interval]+
+        (-2*u3+3*u2)*joins[interval+1]+(u3-u2)*width*slopes[interval+1];
+      distance=clamp(distance,joins[interval],joins[interval+1]);
+      var low=0,high=samples.length-1;
+      while(high-low>1) {var mid=Math.floor((low+high)/2);if(samples[mid].distance<distance)low=mid;else high=mid;}
+      var a=samples[low],b=samples[high],fraction=b.distance>a.distance?(distance-a.distance)/(b.distance-a.distance):0;
+      var parameter=a.parameter+(b.parameter-a.parameter)*fraction,part=Math.min(nodes.length-2,Math.floor(parameter));
+      var position=curve(part,parameter-part);
+      var blend=clamp((elapsed-14)/6,0,1);blend=blend*blend*(3-2*blend);
+      var aim=amber.map(function(value,i){return value+(blue[i]-value)*blend;});
+      var next=clamp((elapsed-28)/6,0,1);next=next*next*(3-2*next);
+      aim=aim.map(function(value,i){return value+(pale[i]-value)*next;});
+      var reveal=clamp((elapsed-41)/4,0,1);reveal=reveal*reveal*(3-2*reveal);
+      aim=aim.map(function(value,i){return value+(panorama[i]-value)*reveal;});
+      var direction=aim.map(function(value,i){return value-position[i];});
+      var yaw=Math.atan2(direction[0],direction[2]),pitch=Math.atan2(direction[1],Math.hypot(direction[0],direction[2]));
+      var pace=((6*u2-6*u)*joins[interval]+(3*u2-4*u+1)*width*slopes[interval]+
+        (-6*u2+6*u)*joins[interval+1]+(3*u2-2*u)*width*slopes[interval+1])/width;
+      return {position:position,yaw:yaw,pitch:pitch,distance:distance,pace:Math.max(0,pace),
+        phase:elapsed>=46?'complete':elapsed>=41?'reveal':elapsed>=34?'pale':elapsed>=28?'to-pale':elapsed>=20?'blue':elapsed>=14?'to-blue':elapsed>=6?'amber':'depart'};
+    }
+    return {id:'stellar',name:'Stellar close pass',region:'neighborhood',durationSeconds:46,position:nodes[0].slice(),aim:amber.slice(),fov:62,targetId:'amber-star',atTime:atTime};
+  })();
+  var FLYBY_ROUTES = {halo:HALO_FLYBY,nebula:NEBULA_FLYBY,group:GROUP_FLYBY,stellar:STELLAR_FLYBY};
   HALO_FLYBY.completionTargetId = 'galactic-center';
   HALO_FLYBY.completionMessage = 'Halo flyby complete. Travel is paused beside the spiral; look around or explore another destination.';
   NEBULA_FLYBY.completionTargetId = 'violet-nebula';
@@ -248,6 +312,13 @@
     {id:'spiral',name:'Spiral skim',seconds:12,targetId:'near-galaxy',description:'Look across the tilted arms of the nearby spiral.'},
     {id:'elliptical',name:'Golden elliptical pass',seconds:30,targetId:'golden-elliptical',description:'Compare the smooth warm halo with the nearby spiral.'},
     {id:'panorama',name:'Galaxy group panorama',seconds:44,targetId:'golden-elliptical',description:'Look back across the spiral and elliptical together.'}
+  ];
+  STELLAR_FLYBY.completionTargetId = 'pale-star';
+  STELLAR_FLYBY.completionMessage = 'Stellar close pass complete. Travel is paused beyond the three model stars; look back, orbit a star, or explore another destination.';
+  STELLAR_FLYBY.highlights = [
+    {id:'amber',name:'Amber photosphere',seconds:10,targetId:'amber-star',description:'Pause beside the warm star to inspect its illustrative surface.'},
+    {id:'blue',name:'Blue star pass',seconds:24,targetId:'blue-star',description:'Compare the blue-white surface and the moving stellar background.'},
+    {id:'pale',name:'Pale star reveal',seconds:38,targetId:'pale-star',description:'Look across the pale star with the blue emission region beyond.'}
   ];
   function flybyRoute(id) { return Object.prototype.hasOwnProperty.call(FLYBY_ROUTES,id) ? FLYBY_ROUTES[id] : null; }
   function flybys(region) {

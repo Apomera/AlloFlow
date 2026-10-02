@@ -1,0 +1,415 @@
+{
+  "completed": true,
+  "sourceHash": "e452f3d425fddf3c89bb4438818ebe5bc7acf4c3a9f1d73034bab224985311d7",
+  "baselineHash": "ab5188a6750916d832da0f0278a3e7e334a3453c84b0f200048ce79861b22b13",
+  "mirrorsMatch": true,
+  "baselineAudit": {
+    "regions": {
+      "neighborhood": {
+        "pointCount": 19203,
+        "pointBytesHash": "d918319e8229e8005107e8535f7fcb2f1b092f070f42395fcffa739d0905c3e4",
+        "galaxyModelsHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "matchesBaseline": true
+      },
+      "galaxy": {
+        "pointCount": 36400,
+        "pointBytesHash": "f5dbc73e3ae0b2751dcf15f6fffce2753ae4994b089c62d020975e414889b2ab",
+        "galaxyModelsHash": "d0d5262b91be8e7e85fac1146d6b8207455abc2d839adf4c183bef7a1776150e",
+        "matchesBaseline": true
+      },
+      "cosmic": {
+        "pointCount": 41470,
+        "pointBytesHash": "156c66d7c6805406f2d231fb18affab8e613952ec32b5fdf9e9e805104966b85",
+        "galaxyModelsHash": "67b9ad1a02437e9b4577d9db8b5ebf749d968abfe8eefb8e4453e3cec66d6572",
+        "matchesBaseline": true
+      }
+    },
+    "atlases": {
+      "galaxyPixels": {
+        "bytes": 4194304,
+        "hash": "3135bffe25b58c296e91078ab00b7218322ba89fd9d80f4d998e65cbe4579d71",
+        "matchesBaseline": true
+      },
+      "cloudPixels": {
+        "bytes": 262144,
+        "hash": "b57c6fd38bbb173b026084c3f7977e0a27c8a91bb5446e045cef067a043b2c88",
+        "matchesBaseline": true
+      }
+    },
+    "shaders": {
+      "pointVertex": {
+        "hash": "61ebfac4057d34cd22d44196873ed4e07b68e0d0a15a1cc378b10cf3301e8d50",
+        "matchesBaseline": true
+      },
+      "pointFragment": {
+        "hash": "fb468c7696d6e07d57131ac31bf5a4243d48978586b9f2ba8dbcae770e0c546b",
+        "matchesBaseline": true
+      },
+      "galaxyVertex": {
+        "hash": "55e5cf38ffe0ff8a79c2c6cc935ea75ad82a9221303ee757ab3b4751afb90346",
+        "matchesBaseline": true
+      },
+      "galaxyFragment": {
+        "hash": "36d12e8617d9e4485bfa4d644385301466e007fa77cdfd469fcaf79e402fe702",
+        "matchesBaseline": true
+      }
+    },
+    "publicMath": {
+      "gamma": {
+        "hash": "92243e609aef05b28661ca2f01e25be9722275973b449ff5bd88f4e94f346c3d",
+        "matchesBaseline": true
+      },
+      "aberrate": {
+        "hash": "cd447e064df77fb3461ec54c2699aef14e84ae5275842d286e6e22bc30600e1e",
+        "matchesBaseline": true
+      },
+      "doppler": {
+        "hash": "7d3c2c147185a7008d2fa346ad93722411a0ec3b1e66ba1957527563d69e769c",
+        "matchesBaseline": true
+      },
+      "stepFlight": {
+        "hash": "ccaa679c1e1bb433b178fe9367a0262da331a3bd42f876c81a1af865d2b36e4e",
+        "matchesBaseline": true
+      },
+      "viewSpectrum": {
+        "hash": "f9e2f72f123ed4921af45d30779044ccc86333c2799c6f579f5ed3e2dc60a65c",
+        "matchesBaseline": true
+      },
+      "lightClock": {
+        "hash": "610c139f5970973d2c7a1b1f16959a19d73bf585a543c432c95c0ab985cf8810",
+        "matchesBaseline": true
+      },
+      "chartView": {
+        "hash": "4cfa1528b3026d7523eb0bc355476d58d1e99d94a439e76e1658488862bdb5ec",
+        "matchesBaseline": true
+      },
+      "approachPlan": {
+        "hash": "271ab187cb83f6dda9bb738cccf01f11f8c3dc9ee815749878a102821b79ac40",
+        "matchesBaseline": true
+      },
+      "targetView": {
+        "hash": "08384d63c86da5a8493815f8698a5b4546ca4a88a21f6c0d53a77dba1be35652",
+        "matchesBaseline": true
+      },
+      "targetFrame": {
+        "hash": "b7c971e1ca764517e1c7450b0892189ee19601039e0d2a67b36708ff06f5b7fb",
+        "matchesBaseline": true
+      },
+      "easePace": {
+        "hash": "5e420a8c0f8c5249e6071bdd0e9aa7970f6a78340307cab8630dadaa139aa92d",
+        "matchesBaseline": true
+      }
+    },
+    "landmarks": {
+      "neighborhood": {
+        "count": 5,
+        "catalogHash": "a9c3274d9cc928d292777a728d00248ab05521c26315f7c1af77ea5ddfc8bbc9",
+        "matchesBaseline": true
+      },
+      "galaxy": {
+        "count": 9,
+        "catalogHash": "b661885c8a05874b41729fd6df8f6278f08bfadbc2987dcbed3a4de39fc86024",
+        "matchesBaseline": true
+      },
+      "cosmic": {
+        "count": 4,
+        "catalogHash": "73c1dbe0db66a620b7b40c9d221d31240ebf9f0a45ad28e10557b9467469eea3",
+        "matchesBaseline": true
+      }
+    },
+    "oldRoutes": {
+      "halo": {
+        "samples": 361,
+        "sampleIntervalSeconds": 0.1,
+        "metadataHash": "8cce72d075b95338a4db3da2d2380ce5f8d50ec54c4d701bdc0cde36c59ef5ef",
+        "sampleHash": "eff5ea963068c232b4ca3bb7e56a70c2df9cb3a55cd15a7ae018387ae9bcd0d6",
+        "matchesBaseline": true
+      },
+      "nebula": {
+        "samples": 401,
+        "sampleIntervalSeconds": 0.1,
+        "metadataHash": "dea1a0c0768aaab994033056da699ae60984a5c149f2b684c80d7a3937ff4c90",
+        "sampleHash": "799b6d80ab6e990f5897238d60e4e7d48ccd5676498765dc30411137de20e9ca",
+        "matchesBaseline": true
+      },
+      "group": {
+        "samples": 481,
+        "sampleIntervalSeconds": 0.1,
+        "metadataHash": "ebbc86732ca7dbd7b5ed2b0f8c383ef0fb01851fa2b95951407e84b5d787ba48",
+        "sampleHash": "035b555073850cc8af3622caff4223f94d36444c9a0863d869639970a62065cb",
+        "matchesBaseline": true
+      }
+    },
+    "resourceCreationCode": {
+      "hash": "ba5158d6452223edfd3beddec2550de0e1bbbb8c3e4c1aa2aac9965d612549f1",
+      "matchesBaseline": true
+    }
+  },
+  "generatedPointBytesMatch": true,
+  "generatedPointBytesHash": "d918319e8229e8005107e8535f7fcb2f1b092f070f42395fcffa739d0905c3e4",
+  "routeId": "stellar",
+  "durationSeconds": 46,
+  "fovDegrees": 62,
+  "sampleIntervalSeconds": 0.001,
+  "sampleCount": 46001,
+  "pathLengthLy": 66.43180361554967,
+  "start": {
+    "position": [
+      -7,
+      4,
+      -2
+    ],
+    "yaw": 0.3556358843007598,
+    "pitch": -0.261693580759869,
+    "distance": 0,
+    "pace": 0,
+    "phase": "depart"
+  },
+  "end": {
+    "position": [
+      7,
+      7,
+      48
+    ],
+    "yaw": -2.9533711482850227,
+    "pitch": -0.31644279982424284,
+    "distance": 66.43180361554967,
+    "pace": 0,
+    "phase": "complete"
+  },
+  "minimumPaceLyPerSecond": 0,
+  "maximumPace": {
+    "lyPerSecond": 6.568193837265679,
+    "seconds": 43.304
+  },
+  "minimumDistanceIncrementLy": 8.375904865081562e-7,
+  "maximumStepLy": 0.00656986393854954,
+  "landmarkClearances": [
+    {
+      "targetId": "amber-star",
+      "minimumDistanceLy": 0.724499827467198,
+      "seconds": 10,
+      "position": [
+        -3.78,
+        1.2,
+        8.65
+      ],
+      "viewingRadiusLy": 0.6
+    },
+    {
+      "targetId": "blue-star",
+      "minimumDistanceLy": 0.9037698822156006,
+      "seconds": 24,
+      "position": [
+        5.16,
+        -1.96,
+        15.86
+      ],
+      "viewingRadiusLy": 0.8
+    },
+    {
+      "targetId": "pale-star",
+      "minimumDistanceLy": 1.081597892009781,
+      "seconds": 38,
+      "position": [
+        -0.007,
+        2.747,
+        23.214
+      ],
+      "viewingRadiusLy": 1
+    }
+  ],
+  "phaseChanges": [
+    {
+      "phase": "depart",
+      "seconds": 0
+    },
+    {
+      "phase": "amber",
+      "seconds": 6
+    },
+    {
+      "phase": "to-blue",
+      "seconds": 14
+    },
+    {
+      "phase": "blue",
+      "seconds": 20
+    },
+    {
+      "phase": "to-pale",
+      "seconds": 28
+    },
+    {
+      "phase": "pale",
+      "seconds": 34
+    },
+    {
+      "phase": "reveal",
+      "seconds": 41
+    },
+    {
+      "phase": "complete",
+      "seconds": 46
+    }
+  ],
+  "highlights": [
+    {
+      "id": "amber",
+      "targetId": "amber-star",
+      "seconds": 10,
+      "position": [
+        -3.78,
+        1.2,
+        8.65
+      ],
+      "yaw": 1.7879076415298025,
+      "pitch": -0.27968459767612264,
+      "distanceToTargetLy": 0.724499827467198,
+      "spriteProxyRadiusLy": 0.07999999821186066,
+      "centeredSpriteEstimates": [
+        {
+          "canvasHeightCss": 320,
+          "fullSpriteCssPixels": 58.806851541719496,
+          "luminousCoreDiameterCssPixels": 20.582398039601824
+        },
+        {
+          "canvasHeightCss": 600,
+          "fullSpriteCssPixels": 110.26284664072405,
+          "luminousCoreDiameterCssPixels": 38.591996324253415
+        }
+      ]
+    },
+    {
+      "id": "blue",
+      "targetId": "blue-star",
+      "seconds": 24,
+      "position": [
+        5.16,
+        -1.96,
+        15.86
+      ],
+      "yaw": -1.4094212163742044,
+      "pitch": -0.2687788443866794,
+      "distanceToTargetLy": 0.9037698822156006,
+      "spriteProxyRadiusLy": 0.10000000149011612,
+      "centeredSpriteEstimates": [
+        {
+          "canvasHeightCss": 320,
+          "fullSpriteCssPixels": 58.927549232164004,
+          "luminousCoreDiameterCssPixels": 20.6246422312574
+        },
+        {
+          "canvasHeightCss": 600,
+          "fullSpriteCssPixels": 110.48915481030753,
+          "luminousCoreDiameterCssPixels": 38.67120418360763
+        }
+      ]
+    },
+    {
+      "id": "pale",
+      "targetId": "pale-star",
+      "seconds": 38,
+      "position": [
+        -0.007,
+        2.747,
+        23.214
+      ],
+      "yaw": 0.6962380875955602,
+      "pitch": -0.32659684684871687,
+      "distanceToTargetLy": 1.081597892009781,
+      "spriteProxyRadiusLy": 0.10000000149011612,
+      "centeredSpriteEstimates": [
+        {
+          "canvasHeightCss": 320,
+          "fullSpriteCssPixels": 49.239134637963275,
+          "luminousCoreDiameterCssPixels": 17.233697123287143
+        },
+        {
+          "canvasHeightCss": 600,
+          "fullSpriteCssPixels": 92.32337744618114,
+          "luminousCoreDiameterCssPixels": 32.313182106163396
+        }
+      ]
+    }
+  ],
+  "finalVisibleTargets": [
+    {
+      "targetId": "amber-star",
+      "distanceLy": 41.209950254762504,
+      "angleDegrees": 10.35393154708634
+    },
+    {
+      "targetId": "blue-star",
+      "distanceLy": 33.40553846295551,
+      "angleDegrees": 6.0887362255699164
+    },
+    {
+      "targetId": "pale-star",
+      "distanceLy": 25.248415791886828,
+      "angleDegrees": 8.57518245731955
+    },
+    {
+      "targetId": "blue-nebula",
+      "distanceLy": 16.76305461424021,
+      "angleDegrees": 22.249490724759305
+    }
+  ],
+  "generatedStellarClearance": {
+    "totalStars": 10203,
+    "candidateStars": 296,
+    "controlHullBounds": {
+      "minimum": [
+        -7,
+        -2.4,
+        -2
+      ],
+      "maximum": [
+        7,
+        7,
+        48
+      ]
+    },
+    "discardedStarClearanceLowerBoundLy": 2.0155931673943996,
+    "nearestCenter": {
+      "pointIndex": 190,
+      "position": [
+        3.370246171951294,
+        -0.5990759134292603,
+        12.465898513793945
+      ],
+      "spriteProxyRadiusLy": 0.015001247636973858,
+      "minimumCenterDistanceLy": 0.2461141594882495,
+      "seconds": 18.439,
+      "cameraPosition": [
+        3.2659487212634266,
+        -0.8081452192724711,
+        12.543256426348883
+      ]
+    },
+    "nearestSpriteEnvelope": {
+      "pointIndex": 190,
+      "position": [
+        3.370246171951294,
+        -0.5990759134292603,
+        12.465898513793945
+      ],
+      "spriteProxyRadiusLy": 0.015001247636973858,
+      "minimumClearanceLy": 0.23111291185127564,
+      "centerDistanceLy": 0.2461141594882495,
+      "seconds": 18.439,
+      "cameraPosition": [
+        3.2659487212634266,
+        -0.8081452192724711,
+        12.543256426348883
+      ]
+    }
+  },
+  "limits": [
+    "Sprite sizes and stellar surfaces are illustrative teaching visuals, not physical stellar radii.",
+    "Projected full-sprite sizes use a centered target, FOV 62 and the 120 CSS pixel renderer cap; hardware point limits may reduce them.",
+    "The luminous core diameter is 0.35 of the full point sprite, so the renderer cap gives at most 42 CSS pixels of core at DPR 1.",
+    "Stellar proxy clearance uses the existing a_size value as a conservative world-space sprite-envelope radius; cloud emission remains illustrative and has no collision model.",
+    "Clearance minima are dense 1 ms samples; all other stars are excluded using the exact cubic Bezier control-hull bounding box."
+  ]
+}
