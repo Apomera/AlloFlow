@@ -1,0 +1,17 @@
+{
+  "kind": "browser-focused",
+  "pid": 63088,
+  "started": "2026-10-02T02:25:26.322Z",
+  "phase": "failed",
+  "sourceSha256": "398c8511351de27b5198faaf6706b86cfe2803a746d4bdaa95515c79ab144434",
+  "expected": 7,
+  "testInputs": {
+    "tests/e2e/microbiology-measurement-conversion.spec.ts": "cf2d50dd23e26c9be24bf5bfe73ced7b49e3d234beebadb4d9bb241788daca79"
+  },
+  "exitCode": 1,
+  "signal": null,
+  "finished": "2026-10-02T02:29:34.565Z",
+  "sourceStillMatches": true,
+  "testInputsStillMatch": true,
+  "syntaxChecksPassed": true
+}

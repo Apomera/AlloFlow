@@ -1610,6 +1610,39 @@
       var converted = unit === 'nm' ? value / 1000 : value;
       return isFinite(converted) && converted > 0 ? value : null;
     }
+    function convertEstimate(value, unit) {
+      var targetUnit = unit === 'um' ? 'nm' : unit === 'nm' ? 'um' : null;
+      function projection(status, estimateUm, targetValue) {
+        return Object.freeze({ status: status, value: value, unit: unit,
+          estimateUm: estimateUm === undefined ? null : estimateUm,
+          targetUnit: targetUnit, targetValue: targetValue === undefined ? null : targetValue,
+          canConvert: status === 'valid' });
+      }
+      if (!targetUnit) return projection('unsupported');
+      if ((typeof value !== 'number' && typeof value !== 'string') ||
+          (typeof value === 'number' && !isFinite(value)) ||
+          (typeof value === 'string' && !/^-?(?:\d+(?:\.\d+)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(value))) return projection('invalid');
+      if (typeof value === 'string' && value.length > 32) return projection('out-of-range');
+      var parsed = parseEstimate(value, unit);
+      if (parsed === null) return projection('out-of-range');
+      var estimateUm = unit === 'nm' ? parsed / 1000 : parsed;
+      // Shift decimal text exactly, keeping significant digits instead of
+      // introducing binary-multiplication artifacts or rounding the draft.
+      var parts = String(value).toLowerCase().split('e'), coefficient = parts[0];
+      var point = coefficient.indexOf('.') < 0 ? coefficient.length : coefficient.indexOf('.');
+      var digits = coefficient.replace('.', ''), leading = /^0*/.exec(digits)[0].length;
+      digits = digits.slice(leading).replace(/0+$/, '');
+      point = point - leading + Number(parts[1] || 0) + (unit === 'um' ? 3 : -3);
+      var targetValue;
+      if (point >= -5 && point <= 21) {
+        targetValue = point <= 0 ? '0.' + new Array(1 - point).join('0') + digits
+          : point >= digits.length ? digits + new Array(point - digits.length + 1).join('0')
+          : digits.slice(0, point) + '.' + digits.slice(point);
+      } else targetValue = digits.charAt(0) + (digits.length > 1 ? '.' + digits.slice(1) : '') + 'e' + (point - 1);
+      return targetValue.length > 32 || parseEstimate(targetValue, targetUnit) === null
+        ? projection('out-of-range', estimateUm, targetValue)
+        : projection('valid', estimateUm, targetValue);
+    }
     function validContext(context, id) {
       if (!context || typeof context !== 'object' || context.version !== 1 || context.specimen !== id || context.referenceUm !== sizes[id]) return false;
       var levels = context.method === 'em' ? [10000, 50000, 100000] : context.method === 'lightbright' ? [40, 100, 400, 1000] : [];
@@ -1725,7 +1758,7 @@
       }
       return [headers.map(cell).join(',')].concat(rows.map(function(row) { return headers.map(function(key) { return cell(row[key]); }).join(','); })).join('\r\n');
     }
-    return { sizes: sizes, normalize: normalize, finiteEstimate: finiteEstimate, parseEstimate: parseEstimate, pending: pending, sameResult: sameResult, draftReview: draftReview, normalizeEvidenceView: normalizeEvidenceView, exportRows: exportRows, exportCSV: exportCSV };
+    return { sizes: sizes, normalize: normalize, finiteEstimate: finiteEstimate, parseEstimate: parseEstimate, convertEstimate: convertEstimate, pending: pending, sameResult: sameResult, draftReview: draftReview, normalizeEvidenceView: normalizeEvidenceView, exportRows: exportRows, exportCSV: exportCSV };
   })();
   window.__MicrobiologyCore = window.__MicrobiologyCore || {};
   window.__MicrobiologyCore.measurements = MicroMeasurements;
@@ -1830,6 +1863,12 @@
     R.useEffect(function() { setCsvNotice(null); }, [measurementCSV]);
     var measurement = measurements[organism] || {};
     var measurementDraft = measurement.draft || { value: '', unit: 'um', context: measurementContext };
+    var rawMeasurementBook = d.microscopeMeasurements;
+    var rawMeasurement = rawMeasurementBook && typeof rawMeasurementBook === 'object' && !Array.isArray(rawMeasurementBook) ? rawMeasurementBook[organism] : null;
+    var rawMeasurementDraft = rawMeasurement && typeof rawMeasurement === 'object' && !Array.isArray(rawMeasurement) && rawMeasurement.draft && typeof rawMeasurement.draft === 'object' && !Array.isArray(rawMeasurement.draft) ? rawMeasurement.draft : null;
+    var workingConversion = MicroMeasurements.convertEstimate(rawMeasurementDraft && measurement.draft && typeof rawMeasurementDraft.value === 'string' ? rawMeasurementDraft.value : measurementDraft.value,
+      rawMeasurementDraft && measurement.draft && typeof rawMeasurementDraft.value === 'string' ? rawMeasurementDraft.unit : measurementDraft.unit);
+    var canConvertWorking = !!(rawMeasurementDraft && measurement.draft && typeof rawMeasurementDraft.value === 'string' && rawMeasurementDraft.value === measurementDraft.value && workingConversion.canConvert && typeof props.convertEstimate === 'function');
     var estimateValue = MicroMeasurements.parseEstimate(measurementDraft.value, measurementDraft.unit);
     var estimateValid = estimateValue !== null;
     var estimateUnderflow = measurementDraft.unit === 'nm' && finiteEstimate(Number(measurementDraft.value)) && Number(measurementDraft.value) / 1000 === 0;
@@ -1842,6 +1881,12 @@
       next[organism] = Object.assign({}, measurement, { draft: { value: String(value).slice(0, 32), unit: unit === 'nm' ? 'nm' : 'um', context: fresh || !measurementDraft.value.trim() ? Object.assign({}, measurementContext) : measurementDraft.context } });
       upd({ microscopeMeasurements: next });
       setHistoryNotice(null);
+    }
+    function convertWorkingEstimate() {
+      if (!canConvertWorking) return;
+      cancelPreviousViewFocus();
+      props.convertEstimate({ id: organism, draft: rawMeasurementDraft, value: rawMeasurementDraft.value, unit: rawMeasurementDraft.unit, context: rawMeasurementDraft.context, calibration: Object.assign({}, rawMeasurementDraft.context),
+        view: { scopeOrganism: d.scopeOrganism, selectedScope: d.selectedScope, magnification: d.magnification, microscopeZoom: d.microscopeZoom } });
     }
     function checkMeasurement() {
       if (!measurementReady || !estimateValid || draftStale) return;
@@ -2221,16 +2266,31 @@
         hh('p', { id: measurementId + '-readiness', role: 'status', 'aria-live': 'polite', style: { margin: '0 0 10px', color: microInk(measurementReady ? '#6ee7b7' : '#fbbf24'), fontSize: 11, lineHeight: 1.7 } }, measurementHint),
         hh('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-end' } },
           hh('label', { style: { display: 'block', flex: '1 1 140px', minWidth: 0, fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 700 } }, __alloMBT('stem.microbiology.measure_estimate', 'Your size estimate'),
-            hh('input', { ref: estimateInputRef, type: 'number', min: 0, max: 1000000000, step: 'any', inputMode: 'decimal', value: measurementDraft.value, 'aria-describedby': measurementId + '-feature ' + measurementId + '-readiness ' + measurementId + '-validation', 'aria-invalid': measurementDraft.value.trim() !== '' && !estimateValid, onChange: function(e) { updateMeasurementDraft(e.target.value, measurementDraft.unit, false); }, style: { display: 'block', width: '100%', boxSizing: 'border-box', marginTop: 6, minHeight: 38, padding: 8, borderRadius: 7, background: '#0f172a', color: '#e2e8f0', border: '1px solid #64748b' } })
+            hh('input', { ref: estimateInputRef, type: 'number', min: 0, max: 1000000000, step: 'any', inputMode: 'decimal', value: measurementDraft.value, 'aria-describedby': measurementId + '-feature ' + measurementId + '-readiness ' + measurementId + '-validation micro-measure-conversion-preview', 'aria-invalid': measurementDraft.value.trim() !== '' && !estimateValid, onChange: function(e) { updateMeasurementDraft(e.target.value, measurementDraft.unit, false); }, style: { display: 'block', width: '100%', boxSizing: 'border-box', marginTop: 6, minHeight: 38, padding: 8, borderRadius: 7, background: '#0f172a', color: '#e2e8f0', border: '1px solid #64748b' } })
           ),
           hh('label', { style: { display: 'block', flex: '0 1 170px', minWidth: 0, fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 700 } }, __alloMBT('stem.microbiology.measure_units', 'Estimate units'),
-            hh('select', { 'aria-label': __alloMBT('stem.microbiology.measure_units', 'Estimate units'), value: measurementDraft.unit, onChange: function(e) { updateMeasurementDraft(measurementDraft.value, e.target.value, false); }, style: { display: 'block', width: '100%', boxSizing: 'border-box', marginTop: 6, minHeight: 38, padding: 8, borderRadius: 7, background: '#0f172a', color: '#e2e8f0', border: '1px solid #64748b' } },
+            hh('select', { 'aria-label': __alloMBT('stem.microbiology.measure_units', 'Estimate units'), 'aria-describedby': 'micro-measure-unit-choice-help micro-measure-conversion-preview', value: measurementDraft.unit, onChange: function(e) { updateMeasurementDraft(measurementDraft.value, e.target.value, false); }, style: { display: 'block', width: '100%', boxSizing: 'border-box', marginTop: 6, minHeight: 38, padding: 8, borderRadius: 7, background: '#0f172a', color: '#e2e8f0', border: '1px solid #64748b' } },
               hh('option', { value: 'um' }, __alloMBT('stem.microbiology.measure_um', 'µm · micrometers')),
               hh('option', { value: 'nm' }, __alloMBT('stem.microbiology.measure_nm', 'nm · nanometers'))
             )
           ),
           hh('button', { type: 'button', disabled: !measurementReady || !estimateValid || draftStale, onClick: checkMeasurement, style: Object.assign({}, buttonStyle, { minHeight: 38, opacity: !measurementReady || !estimateValid || draftStale ? 0.6 : 1 }) }, __alloMBT('stem.microbiology.measure_check', 'Check and save estimate'))
         ),
+        hh('div', { id: 'micro-measure-conversion', style: { marginTop: 10, minWidth: 0, overflowWrap: 'anywhere', fontSize: 12, lineHeight: 1.7 } },
+          hh('p', { id: 'micro-measure-unit-choice-help', style: { margin: '0 0 7px' } }, __alloMBT('stem.microbiology.measure_unit_choice_help', 'Choosing a unit keeps your entered number. Use Convert working estimate to express the same size in the other unit.')),
+          hh('p', { id: 'micro-measure-conversion-preview', role: 'status', 'aria-live': 'polite', 'aria-atomic': true, style: { margin: '0 0 7px' } },
+            workingConversion.estimateUm !== null && workingConversion.targetValue !== null
+              ? __alloMBT('stem.microbiology.measure_conversion_preview', 'Equivalent size: {value} {unit} = {target} {targetUnit}. This conversion is unscored.')
+                .replace('{value}', String(workingConversion.value)).replace('{unit}', workingConversion.unit === 'nm' ? 'nm' : 'µm')
+                .replace('{target}', workingConversion.targetValue).replace('{targetUnit}', workingConversion.targetUnit === 'nm' ? 'nm' : 'µm')
+              : __alloMBT('stem.microbiology.measure_conversion_invalid', 'Enter a valid working estimate to see its equivalent in the other unit.')),
+          workingConversion.status === 'out-of-range' ? hh('p', { id: 'micro-measure-conversion-limits', style: { margin: '0 0 7px', color: microInk('#fbbf24') } },
+            __alloMBT('stem.microbiology.measure_conversion_limits', 'This estimate cannot be converted within the entry limits. Keep the current unit or revise your estimate.')) : null,
+          hh('button', { id: 'micro-measure-convert', type: 'button', disabled: !canConvertWorking, onClick: convertWorkingEstimate,
+            'aria-describedby': 'micro-measure-conversion-preview micro-measure-conversion-scope' + (workingConversion.status === 'out-of-range' ? ' micro-measure-conversion-limits' : ''),
+            style: Object.assign({}, buttonStyle, { minHeight: 44, maxWidth: '100%', whiteSpace: 'normal', overflowWrap: 'anywhere', opacity: canConvertWorking ? 1 : 0.6 }) },
+            measurementDraft.unit === 'nm' ? __alloMBT('stem.microbiology.measure_conversion_to_um', 'Convert working estimate to micrometers') : __alloMBT('stem.microbiology.measure_conversion_to_nm', 'Convert working estimate to nanometers')),
+          hh('p', { id: 'micro-measure-conversion-scope', style: { margin: '7px 0 0' } }, __alloMBT('stem.microbiology.measure_conversion_scope', 'Conversion keeps this estimate’s viewing context and checked results. Use Check and save estimate when you are ready to check it.'))),
         hh('p', { id: measurementId + '-validation', role: 'status', 'aria-live': 'polite', style: { margin: '7px 0 0', fontSize: 11, lineHeight: 1.6, color: microInk('#fbbf24') } }, measurementDraft.value.trim() !== '' && !estimateValid ? estimateUnderflow ? __alloMBT('stem.microbiology.measure_underflow', 'This value is too small to remain above zero in micrometers. Enter a larger estimate.') : __alloMBT('stem.microbiology.measure_invalid_decimal', 'Enter a decimal number greater than 0 and no more than 1,000,000,000. Scientific notation is also accepted.') : draftStale ? __alloMBT('stem.microbiology.measure_stale_draft_resume', 'The view changed after this estimate was started. Resume its working view from the notebook, or start a fresh estimate using the current scale bar.') : ''),
         draftStale ? hh('button', { type: 'button', onClick: function() { updateMeasurementDraft('', measurementDraft.unit, true); }, style: Object.assign({}, buttonStyle, { marginTop: 7 }) }, __alloMBT('stem.microbiology.measure_fresh', 'Start estimate for this view')) : null,
         measurementResult ? hh('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: 12, padding: 12, borderRadius: 8, background: 'rgba(148,163,184,0.08)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 11, lineHeight: 1.7 } },
@@ -3722,6 +3782,31 @@
         });
       }
 
+      function convertWorkingMeasurement(request) {
+        if (!request || !request.draft || !request.view || !request.calibration || !Object.prototype.hasOwnProperty.call(MicroMeasurements.sizes, request.id)) return;
+        __alloMBUpdateVersion++;
+        setLabToolData(function(previous) {
+          var current = previous && previous.microbiology;
+          if (!current || current.tab !== 'microscope') return previous;
+          var view = Object.assign({}, DEFAULT_MICROBIOLOGY_STATE, current);
+          var active = Object.prototype.hasOwnProperty.call(MicroMeasurements.sizes, view.scopeOrganism) ? view.scopeOrganism : 'ecoli';
+          if (active !== request.id || ['scopeOrganism', 'selectedScope', 'magnification', 'microscopeZoom'].some(function(key) { return view[key] !== request.view[key]; })) return previous;
+          var book = current.microscopeMeasurements;
+          if (!book || typeof book !== 'object' || Array.isArray(book)) return previous;
+          var entry = book[request.id], draft = entry && entry.draft;
+          if (!entry || typeof entry !== 'object' || Array.isArray(entry) || draft !== request.draft ||
+              draft.value !== request.value || draft.unit !== request.unit || draft.context !== request.context ||
+              ['version', 'specimen', 'method', 'mag', 'zoom', 'fieldUm', 'scaleUm', 'referenceUm'].some(function(key) { return draft.context[key] !== request.calibration[key]; })) return previous;
+          var normalized = MicroMeasurements.normalize(book)[request.id];
+          if (!normalized || !normalized.draft) return previous;
+          var conversion = MicroMeasurements.convertEstimate(draft.value, draft.unit);
+          if (!conversion.canConvert) return previous;
+          var nextBook = Object.assign({}, book);
+          nextBook[request.id] = Object.assign({}, entry, { draft: Object.assign({}, draft, { value: conversion.targetValue, unit: conversion.targetUnit }) });
+          return Object.assign({}, previous, { microbiology: Object.assign({}, current, { microscopeMeasurements: nextBook }) });
+        });
+      }
+
       // Annotation edits use the latest raw notebook and never persist its display projection.
       function updateNotebookAnnotation(kind, id, value, owner) {
         if (!owner || (kind !== 'growth' && kind !== 'resistance')) return;
@@ -5110,7 +5195,7 @@
           h('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, marginBottom: 12, lineHeight: 1.6 } },
             __alloT('stem.microbiology.scope_introduction', 'Practice choosing a viewing method, focusing a specimen, and using a scale bar. Then compare the sizes and microscopy methods below.')
           ),
-          h(VirtualMicroscope, { awardXP: awardXP, d: d, upd: upd, isDark: microbiologyDark }),
+          h(VirtualMicroscope, { awardXP: awardXP, d: d, upd: upd, isDark: microbiologyDark, convertEstimate: convertWorkingMeasurement }),
           sectionCard(__alloT('stem.microbiology.scale_reference_title', 'Size reference · micrometers and nanometers'),
             h('div', null,
               h('p', { style: { margin: '0 0 12px', fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.7 } }, __alloT('stem.microbiology.scale_reference_explanation', '1 µm = 1,000 nm. These representative sizes stay the same when magnification changes. Magnification enlarges an image; resolution determines whether nearby details can be distinguished.')),

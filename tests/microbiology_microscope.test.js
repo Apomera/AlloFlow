@@ -186,7 +186,7 @@ describe('Calibrated virtual microscope', () => {
   it('keeps method references independent and replaces the legacy fake visibility slider with actual sizes', () => {
     const begin = source.indexOf('      function renderMicroscope() {');
     const finish = source.indexOf('        function diagnosticTechniquesSection()', begin);
-    const makeRenderer = new Function('d', 'h', 'SCOPES', '__alloT', 'sectionCard', 'EMERALD', 'microAccentText', 'VirtualMicroscope', 'awardXP', 'upd', 'microbiologyDark', 'diagnosticTechniquesSection', source.slice(begin, finish) + '\n} return renderMicroscope;');
+    const makeRenderer = new Function('d', 'h', 'SCOPES', '__alloT', 'sectionCard', 'EMERALD', 'microAccentText', 'VirtualMicroscope', 'awardXP', 'upd', 'microbiologyDark', 'diagnosticTechniquesSection', 'convertWorkingMeasurement', source.slice(begin, finish) + '\n} return renderMicroscope;');
     globalThis.IS_REACT_ACT_ENVIRONMENT = true;
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -200,7 +200,7 @@ describe('Calibrated virtual microscope', () => {
       ];
       const render = makeRenderer(state, React.createElement, scopes, (_key, fallback) => fallback,
         (title, body) => React.createElement('section', null, React.createElement('h3', null, title), body),
-        '#10b981', color => color, () => null, () => {}, patch => setState(prev => ({ ...prev, ...patch })), true, () => null);
+        '#10b981', color => color, () => null, () => {}, patch => setState(prev => ({ ...prev, ...patch })), true, () => null, () => {});
       return render();
     }
     act(() => root.render(React.createElement(ReferenceHost)));

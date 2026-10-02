@@ -66661,7 +66661,14 @@
       "resistance_observed_increase": "The resistant share increased by {points} percentage points.",
       "resistance_observed_decrease": "The resistant share decreased by {points} percentage points.",
       "resistance_selection_unavailable": "Some imported entries have missing or duplicate IDs. Their stored data is kept, but those entries cannot be selected for editing.",
-      "investigation_selection_unavailable": "Some imported entries have missing or duplicate IDs. Their stored data is kept, but those entries cannot be selected for editing."
+      "investigation_selection_unavailable": "Some imported entries have missing or duplicate IDs. Their stored data is kept, but those entries cannot be selected for editing.",
+      "measure_unit_choice_help": "Choosing a unit keeps your entered number. Use Convert working estimate to express the same size in the other unit.",
+      "measure_conversion_preview": "Equivalent size: {value} {unit} = {target} {targetUnit}. This conversion is unscored.",
+      "measure_conversion_invalid": "Enter a valid working estimate to see its equivalent in the other unit.",
+      "measure_conversion_limits": "This estimate cannot be converted within the entry limits. Keep the current unit or revise your estimate.",
+      "measure_conversion_to_um": "Convert working estimate to micrometers",
+      "measure_conversion_to_nm": "Convert working estimate to nanometers",
+      "measure_conversion_scope": "Conversion keeps this estimate’s viewing context and checked results. Use Check and save estimate when you are ready to check it."
     },
     "migration": {
       "sr_perfect_v_formation_achieved_20_experience_points": "Perfect V formation achieved. 20 experience points awarded.",
