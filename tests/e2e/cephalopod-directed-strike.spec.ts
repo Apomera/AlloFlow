@@ -1,5 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
 import { GlHarness } from './helpers/stem_gl_harness';
+import { clickCephalopodControl } from './helpers/cephalopod_controls';
 
 const harness = new GlHarness({
   toolFile: 'stem_lab/stem_tool_cephalopodlab.js', toolId: 'cephalopodLab',
@@ -31,15 +32,20 @@ async function mount(page: Page) {
     w.__fish = w.__scene.children.filter((o: any) => o.name === 'cl-prey-fish' && o.userData.alive);
     w.__testStep = 0;
     w.THREE.Clock.prototype.getDelta = function () { const dt = w.__testStep; w.__testStep = 0; return dt; };
-    const approximateCenter = w.__fish[0].position.clone().sub(w.__fish[0].userData.offset);
-    const originalClone = w.THREE.Vector3.prototype.clone;
+    // Observe the real school containing the selected scene fish during a frozen frame.
+    // Restore the temporary array hook immediately; keep the original encounter and assertions.
+    const each = Array.prototype.forEach;
     let center: any;
-    w.THREE.Vector3.prototype.clone = function () {
-      if (this.distanceToSquared(approximateCenter) < 4 && !w.__fish.some((f: any) => f.position === this)) center = this;
-      return originalClone.call(this);
+    (Array.prototype as any).forEach = function (callback: any, thisArg: any) {
+      if (this.length && this[0]?.center?.isVector3 && Array.isArray(this[0]?.fish) && typeof this[0]?.heading === 'number') {
+        each.call(this, (school: any) => {
+          if (school?.center?.isVector3 && Array.isArray(school.fish) && typeof school.heading === 'number' && school.fish.includes(w.__fish[0])) center = school.center;
+        });
+      }
+      return each.call(this, callback, thisArg);
     };
     try { await new Promise<void>(resolve => requestAnimationFrame(() => resolve())); }
-    finally { w.THREE.Vector3.prototype.clone = originalClone; }
+    finally { Array.prototype.forEach = each; }
     if (!center) throw new Error('Could not locate the real fish-school center');
     w.__schoolCenter = center;
     w.__fish.forEach((f: any, i: number) => { f.userData.alive = i < 2; f.position.set(25, 4, 25); });
@@ -108,7 +114,9 @@ async function untilContact(page: Page) {
 }
 
 const buffers = async (page: Page) => (await pose(page)).map(p => p.positions);
-const strikeButton = (page: Page) => page.getByRole('button', { name: 'Strike [E]', exact: true });
+// This original desktop cooldown oracle remains meaningful when compact controls hide it.
+// The touch Strike / hold control also gathers clams and has different availability.
+const strikeButton = (page: Page) => page.getByRole('button', { name: 'Strike [E]', exact: true, includeHidden: true });
 
 test.describe.configure({ timeout: 150000, retries: 0, mode: 'default' });
 test.beforeAll(() => harness.start());
@@ -193,7 +201,7 @@ test('a distant target produces finite bounded reach without capture and reduced
   await expect(page.locator('[data-hud=score]')).toHaveText('0');
   await advance(page, 12);
 
-  await page.getByRole('button', { name: 'Help / settings', exact: true }).click();
+  await clickCephalopodControl(page, 'Help / settings');
   await page.getByLabel('Reduced motion', { exact: true }).check();
   await page.getByRole('button', { name: 'Resume dive', exact: true }).click();
   await advance(page, 2);

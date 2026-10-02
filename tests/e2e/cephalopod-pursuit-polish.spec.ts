@@ -1,5 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
 import { GlHarness } from './helpers/stem_gl_harness';
+import { clickCephalopodControl } from './helpers/cephalopod_controls';
 
 const harness = new GlHarness({
   toolFile: 'stem_lab/stem_tool_cephalopodlab.js', toolId: 'cephalopodLab',
@@ -29,18 +30,20 @@ async function mount(page: Page, species = 'commonOcto', mode = 'observe', withF
       return dt;
     };
     if (withFish) {
-      const approximateCenter = fish[0].position.clone().sub(fish[0].userData.offset);
-      const originalClone = w.THREE.Vector3.prototype.clone;
+      // Observe the real school containing the selected scene fish during a frozen frame.
+      // Restore the temporary array hook immediately; keep the original encounter and assertions.
+      const each = Array.prototype.forEach;
       let center: any;
-      w.THREE.Vector3.prototype.clone = function () {
-        if (this.distanceToSquared(approximateCenter) < 4 && !fish.some((f: any) => f.position === this)) center = this;
-        return originalClone.call(this);
+      (Array.prototype as any).forEach = function (callback: any, thisArg: any) {
+        if (this.length && this[0]?.center?.isVector3 && Array.isArray(this[0]?.fish) && typeof this[0]?.heading === 'number') {
+          each.call(this, (school: any) => {
+            if (school?.center?.isVector3 && Array.isArray(school.fish) && typeof school.heading === 'number' && school.fish.includes(fish[0])) center = school.center;
+          });
+        }
+        return each.call(this, callback, thisArg);
       };
-      try {
-        await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
-      } finally {
-        w.THREE.Vector3.prototype.clone = originalClone;
-      }
+      try { await new Promise<void>(resolve => requestAnimationFrame(() => resolve())); }
+      finally { Array.prototype.forEach = each; }
       if (!center) throw new Error('Could not locate the actual fish-school center');
       w.__schoolCenter = center;
       w.__probeFish = fish[0];
@@ -168,7 +171,7 @@ test('target detail gives signed depth guidance and free-mode miss feedback rema
   await setDepth(-3);
   await expect(detail(page)).toContainText(/Dive\s+[0-9.]+\s*m/);
   await expect(detail(page)).not.toContainText('Rise');
-  await page.getByRole('button', { name: 'Observe', exact: true }).click();
+  await clickCephalopodControl(page, 'Observe');
   await expect(page.locator('.cl-mission-brief')).toContainText(/Nearest prey/);
   await expect(readout(page)).toBeHidden();
   await page.locator(canvas).focus();
@@ -188,7 +191,7 @@ test('target detail gives signed depth guidance and free-mode miss feedback rema
   )).toBe(true);
   // E must also interrupt an Observe narration. Only 350 ms of simulation
   // follows here, so feedback cannot pass by waiting for its six-second expiry.
-  await page.getByRole('button', { name: 'Observe', exact: true }).click();
+  await clickCephalopodControl(page, 'Observe');
   await expect(page.locator('.cl-mission-brief')).toContainText(/Nearest prey/);
   await page.locator(canvas).focus();
   await page.keyboard.press('KeyE');
@@ -210,7 +213,7 @@ test('phone target feedback fits larger text and hides for inspection or lost pr
   await mount(page);
   await page.evaluate(() => { document.getElementById('wrap')!.style.width = '100%'; window.dispatchEvent(new Event('resize')); });
   await positionCrabs(page, [0, 1.4], [18, 18]);
-  await page.getByRole('button', { name: 'Help / settings', exact: true }).click();
+  await clickCephalopodControl(page, 'Help / settings');
   await page.getByLabel('Larger text', { exact: true }).check();
   await page.getByRole('button', { name: 'Resume dive', exact: true }).click();
   await advance(page, 4);
@@ -227,7 +230,7 @@ test('phone target feedback fits larger text and hides for inspection or lost pr
   expect(mission!.y + mission!.height).toBeLessThanOrEqual(controls!.y + 1);
   expect(controls!.y + controls!.height).toBeLessThanOrEqual(touch!.y + 1);
 
-  await page.getByRole('button', { name: 'Inspect [F]', exact: true }).click();
+  await clickCephalopodControl(page, 'Inspect');
   await expect(readout(page)).toBeHidden();
   expect(await page.evaluate(() => (window as any).__halo.visible)).toBe(false);
   await page.getByRole('button', { name: 'Return to dive', exact: true }).click();

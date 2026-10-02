@@ -255,21 +255,20 @@ test('cuttlefish display interrupts a nearby school alarm and fleeing resumes af
     const w = window as any;
     const fish = w.__scene.children.filter((o: any) => o.userData.alive && o.userData.offset).slice(0, 8);
     if (fish.length !== 8) throw new Error('Expected the actual first fish school');
-    // The scene exposes fish meshes, while their steering center lives in the
-    // simulation closure. Recover that existing Vector3 during a frozen frame;
-    // restore clone immediately, then arrange a controlled school encounter.
-    const initialCenter = fish[0].position.clone().sub(fish[0].userData.offset);
-    const originalClone = w.THREE.Vector3.prototype.clone;
+    // Observe the real school containing the selected scene fish during a frozen frame.
+    // Restore the temporary array hook immediately; keep the original encounter and assertions.
+    const each = Array.prototype.forEach;
     let center: any;
-    w.THREE.Vector3.prototype.clone = function () {
-      if (this.distanceToSquared(initialCenter) < 4 && !fish.some((f: any) => f.position === this)) center = this;
-      return originalClone.call(this);
+    (Array.prototype as any).forEach = function (callback: any, thisArg: any) {
+      if (this.length && this[0]?.center?.isVector3 && Array.isArray(this[0]?.fish) && typeof this[0]?.heading === 'number') {
+        each.call(this, (school: any) => {
+          if (school?.center?.isVector3 && Array.isArray(school.fish) && typeof school.heading === 'number' && school.fish.includes(fish[0])) center = school.center;
+        });
+      }
+      return each.call(this, callback, thisArg);
     };
-    try {
-      await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
-    } finally {
-      w.THREE.Vector3.prototype.clone = originalClone;
-    }
+    try { await new Promise<void>(resolve => requestAnimationFrame(() => resolve())); }
+    finally { Array.prototype.forEach = each; }
     if (!center) throw new Error('Could not locate the actual school steering center');
     center.copy(w.__player.position).add(new w.THREE.Vector3(0, 0, 1.1));
     fish.forEach((f: any, i: number) => {

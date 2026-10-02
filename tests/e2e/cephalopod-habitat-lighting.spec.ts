@@ -2,6 +2,7 @@ import { test, expect, Page } from '@playwright/test';
 import { execFileSync } from 'node:child_process';
 import { resolve } from 'node:path';
 import { GlHarness, looksBlank } from './helpers/stem_gl_harness';
+import { clickCephalopodControl } from './helpers/cephalopod_controls';
 
 const model = (process.env.CEPHALOPOD_MODEL_SOURCE || 'stem_lab/stem_tool_cephalopodlab.js').replace(/\\/g, '/');
 const diagnosticOverride = process.env.CEPHALOPOD_LIGHTING_DIAGNOSTIC_SOURCE;
@@ -148,8 +149,16 @@ function rendered(rows: Awaited<ReturnType<typeof native>>, quality: 'low' | 'ba
     }
     const source = row.shaders.map((s: any) => s.source).join('\n');
     if (row.kind === 'grass' || row.kind === 'kelp') {
-      expect(row.type).toBe('MeshStandardMaterial'); expect(row.key).toBe('cl-plant-flex-v15');
+      expect(row.type).toBe('MeshStandardMaterial'); expect(row.key).toBe('cl-plant-flex-v28-water-pulse');
       expect(source).toContain('clPlantOffset'); expect(source).toContain('clPlantSlope'); expect(source).toContain('#define USE_COLOR');
+      for (const marker of [
+        'float ripple=phase*2.0+0.8-(travel+4.0)*t;',
+        'float s=0.84*sin(angle)+0.16*sin(ripple);',
+        'float c=0.84*travel*cos(angle)+0.16*(travel+4.0)*cos(ripple);',
+        'float clPlantPulse(float phase,float sitePhase)',
+        'clPlantPulseWeight=clPlantPulse(clPlantMotion.x,clPlantSitePhase);',
+        'clPlantSitePhase=dot(clPlantSite.xz,vec2(0.075,0.055));',
+      ]) expect(source, row.kind + ' native water flow').toContain(marker);
       expect(row.motion).toHaveLength(4); expect(row.motion.every(Number.isFinite)).toBe(true); expect(row.motion[3]).toBe(motionEnabled);
       expect(source.includes('#define USE_SHADOWMAP')).toBe(quality === 'balanced');
       if (row.kind === 'grass') { expect(row.draw.instanced).toBe(true); expect(row.draw.count).toBe(120); expect(row.draw.instances).toBe(7); }
@@ -304,7 +313,7 @@ for (const quality of ['low', 'balanced'] as const) test(`${quality} natural hab
   await page.locator(canvas).focus(); await page.keyboard.press('Escape'); await expect(page.locator('[data-hud=burn]')).toHaveText('Paused');
   const paused = await state(page); await step(page, 4); const held = await state(page);
   for (const key of ['plants', 'motion', 'lights', 'top', 'bottom', 'causticOffset', 'causticOpacity', 'rays', 'time'] as const) expect(held[key]).toEqual(paused[key]);
-  await page.getByRole('button', { name: 'Inspect [F]', exact: true }).click(); await step(page, 2); const inspected = await state(page);
+  await clickCephalopodControl(page, 'Inspect'); await step(page, 2); const inspected = await state(page);
   await page.getByRole('button', { name: 'Orbit right', exact: true }).click(); await step(page, 5); const orbited = await state(page);
   expect(orbited.camera).not.toEqual(inspected.camera); expect(orbited.renders).toBeGreaterThan(inspected.renders); expect(orbited.plants).toEqual(paused.plants); expect(orbited.motion).toEqual(paused.motion); stable(orbited, quality);
   expect(orbited.staticWorld).toEqual(initial.staticWorld); expect(orbited.textures).toBe(initial.textures);
@@ -336,7 +345,7 @@ test('diagnostic day and depth changes drive existing lighting while pause and r
   await testInfo.attach('diagnostic-deep-day-gl-pixels', { body: deepPixels!.png, contentType: 'image/png' });
   expect(deepNative.find((r: any) => r.kind === 'sand').downwelling).toBeLessThan(dayNative.find((r: any) => r.kind === 'sand').downwelling * .75);
   expect(nativeKey(deepNative)).toBeLessThan(nativeKey(dayNative) * .75);
-  await page.getByRole('button', { name: 'Help / settings', exact: true }).click(); await page.getByLabel('Reduced motion', { exact: true }).check(); await page.getByRole('button', { name: 'Resume dive', exact: true }).click(); await step(page, 2);
+  await clickCephalopodControl(page, 'Help / settings'); await page.getByLabel('Reduced motion', { exact: true }).check(); await page.getByRole('button', { name: 'Resume dive', exact: true }).click(); await step(page, 2);
   const reduced = await state(page); await step(page, 7); const still = await state(page);
   expect(still.motion).toEqual(reduced.motion); expect(still.motion.every((m: number[]) => m[3] === 0)).toBe(true); expect(still.causticOffset).toEqual(reduced.causticOffset); expect(still.rays).toEqual(reduced.rays); stable(still, 'balanced');
   await step(page, 8, ['KeyQ']); const risen = await state(page); expect(risen.player[1]).toBeGreaterThan(still.player[1]); expect(risen.motion).toEqual(still.motion);
@@ -378,7 +387,7 @@ test('explicit forced-effects diagnostic submits all seven softened shafts and f
   const submitted = await native(page, kinds); rendered(submitted, 'balanced'); expect(submitted).toHaveLength(11);
   expect(submitted.every((r: any) => r.submittedOpacity > 0)).toBe(true);
   await page.keyboard.press('Escape');
-  await page.getByRole('button', { name: 'Help / settings', exact: true }).click(); await page.getByLabel('Reduced motion', { exact: true }).check(); await page.getByRole('button', { name: 'Resume dive', exact: true }).click(); await step(page, 3);
+  await clickCephalopodControl(page, 'Help / settings'); await page.getByLabel('Reduced motion', { exact: true }).check(); await page.getByRole('button', { name: 'Resume dive', exact: true }).click(); await step(page, 3);
   const reduced = await state(page); await step(page, 6); const held = await state(page);
   expect(held.rays).toEqual(reduced.rays); expect(held.causticOffset).toEqual(reduced.causticOffset); expect(held.motion).toEqual(reduced.motion); stable(held, 'balanced');
   await page.evaluate(() => { (window as any).__clLightingFixtureState.dayTime = .5; }); await step(page, 25); const night = await state(page);

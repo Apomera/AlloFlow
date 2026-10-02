@@ -4,7 +4,7 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const THREE = require('../vendor/three-r128/three.min.js');
-const source = readFileSync('stem_lab/stem_tool_cephalopodlab.js', 'utf8');
+const source = readFileSync(process.env.CEPHALOPOD_MODEL_SOURCE || 'stem_lab/stem_tool_cephalopodlab.js', 'utf8');
 const a = source.indexOf('function shadeCLHuntPlantFlex('), b = source.indexOf('function createCLHuntMarineSnowGeometry(', a);
 if (a < 0 || b <= a) throw new Error('Live plant-flex helper region was not found');
 const math = Object.create(Math);math.random = () => { throw new Error('Decorative flex must not consume gameplay randomness'); };
@@ -16,14 +16,19 @@ const shader = standardShader();shade(shader);
 const waveDefinition = shader.vertexShader.match(/vec2 clPlantWave\(([^)]*)\)\{([^{}]*)\}/);
 if (!waveDefinition) throw new Error('Live scalar wave function was not found');
 const wave = new Function('sin', 'cos', 'vec2', 'return function(' + waveDefinition[1].replace(/float /g, '') + '){' + waveDefinition[2].replace(/\bfloat /g, 'let ') + '};')(Math.sin, Math.cos, (x, y) => [x, y]);
-const xParameters = shader.vertexShader.match(/clPlantWave\(clPlantT,clPlantMotion\.x\+clPlantInstancePhase,([\d.]+),([\d.]+)\)/);
-const zParameters = shader.vertexShader.match(/clPlantWave\(clPlantT,clPlantMotion\.y\+clPlantInstancePhase\*([\d.]+),([\d.]+),([\d.]+)\)/);
+const pulseDefinition = shader.vertexShader.match(/float clPlantPulse\(([^)]*)\)\{([^{}]*)\}/);
+if (!pulseDefinition) throw new Error('Live spatial pulse function was not found');
+const pulse = new Function('sin', 'return function(' + pulseDefinition[1].replace(/float /g, '') + '){' + pulseDefinition[2].replace(/\bfloat /g, 'let ') + '};')(Math.sin);
+const xParameters = shader.vertexShader.match(/vec2 clPlantX=clPlantWave\(clPlantT,([^,]+),([\d.]+),([\d.]+)\);/);
+const zParameters = shader.vertexShader.match(/vec2 clPlantZ=clPlantWave\(clPlantT,([^,]+),([\d.]+),([\d.]+)\);/);
 if (!xParameters || !zParameters) throw new Error('Live wave parameters were not found');
-const xTravel = +xParameters[1], xAmplitude = +xParameters[2], phaseRatio = +zParameters[1], zTravel = +zParameters[2], zAmplitude = +zParameters[3];
-function sample(point, height, phases, instancePhase = 0, enabled = 1) {
-  const t = Math.max(0, Math.min(1, point.y / Math.max(height, .001)));
-  const x = wave(t, phases[0] + instancePhase, xTravel, xAmplitude), z = wave(t, phases[1] + instancePhase * phaseRatio, zTravel, zAmplitude);
-  return { point: new THREE.Vector3(point.x + x[0] * height * enabled, point.y, point.z + z[0] * height * enabled), slope: [x[1] * enabled, z[1] * enabled] };
+const livePhase = expression => new Function('phases', 'instancePhase', 'return ' + expression.replace(/clPlantMotion\.x/g, 'phases[0]').replace(/clPlantMotion\.y/g, 'phases[1]').replace(/clPlantInstancePhase/g, 'instancePhase') + ';');
+const xPhase = livePhase(xParameters[1]), zPhase = livePhase(zParameters[1]);
+const xTravel = +xParameters[2], xAmplitude = +xParameters[3], zTravel = +zParameters[2], zAmplitude = +zParameters[3];
+function sample(point, height, phases, instancePhase = 0, enabled = 1, sitePhase = 0) {
+  const t = Math.max(0, Math.min(1, point.y / Math.max(height, .001))), weight = enabled * pulse(phases[0], sitePhase);
+  const x = wave(t, xPhase(phases, instancePhase), xTravel, xAmplitude), z = wave(t, zPhase(phases, instancePhase), zTravel, zAmplitude);
+  return { point: new THREE.Vector3(point.x + x[0] * height * weight, point.y, point.z + z[0] * height * weight), slope: [x[1] * weight, z[1] * weight] };
 }
 function plant(kind, height, variant) {
   const geometry = create(THREE, kind, height, variant), material = new THREE.MeshStandardMaterial();
@@ -122,6 +127,38 @@ describe('Cephalopod Hunter rooted shader plant flex', () => {
     }
   });
 
+  it('shares a slow spatial water pulse while retaining independent blade ripples', () => {
+    for (const marker of [
+      'vec3 clPlantSite=modelMatrix[3].xyz;',
+      'clPlantSite=(modelMatrix*vec4(instanceMatrix[3].xyz,1.0)).xyz;',
+      'float clPlantSitePhase=dot(clPlantSite.xz,vec2(0.075,0.055));',
+      'float clPlantPulseWeight=clPlantPulse(clPlantMotion.x,clPlantSitePhase);',
+      'vec3 clPlantOffset=vec3(clPlantX.x,0.0,clPlantZ.x)*clPlantMotion.z*clPlantMotion.w*clPlantPulseWeight;',
+      'vec2 clPlantSlope=vec2(clPlantX.y,clPlantZ.y)*clPlantMotion.w*clPlantPulseWeight;',
+    ]) expect(shader.vertexShader).toContain(marker);
+    expect(pulse(0, Math.PI / 2)).toBeCloseTo(.72, 14); expect(pulse(0, -Math.PI / 2)).toBeCloseTo(1, 14);
+    for (let phase = 0; phase < Math.PI * 2; phase += .13) for (const sitePhase of [-8.8, -2.9, 0, 3.7, 14.6]) {
+      const value = pulse(phase, sitePhase); expect(Number.isFinite(value)).toBe(true);
+      expect(value).toBeGreaterThanOrEqual(.72); expect(value).toBeLessThanOrEqual(1);
+      // Nearby world sites receive the same slow pulse with a small spatial lag.
+      expect(Math.abs(value - pulse(phase, sitePhase + .2))).toBeLessThanOrEqual(.14 * .2 + 1e-12);
+    }
+    const grass = plant('grass', 1.2, 2), kelp = plant('kelp', 7.4, 4);
+    try {
+      const turn = Math.PI * 2;
+      for (const now of [1200, 16000, 1e9, 1e12]) {
+        update(grass.motion, now, .3, .001, false); update(kelp.motion, now, 4.4, .0008, false);
+        expect(grass.motion.value.x).toBe((now * .00035) % turn); expect(kelp.motion.value.x).toBe(grass.motion.value.x);
+        expect(grass.motion.value.y).toBe((now * .001 + .3) % turn); expect(kelp.motion.value.y).toBe((now * .0008 + 4.4) % turn);
+        expect(grass.motion.value.y).not.toBe(kelp.motion.value.y);
+      }
+      const point = new THREE.Vector3(.13, 2, -.08), phases = [0, 1.6];
+      const quiet = sample(point, 4, phases, .4, 1, Math.PI / 2).point.sub(point);
+      const crest = sample(point, 4, phases, .4, 1, -Math.PI / 2).point.sub(point);
+      expect(crest.length()).toBeGreaterThan(.01); expect(quiet.length() / crest.length()).toBeCloseTo(.72, 12);
+    } finally { grass.dispose(); kelp.dispose(); }
+  });
+
   it('shares one persistent vec4 across material recompiles, retains independent plants, and keeps long-dive phases finite', () => {
     const grass = plant('grass', 1.2, 2), kelp = plant('kelp', 7.4, 4);
     try {
@@ -132,7 +169,7 @@ describe('Cephalopod Hunter rooted shader plant flex', () => {
         for (let compilation = 0; compilation < 2; compilation++) {
           const compiled = standardShader();mesh.material.onBeforeCompile(compiled);
           expect(compiled.uniforms.clPlantMotion).toBe(motion);expect(compiled.fragmentShader).toBe(THREE.ShaderLib.standard.fragmentShader);
-          expect(compiled.vertexShader).toContain('clPlantInstancePhase=dot(instanceMatrix[3].xz,vec2(7.1,11.3));');expect(mesh.material.customProgramCacheKey()).toBe('cl-plant-flex-v15');
+          expect(compiled.vertexShader).toContain('clPlantInstancePhase=dot(instanceMatrix[3].xz,vec2(7.1,11.3));');expect(mesh.material.customProgramCacheKey()).toBe('cl-plant-flex-v28-water-pulse');
         }
         const rate = mesh.isInstancedMesh ? .001 : .0008;
         for (const now of [1200, 16000, 1e9, 1e12]) { update(motion, now, 2.7, rate, false);expect(motion.value).toBe(value);expect(value.z).toBe(height);expect(value.w).toBe(1);for (const phase of [value.x, value.y]) { expect(Number.isFinite(phase)).toBe(true);expect(phase).toBeGreaterThanOrEqual(0);expect(phase).toBeLessThan(Math.PI * 2); } }

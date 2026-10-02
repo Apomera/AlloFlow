@@ -15,6 +15,28 @@ assert.equal(sha(original.grassRecyclingSource),original.grassRecyclingSha256,'F
 assert.deepEqual(original.contract,{grass:80,kelp:25,ownedSpawnDraws:525,originalGeometryAndFlex:true,originalRngCallSites:true,originalGrassRecycling:true});
 function region(start,end,value=source){const a=value.indexOf(start),b=value.indexOf(end,a);assert.ok(a>=0&&b>a,'Missing actual production region: '+start);return value.slice(a,b);}
 const plantHelpers=region('      function shadeCLHuntPlantFlex(','      function createCLHuntMarineSnowGeometry(');
+// Literal approval guards restore only the reviewed pass28 flow formulas.
+const approvedPlantFlowChanges=[
+  {
+    "name": "shadeCLHuntPlantFlex water pulse and ripple",
+    "before": "      function shadeCLHuntPlantFlex(shader) {\n        shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\\n'+[\n          'uniform vec4 clPlantMotion;',\n          'vec2 clPlantWave(float t,float phase,float travel,float amplitude){float angle=phase-travel*t;float s=sin(angle);float c=cos(angle);return vec2(amplitude*t*t*s,amplitude*(2.0*t*s-travel*t*t*c));}',\n        ].join('\\n'));\n        shader.vertexShader=shader.vertexShader.replace('#include <beginnormal_vertex>','#include <beginnormal_vertex>\\n'+[\n          'float clPlantT=clamp(position.y/max(clPlantMotion.z,0.001),0.0,1.0);',\n          'float clPlantInstancePhase=0.0;',\n          '#ifdef USE_INSTANCING',\n          'clPlantInstancePhase=dot(instanceMatrix[3].xz,vec2(7.1,11.3));',\n          '#endif',\n          'vec2 clPlantX=clPlantWave(clPlantT,clPlantMotion.x+clPlantInstancePhase,1.6,0.12);',\n          'vec2 clPlantZ=clPlantWave(clPlantT,clPlantMotion.y+clPlantInstancePhase*0.73,2.1,0.035);',\n          'vec3 clPlantOffset=vec3(clPlantX.x,0.0,clPlantZ.x)*clPlantMotion.z*clPlantMotion.w;',\n          'vec2 clPlantSlope=vec2(clPlantX.y,clPlantZ.y)*clPlantMotion.w;',\n          'objectNormal.y-=dot(clPlantSlope,objectNormal.xz);',\n        ].join('\\n'));\n        shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\\ntransformed+=clPlantOffset;');\n      }",
+    "after": "      function shadeCLHuntPlantFlex(shader) {\n        shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\\n'+[\n          'uniform vec4 clPlantMotion;',\n          'vec2 clPlantWave(float t,float phase,float travel,float amplitude){float angle=phase-travel*t;float ripple=phase*2.0+0.8-(travel+4.0)*t;float s=0.84*sin(angle)+0.16*sin(ripple);float c=0.84*travel*cos(angle)+0.16*(travel+4.0)*cos(ripple);return vec2(amplitude*t*t*s,amplitude*(2.0*t*s-t*t*c));}',\n          'float clPlantPulse(float phase,float sitePhase){return 0.72+0.28*(0.5+0.5*sin(phase-sitePhase));}',\n        ].join('\\n'));\n        shader.vertexShader=shader.vertexShader.replace('#include <beginnormal_vertex>','#include <beginnormal_vertex>\\n'+[\n          'float clPlantT=clamp(position.y/max(clPlantMotion.z,0.001),0.0,1.0);',\n          'float clPlantInstancePhase=0.0;',\n          'vec3 clPlantSite=modelMatrix[3].xyz;',\n          '#ifdef USE_INSTANCING',\n          'clPlantInstancePhase=dot(instanceMatrix[3].xz,vec2(7.1,11.3));',\n          'clPlantSite=(modelMatrix*vec4(instanceMatrix[3].xyz,1.0)).xyz;',\n          '#endif',\n          'float clPlantSitePhase=dot(clPlantSite.xz,vec2(0.075,0.055));',\n          'float clPlantPulseWeight=clPlantPulse(clPlantMotion.x,clPlantSitePhase);',\n          'vec2 clPlantX=clPlantWave(clPlantT,clPlantMotion.y+clPlantInstancePhase,1.6,0.12);',\n          'vec2 clPlantZ=clPlantWave(clPlantT,clPlantMotion.y+1.7+clPlantInstancePhase*0.73,2.1,0.035);',\n          'vec3 clPlantOffset=vec3(clPlantX.x,0.0,clPlantZ.x)*clPlantMotion.z*clPlantMotion.w*clPlantPulseWeight;',\n          'vec2 clPlantSlope=vec2(clPlantX.y,clPlantZ.y)*clPlantMotion.w*clPlantPulseWeight;',\n          'objectNormal.y-=dot(clPlantSlope,objectNormal.xz);',\n        ].join('\\n'));\n        shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\\ntransformed+=clPlantOffset;');\n      }"
+  },
+  {
+    "name": "plant program cache key",
+    "before": "return 'cl-plant-flex-v15';",
+    "after": "return 'cl-plant-flex-v28-water-pulse';"
+  },
+  {
+    "name": "plant slow shared pulse clock",
+    "before": "        var turn=Math.PI*2,clock=now*rate;\n        motion.value.x=(clock+phase)%turn;motion.value.y=(clock*0.79+phase*1.17)%turn;motion.value.w=1;",
+    "after": "        var turn=Math.PI*2,clock=now*rate;\n        motion.value.x=(now*0.00035)%turn;motion.value.y=(clock+phase)%turn;motion.value.w=1;"
+  }
+];
+function reverseApprovedPlantFlow(value){
+  for(const change of approvedPlantFlowChanges){assert.equal(value.split(change.after).length,2,'Approved plant flow guard missing or changed: '+change.name);value=value.replace(change.after,change.before);}
+  return value;
+}
 const reefHelpers=region('function createCLReefFootprint(','function createCLHuntAnimal(');
 const composition=region('        // Five rock-rooted groves','        function updateGround(){');
 const terrain=region('        function terrainHeight(','        function distance3(');
@@ -72,12 +94,12 @@ function verifySite(fixture,mesh,near=null,min=0,max=78){
 function sameResources(rows){for(const row of rows){assert.equal(row.mesh.geometry,row.geometry);assert.equal(row.mesh.material,row.material);assert.deepEqual(row.mesh.rotation.toArray(),row.rotation);assert.equal(row.mesh.instanceMatrix?.array,row.instances);if(row.instances)assert.equal(Buffer.from(row.instances.buffer).toString('hex'),row.instanceBytes);for(const [name,before] of Object.entries(row.buffers)){const actual=row.geometry.attributes[name];assert.equal(actual,before.attribute);assert.equal(actual.array,before.array);assert.equal(Buffer.from(actual.array.buffer,actual.array.byteOffset,actual.array.byteLength).toString('hex'),before.bytes);}}}
 
 describe('Cephalopod Hunter deterministic habitat composition',()=>{
-  it('preserves the baseline random call sites, owned plant factories, and original spawn blocks byte-for-byte',()=>{
+  it('preserves baseline random call sites, plant geometry and spawn bytes after reversing only approved water flow',()=>{
     const randomLines=value=>value.split('\n').filter(line=>line.includes('Math.random'));
     assert.deepEqual(randomLines(source),original.randomLines);
     const protectedRegions=[['plantFactoryAndFlex','      function shadeCLHuntPlantFlex(','      function createCLHuntMarineSnowGeometry('],['grassSpawn','        var grass = [];','        // Terrain-conforming caustics:'],['kelpSpawn','        var kelpStrands = [];','        // ─── Hydrothermal vent'],['rockSpawn','        var rocks = [];','        // ─── Curved branching coral colonies'],['coralFactoryAndSpawn','        // ─── Curved branching coral colonies','        // ─── Sea grass']];
     assert.deepEqual(original.protectedRegions.map(entry=>entry.name),protectedRegions.map(entry=>entry[0]));
-    for(const [name,start,end] of protectedRegions)assert.equal(sha(region(start,end)),original.protectedRegions.find(entry=>entry.name===name).sha256,'Baseline owned region drifted: '+name);
+    for(const [name,start,end] of protectedRegions){const live=region(start,end),restored=name==='plantFactoryAndFlex'?reverseApprovedPlantFlow(live):live;assert.equal(sha(restored),original.protectedRegions.find(entry=>entry.name===name).sha256,'Baseline owned region drifted: '+name);}
   });
 
   it('retains actual plant spawn order and all 525 owned random draws, resource counts, heights, yaw and phase',()=>{

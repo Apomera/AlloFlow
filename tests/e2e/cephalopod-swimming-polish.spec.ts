@@ -1,5 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
 import { GlHarness } from './helpers/stem_gl_harness';
+import { clickCephalopodControl } from './helpers/cephalopod_controls';
 
 const harness = new GlHarness({
   toolFile: 'stem_lab/stem_tool_cephalopodlab.js', toolId: 'cephalopodLab',
@@ -64,20 +65,20 @@ async function nearSchool(page: Page, distance = 0.65) {
   await page.evaluate(async (distance) => {
     const w = window as any;
     const fish = w.__fish.slice(0, 8);
-    const approximateCenter = fish[0].position.clone().sub(fish[0].userData.offset);
-    const originalClone = w.THREE.Vector3.prototype.clone;
+    // Observe the real school containing the selected scene fish during a frozen frame.
+    // Restore the temporary array hook immediately; keep the original encounter and assertions.
+    const each = Array.prototype.forEach;
     let center: any;
-    // Capture the school's existing steering center while simulation time is
-    // frozen; do not replace the fish, the school, or its behavior under test.
-    w.THREE.Vector3.prototype.clone = function () {
-      if (this.distanceToSquared(approximateCenter) < 4 && !fish.some((f: any) => f.position === this)) center = this;
-      return originalClone.call(this);
+    (Array.prototype as any).forEach = function (callback: any, thisArg: any) {
+      if (this.length && this[0]?.center?.isVector3 && Array.isArray(this[0]?.fish) && typeof this[0]?.heading === 'number') {
+        each.call(this, (school: any) => {
+          if (school?.center?.isVector3 && Array.isArray(school.fish) && typeof school.heading === 'number' && school.fish.includes(fish[0])) center = school.center;
+        });
+      }
+      return each.call(this, callback, thisArg);
     };
-    try {
-      await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
-    } finally {
-      w.THREE.Vector3.prototype.clone = originalClone;
-    }
+    try { await new Promise<void>(resolve => requestAnimationFrame(() => resolve())); }
+    finally { Array.prototype.forEach = each; }
     if (!center) throw new Error('Could not locate the actual school steering center');
     center.copy(w.__player.position).add(new w.THREE.Vector3(0, 0, distance));
     fish.forEach((f: any, i: number) => {
@@ -119,7 +120,7 @@ test('prey fish face forward and animate their tails while respecting inspection
   await advance(page, 5);
   expect(await tailState(page)).not.toEqual(swimming);
 
-  await page.getByRole('button', { name: 'Inspect [F]', exact: true }).click();
+  await clickCephalopodControl(page, 'Inspect');
   const inspecting = await tailState(page);
   await advance(page, 8);
   expect(await tailState(page)).toEqual(inspecting);
@@ -127,14 +128,14 @@ test('prey fish face forward and animate their tails while respecting inspection
   await advance(page, 5);
   expect(await tailState(page)).not.toEqual(inspecting);
 
-  await page.getByRole('button', { name: 'Help / settings', exact: true }).click();
+  await clickCephalopodControl(page, 'Help / settings');
   await page.getByLabel('Reduced motion', { exact: true }).check();
   await page.getByRole('button', { name: 'Resume dive', exact: true }).click();
   await advance(page, 2);
   const reduced = await tailState(page);
   await advance(page, 8);
   expect(await tailState(page)).toEqual(reduced);
-  await page.getByRole('button', { name: 'Help / settings', exact: true }).click();
+  await clickCephalopodControl(page, 'Help / settings');
   await page.getByLabel('Reduced motion', { exact: true }).uncheck();
   await page.getByRole('button', { name: 'Resume dive', exact: true }).click();
   await advance(page, 5);

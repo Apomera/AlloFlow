@@ -1,0 +1,527 @@
+{
+  "version": 1,
+  "runtimeSHA256": "9aa7ce02c22844fda042e27d7d2b0a50716c7f5d3717157a1052bf87d61cc671",
+  "cpu": {
+    "passed": 34,
+    "files": 5,
+    "sourceUnchanged": true,
+    "reportSHA256": "e96254cb077d936e037eee6b08085f90d7b07a3d33703e5ed59b2bd457660103",
+    "cases": [
+      {
+        "file": "tests/cephalopodlab_habitat_composition.test.js",
+        "title": "preserves baseline random call sites, plant geometry and spawn bytes after reversing only approved water flow",
+        "status": "passed"
+      },
+      {
+        "file": "tests/cephalopodlab_habitat_composition.test.js",
+        "title": "retains actual plant spawn order and all 525 owned random draws, resource counts, heights, yaw and phase",
+        "status": "passed"
+      },
+      {
+        "file": "tests/cephalopodlab_habitat_composition.test.js",
+        "title": "composes the actual settled reef into five rock-rooted groves with clear sand and den paths",
+        "status": "passed"
+      },
+      {
+        "file": "tests/cephalopodlab_habitat_composition.test.js",
+        "title": "keeps stable habitat resources and positions without random draws or repeated buffer uploads",
+        "status": "passed"
+      },
+      {
+        "file": "tests/cephalopodlab_habitat_composition.test.js",
+        "title": "preserves actual baseline grass recycle eligibility and draw order through several player locations",
+        "status": "passed"
+      },
+      {
+        "file": "tests/cephalopodlab_habitat_composition.test.js",
+        "title": "keeps composition outside per-frame animation and leaves grounding, cleanup and resource lifecycle intact",
+        "status": "passed"
+      },
+      {
+        "file": "tests/cephalopodlab_plant_flex.test.js",
+        "title": "keeps roots and slopes fixed, bounds every wave, and matches its analytic derivative to finite differences",
+        "status": "passed"
+      },
+      {
+        "file": "tests/cephalopodlab_plant_flex.test.js",
+        "title": "corrects normals with the inverse transpose before instance and world transforms",
+        "status": "passed"
+      },
+      {
+        "file": "tests/cephalopodlab_plant_flex.test.js",
+        "title": "expands only culled kelp bounds, enclosing posed vertices while every grass instance root stays fixed",
+        "status": "passed"
+      },
+      {
+        "file": "tests/cephalopodlab_plant_flex.test.js",
+        "title": "shares a slow spatial water pulse while retaining independent blade ripples",
+        "status": "passed"
+      },
+      {
+        "file": "tests/cephalopodlab_plant_flex.test.js",
+        "title": "shares one persistent vec4 across material recompiles, retains independent plants, and keeps long-dive phases finite",
+        "status": "passed"
+      },
+      {
+        "file": "tests/cephalopodlab_prey_fish.test.js",
+        "title": "builds two finite render surfaces with one owned material and bounded geometry for every school index",
+        "status": "passed"
+      },
+      {
+        "file": "tests/cephalopodlab_prey_fish.test.js",
+        "title": "keeps a forward nose, bilateral eyes and a bright lateral silver band with a darker back",
+        "status": "passed"
+      },
+      {
+        "file": "tests/cephalopodlab_prey_fish.test.js",
+        "title": "joins each visible fin and eye patch to the actual triangulated body without detached ornament",
+        "status": "passed"
+      },
+      {
+        "file": "tests/cephalopodlab_prey_fish.test.js",
+        "title": "keeps the real tail waist inside the body through the full live yaw range and leaves a true caudal fork",
+        "status": "passed"
+      },
+      {
+        "file": "tests/cephalopodlab_prey_fish.test.js",
+        "title": "constructs deterministically without shared buffers and keeps all resources static as the rig turns and swims",
+        "status": "passed"
+      },
+      {
+        "file": "tests/cephalopodlab_prey_fish.test.js",
+        "title": "owns exactly two geometries and one material whose disposal leaves another fish usable",
+        "status": "passed"
+      },
+      {
+        "file": "tests/cephalopodlab_prey_memory.test.js",
+        "title": "keeps the existing alarm rates, threshold and cap while reporting early detection",
+        "status": "passed"
+      },
+      {
+        "file": "tests/cephalopodlab_prey_memory.test.js",
+        "title": "copies the last visible position and never reads a hidden player position",
+        "status": "passed"
+      },
+      {
+        "file": "tests/cephalopodlab_prey_memory.test.js",
+        "title": "steers identically after different unseen movements, then responds to a visible reacquisition",
+        "status": "passed"
+      },
+      {
+        "file": "tests/cephalopodlab_prey_memory.test.js",
+        "title": "forgets a threat when calm and clears it immediately during the existing display interruption",
+        "status": "passed"
+      },
+      {
+        "file": "tests/cephalopodlab_prey_memory.test.js",
+        "title": "takes the short turn across the heading seam and remains finite at coincident positions",
+        "status": "passed"
+      },
+      {
+        "file": "tests/cephalopodlab_prey_memory.test.js",
+        "title": "reports actionable intent without changing crab, distracted or existing fleeing wording",
+        "status": "passed"
+      },
+      {
+        "file": "tests/cephalopodlab_shoal_movement.test.js",
+        "title": "rotates the calm staggered formation with its heading instead of world axes",
+        "status": "passed"
+      },
+      {
+        "file": "tests/cephalopodlab_shoal_movement.test.js",
+        "title": "keeps eight members alongside a traveling calm school and preserves lane order",
+        "status": "passed"
+      },
+      {
+        "file": "tests/cephalopodlab_shoal_movement.test.js",
+        "title": "tightens when wary, opens a broad escape fan and regroups after alarm clears",
+        "status": "passed"
+      },
+      {
+        "file": "tests/cephalopodlab_shoal_movement.test.js",
+        "title": "has no formation jump at the existing wary-to-fleeing alarm threshold",
+        "status": "passed"
+      },
+      {
+        "file": "tests/cephalopodlab_shoal_movement.test.js",
+        "title": "keeps calm, display and full-alarm center and member travel within their per-second budgets",
+        "status": "passed"
+      },
+      {
+        "file": "tests/cephalopodlab_shoal_movement.test.js",
+        "title": "reflects both components at a corner and moves back into the map on the next tick",
+        "status": "passed"
+      },
+      {
+        "file": "tests/cephalopodlab_shoal_movement.test.js",
+        "title": "turns before propulsion, aligns its nose with actual three-dimensional travel and slows a sharp turn",
+        "status": "passed"
+      },
+      {
+        "file": "tests/cephalopodlab_shoal_movement.test.js",
+        "title": "uses the short yaw turn across the heading seam and remains finite at a settled target",
+        "status": "passed"
+      },
+      {
+        "file": "tests/cephalopodlab_shoal_movement.test.js",
+        "title": "makes invalid or zero steps and captured members complete no-ops, and caps long frames",
+        "status": "passed"
+      },
+      {
+        "file": "tests/cephalopodlab_shoal_movement.test.js",
+        "title": "preserves swimming positions and heading under reduced motion while suppressing bank and tail",
+        "status": "passed"
+      },
+      {
+        "file": "tests/cephalopodlab_shoal_movement.test.js",
+        "title": "uses allocation-free scalar stepping without random draws or hidden-player knowledge",
+        "status": "passed"
+      }
+    ]
+  },
+  "native": {
+    "uniquePassedCases": 15,
+    "workers": 1,
+    "retries": 0,
+    "acceptedCases": [
+      {
+        "file": "tests/e2e/cephalopod-foraging-strike.spec.ts",
+        "title": "a pending strike waits through pause and captures only after simulation-time contact",
+        "status": "passed",
+        "durationMs": 15463,
+        "error": null
+      },
+      {
+        "file": "tests/e2e/cephalopod-foraging-strike.spec.ts",
+        "title": "prey that escapes or gains rock cover during wind-up survives contact",
+        "status": "passed",
+        "durationMs": 35736,
+        "error": null
+      },
+      {
+        "file": "tests/e2e/cephalopod-foraging-strike.spec.ts",
+        "title": "cuttlefish display interrupts a nearby school alarm and fleeing resumes after release",
+        "status": "passed",
+        "durationMs": 19461,
+        "error": null
+      },
+      {
+        "file": "tests/e2e/cephalopod-prey-memory.spec.ts",
+        "title": "concealed player movement cannot redirect an alarmed school, while renewed sight refreshes its escape",
+        "status": "passed",
+        "durationMs": 13269,
+        "error": null
+      },
+      {
+        "file": "tests/e2e/cephalopod-prey-memory.spec.ts",
+        "title": "target feedback follows wary, fleeing and settling prey, with memory frozen during inspection and cleared when calm",
+        "status": "passed",
+        "durationMs": 30543,
+        "error": null
+      },
+      {
+        "file": "tests/e2e/cephalopod-directed-strike.spec.ts",
+        "title": "rendered clubs follow the moving committed prey at contact while T queues another fish",
+        "status": "passed",
+        "durationMs": 17721,
+        "error": null
+      },
+      {
+        "file": "tests/e2e/cephalopod-directed-strike.spec.ts",
+        "title": "inspection freezes a pending reach and its recovery, then resumes the same strike",
+        "status": "passed",
+        "durationMs": 100867,
+        "error": null
+      },
+      {
+        "file": "tests/e2e/cephalopod-directed-strike.spec.ts",
+        "title": "a distant target produces finite bounded reach without capture and reduced motion suppresses the reach",
+        "status": "passed",
+        "durationMs": 20725,
+        "error": null
+      },
+      {
+        "file": "tests/e2e/cephalopod-habitat-lighting.spec.ts",
+        "title": "low natural habitat clusters keep open routes and grounded roots while actual plant, sand and water programs submit",
+        "status": "passed",
+        "durationMs": 19320,
+        "error": null
+      },
+      {
+        "file": "tests/e2e/cephalopod-habitat-lighting.spec.ts",
+        "title": "balanced natural habitat clusters keep open routes and grounded roots while actual plant, sand and water programs submit",
+        "status": "passed",
+        "durationMs": 27110,
+        "error": null
+      },
+      {
+        "file": "tests/e2e/cephalopod-habitat-lighting.spec.ts",
+        "title": "phone natural habitat draws visible GL pixels and releases every owned plant and lighting resource exactly once",
+        "status": "passed",
+        "durationMs": 26048,
+        "error": null
+      },
+      {
+        "file": "tests/e2e/cephalopod-pursuit-polish.spec.ts",
+        "title": "target detail gives signed depth guidance and free-mode miss feedback remains visible",
+        "status": "passed",
+        "durationMs": 32192,
+        "error": null
+      },
+      {
+        "file": "tests/e2e/cephalopod-swimming-polish.spec.ts",
+        "title": "prey fish face forward and animate their tails while respecting inspection and reduced motion",
+        "status": "passed",
+        "durationMs": 94058,
+        "error": null
+      },
+      {
+        "file": "tests/e2e/cephalopod-swimming-polish.spec.ts",
+        "title": "capturing a fish disposes its owned resources while a surviving neighbor keeps swimming",
+        "status": "passed",
+        "durationMs": 12901,
+        "error": null
+      },
+      {
+        "file": "tests/e2e/cephalopod-swimming-polish.spec.ts",
+        "title": "fish tail motion stays smooth when alarm rises after an extended quiet swim",
+        "status": "passed",
+        "durationMs": 56649,
+        "error": null
+      }
+    ],
+    "sourceUnchanged": true,
+    "initialAttempt": {
+      "passed": 9,
+      "failed": 6,
+      "reportSHA256": "ccb43d3a908f1ed692578ecbf623f0a958b63e4708b6523af431f976ddea7944",
+      "failures": [
+        {
+          "file": "tests/e2e/cephalopod-directed-strike.spec.ts",
+          "title": "inspection freezes a pending reach and its recovery, then resumes the same strike",
+          "status": "failed",
+          "durationMs": 37049,
+          "error": "Error: expect(locator).toBeDisabled() failed\n\nLocator: getByRole('button', { name: 'Strike [E]', exact: true })\nExpected: disabled\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:"
+        },
+        {
+          "file": "tests/e2e/cephalopod-directed-strike.spec.ts",
+          "title": "a distant target produces finite bounded reach without capture and reduced motion suppresses the reach",
+          "status": "failed",
+          "durationMs": 88311,
+          "error": "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for getByRole('button', { name: 'Help / settings', exact: true })\n"
+        },
+        {
+          "file": "tests/e2e/cephalopod-habitat-lighting.spec.ts",
+          "title": "low natural habitat clusters keep open routes and grounded roots while actual plant, sand and water programs submit",
+          "status": "failed",
+          "durationMs": 75268,
+          "error": "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for getByRole('button', { name: 'Inspect [F]', exact: true })\n"
+        },
+        {
+          "file": "tests/e2e/cephalopod-habitat-lighting.spec.ts",
+          "title": "balanced natural habitat clusters keep open routes and grounded roots while actual plant, sand and water programs submit",
+          "status": "failed",
+          "durationMs": 128925,
+          "error": "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for getByRole('button', { name: 'Inspect [F]', exact: true })\n"
+        },
+        {
+          "file": "tests/e2e/cephalopod-pursuit-polish.spec.ts",
+          "title": "target detail gives signed depth guidance and free-mode miss feedback remains visible",
+          "status": "failed",
+          "durationMs": 57787,
+          "error": "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for getByRole('button', { name: 'Observe', exact: true })\n"
+        },
+        {
+          "file": "tests/e2e/cephalopod-swimming-polish.spec.ts",
+          "title": "prey fish face forward and animate their tails while respecting inspection and reduced motion",
+          "status": "failed",
+          "durationMs": 48049,
+          "error": "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for getByRole('button', { name: 'Inspect [F]', exact: true })\n"
+        }
+      ],
+      "resolution": "Six old locators missed real controls in the compact layout. The fixture now follows visible secondary controls through Tools. The original desktop Strike [E] cooldown state remains the exact oracle with includeHidden:true; it is never clicked. No assertion, actor arrangement, viewport or production behavior changed."
+    },
+    "recovery": {
+      "passed": 10,
+      "files": 4,
+      "reportSHA256": "faf54a9150e09b7966ddc5555e403adcc8f415a23da49b4488366c2d1a16987d"
+    },
+    "retainedUnchangedPassingCases": 5,
+    "accounting": "Fifteen unique cases passed on the same final runtime across the initial and corrected fixture runs. The five unchanged prey-memory/foraging cases retain exact source and test hashes. This is not a single 15-case green run."
+  },
+  "faultSensitivity": {
+    "accepted": true,
+    "runtimeSHA256": "9aa7ce02c22844fda042e27d7d2b0a50716c7f5d3717157a1052bf87d61cc671",
+    "negativeControls": 3,
+    "restoredFocusedPasses": 3,
+    "productionNeverEdited": true,
+    "sourceUnchanged": true,
+    "runs": [
+      {
+        "name": "nose",
+        "requested": [
+          "tests/cephalopodlab_shoal_movement.test.js"
+        ],
+        "selector": "turns before propulsion",
+        "copiedMutation": true,
+        "executedSHA": "b463a5d717ec308a3fadbca4310bde71202aa0b5ace647c3ab284d82bb9a45d9",
+        "reportSHA": "1859ac2fa8339842241f53abf6dec3da63fc0bcf2a893ad7ff441011d9a43289",
+        "selected": [
+          {
+            "title": "turns before propulsion, aligns its nose with actual three-dimensional travel and slows a sharp turn",
+            "status": "failed",
+            "failure": "AssertionError: expected 0.19554721804338104 to be greater than 0.9999999999"
+          }
+        ],
+        "intendedOracleRejected": true,
+        "productionNeverEdited": true
+      },
+      {
+        "name": "corner",
+        "requested": [
+          "tests/cephalopodlab_shoal_movement.test.js"
+        ],
+        "selector": "reflects both components at a corner",
+        "copiedMutation": true,
+        "executedSHA": "c0457216b34f2231fe211e7f3a2f80bfc1c75a2525c1e96c4144b0155ee9571f",
+        "reportSHA": "ebe712adfe0da44bb53fd17aa6e9849e4fee97045ecdfc957766384377a5b4cd",
+        "selected": [
+          {
+            "title": "reflects both components at a corner and moves back into the map on the next tick",
+            "status": "failed",
+            "failure": "AssertionError: expected 0.7071067811865474 to be less than 0"
+          }
+        ],
+        "intendedOracleRejected": true,
+        "productionNeverEdited": true
+      },
+      {
+        "name": "pulse",
+        "requested": [
+          "tests/cephalopodlab_plant_flex.test.js"
+        ],
+        "selector": "shares a slow spatial water pulse",
+        "copiedMutation": true,
+        "executedSHA": "3b7b6a469f1eb42359ab44a2241016bdb3b56b53a5e91601ed999629049caed0",
+        "reportSHA": "cbdbde53d3c9d1921e765c6f2ea3df361a8819df3af6b5e028986de9556579e8",
+        "selected": [
+          {
+            "title": "shares a slow spatial water pulse while retaining independent blade ripples",
+            "status": "failed",
+            "failure": "AssertionError: expected 1 to be close to 0.72, received difference is 0.28, but expected 5e-15"
+          }
+        ],
+        "intendedOracleRejected": true,
+        "productionNeverEdited": true
+      },
+      {
+        "name": "restored",
+        "requested": [
+          "tests/cephalopodlab_shoal_movement.test.js",
+          "tests/cephalopodlab_plant_flex.test.js"
+        ],
+        "selector": "turns before propulsion|reflects both components at a corner|shares a slow spatial water pulse",
+        "copiedMutation": false,
+        "executedSHA": "9aa7ce02c22844fda042e27d7d2b0a50716c7f5d3717157a1052bf87d61cc671",
+        "reportSHA": "9a75f62ab7b3951cce21031fed45bc03bc885232e220996ee1d1f5da043e7c93",
+        "selected": [
+          {
+            "title": "shares a slow spatial water pulse while retaining independent blade ripples",
+            "status": "passed",
+            "failure": null
+          },
+          {
+            "title": "reflects both components at a corner and moves back into the map on the next tick",
+            "status": "passed",
+            "failure": null
+          },
+          {
+            "title": "turns before propulsion, aligns its nose with actual three-dimensional travel and slows a sharp turn",
+            "status": "passed",
+            "failure": null
+          }
+        ],
+        "intendedOracleRejected": false,
+        "productionNeverEdited": true
+      }
+    ]
+  },
+  "visual": {
+    "currentOnlyViews": 4,
+    "pngs": 8,
+    "nativePrograms": [
+      "grass",
+      "kelp"
+    ],
+    "actorPlacement": "Natural seed2741 spawning with ordinary native keyboard input; no actor or camera transform writes.",
+    "pictures": [
+      {
+        "file": "natural-views/squid-quiet-desktop.png",
+        "sha256": "60e8b8ba64123e7780ec02b5839fc9c2fbf073351e763b41fb713ffc83b91319",
+        "bytes": 1189301
+      },
+      {
+        "file": "natural-views/squid-quiet-desktop-gl.png",
+        "sha256": "82592ea93948f5bb28f9bf010a9534372dc5e5def4930f7560503b25759bb4bf",
+        "bytes": 664055
+      },
+      {
+        "file": "natural-views/squid-approach-desktop.png",
+        "sha256": "6218d05393469d3134f94ccc455c4d175c4557a91561dd81af563d1edf3fe1f1",
+        "bytes": 1167853
+      },
+      {
+        "file": "natural-views/squid-approach-desktop-gl.png",
+        "sha256": "84667db7f739138a2b11f2a9144c354919a97ef9a15cd4c9743c079340b92dd3",
+        "bytes": 656227
+      },
+      {
+        "file": "natural-views/squid-approach-phone.png",
+        "sha256": "9405017b70ec8f1cced32551d13739c25cab869485b0e9c7254cf4d490d70238",
+        "bytes": 318871
+      },
+      {
+        "file": "natural-views/squid-approach-phone-gl.png",
+        "sha256": "d5f5dc4884fe390911b87fc0612826a30198c53e5924f8f0674fdf40ed9ef87b",
+        "bytes": 171329
+      },
+      {
+        "file": "natural-views/octopus-reef-desktop.png",
+        "sha256": "74b382949a6a996730a45cb7d6cba13ff2881f47b0045a8f7db46cd978d402dc",
+        "bytes": 1170800
+      },
+      {
+        "file": "natural-views/octopus-reef-desktop-gl.png",
+        "sha256": "2d23c998912afced1e0d934720460f930e67c6d55d10677643872020987ebe94",
+        "bytes": 612963
+      }
+    ]
+  },
+  "runtimeMirrors": [
+    {
+      "file": "stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "9aa7ce02c22844fda042e27d7d2b0a50716c7f5d3717157a1052bf87d61cc671",
+      "byteExact": true
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "9aa7ce02c22844fda042e27d7d2b0a50716c7f5d3717157a1052bf87d61cc671",
+      "byteExact": true
+    },
+    {
+      "file": "desktop/app-build/stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "9aa7ce02c22844fda042e27d7d2b0a50716c7f5d3717157a1052bf87d61cc671",
+      "byteExact": true
+    },
+    {
+      "file": "desktop/web-app/build/stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "9aa7ce02c22844fda042e27d7d2b0a50716c7f5d3717157a1052bf87d61cc671",
+      "byteExact": true
+    }
+  ],
+  "limits": [
+    "Plant vertex trigonometric calls rise from4 to9; no new fragment work/resources or hardware FPS claim.",
+    "Static images do not establish motion smoothness; live simulation and shader gates are separate.",
+    "Behavioral fixtures arrange encounters for regression checks; natural visual captures do not."
+  ]
+}

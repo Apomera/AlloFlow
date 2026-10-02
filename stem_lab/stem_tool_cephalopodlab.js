@@ -11953,6 +11953,42 @@ function createCLHuntFish(T,index){
   fish.userData.tail=tail;fish.userData.swimPhase=index*1.7;fish.rotation.order='YXZ';return fish;
 }
 
+      // Bounded school travel reflects each axis independently at reef edges.
+      // Display interruption, alarm pace and the existing wander RNG stay authoritative.
+      function advanceCLHuntSchoolCenter(school, distracted, dt) {
+        var step=Math.max(0,Math.min(0.05,Number.isFinite(dt)?dt:0));if(step===0)return;
+        var alarm=Math.max(0,Math.min(1,school.alarm||0)),speed=distracted?0.35:1.5+alarm*2;
+        var dx=Math.sin(school.heading),dz=Math.cos(school.heading),x=school.center.x+dx*speed*step,z=school.center.z+dz*speed*step,reflected=false;
+        if(x>60){x=60;dx=-Math.abs(dx);reflected=true;}else if(x< -60){x=-60;dx=Math.abs(dx);reflected=true;}
+        if(z>60){z=60;dz=-Math.abs(dz);reflected=true;}else if(z< -60){z=-60;dz=Math.abs(dz);reflected=true;}
+        school.center.x=x;school.center.z=z;if(reflected)school.heading=Math.atan2(dx,dz);
+      }
+      // Four loose lanes rotate with the school; alarm opens a staggered escape fan.
+      // Fixed slot jitter reuses spawn offsets. Position convergence regroups fish after cover.
+      // Scalar stepping owns no new vectors, resources, random draws or hidden-player knowledge.
+      function advanceCLHuntShoalFish(fish, school, index, dt, reducedMotion) {
+        var step=Math.max(0,Math.min(0.05,Number.isFinite(dt)?dt:0));if(step===0||!fish.userData.alive)return;
+        var data=fish.userData,offset=data.offset,alarm=Math.max(0,Math.min(1,school.alarm||0));
+        var fan=Math.max(0,(alarm-0.3)/0.7),wary=Math.min(1,alarm/0.3)*(1-fan),width=1-0.16*wary+0.8*fan;
+        var lane=index%4-1.5,rank=0.5-Math.floor(index/4);
+        var side=(lane*0.68+offset.x*0.18)*width+lane*0.18*fan,forward=(rank*0.95+offset.z*0.18)*(1+fan*0.45)+(1-(index%4)/3)*fan*0.45;
+        var sin=Math.sin(school.heading),cos=Math.cos(school.heading),targetX=school.center.x+side*cos+forward*sin,targetY=school.center.y+offset.y*(1+fan*0.2),targetZ=school.center.z-side*sin+forward*cos;
+        var follow=1-Math.exp(-3*step),mx=(targetX-fish.position.x)*follow,my=(targetY-fish.position.y)*follow,mz=(targetZ-fish.position.z)*follow;
+        var travel=Math.hypot(mx,my,mz),limit=(data.distracted?0.8:2.6+alarm*2)*step;
+        if(travel>limit){var scale=limit/travel;mx*=scale;my*=scale;mz*=scale;}
+        // Turn the nose first; forward propulsion slows through sharp turns rather than sliding sideways.
+        var steer=1-Math.exp(-8*step),horizontal=Math.hypot(mx,mz),turnDelta=0;
+        if(horizontal>0.000001){var desiredYaw=Math.atan2(mx,mz);turnDelta=Math.atan2(Math.sin(desiredYaw-fish.rotation.y),Math.cos(desiredYaw-fish.rotation.y));var turnLimit=(3+alarm*2)*step;fish.rotation.y+=Math.max(-turnLimit,Math.min(turnLimit,turnDelta*steer));}
+        var desiredPitch=travel>0.000001?-Math.atan2(my,horizontal):0;
+        fish.rotation.x+=(desiredPitch-fish.rotation.x)*steer;
+        var noseX=Math.sin(fish.rotation.y)*Math.cos(fish.rotation.x),noseY=-Math.sin(fish.rotation.x),noseZ=Math.cos(fish.rotation.y)*Math.cos(fish.rotation.x);
+        var propulsion=Math.max(0,noseX*mx+noseY*my+noseZ*mz);
+        fish.position.x+=noseX*propulsion;fish.position.y+=noseY*propulsion;fish.position.z+=noseZ*propulsion;
+        fish.rotation.z=reducedMotion?0:fish.rotation.z+(Math.max(-0.16,Math.min(0.16,-turnDelta*0.15))-fish.rotation.z)*steer;
+        if(!reducedMotion)data.swimPhase=(data.swimPhase+step*(7+alarm*6))%(Math.PI*2);
+        data.tail.rotation.y=reducedMotion?0:Math.sin(data.swimPhase)*(0.22+alarm*0.14);
+      }
+
       // Display-only propulsion feedback; movement, energy and recovery remain simulation rules.
       // School escape remembers only a visible threat. Alarm rates and capture rules stay unchanged.
       function advanceCLHuntSchoolThreat(school, player, seesPlayer, distracted, dt) {
@@ -12060,23 +12096,28 @@ function createCLHuntFish(T,index){
           .replace('#include <normal_fragment_maps>','#include <normal_fragment_maps>\n'+relief);
       }
 
-      // Root-fixed decorative flex: existing simulation phases drive two bounded traveling waves.
+      // Shared water pulses carry bounded blade ripples; basal positions and slopes stay fixed.
       // Correct object normals before Three applies the immutable instance and model transforms.
       function shadeCLHuntPlantFlex(shader) {
         shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\n'+[
           'uniform vec4 clPlantMotion;',
-          'vec2 clPlantWave(float t,float phase,float travel,float amplitude){float angle=phase-travel*t;float s=sin(angle);float c=cos(angle);return vec2(amplitude*t*t*s,amplitude*(2.0*t*s-travel*t*t*c));}',
+          'vec2 clPlantWave(float t,float phase,float travel,float amplitude){float angle=phase-travel*t;float ripple=phase*2.0+0.8-(travel+4.0)*t;float s=0.84*sin(angle)+0.16*sin(ripple);float c=0.84*travel*cos(angle)+0.16*(travel+4.0)*cos(ripple);return vec2(amplitude*t*t*s,amplitude*(2.0*t*s-t*t*c));}',
+          'float clPlantPulse(float phase,float sitePhase){return 0.72+0.28*(0.5+0.5*sin(phase-sitePhase));}',
         ].join('\n'));
         shader.vertexShader=shader.vertexShader.replace('#include <beginnormal_vertex>','#include <beginnormal_vertex>\n'+[
           'float clPlantT=clamp(position.y/max(clPlantMotion.z,0.001),0.0,1.0);',
           'float clPlantInstancePhase=0.0;',
+          'vec3 clPlantSite=modelMatrix[3].xyz;',
           '#ifdef USE_INSTANCING',
           'clPlantInstancePhase=dot(instanceMatrix[3].xz,vec2(7.1,11.3));',
+          'clPlantSite=(modelMatrix*vec4(instanceMatrix[3].xyz,1.0)).xyz;',
           '#endif',
-          'vec2 clPlantX=clPlantWave(clPlantT,clPlantMotion.x+clPlantInstancePhase,1.6,0.12);',
-          'vec2 clPlantZ=clPlantWave(clPlantT,clPlantMotion.y+clPlantInstancePhase*0.73,2.1,0.035);',
-          'vec3 clPlantOffset=vec3(clPlantX.x,0.0,clPlantZ.x)*clPlantMotion.z*clPlantMotion.w;',
-          'vec2 clPlantSlope=vec2(clPlantX.y,clPlantZ.y)*clPlantMotion.w;',
+          'float clPlantSitePhase=dot(clPlantSite.xz,vec2(0.075,0.055));',
+          'float clPlantPulseWeight=clPlantPulse(clPlantMotion.x,clPlantSitePhase);',
+          'vec2 clPlantX=clPlantWave(clPlantT,clPlantMotion.y+clPlantInstancePhase,1.6,0.12);',
+          'vec2 clPlantZ=clPlantWave(clPlantT,clPlantMotion.y+1.7+clPlantInstancePhase*0.73,2.1,0.035);',
+          'vec3 clPlantOffset=vec3(clPlantX.x,0.0,clPlantZ.x)*clPlantMotion.z*clPlantMotion.w*clPlantPulseWeight;',
+          'vec2 clPlantSlope=vec2(clPlantX.y,clPlantZ.y)*clPlantMotion.w*clPlantPulseWeight;',
           'objectNormal.y-=dot(clPlantSlope,objectNormal.xz);',
         ].join('\n'));
         shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\ntransformed+=clPlantOffset;');
@@ -12084,7 +12125,7 @@ function createCLHuntFish(T,index){
       function createCLHuntPlantFlex(THREE,mesh,height) {
         var motion={value:new THREE.Vector4(0,0,height,0)};
         mesh.material.onBeforeCompile=function(shader){shader.uniforms.clPlantMotion=motion;shadeCLHuntPlantFlex(shader);};
-        mesh.material.customProgramCacheKey=function(){return 'cl-plant-flex-v15';};
+        mesh.material.customProgramCacheKey=function(){return 'cl-plant-flex-v28-water-pulse';};
         // Grass already disables frustum culling for its distributed instances. Kelp needs
         // a conservative static box/sphere enclosing every possible shader bend.
         if(mesh.frustumCulled){var box=mesh.geometry.boundingBox;box.min.x-=height*0.12;box.max.x+=height*0.12;box.min.z-=height*0.035;box.max.z+=height*0.035;box.getBoundingSphere(mesh.geometry.boundingSphere);}
@@ -12093,7 +12134,7 @@ function createCLHuntFish(T,index){
       function updateCLHuntPlantFlex(motion,now,phase,rate,reducedMotion) {
         if(reducedMotion){motion.value.w=0;return;}
         var turn=Math.PI*2,clock=now*rate;
-        motion.value.x=(clock+phase)%turn;motion.value.y=(clock*0.79+phase*1.17)%turn;motion.value.w=1;
+        motion.value.x=(now*0.00035)%turn;motion.value.y=(clock+phase)%turn;motion.value.w=1;
       }
 
       // Static tapered ribbons: three columns give each blade a shallow folded center vein.
@@ -17008,30 +17049,13 @@ function createCLHuntFish(T,index){
               var schoolDistracted=false;school.fish.forEach(function(fish){var dx=fish.position.x-octopus.position.x,dz=fish.position.z-octopus.position.z;fish.userData.distracted=!!(fish.userData.alive&&gameState.isDisplaying&&dx*dx+dz*dz<4.5*4.5);if(fish.userData.distracted)schoolDistracted=true;});
               var schoolSeesPlayer=!schoolDistracted&&school.fish.some(function(fish){return fish.userData.alive&&fish.position.distanceTo(octopus.position)<(isJetting?8:5)*(1-0.55*gameState.camoEff)&&sameHeight(fish.position,octopus.position,2.8)&&!rockBlocks(fish.position,octopus.position)&&!inkBlocks(fish.position,octopus.position);});
               advanceCLHuntSchoolThreat(school,octopus.position,schoolSeesPlayer,schoolDistracted,dt);
-              var schoolSpeed=schoolDistracted?0.35:1.5+school.alarm*2.0;
-              school.center.x += Math.sin(school.heading) * schoolSpeed * dt;
-              school.center.z += Math.cos(school.heading) * schoolSpeed * dt;
-              // Bounce off map edges
-              if (school.center.x > 60 || school.center.x < -60) school.heading += Math.PI;
-              if (school.center.z > 60 || school.center.z < -60) school.heading += Math.PI;
-              school.fish.forEach(function(fish) {
+              advanceCLHuntSchoolCenter(school,schoolDistracted,dt);
+              school.fish.forEach(function(fish,fishIndex) {
                 if (!fish.userData.alive) return;
                 fish.userData.alert=!fish.userData.distracted&&school.alarm>0.3;
                 fish.userData.awareness=school.alarm;fish.userData.threatVisible=schoolSeesPlayer;
                 fish.userData.intent=fish.userData.distracted?'distracted':school.intent;
-                var tgt = school.center.clone().addScaledVector(fish.userData.offset,1+school.alarm*0.45);
-                var vx=tgt.x-fish.position.x,vy=tgt.y-fish.position.y,vz=tgt.z-fish.position.z;
-                fish.position.x += vx * 1.5 * dt;
-                fish.position.y += vy * 1.5 * dt;
-                fish.position.z += vz * 1.5 * dt;
-                // Align the nose with actual travel, including formation changes and display attraction.
-                var turnDelta=0,steer=1-Math.exp(-8*dt),horizontal=Math.hypot(vx,vz);
-                if(horizontal>0.001){var desiredYaw=Math.atan2(vx,vz);turnDelta=Math.atan2(Math.sin(desiredYaw-fish.rotation.y),Math.cos(desiredYaw-fish.rotation.y));fish.rotation.y+=turnDelta*steer;}
-                fish.rotation.x+=((horizontal>0.001?-Math.atan2(vy,horizontal):0)-fish.rotation.x)*steer;
-                fish.rotation.z=gameState.a11y.reducedMotion?0:fish.rotation.z+(Math.max(-0.16,Math.min(0.16,-turnDelta*0.15))-fish.rotation.z)*steer;
-                // Integrate swim phase so changing alarm speed never jumps the tail pose.
-                if(!gameState.a11y.reducedMotion)fish.userData.swimPhase=(fish.userData.swimPhase+dt*(7+school.alarm*6))%(Math.PI*2);
-                fish.userData.tail.rotation.y=gameState.a11y.reducedMotion?0:Math.sin(fish.userData.swimPhase)*(0.22+school.alarm*0.14);
+                advanceCLHuntShoalFish(fish,school,fishIndex,dt,gameState.a11y.reducedMotion);
               });
             });
             // Respawn empty schools
