@@ -1169,6 +1169,20 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
     return depthKm / Math.tan(TECT_DIP_DEG * Math.PI / 180);
   }
 
+  // This is a cut-face teaching annotation, not a measured melt volume.
+  // Its small patch occupies mantle above the slab and below Plate B's base.
+  function tectArcProcessShape() {
+    return { water: [[20, -20], [20, -17.65]], melt: { x: 20, y: -17, rx: 1.3, ry: 0.65 },
+      magma: [[20, -17], [19, -11], [13, -5], [tectSlabDistKm(100) * TECT_KM, 3.6]] };
+  }
+  function tectArcProcessFace(m) {
+    if (!m || m.mode !== 'convergent') return 'boundary';
+    if (m.cut == null || !isFinite(m.cut) || m.cut <= -TECT_HALF_Z || m.cut >= TECT_HALF_Z) return 'cut-face';
+    // A rear or overhead view must not paint the trace through intact rock.
+    if (Math.abs(m.rotX || 0) >= 75 || Math.cos(-(m.rotY || 0) * Math.PI / 180) <= 0.12) return 'view-angle';
+    return 'exposed';
+  }
+
   // ═══════════════════════════════════════════════════════════════════════
   // 3D BLOCK VIEW — progressive enhancement over the 2D cross-section
   // ───────────────────────────────────────────────────────────────────────
@@ -1205,6 +1219,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
     var labelPlacements = [], labelRects = [];
     var focusSig = '', focusAnnotation = null;
     var inspectionGroup = null, inspectionOutline = null, inspectionMarker = null;
+    var arcProcessGroup = null, arcProcessState = { step: null, visible: false, reason: 'none', cut: null };
     var inspectionSig = '', inspectionNoticeSig = '';
     var inspectionState = { id: null, mode: null, visible: false, reason: 'none', anchor: null, segments: 0, objects: 0 };
     var rafId = 0, capacity = 0, resizeObs = null;
@@ -1303,6 +1318,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       scene.add(scaleGroup);
       scene.add(guideGroup);
       scene.add(focusGroup);
+      buildArcProcess();
 
       // One pooled outline follows the selected meshes. It has no effect on
       // plate materials, physics or the camera, and creates no new clock.
@@ -1452,6 +1468,58 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
         part.cap.position.z = isFinite(localCut) ? localCut : 0;
       });
     }
+    function buildArcProcess() {
+      arcProcessGroup = new T.Group(); arcProcessGroup.name = 'arc-process-annotation';
+      arcProcessGroup.visible = false; scene.add(arcProcessGroup);
+      var shape = tectArcProcessShape();
+      function material(color) { return new T.MeshBasicMaterial({ color: color, transparent: true, depthTest: false,
+        depthWrite: false, clippingPlanes: [clipPlane], side: T.DoubleSide }); }
+      function pipe(group, a, b, color) {
+        var start = new T.Vector3(a[0], a[1], 0), end = new T.Vector3(b[0], b[1], 0), direction = end.clone().sub(start);
+        var mesh = new T.Mesh(new T.CylinderGeometry(1, 1, 1, 8), material(color));
+        mesh.position.copy(start.clone().lerp(end, 0.5)); mesh.quaternion.setFromUnitVectors(new T.Vector3(0, 1, 0), direction.clone().normalize());
+        mesh.scale.set(0.1, direction.length(), 0.1); mesh.userData.arcPipe = true; mesh.renderOrder = 7;
+        var halo = new T.Mesh(mesh.geometry.clone(), material(0x0f172a));
+        halo.position.copy(mesh.position); halo.quaternion.copy(mesh.quaternion); halo.scale.copy(mesh.scale);
+        halo.userData.arcPipe = true; halo.userData.arcHalo = true; halo.renderOrder = 6;
+        group.add(halo); group.add(mesh);
+      }
+      ['water', 'melt', 'magma'].forEach(function (id) {
+        var group = new T.Group(); group.name = 'arc-process-' + id; group.userData.feature = 'arc-process-' + id;
+        arcProcessGroup.add(group);
+        if (id === 'water') {
+          // Separate retained segments make water visibly dashed in WebGL.
+          for (var i = 0; i < 3; i++) {
+            var a = new T.Vector2().fromArray(shape.water[0]).lerp(new T.Vector2().fromArray(shape.water[1]), i / 3);
+            var b = new T.Vector2().fromArray(shape.water[0]).lerp(new T.Vector2().fromArray(shape.water[1]), (i + 0.58) / 3);
+            pipe(group, a.toArray(), b.toArray(), 0x7dd3fc);
+          }
+        } else if (id === 'magma') {
+          for (var j = 0; j + 1 < shape.magma.length; j++) pipe(group, shape.magma[j], shape.magma[j + 1], 0xfb923c);
+        } else {
+          var ellipse = new T.Shape();
+          ellipse.absellipse(shape.melt.x, shape.melt.y, shape.melt.rx, shape.melt.ry, 0, Math.PI * 2, false, 0);
+          var patch = new T.Mesh(new T.ShapeGeometry(ellipse, 28), material(0xfb923c));
+          patch.material.opacity = 0.22; patch.renderOrder = 6; patch.userData.feature = 'partial-mantle-melt'; group.add(patch);
+          [[-0.65, 0], [0, 0.22], [0.65, -0.08]].forEach(function (point) {
+            var spot = new T.Mesh(new T.CircleGeometry(0.15, 10), material(0xffc278));
+            spot.position.set(shape.melt.x + point[0], shape.melt.y + point[1], 0); spot.renderOrder = 7; group.add(spot);
+          });
+          var edge = new T.LineLoop(new T.BufferGeometry().setFromPoints(ellipse.getPoints(28).map(function (point) { return new T.Vector3(point.x, point.y, 0); })),
+            new T.LineBasicMaterial({ color: 0xffc278, depthTest: false, depthWrite: false, clippingPlanes: [clipPlane] }));
+          edge.renderOrder = 7; group.add(edge);
+        }
+      });
+    }
+    function updateArcProcess(m) {
+      var step = ['water', 'melt', 'magma'].indexOf(m.arcProcessStep) >= 0 && m.mode === 'convergent' ? m.arcProcessStep : null;
+      var reason = step ? tectArcProcessFace(m) : 'none', visible = !!step && reason === 'exposed';
+      arcProcessGroup.visible = visible;
+      arcProcessGroup.position.z = visible ? m.cut - 0.02 : 0;
+      arcProcessGroup.children.forEach(function (part) { part.visible = visible && part.name === 'arc-process-' + step; });
+      arcProcessState = { step: step, visible: visible, reason: reason, cut: visible ? m.cut : null };
+    }
+
     // A curved edifice with a recessed crater, instead of two stacked points.
     function arcVolcano(x, z, r, hgt) {
       var g = new T.Group();
@@ -1772,6 +1840,12 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
           }
         }
       });
+      if (arcProcessGroup && arcProcessGroup.visible) arcProcessGroup.traverse(function (part) {
+        if (!part.userData.arcPipe) return;
+        var position = part.getWorldPosition(new T.Vector3()), depth = -position.applyMatrix4(camera.matrixWorldInverse).z;
+        var pixel = 2 * depth * tanV / hgt, radius = pixel * (part.userData.arcHalo ? 1.8 : 1);
+        part.scale.x = part.scale.z = radius;
+      });
       if (inspectionMarker && inspectionMarker.visible) {
         var markerPoint = inspectionMarker.position.clone().project(camera);
         occupied.push({ x: (markerPoint.x + 1) * w / 2 - 6, y: (1 - markerPoint.y) * hgt / 2 - 6, width: 12, height: 12 });
@@ -1882,6 +1956,17 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
           scaleGroup.add(plane);
         }
       });
+
+      if (m.arcProcessStep && tectArcProcessFace(m) === 'exposed') {
+        var processShape = tectArcProcessShape(), processIndex = ['water', 'melt', 'magma'].indexOf(m.arcProcessStep);
+        if (processIndex >= 0) {
+          var processTarget = m.arcProcessStep === 'water' ? [20, -19] : m.arcProcessStep === 'melt' ? [20, -17] : [16, -8];
+          var processLabel = makeLabel(String(processIndex + 1), m.arcProcessStep === 'water' ? '#7dd3fc' : '#ffd0a8', 5.5);
+          processLabel.userData.feature = 'arc-process-number';
+          processLabel.position.set(32, -8 - processIndex * 9, faceZ + 4); scaleGroup.add(processLabel);
+          trackScaleLabel(processLabel, new T.Vector3(processTarget[0], processTarget[1], faceZ - 0.02), false);
+        }
+      }
 
       // Trench marker: the origin every horizontal distance is measured from.
       if (m.mode === 'convergent') {
@@ -2065,9 +2150,10 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       // textures and labels. Quantise only the visual geometry, not the data.
       var nextGeometry = [m.mode, Math.round((m.mountainHeight || 0) / 40), Math.round((m.rift || 0) * 2), Math.round((m.offset || 0) * 2)].join('|');
       if (nextGeometry !== geometrySig) { buildPlates(m); geometrySig = nextGeometry; }
-      var nextScale = [m.mode, m.cut, m.showScale, m.surfaceView, JSON.stringify(m.words || {})].join('|');
+      var nextScale = [m.mode, m.cut, m.showScale, m.surfaceView, m.arcProcessStep, tectArcProcessFace(m), JSON.stringify(m.words || {})].join('|');
       if (nextScale !== scaleSig) { buildScale(m); scaleSig = nextScale; }
       updateSections(m);
+      updateArcProcess(m);
       guideGroup.children.forEach(function (arrow) {
         if (arrow.userData.feature !== 'plate-motion') return;
         var core = m.darkMode ? 0xf8fafc : 0x0f172a, halo = m.darkMode ? 0x0f172a : 0xf8fafc;
@@ -2141,7 +2227,11 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       try {
         if (m.sig !== appliedSig) { apply(m); appliedSig = m.sig; dirty = true; }
         var cs = [m.rotX, m.rotY, m.scale, m.mode, Math.round(m.offset || 0)].join(',');
-        if (cs !== appliedCamSig) { applyCam(m); appliedCamSig = cs; dirty = true; }
+        if (cs !== appliedCamSig) {
+          applyCam(m); appliedCamSig = cs; dirty = true;
+          // Camera-only turns also gate annotations to the exposed cut face.
+          if (arcProcessState.step && tectArcProcessFace(m) !== arcProcessState.reason) { apply(m); }
+        }
         if (!dirty) return;
         dirty = false;
         layoutScaleLabels();
@@ -2189,6 +2279,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
           labelRects: labelRects,
           focusAnnotation: focusAnnotation,
           inspection: inspectionSnapshot(),
+          arcProcess: Object.assign({}, arcProcessState),
           depthLabelCount: labelPlacements.filter(function (item) { return item.depth; }).length,
           featureLabelCount: labelPlacements.filter(function (item) { return !item.depth && !item.focus; }).length,
           surfaceView: !!(pending && pending.surfaceView),
@@ -2232,7 +2323,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
         if (resizeObs) { try { resizeObs.disconnect(); } catch (e) {} resizeObs = null; }
         else window.removeEventListener('resize', resize);
         if (scene) {
-          clearGroup(plateGroup); clearGroup(arcGroup); clearGroup(scaleGroup); clearGroup(guideGroup); clearGroup(focusGroup); clearGroup(inspectionGroup);
+          clearGroup(plateGroup); clearGroup(arcGroup); clearGroup(scaleGroup); clearGroup(guideGroup); clearGroup(focusGroup); clearGroup(inspectionGroup); clearGroup(arcProcessGroup);
           if (slabMesh) { scene.remove(slabMesh); disposeTree(slabMesh); }
           if (quakeBatch) quakeBatch.dispose(scene);
           scene.children.forEach(function (o) { if (o.isMesh) disposeTree(o); });
@@ -2245,6 +2336,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
         capacity = 0; appliedSig = ''; appliedCamSig = ''; geometrySig = ''; scaleSig = ''; sectionCaps = []; geometryBuilds = 0;
         labelPlacements = []; labelRects = []; focusSig = ''; focusAnnotation = null;
         inspectionGroup = inspectionOutline = inspectionMarker = null; inspectionSig = ''; inspectionNoticeSig = '';
+        arcProcessGroup = null; arcProcessState = { step: null, visible: false, reason: 'none', cut: null };
         inspectionState = { id: null, mode: null, visible: false, reason: 'none', anchor: null, segments: 0, objects: 0 };
         if (state !== 'failed') state = 'idle';
       }
@@ -4413,6 +4505,21 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
   }
   try { window.__alloPtDepthTrials = { capture: ptDepthTrial, valid: ptValidDepthTrial, records: ptDepthRecords }; } catch (e) {}
 
+  // Unfinished writing is kept separately from canonical comparison evidence.
+  // Empty entries are valid drafts; checking and submission remain explicit.
+  function ptBoundaryDraft(value) {
+    if (!value || typeof value !== 'object' || Array.isArray(value) || value.version !== 1
+        || !Number.isInteger(value.rate) || value.rate < 1 || value.rate > 15
+        || [600000, 1200000, 2400000].indexOf(value.years) === -1
+        || typeof value.prediction !== 'string' || value.prediction.length > 800
+        || typeof value.explanation !== 'string' || value.explanation.length > 4000
+        || ['', 'convergent', 'divergent', 'transform'].indexOf(value.transferChoice) === -1
+        || typeof value.transferReason !== 'string' || value.transferReason.length > 800) return null;
+    return { version: 1, prediction: value.prediction, rate: value.rate, years: value.years,
+      explanation: value.explanation, transferChoice: value.transferChoice, transferReason: value.transferReason };
+  }
+  try { window.__alloPtBoundaryDraft = ptBoundaryDraft; } catch (e) {}
+
   function ptBoundaryPlan(value) {
     if (!value || typeof value !== 'object' || Array.isArray(value)
         || !Number.isInteger(value.rate) || value.rate < 1 || value.rate > 15
@@ -4497,6 +4604,9 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
     var restoredSlabRef = useRef(undefined);
     if (restoredSlabRef.current === undefined) restoredSlabRef.current = ptSlabRecord(props && props.savedSlab);
     var restoredSlab = restoredSlabRef.current;
+    var restoredBoundaryDraftRef = useRef(undefined);
+    if (restoredBoundaryDraftRef.current === undefined) restoredBoundaryDraftRef.current = ptBoundaryDraft(props && props.savedBoundaryDraft);
+    var restoredBoundaryDraft = restoredBoundaryDraftRef.current;
     var st = useState({
       mode: 'convergent',  // 'divergent' | 'convergent' | 'transform'
       rate: 5,             // cm/year (simulation accelerates)
@@ -4506,7 +4616,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       // widget is a clock: years tick up, quakes fire, the range grows. Running it
       // unprompted is exactly what that setting is about. Nothing is taken away,
       // and Play is the first control under the canvas.
-      running: (restoredSlab || ptBoundaryInquiry(props && props.savedBoundaryInquiry)) ? false : !ptReducedMotion(),
+      running: (restoredSlab || restoredBoundaryDraft || ptBoundaryInquiry(props && props.savedBoundaryInquiry)) ? false : !ptReducedMotion(),
       years: 0,
       quakes: [],
       quakeTotal: 0,
@@ -4563,6 +4673,15 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
     var selectedFeature = featureSelection[0][s.mode];
     var setFeatureSelection = featureSelection[1];
     var featureRef = useRef(null); featureRef.current = selectedFeature;
+    var arcProcessSelection = useState(null), selectedArcProcess = arcProcessSelection[0], setArcProcess = arcProcessSelection[1];
+    var arcProcessRef = useRef(null); arcProcessRef.current = s.mode === 'convergent' ? selectedArcProcess : null;
+    useEffect(function () { if (s.mode !== 'convergent') setArcProcess(null); }, [s.mode]);
+    var arcProcessChoices = [
+      { id: 'water', label: __alloT('stem.platetectonics.arc_process_water', '1. Water released'), why: __alloT('stem.platetectonics.arc_process_water_why', 'As the sinking plate heats, water is released from its minerals into mantle above it. The dashed cyan route represents this water; it is separate from rising magma.') },
+      { id: 'melt', label: __alloT('stem.platetectonics.arc_process_melt', '2. Some mantle melts'), why: __alloT('stem.platetectonics.arc_process_melt_why', 'Water helps some of the hot mantle above the slab melt at a lower temperature. The small orange patch and specks represent partial melting. The surrounding mantle and the sinking slab remain mostly solid in this teaching model.') },
+      { id: 'magma', label: __alloT('stem.platetectonics.arc_process_magma', '3. Magma rises'), why: __alloT('stem.platetectonics.arc_process_magma_why', 'Magma formed above the slab can rise through the overriding plate toward the volcanic arc. The narrow solid orange route represents that ascent. Water released by the slab and rising magma are different parts of the process.') }
+    ];
+    var selectedArcChoice = arcProcessChoices.find(function (choice) { return choice.id === selectedArcProcess; });
     var featureResult = useState({ id: null, mode: null, visible: false, reason: 'none' });
     var featureChoices = s.mode === 'convergent' ? [
       { id: 'slab', label: __alloT('stem.platetectonics.block_inspect_slab', 'Descending slab'), why: __alloT('stem.platetectonics.block_inspect_slab_why', 'The oceanic plate continues downward beneath Plate B. Follow the same rock from the trench into the mantle, where the dipping earthquake band traces the slab.') },
@@ -4616,15 +4735,40 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
     var boundaryState = useState(boundaryInitialRef.current), boundaryInquiry = boundaryState[0], setBoundaryInquiry = boundaryState[1];
     var boundaryRef = useRef(boundaryInquiry), boundarySaveRef = useRef(boundaryInquiry ? JSON.stringify(boundaryInquiry) : '');
     boundaryRef.current = boundaryInquiry;
-    var boundaryDraftState = useState(boundaryInquiry ? boundaryInquiry.plan.prediction : ''), boundaryPrediction = boundaryDraftState[0], setBoundaryPrediction = boundaryDraftState[1];
-    var boundaryRateState = useState(boundaryInquiry ? boundaryInquiry.plan.rate : 5), boundaryRate = boundaryRateState[0], setBoundaryRate = boundaryRateState[1];
-    var boundaryYearsState = useState(boundaryInquiry ? boundaryInquiry.plan.years : 1200000), boundaryYears = boundaryYearsState[0], setBoundaryYears = boundaryYearsState[1];
-    var boundaryExplainState = useState(boundaryInquiry && boundaryInquiry.submission ? boundaryInquiry.submission.explanation : ''), boundaryExplanation = boundaryExplainState[0], setBoundaryExplanation = boundaryExplainState[1];
-    var boundaryTransferState = useState(boundaryInquiry && boundaryInquiry.submission ? boundaryInquiry.submission.transferChoice || '' : ''), boundaryTransfer = boundaryTransferState[0], setBoundaryTransfer = boundaryTransferState[1];
-    var boundaryReasonState = useState(boundaryInquiry && boundaryInquiry.submission ? boundaryInquiry.submission.transferReason || '' : ''), boundaryTransferReason = boundaryReasonState[0], setBoundaryTransferReason = boundaryReasonState[1];
+    var boundaryDraftState = useState(restoredBoundaryDraft ? restoredBoundaryDraft.prediction : boundaryInquiry ? boundaryInquiry.plan.prediction : ''), boundaryPrediction = boundaryDraftState[0], setBoundaryPrediction = boundaryDraftState[1];
+    var boundaryRateState = useState(restoredBoundaryDraft ? restoredBoundaryDraft.rate : boundaryInquiry ? boundaryInquiry.plan.rate : 5), boundaryRate = boundaryRateState[0], setBoundaryRate = boundaryRateState[1];
+    var boundaryYearsState = useState(restoredBoundaryDraft ? restoredBoundaryDraft.years : boundaryInquiry ? boundaryInquiry.plan.years : 1200000), boundaryYears = boundaryYearsState[0], setBoundaryYears = boundaryYearsState[1];
+    var boundaryExplainState = useState(restoredBoundaryDraft ? restoredBoundaryDraft.explanation : boundaryInquiry && boundaryInquiry.submission ? boundaryInquiry.submission.explanation : ''), boundaryExplanation = boundaryExplainState[0], setBoundaryExplanation = boundaryExplainState[1];
+    var boundaryTransferState = useState(restoredBoundaryDraft ? restoredBoundaryDraft.transferChoice : boundaryInquiry && boundaryInquiry.submission ? boundaryInquiry.submission.transferChoice || '' : ''), boundaryTransfer = boundaryTransferState[0], setBoundaryTransfer = boundaryTransferState[1];
+    var boundaryReasonState = useState(restoredBoundaryDraft ? restoredBoundaryDraft.transferReason : boundaryInquiry && boundaryInquiry.submission ? boundaryInquiry.submission.transferReason || '' : ''), boundaryTransferReason = boundaryReasonState[0], setBoundaryTransferReason = boundaryReasonState[1];
     var boundaryCheckedState = useState(false), boundaryTransferChecked = boundaryCheckedState[0], setBoundaryTransferChecked = boundaryCheckedState[1];
     var boundaryApplicationRef = useRef(null);
     boundaryApplicationRef.current = { choice: boundaryTransfer, reason: boundaryTransferReason, checked: boundaryTransferChecked };
+    var boundaryWritingRef = useRef({ version: 1, prediction: boundaryPrediction, rate: boundaryRate, years: boundaryYears,
+      explanation: boundaryExplanation, transferChoice: boundaryTransfer, transferReason: boundaryTransferReason });
+    var boundaryDraftSaveRef = useRef(restoredBoundaryDraft ? JSON.stringify(restoredBoundaryDraft) : '');
+    function editBoundaryWriting(patch) {
+      var next = Object.assign({}, boundaryWritingRef.current, patch);
+      if (JSON.stringify(next) === JSON.stringify(boundaryWritingRef.current)) return;
+      // Update the ref and consume the signature before a parent callback can
+      // reenter. Only deliberate field changes write; frames and restoration do not.
+      boundaryWritingRef.current = next;
+      var setters = { prediction: setBoundaryPrediction, rate: setBoundaryRate, years: setBoundaryYears,
+        explanation: setBoundaryExplanation, transferChoice: setBoundaryTransfer, transferReason: setBoundaryTransferReason };
+      Object.keys(patch).forEach(function (key) { if (setters[key]) setters[key](next[key]); });
+      if (Object.prototype.hasOwnProperty.call(patch, 'transferChoice') || Object.prototype.hasOwnProperty.call(patch, 'transferReason')) {
+        boundaryApplicationRef.current = { choice: next.transferChoice, reason: next.transferReason, checked: false };
+        setBoundaryTransferChecked(false);
+      }
+      // Keep invalid input local, and invalidate checked answers immediately.
+      // Persistence retains only bounded drafts, so correction cannot save stale evidence.
+      var valid = ptBoundaryDraft(next);
+      if (!valid) return;
+      var signature = JSON.stringify(valid);
+      if (signature === boundaryDraftSaveRef.current || typeof props.onRecordBoundaryDraft !== 'function') return;
+      boundaryDraftSaveRef.current = signature;
+      props.onRecordBoundaryDraft(valid);
+    }
     function saveBoundaryInquiry(value) {
       var valid = ptBoundaryInquiry(value);
       if (!valid || typeof props.onRecordBoundaryInquiry !== 'function') return false;
@@ -5142,14 +5286,16 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
         ctx.restore();
         ctx.textAlign = 'center';
 
-        // Melting where the slab passes the arc-forming depth, and the magma that
-        // rises from it. This is WHY the volcanoes stand back from the trench
-        // instead of sitting on it, which is the one fact that makes an arc make
-        // sense, so the melt point is derived from the slab geometry above rather
-        // than from a hand-placed constant.
+        // Water released by the descending slab helps the hot mantle above it
+        // partially melt. Magma from that mantle can rise toward the arc.
+        // These schematic routes distinguish mantle melting from the solid slab;
+        // the existing arc position is preserved when the trace is selected.
         var meltY = sy0 + slabReach * 0.42;
-        var meltX = sx0 + (meltY - sy0) / Math.tan(slabDip) + slabT * 0.5;
-        var arcX = Math.min(W - 60, meltX + 26);
+        // Preserve the surface arc, but start magma in mantle outside the blue
+        // slab polygon. Its inland edge interpolates the actual drawn thickness.
+        var slabEdgeX = sx0 + slabRun * 0.42 + slabT * (1.3 - 0.4 * 0.42);
+        var arcX = Math.min(W - 60, sx0 + (meltY - sy0) / Math.tan(slabDip) + slabT * 0.5 + 26);
+        var meltX = slabEdgeX + 12;
         ctx.save();
         ctx.strokeStyle = '#fb923c'; ctx.lineWidth = 5; ctx.globalAlpha = 0.6;
         ctx.shadowColor = '#f97316'; ctx.shadowBlur = 10;
@@ -5166,6 +5312,39 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
           ctx.beginPath(); ctx.arc(mx, my, 2.5 + meltPhase * 1.4, 0, Math.PI * 2); ctx.fill();
         }
         ctx.restore();
+
+        var processStep = arcProcessRef.current;
+        if (processStep) {
+          function processChip(number, x, y, ink) {
+            ctx.save();
+            // Keep this new step number readable at a minimum of 14 CSS pixels.
+            // The section normally scrolls at 540px on phones; this also covers
+            // a host that scales the canvas to fit its available width.
+            var fontSize = Math.max(14, 14 * W / (ctx.canvas.clientWidth || W));
+            ctx.font = 'bold ' + fontSize + 'px sans-serif'; ctx.textAlign = 'center';
+            var width = ctx.measureText(number).width;
+            ctx.fillStyle = 'rgba(12,10,9,0.94)';
+            ctx.fillRect(x - width / 2 - 5, y - fontSize, width + 10, fontSize + 7);
+            ctx.fillStyle = ink; ctx.fillText(number, x, y + 1); ctx.restore();
+          }
+          ctx.save(); ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+          if (processStep === 'water') {
+            ctx.strokeStyle = '#7dd3fc'; ctx.lineWidth = 3; ctx.setLineDash([4, 3]);
+            ctx.beginPath(); ctx.moveTo(slabEdgeX, meltY + 2); ctx.lineTo(meltX - 6, meltY); ctx.stroke(); ctx.setLineDash([]);
+            processChip('1', meltX + 28, meltY + 14, '#7dd3fc');
+          } else if (processStep === 'melt') {
+            ctx.strokeStyle = '#ffd0a8'; ctx.fillStyle = 'rgba(251,146,60,0.25)'; ctx.lineWidth = 1.8;
+            ctx.beginPath(); ctx.ellipse(meltX, meltY, 7, 4, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+            ctx.fillStyle = '#ffd0a8';
+            [-3, 0, 3].forEach(function (dx) { ctx.beginPath(); ctx.arc(meltX + dx, meltY, 1, 0, Math.PI * 2); ctx.fill(); });
+            processChip('2', meltX + 28, meltY + 14, '#ffd0a8');
+          } else if (processStep === 'magma') {
+            ctx.strokeStyle = '#ffd0a8'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(meltX, meltY); ctx.quadraticCurveTo(meltX + 10, (meltY + rTop) / 2, arcX, rTop - 2); ctx.stroke();
+            processChip('3', meltX + 28, meltY + 14, '#ffd0a8');
+          }
+          ctx.restore();
+        }
 
         // The arc itself.
         ctx.fillStyle = isDark ? '#3f3f46' : '#78350f';
@@ -5595,6 +5774,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
     showScale: view3d.showScale !== false,
     surfaceView: tectSurfaceView,
     inspectionId: selectedFeature,
+    arcProcessStep: s.mode === 'convergent' ? selectedArcProcess : null,
     darkMode: isDark,
     onInspection: featureResult[1],
     words: {
@@ -5614,7 +5794,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       if (typeof announceToSR === 'function') announceToSR(__alloT('stem.platetectonics.sim_3d_failed', 'The 3D block could not load. Showing the 2D cross-section.'));
     },
     sig: [s.mode, Math.round(s.mountainHeight), Math.round(s.rift), Math.round(s.offset),
-          (s.quakes || []).length, s.quakeTotal || 0, view3d.cut, view3d.showScale !== false, tectSurfaceView, selectedFeature, isDark,
+          (s.quakes || []).length, s.quakeTotal || 0, view3d.cut, view3d.showScale !== false, tectSurfaceView, selectedFeature, selectedArcProcess, tectArcProcessFace({ mode: s.mode, cut: view3d.cut, rotX: view3d.rotX, rotY: view3d.rotY }), isDark,
           (s.quakes || []).length ? Math.round((s.quakes[s.quakes.length - 1].depthKm || 0)) : '',
           __alloT('stem.platetectonics.block_surface', 'surface'), __alloT('stem.platetectonics.fig_trench', 'trench'), __alloT('stem.platetectonics.fig_volcanic_arc', 'volcanic arc'), __alloT('stem.platetectonics.block_ridge_axis', 'ridge axis'), __alloT('stem.platetectonics.block_transform_fault', 'transform fault'), __alloT('stem.platetectonics.block_focus_depth', 'Focus · {n} km')].join('|')
   };
@@ -5778,6 +5958,9 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
                 onClick: function() {
                   var want = o[0] === '3d';
                   if (want === view3d.on) return;
+                  // The 2D drawing scrolls sideways on a phone. Bring the 3D
+                  // canvas back into its frame when the student changes views.
+                  if (want && canvasRef.current && canvasRef.current.parentElement) canvasRef.current.parentElement.scrollLeft = 0;
                   updView({ on: want });
                   if (typeof announceToSR === 'function') {
                     announceToSR(want ? __alloT('stem.platetectonics.sim_switched_3d', 'Switched to the 3D block view.') : __alloT('stem.platetectonics.sim_switched_2d', 'Switched to the 2D cross-section.'));
@@ -5946,6 +6129,29 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       h('p', { id: 'pt-boundary-inspector-detail', className: 'text-sm leading-relaxed mt-3' }, selectedFeatureChoice ? selectedFeatureChoice.why : __alloT('stem.platetectonics.block_inspect_overview', 'Connect the surface landforms with the rock beneath them. Select a feature, turn the block and compare the same feature in the cross-section. Your view and model time stay in place.')),
       h('p', { id: 'pt-boundary-inspector-status', 'data-pt-boundary-inspection-status': selectedFeature || 'none', 'aria-live': 'off', className: 'text-sm font-semibold leading-relaxed mt-2 ' + (isDark ? 'text-yellow-100' : 'text-slate-700') }, featureStatus)
     ),
+    s.mode === 'convergent' && h('details', { 'data-pt-arc-process-panel': 'true',
+      onToggle: function (event) { if (!event.currentTarget.open && arcProcessRef.current) setArcProcess(null); },
+      className: 'mx-3 mb-3 rounded-xl border p-3 ' + (isDark ? 'bg-slate-900 border-slate-600 text-slate-100' : 'bg-white border-slate-300 text-slate-900') },
+      h('summary', { className: 'min-h-11 py-2 text-sm font-bold cursor-pointer focus:ring-2 focus:ring-yellow-500 focus:outline-none' }, __alloT('stem.platetectonics.arc_process_title', 'Trace arc formation')),
+      h('p', { className: 'text-sm leading-relaxed mt-2' }, __alloT('stem.platetectonics.arc_process_intro', 'Follow water, partial melting and rising magma as three different parts of arc formation. Choose one step to match its numbered trace with the explanation. These routes and the size of the melt patch are schematic.')),
+      h('div', { role: 'group', 'aria-label': __alloT('stem.platetectonics.arc_process_group', 'Choose a step in volcanic arc formation'), className: 'flex flex-wrap gap-2 mt-3' },
+        [{ id: null, label: __alloT('stem.platetectonics.arc_process_hide', 'Hide trace') }].concat(arcProcessChoices).map(function (choice) {
+          var active = selectedArcProcess === choice.id;
+          return h('button', { key: choice.id || 'none', type: 'button', 'data-pt-arc-step': choice.id || 'none', 'aria-pressed': active,
+            'aria-controls': tectGlLive ? 'pt-boundary-3d' : 'pt-boundary-section',
+            'aria-describedby': choice.id ? 'pt-arc-process-help-' + choice.id + (active ? ' pt-arc-process-status' : '') : undefined,
+            onClick: function () { if (!active) setArcProcess(choice.id); }, style: { minHeight: 44 },
+            className: 'px-3 py-2 text-sm font-semibold rounded-lg border focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (active ? 'bg-cyan-800 border-cyan-900 text-white' : isDark ? 'bg-slate-950 border-slate-500 text-slate-100' : 'bg-slate-50 border-slate-400 text-slate-800') }, choice.label);
+        })),
+      arcProcessChoices.map(function (choice) { return h('span', { key: choice.id, id: 'pt-arc-process-help-' + choice.id, hidden: true }, choice.why); }),
+      selectedArcChoice && h('p', { 'data-pt-arc-process-explanation': selectedArcProcess, className: 'text-sm leading-relaxed mt-3' }, selectedArcChoice.why),
+      h('p', { id: 'pt-arc-process-status', 'data-pt-arc-process-status': selectedArcProcess || 'none', 'aria-live': 'off', className: 'text-sm font-semibold leading-relaxed mt-2' },
+        !selectedArcProcess ? __alloT('stem.platetectonics.arc_process_choose', 'Choose a step. Reading and changing the trace keeps your model time and saved investigations in place.')
+          : tectGlLive && tectArcProcessFace(tectGlModel) !== 'exposed' ? __alloT('stem.platetectonics.arc_process_need_face', 'This underground trace is shown only on an exposed cut face. Choose Cut face to reveal it; your current camera and model time stay in place until you choose a view.')
+            : tectGlLive ? __alloT('stem.platetectonics.arc_process_face', 'The numbered trace is a teaching annotation on this cut face. Move the cut to inspect another slice. Its routes do not measure the location, depth or amount of melting.')
+              : __alloT('stem.platetectonics.arc_process_section', 'Match the number in the cross-section with your selected step. The dashed route is water; the speckled patch is partial melt; the solid route is rising magma.')),
+      h('a', { href: 'https://www.usgs.gov/faqs/are-tectonic-plates-floating-magma', target: '_blank', rel: 'noopener noreferrer', className: 'inline-block mt-3 text-sm font-semibold underline ' + (isDark ? 'text-sky-300' : 'text-sky-800') }, __alloT('stem.platetectonics.arc_process_source', 'USGS: mostly solid mantle and small regions of melt'))
+    ),
     h('section', {
       className: 'mx-3 mb-3 rounded-xl border p-3 ' + (isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-orange-300'),
       'aria-labelledby': 'ptEvidenceTitle'
@@ -6012,6 +6218,11 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       var liveAtTarget = !!plan && s.rate === plan.rate && s.depthRunRate === plan.rate && s.depthRunRateConstant === true && Math.abs(s.years - plan.years) < 0.001;
       var currentTrial = ptDepthTrial(s), canRecord = liveAtTarget && !s.running && !!currentTrial;
       var emptyAtTarget = liveAtTarget && !s.running && !s.qlogRestored && !currentTrial;
+      var writingPending = boundaryPrediction.trim() !== (plan ? plan.prediction : '')
+        || boundaryRate !== (plan ? plan.rate : 5) || boundaryYears !== (plan ? plan.years : 1200000)
+        || boundaryExplanation.trim() !== (saved ? saved.explanation : '')
+        || boundaryTransfer !== (saved ? saved.transferChoice || '' : '')
+        || boundaryTransferReason.trim() !== (saved ? saved.transferReason || '' : '');
       var applicationReason = boundaryTransferReason.trim();
       var applicationValid = modes.indexOf(boundaryTransfer) !== -1 && !!applicationReason && applicationReason.length <= 800;
       var applicationSaved = !!saved && applicationValid && saved.transferChoice === boundaryTransfer && saved.transferReason === applicationReason;
@@ -6038,15 +6249,20 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       return h('details', { 'data-pt-boundary-guide': 'true', className: 'mx-3 mb-3 rounded-xl border p-3 text-sm ' + (isDark ? 'bg-slate-900 border-cyan-700 text-slate-100' : 'bg-white border-cyan-300 text-slate-800') },
         h('summary', { className: 'min-h-10 py-2 font-black cursor-pointer focus:ring-2 focus:ring-yellow-500 focus:outline-none' }, __alloT('stem.platetectonics.bc_title', 'Guided investigation: compare three boundaries')),
         h('p', { className: 'leading-relaxed mt-2' }, __alloT('stem.platetectonics.bc_intro', 'Change boundary type while holding plate rate and elapsed model time constant. Predict, collect three samples, then explain their depth patterns. You choose when to advance and record.')),
+        typeof props.onRecordBoundaryDraft === 'function' && boundaryDraftSaveRef.current && h('p', {
+          'data-pt-boundary-writing-status': writingPending ? 'draft' : 'saved', className: 'mt-3 rounded-lg border p-3 leading-relaxed ' + neutral
+        }, writingPending
+          ? __alloT('stem.platetectonics.bc_writing_draft_kept', 'Unfinished writing is retained when you close this diagram or change activities. Save your plan, comparison or application when ready to attach it as evidence.')
+          : __alloT('stem.platetectonics.bc_writing_saved_match', 'These entries match your saved plan and responses. Further edits stay as a writing draft until you choose the corresponding Save button.')),
         h('section', { 'aria-labelledby': 'pt-bc-predict-title', className: 'mt-4' },
           h('h4', { id: 'pt-bc-predict-title', className: 'font-black' }, __alloT('stem.platetectonics.bc_predict_title', '1. Predict and set the comparison')),
           h('label', { htmlFor: 'pt-bc-prediction', className: 'block font-bold mt-2' }, __alloT('stem.platetectonics.bc_prediction_label', 'Which boundary will have the deepest earthquakes? Why?')),
-          h('textarea', { id: 'pt-bc-prediction', 'data-pt-boundary-prediction': 'true', rows: 2, maxLength: 800, value: boundaryPrediction, className: field + ' mt-1', onChange: function (event) { setBoundaryPrediction(event.target.value); } }),
+          h('textarea', { id: 'pt-bc-prediction', 'data-pt-boundary-prediction': 'true', rows: 2, maxLength: 800, value: boundaryPrediction, className: field + ' mt-1', onChange: function (event) { editBoundaryWriting({ prediction: event.target.value }); } }),
           h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3' },
             h('div', null, h('label', { htmlFor: 'pt-bc-rate', className: 'block font-bold' }, __alloT('stem.platetectonics.bc_rate_label', 'Shared rate (cm/year)')),
-              h('select', { id: 'pt-bc-rate', 'data-pt-boundary-rate': 'true', value: boundaryRate, className: field + ' mt-1', onChange: function (event) { setBoundaryRate(Number(event.target.value)); } }, Array.from({ length: 15 }, function (_, i) { return h('option', { key: i + 1, value: i + 1 }, String(i + 1)); }))),
+              h('select', { id: 'pt-bc-rate', 'data-pt-boundary-rate': 'true', value: boundaryRate, className: field + ' mt-1', onChange: function (event) { editBoundaryWriting({ rate: Number(event.target.value) }); } }, Array.from({ length: 15 }, function (_, i) { return h('option', { key: i + 1, value: i + 1 }, String(i + 1)); }))),
             h('div', null, h('label', { htmlFor: 'pt-bc-time', className: 'block font-bold' }, __alloT('stem.platetectonics.bc_time_label', 'Shared model time')),
-              h('select', { id: 'pt-bc-time', 'data-pt-boundary-time': 'true', value: boundaryYears, className: field + ' mt-1', onChange: function (event) { setBoundaryYears(Number(event.target.value)); } }, [600000, 1200000, 2400000].map(function (years) { return h('option', { key: years, value: years }, __alloT('stem.platetectonics.bc_time_option', '{n} million years').replace('{n}', (years / 1e6).toLocaleString())); })))),
+              h('select', { id: 'pt-bc-time', 'data-pt-boundary-time': 'true', value: boundaryYears, className: field + ' mt-1', onChange: function (event) { editBoundaryWriting({ years: Number(event.target.value) }); } }, [600000, 1200000, 2400000].map(function (years) { return h('option', { key: years, value: years }, __alloT('stem.platetectonics.bc_time_option', '{n} million years').replace('{n}', (years / 1e6).toLocaleString())); })))),
           h('button', { type: 'button', 'data-pt-boundary-plan-save': 'true', className: btn + action + ' mt-3', disabled: !boundaryPrediction.trim(),
             onClick: function () {
               var next = { version: 1, plan: { prediction: boundaryPrediction, rate: boundaryRate, years: boundaryYears } };
@@ -6112,7 +6328,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
         h('section', { 'aria-labelledby': 'pt-bc-explain-title', className: 'mt-4' },
           h('h4', { id: 'pt-bc-explain-title', className: 'font-black' }, __alloT('stem.platetectonics.bc_explain_title', '4. Explain with the saved samples')),
           h('label', { htmlFor: 'pt-bc-explanation', className: 'block leading-relaxed mt-1' }, __alloT('stem.platetectonics.bc_explanation_label', 'Give depths and sample sizes from at least two boundaries. Explain how plate motion and the descending slab account for the pattern. Did the evidence support or change your prediction? State one limit of these samples.')),
-          h('textarea', { id: 'pt-bc-explanation', 'data-pt-boundary-explanation': 'true', rows: 4, maxLength: 4000, value: boundaryExplanation, className: field + ' mt-2', onChange: function (event) { setBoundaryExplanation(event.target.value); } }),
+          h('textarea', { id: 'pt-bc-explanation', 'data-pt-boundary-explanation': 'true', rows: 4, maxLength: 4000, value: boundaryExplanation, className: field + ' mt-2', onChange: function (event) { editBoundaryWriting({ explanation: event.target.value }); } }),
           h('button', { type: 'button', 'data-pt-boundary-explanation-save': 'true', disabled: !allMatched || !boundaryExplanation.trim(), className: btn + action + ' mt-2' + (!allMatched || !boundaryExplanation.trim() ? ' opacity-60' : ''),
             onClick: function () {
               var current = boundaryRef.current, frozenRecords = ptDepthRecords(props.depthRecords);
@@ -6141,11 +6357,11 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
             h('text', { x: 255, y: 21, fill: isDark ? '#e2e8f0' : '#334155', fontSize: 19 }, __alloT('stem.platetectonics.bc_transfer_inland', 'Inland →')),
             [[130, 53, 20], [202, 92, 160], [285, 145, 380]].map(function (point) { return h('g', { key: point[2] }, h('circle', { cx: point[0], cy: point[1], r: 6, fill: isDark ? '#fda4af' : '#be123c' }), h('text', { x: point[0] + 11, y: point[1] + 5, fill: isDark ? '#e2e8f0' : '#334155', fontSize: 19 }, point[2] + ' km')); })),
           h('label', { htmlFor: 'pt-bc-transfer-choice', className: 'block font-bold mt-2' }, __alloT('stem.platetectonics.bc_transfer_choice', 'Boundary process')),
-          h('select', { id: 'pt-bc-transfer-choice', 'data-pt-boundary-transfer-choice': 'true', value: boundaryTransfer, className: field + ' mt-1', onChange: function (event) { boundaryApplicationRef.current = Object.assign({}, boundaryApplicationRef.current, { choice: event.target.value, checked: false }); setBoundaryTransfer(event.target.value); setBoundaryTransferChecked(false); } },
+          h('select', { id: 'pt-bc-transfer-choice', 'data-pt-boundary-transfer-choice': 'true', value: boundaryTransfer, className: field + ' mt-1', onChange: function (event) { editBoundaryWriting({ transferChoice: event.target.value }); } },
             h('option', { value: '' }, __alloT('stem.platetectonics.bc_transfer_choose', 'Choose a process')),
             modes.map(function (mode) { return h('option', { key: mode, value: mode }, BOUNDARY[mode].name); })),
           h('label', { htmlFor: 'pt-bc-transfer-reason', className: 'block font-bold mt-2' }, __alloT('stem.platetectonics.bc_transfer_reason', 'What depth observation supports your choice?')),
-          h('textarea', { id: 'pt-bc-transfer-reason', 'data-pt-boundary-transfer-reason': 'true', rows: 2, maxLength: 800, value: boundaryTransferReason, className: field + ' mt-1', onChange: function (event) { boundaryApplicationRef.current = Object.assign({}, boundaryApplicationRef.current, { reason: event.target.value, checked: false }); setBoundaryTransferReason(event.target.value); setBoundaryTransferChecked(false); } }),
+          h('textarea', { id: 'pt-bc-transfer-reason', 'data-pt-boundary-transfer-reason': 'true', rows: 2, maxLength: 800, value: boundaryTransferReason, className: field + ' mt-1', onChange: function (event) { editBoundaryWriting({ transferReason: event.target.value }); } }),
           h('button', { type: 'button', 'data-pt-boundary-transfer-check': 'true', disabled: !boundaryTransfer || !boundaryTransferReason.trim(), className: btn + neutral + ' mt-2', onClick: function () { var response = boundaryApplicationRef.current; if (['convergent', 'divergent', 'transform'].indexOf(response.choice) !== -1 && response.reason.trim() && response.reason.length <= 800) { boundaryApplicationRef.current = Object.assign({}, response, { checked: true }); setBoundaryTransferChecked(true); } } }, __alloT('stem.platetectonics.bc_transfer_check', 'Check the process and explain')),
           boundaryTransferChecked && h('p', { role: 'status', 'aria-live': 'polite', 'data-pt-boundary-transfer-feedback': boundaryTransfer, className: 'mt-2 leading-relaxed' }, boundaryTransfer === 'convergent'
             ? __alloT('stem.platetectonics.bc_transfer_supported', 'Convergent subduction fits the trench and the 20 → 160 → 380 km pattern: earthquakes occur within a descending slab. Explain why a sloping band at depth adds evidence beyond surface motion. Deep earthquakes support subduction; a shallow event alone does not identify a boundary.')
@@ -6302,7 +6518,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       // The widget re-renders every frame while running; the chart is only
       // built while its panel is open.
       return h('details', { className: 'mx-3 mb-3 ' + card, 'data-pt-quake-log': String(log.length), 'data-pt-quake-live-count': String((s.qlog || []).length), open: !!s.qlOpen,
-          onToggle: function (e) { var o = !!(e && e.target && e.target.open); if (o !== !!s.qlOpen) update({ qlOpen: o }); } },
+          onToggle: function (e) { if (!e || e.target !== e.currentTarget) return; var o = !!e.currentTarget.open; if (o !== !!s.qlOpen) update({ qlOpen: o }); } },
         h('summary', { className: 'text-[12px] font-black cursor-pointer ' + (isDark ? 'text-orange-300' : 'text-orange-800') },
           (captured ? __alloT('stem.platetectonics.ql_summary_captured', '📊 Quake log: checked sample ({n} earthquakes)') : __alloT('stem.platetectonics.ql_summary_live', '📊 Quake log: latest observations ({n} earthquakes)')).replace('{n}', log.length)),
         h('p', { className: 'text-[13px] leading-relaxed mt-2', 'data-pt-quake-sample-note': captured ? 'captured' : 'live' }, captured
@@ -6320,7 +6536,23 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
               .replace('{n}', log.length).replace('{d}', deep.length).replace('{a}', s.dipGuess) }, kids),
           h('p', { 'data-pt-quake-axis': 'distance', className: 'text-[12px] leading-relaxed font-semibold mt-1 text-center' }, s.mode === 'convergent'
             ? __alloT('stem.platetectonics.ql_axis_x', 'Distance from the boundary (km), toward the overriding plate')
-            : __alloT('stem.platetectonics.ql_axis_x_neutral', 'Distance from the boundary (km)'))),
+            : __alloT('stem.platetectonics.ql_axis_x_neutral', 'Distance from the boundary (km)')),
+          h('details', { 'data-pt-slab-coordinates': captured ? 'captured' : 'live', className: 'mt-3 rounded-lg border p-3 text-sm leading-relaxed ' + (isDark ? 'bg-slate-950 border-slate-600 text-slate-100' : 'bg-slate-50 border-slate-300 text-slate-900') },
+            h('summary', { className: 'min-h-11 py-2 font-bold cursor-pointer focus:ring-2 focus:ring-yellow-500 focus:outline-none', style: { minHeight: 44 } }, __alloT('stem.platetectonics.ql_coordinates_summary', 'Read the plotted coordinates ({n} events)').replace('{n}', log.length)),
+            h('p', { 'data-pt-slab-coordinates-note': captured ? 'captured' : 'live', className: 'mt-2 mb-3' }, captured
+              ? __alloT('stem.platetectonics.ql_coordinates_captured', 'These coordinates belong to the checked sample shown in the plot. They stay fixed while the live run continues. Revise your angle to use the latest observations.')
+              : __alloT('stem.platetectonics.ql_coordinates_live', 'These coordinates belong to the latest observations shown in the plot. The list changes as new model earthquakes enter the log.')),
+            log.length ? h('table', { 'data-pt-slab-coordinates-table': 'true', className: 'w-full text-sm', style: { width: '100%', tableLayout: 'fixed', fontSize: 14, borderCollapse: 'collapse' } },
+              h('caption', { className: 'text-left mb-2' }, __alloT('stem.platetectonics.ql_coordinates_caption', 'The same distance and depth values used to draw each point, in kilometres. Event numbers identify positions in this displayed sample.')),
+              h('thead', null, h('tr', null,
+                h('th', { scope: 'col', className: 'text-left align-top py-2 pr-2', style: { width: '20%' } }, __alloT('stem.platetectonics.ql_coordinates_event', 'Event')),
+                h('th', { scope: 'col', className: 'text-left align-top py-2 pr-2', style: { width: '40%', overflowWrap: 'anywhere' } }, s.mode === 'convergent' ? __alloT('stem.platetectonics.ql_coordinates_trench', 'Distance from trench (km)') : __alloT('stem.platetectonics.ql_coordinates_boundary', 'Distance from boundary (km)')),
+                h('th', { scope: 'col', className: 'text-left align-top py-2', style: { width: '40%' } }, __alloT('stem.platetectonics.ql_coordinates_depth', 'Depth (km)')))),
+              h('tbody', null, log.map(function (q, i) { return h('tr', { key: i, 'data-pt-slab-coordinate-row': String(i), 'data-distance-km': q.x, 'data-depth-km': q.z, className: 'border-t ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                h('th', { scope: 'row', className: 'text-left align-top py-2 pr-2 font-semibold' }, String(i + 1)),
+                h('td', { 'data-pt-slab-coordinate-distance': 'true', className: 'align-top py-2 pr-2', style: { overflowWrap: 'anywhere', fontVariantNumeric: 'tabular-nums' } }, String(q.x)),
+                h('td', { 'data-pt-slab-coordinate-depth': 'true', className: 'align-top py-2', style: { overflowWrap: 'anywhere', fontVariantNumeric: 'tabular-nums' } }, String(q.z))); })))
+              : h('p', { 'data-pt-slab-coordinates-empty': 'true', className: 'mt-2' }, __alloT('stem.platetectonics.ql_coordinates_empty', 'No earthquake coordinates are plotted yet. Play or advance a paused interval to gather observations.')))),
         s.mode !== 'convergent'
           ? h('p', { className: 'text-[13px] mt-2 font-semibold' }, log.length
               ? __alloT('stem.platetectonics.ql_no_slab_observations', 'This model’s observations are shallow and close to the boundary. No plate is sinking here, so there is no dipping slab band to fit. Switch to Convergent to compare.')
@@ -12750,7 +12982,7 @@ var d = labToolData.plateTectonics || {};
           var PT_MYTHS_68 = PT_MYTHS_35.concat([
             { s: __alloT('stem.platetectonics.myth_the_mantle_is_an_ocean_of_liquid_magma', 'The mantle is an ocean of liquid magma, and the plates float on it like rafts.'), t: false, why: __alloT('stem.platetectonics.mythwhy_the_mantle_is_solid_rock_it_flows_but', 'The mantle is SOLID rock. It flows — but incredibly slowly, like cold putty over thousands of years. Plates ride on the solid-but-bendable asthenosphere, not on liquid.'), tryIt: __alloT('stem.platetectonics.mytry_8', "Open What Moves Plates: the mantle there is solid rock that creeps a few centimetres a year, and the plates move because their own cold edges sink."), go: 'forces' },
             { s: __alloT('stem.platetectonics.myth_continents_plow_through_the_ocean_floo', 'Continents plow through the ocean floor like ships cutting through water.'), t: false, why: __alloT('stem.platetectonics.mythwhy_that_was_wegener_s_original_mistake_an', 'That was Wegener’s original mistake, and why his idea was rejected for decades. A plate carries its continent AND its seafloor together — new seafloor is born at ridges and swallowed at trenches.'), tryIt: __alloT('stem.platetectonics.mytry_9', "Watch a divergent boundary in the sim: new crust forms in the gap and spreads both directions."), go: 'sim' },
-            { s: __alloT('stem.platetectonics.myth_when_a_plate_subducts_that_crust_is_de', 'When a plate subducts, that crust is destroyed and gone forever.'), t: false, why: __alloT('stem.platetectonics.mythwhy_it_melts_and_recycles_some_rises_again', 'It melts and RECYCLES — some rises again as volcanic magma at the arc above. Plate tectonics and the rock cycle are the same engine.'), tryIt: __alloT('stem.platetectonics.mytry_10', "Read the Cascadia Subduction Zone tab to follow crust down and magma back up."), go: 'cascadia' },
+            { s: __alloT('stem.platetectonics.myth_when_a_plate_subducts_that_crust_is_de', 'When a plate subducts, that crust is destroyed and gone forever.'), t: false, why: __alloT('stem.platetectonics.mythwhy_subducted_rock_water_mantle_melt', 'Subducted rock is recycled into the mantle. The descending slab usually stays solid. Water released from its minerals helps some hot mantle above it melt, supplying magma to the volcanic arc.'), tryIt: __alloT('stem.platetectonics.mytry_10', "Read the Cascadia Subduction Zone tab to follow crust down and magma back up."), go: 'cascadia' },
             { s: __alloT('stem.platetectonics.myth_the_rock_of_the_ocean_floor_is_far_you', 'The rock of the ocean floor is far younger than the rock of the continents.'), t: true, why: __alloT('stem.platetectonics.mythwhy_ocean_floor_is_created_at_ridges_and_d', 'Ocean floor is created at ridges and destroyed at trenches, so almost none of it is older than about 200 million years. Parts of the continents are billions of years old, because there is no conveyor belt carrying them away.'), tryIt: __alloT('stem.platetectonics.mytry_11', "In What Moves Plates, use Measure the sea floor: the crust is youngest at the ridge and older the farther away you go."), go: 'forces' },
             { s: __alloT('stem.platetectonics.myth_the_himalayas_are_still_growing_taller', 'The Himalayas are still growing taller right now.'), t: true, why: __alloT('stem.platetectonics.mythwhy_india_is_still_pushing_north_into_eura', 'India is still pushing north into Eurasia, so the range keeps rising a few millimetres a year. Erosion strips it back at a similar rate, which is why it does not simply climb forever.'), tryIt: __alloT('stem.platetectonics.mytry_12', "Open the Mountains tab and read how the range is still rising."), go: 'mountains' },
             { s: __alloT('stem.platetectonics.myth_some_earthquakes_begin_hundreds_of_kil', 'Some earthquakes begin hundreds of kilometres down, far below the crust.'), t: true, why: __alloT('stem.platetectonics.mythwhy_they_happen_inside_slabs_that_have_alr', 'They happen inside slabs that have already subducted, which is a large part of how we know those slabs are down there at all. The deepest reach about 700 kilometres.'), tryIt: __alloT('stem.platetectonics.mytry_13', "In the Simulator, push an ocean plate under a continent and watch the quake dots get deeper away from the trench."), go: 'sim' },
@@ -33169,6 +33401,15 @@ var d = labToolData.plateTectonics || {};
               darkMode: isDark, isContrast: isContrast, palette: props.palette, announceToSR: announceToSR, t: __alloT,
               depthRecords: d.ptDepthTrials,
               savedBoundaryInquiry: d.ptBoundaryInquiry,
+              savedBoundaryDraft: d.ptBoundaryDraft,
+              onRecordBoundaryDraft: function (value) {
+                var valid = ptBoundaryDraft(value);
+                if (!valid) return;
+                updFn(function (cur) {
+                  if (JSON.stringify(ptBoundaryDraft(cur.ptBoundaryDraft)) === JSON.stringify(valid)) return null;
+                  return { ptBoundaryDraft: valid };
+                });
+              },
               onRecordBoundaryInquiry: function (value) {
                 var valid = ptBoundaryInquiry(value);
                 if (!valid || (value.submission && !valid.submission)) return;

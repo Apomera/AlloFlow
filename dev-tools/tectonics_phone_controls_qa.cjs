@@ -10,9 +10,10 @@ fs.mkdirSync(out, {recursive: true});
 const report = {sourceSha256: crypto.createHash('sha256').update(source).digest('hex'), registrySha256: crypto.createHash('sha256').update(registry).digest('hex'), registryTectonicsSha256: crypto.createHash('sha256').update(JSON.stringify(JSON.parse(registry).stem.platetectonics)).digest('hex'), checks: [], captures: [], layouts: [], errors: []};
 function pass(name, details) {report.checks.push({name, passed: true, details}); process.stdout.write('PASS ' + name + '\n');}
 (async () => {
-  const browser = await chromium.launch({headless: true, args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader']});
-  try {
-    const page = await browser.newPage({viewport: {width: 1100, height: 1100}, reducedMotion: 'reduce'});
+  let browser;
+  async function createReviewPage(width) {
+    browser = await chromium.launch({headless: true, args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader']});
+    const page = await browser.newPage({viewport: {width, height: 1100}, reducedMotion: 'reduce'});
     page.setDefaultTimeout(60000);
     page.on('pageerror', error => report.errors.push(String(error)));
     await page.setContent('<!doctype html><html lang="en"><head><title>Tectonic phone controls review</title></head><body style="margin:0;font-family:system-ui"><main id="app" style="padding:12px;max-width:1100px;margin:auto"></main></body></html>');
@@ -35,8 +36,12 @@ function pass(name, details) {report.checks.push({name, passed: true, details});
         })));
       };
     });
-    const click = selector => page.locator(selector).evaluate(node => node.click());
+    return page;
+  }
+  try {
     for (const width of [320, 390, 1100]) for (const dark of [false, true]) {
+      let page = await createReviewPage(width);
+      const click = selector => page.locator(selector).evaluate(node => node.click());
       const tag = `${dark ? 'dark' : 'light'}-${width}`;
       await page.setViewportSize({width, height: 1100});
       await page.evaluate(dark => mountReview('boundary', dark), dark);
@@ -73,10 +78,20 @@ function pass(name, details) {report.checks.push({name, passed: true, details});
       const events = await page.evaluate(() => qaEvents);
       assert.deepEqual(events, {records: [], awards: [], notices: []});
       const file = path.join(out, tag + '-boundary.png');
-      await target.screenshot({path: file, animations: 'disabled'}); report.captures.push(file);
+      // Capture the WebGL boundary after validating the actual boundary-to-force
+      // lifecycle, because its large headless screenshot can stop native frames.
+      // The capture uses the same verified source and viewport in a fresh fixture.
       report.layouts.push({name: tag + '-boundary', metrics, violations});
       pass(tag + ': readable boundary controls, keyboard slicing, unchanged time and no overflow', metrics);
+      const nativeFrame = () => page.evaluate(() => new Promise(resolve => {
+        let complete = false, timer;
+        const frame = requestAnimationFrame(() => { complete = true; clearTimeout(timer); resolve(true); });
+        timer = setTimeout(() => { if (!complete) { cancelAnimationFrame(frame); resolve(false); } }, 3000);
+      }));
+      assert.equal(await nativeFrame(), true, 'Boundary native frame clock stalled before unmount');
       await page.evaluate(dark => mountReview('force', dark), dark);
+      assert.equal(await nativeFrame(), true, 'Boundary-to-force cleanup stopped the native frame clock');
+      (report.lifecycleChecks || (report.lifecycleChecks = [])).push({ name: tag, boundaryToForceFrames: true });
       const force = page.locator('[data-pt-forces="true"]');
       const theories = page.locator('[data-pt-forces-theory]');
       assert.equal(await theories.count(), 3);
@@ -102,9 +117,24 @@ function pass(name, details) {report.checks.push({name, passed: true, details});
       const forceFile = path.join(out, tag + '-forces.png'); await forceRoot.screenshot({path: forceFile, animations: 'disabled'}); report.captures.push(forceFile);
       report.layouts.push({name: tag + '-forces', metrics: forceMetrics, violations: forceViolations});
       pass(tag + ': expandable theory, nearby live readings, keyboard control and silence', forceMetrics);
+      await browser.close();
+      page = await createReviewPage(width);
+      await page.evaluate(dark => mountReview('boundary', dark), dark);
+      await click('[data-tect-view="3d"]');
+      await page.waitForFunction(() => __alloTectGL.debug().state === 'ready');
+      await page.locator('#tect-cut').focus();
+      await page.keyboard.press('End');
+      await page.keyboard.press('Home');
+      await page.waitForFunction(() => __alloTectGL.debug().clipConstant === 0);
+      assert.equal(await page.locator('[data-pt-model-reading="time"]').textContent(), before);
+      assert.deepEqual(await page.evaluate(() => qaEvents), {records: [], awards: [], notices: []});
+      await page.locator('#pt-boundary-simulator').screenshot({path: file, animations: 'disabled'});
+      report.captures.push(file);
+      await browser.close();
+      browser = null;
     }
     assert.deepEqual(report.errors, []);
     report.passed = true;
   } catch (error) {report.failure = error.stack; throw error;}
-  finally {fs.writeFileSync(path.join(out, 'results.json'), JSON.stringify(report, null, 2)); await browser.close();}
+  finally {fs.writeFileSync(path.join(out, 'results.json'), JSON.stringify(report, null, 2)); if (browser) await browser.close();}
 })().catch(error => {process.stderr.write(error.stack + '\n'); process.exitCode = 1;});

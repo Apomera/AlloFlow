@@ -306,9 +306,9 @@ describe('Motion — the canvases honour prefers-reduced-motion', () => {
 
   it('starts the boundary simulator paused, and the drift off, rather than removing them', () => {
     const text = src();
-    // Restored checked evidence and guided plans always open paused. Fresh sessions still
+    // Restored checked evidence, unfinished drafts and guided plans open paused. Fresh sessions still
     // respect reduced motion; neither clock control is taken away.
-    expect(text).toMatch(/running: \(restoredSlab \|\| ptBoundaryInquiry\(props && props\.savedBoundaryInquiry\)\) \? false : !ptReducedMotion\(\),/);
+    expect(text).toMatch(/running: \(restoredSlab \|\| restoredBoundaryDraft \|\| ptBoundaryInquiry\(props && props\.savedBoundaryInquiry\)\) \? false : !ptReducedMotion\(\),/);
     // Drift is now off for everyone until chosen (see the force lab), which
     // satisfies reduced motion a fortiori.
     expect(text).toMatch(/var ptDrift = !!d\.ptDrift;/);

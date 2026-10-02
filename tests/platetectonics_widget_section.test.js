@@ -126,9 +126,10 @@ describe('Boundary simulator — the slab is a plate, not a stroke', () => {
 
   it('derives the melt point from the slab rather than a hand-placed constant', () => {
     const d = sectionDraw();
-    expect(d).toMatch(/meltX = sx0 \+ \(meltY - sy0\) \/ Math\.tan\(slabDip\)/);
+    expect(d).toMatch(/slabEdgeX = sx0 \+ slabRun \* 0\.42 \+ slabT \* \(1\.3 - 0\.4 \* 0\.42\)/);
+    expect(d).toMatch(/meltX = slabEdgeX \+ 12/);
     // Arc set back from the trench, which is the fact the geometry exists to show.
-    expect(d).toMatch(/var arcX = Math\.min\(W - 60, meltX \+ 26\)/);
+    expect(d).toMatch(/var arcX = Math\.min\(W - 60, sx0 \+ \(meltY - sy0\) \/ Math\.tan\(slabDip\) \+ slabT \* 0\.5 \+ 26\)/);
   });
 
   it('marks the trench', () => {

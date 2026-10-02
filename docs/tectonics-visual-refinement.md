@@ -348,3 +348,31 @@ Live, recorded and frozen comparison cards now show shallow, intermediate and de
 - All three source copies match SHA-256 23fe546b408b1af0f82cead3058eaa30f716e33fdd94e0190700222ed462bf8b. Both English tectonic dictionaries match their scoped hash, include all 25 new labels for this pass, and preserve existing values and retained source fallbacks. Five retired transform wording keys remain available in the registries. Syntax and JSON parsing pass.
 
 The consolidated [verification.json](C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-6/tectonics-application-refinement/verification.json) links the complete test results, final browser reports and asset integrity proof. Captures are stored beside those reports.
+
+
+## Tracing arc formation and retaining unfinished comparisons
+
+An optional Trace arc formation guide distinguishes water released from slab minerals, partial melting of hot mantle above the slab, and rising magma. Each selected step has its own number, pattern and explanation: dashed cyan water, an orange speckled melt patch, and a narrow solid magma route. The 3D traces are teaching annotations on an exposed cut face. Intact, rear and overhead views give explicit view guidance. Routes and patch size are schematic; they do not measure melting locations or volumes. Selection preserves model time, rate, camera, cut and saved investigations. In 2D, the magma route now starts outside the actual descending slab polygon while preserving the existing surface arc position. Process numbers remain at least 14 CSS pixels, including scaled host layouts.
+
+The explanations describe mostly solid slab and mantle with localized partial melting. The former myth explanation that simply said the subducted slab melts has a new translation key; its older dictionary value remains available. References: [USGS mantle and small regions of melt](https://www.usgs.gov/faqs/are-tectonic-plates-floating-magma), [USGS subduction overview](https://www.usgs.gov/special-topics/subduction-zone-science/science/introduction-subduction-zones-amazing-events), and [USGS volcanism in plate tectonics](https://pubs.usgs.gov/gip/19/downloads/Appendixes/I_Volcanism%20in%20a%20Plate%20Tectonics%20Perspective.pdf).
+
+The earthquake-depth plot has an expandable semantic coordinate table. Its event positions, distances and depths are the exact values used to draw the displayed points, including restored decimal measurements. Checked coordinates remain frozen while the live run advances. Revise uses the latest observations. Distance headers follow the boundary mode, numeric cells wrap on narrow screens, and opening the inner table does not change the outer quake-log state. The table does not reveal a fitted slab angle.
+
+Explicit writing and settings edits retain a validated versioned comparison draft. Reopening restores those unfinished fields with the model paused and application feedback unchecked. No-op edits and duplicate callbacks preserve parent-state identity. Saved plans, completed comparisons, earlier Claim/Evidence/Reasoning snapshots and printed HTML stay frozen until their explicit Save action. Mounting, restoring, redraws and idle frames do not save drafts.
+
+Phone verification found that panning the wide 2D section could carry a horizontal scroll offset into 3D and hide the canvas. Switching to 3D now resets that frame's scroll offset while preserving the experiment settings. The new browser checks verify actual viewport containment as well as the scene graph.
+
+### Verification of the process guide, coordinates and drafts
+
+- All 737 distinct focused checks passed across 44 files. Process checks cover real WebGL clipping, camera visibility, stable solids and arc position, label layout and the actual 2D mantle origin. Draft checks cover validation, explicit edits, no-op callbacks and quiet restoration. Coordinate checks cover exact plot fidelity, frozen samples, revisions and nested details.
+- 178 distinct final-source browser checks passed. Phone and desktop captures cover both themes. Final reports have no browser errors; affected HTML panels pass their recorded accessibility and overflow checks. Process numbers and the visible WebGL viewport are checked directly.
+- The idle audit again covers 1,200 actual draw frames, automatic drift, stationary inputs, rerenders and restored progress. Idle produces no repeated rewards, sounds or notices. The new guide, retained drafts and coordinate table also leave saved evidence unchanged during idle. Deliberate gestures retain their existing one-time rewards.
+- All three source copies match SHA-256 502687ea21500b96f1d9f3a9b9af8ab2637bc74e5aaf313a8c2b2c67f6249aa2. Both English tectonic dictionaries have matching scoped hashes and contain 27 new labels. Every existing registry value and retained source fallback is preserved; the retired myth key remains in the dictionaries. Source syntax and JSON parsing pass.
+
+Overlong local application edits now clear checked status synchronously and remain visible for correction. They leave the last bounded persisted draft and completed comparison unchanged. A corrected answer is retained as a draft and still needs an explicit Check and Save. Regression checks cover immediate stale Save clicks and correction after invalid input.
+
+Initial test workers failed during startup. A focused configuration with the same jsdom environment and setup file, using a cache outside the synced checkout, completed the suite. Older source-contract assertions were updated to include paused restoration of unfinished drafts and the mantle magma origin while preserving the surface arc.
+
+Headless screenshot composition could stall subsequent native frames after a WebGL capture. The phone harness verifies the actual boundary-to-force unmount and native frame clocks before taking its final screenshots in separate fixtures. The process harness similarly completes all geometry, interaction and idle assertions before capturing each verified state in a fresh browser; each capture replay must match the tested model settings and camera.
+
+The consolidated [verification.json](C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-6/tectonics-process-refinement/verification.json) links the unit results, final browser reports and asset integrity proof. Captures are stored beside their reports.
