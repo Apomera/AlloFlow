@@ -1,0 +1,2343 @@
+{
+  "checkedAt": "2026-10-02T03:17:39.680Z",
+  "completed": true,
+  "successful": true,
+  "checks": [
+    {
+      "label": "source, public and final tested hash",
+      "passed": true
+    },
+    {
+      "label": "frozen baseline hash",
+      "passed": true
+    },
+    {
+      "label": "frozen browser runtime hash",
+      "passed": true
+    },
+    {
+      "label": "unique artifact pins",
+      "passed": true
+    },
+    {
+      "label": "required inputs are pinned",
+      "passed": true
+    },
+    {
+      "label": "artifact hash desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "passed": true
+    },
+    {
+      "label": "artifact hash dev-tools/watercycle_cloud_evidence_qa.cjs",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output dev-tools/watercycle_cloud_evidence_qa.cjs",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/after-3d-guide.png",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/after-3d-guide.png",
+      "passed": true
+    },
+    {
+      "label": "PNG dimensions reports/watercycle-cloud-evidence/after-3d-guide.png",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/after-dark-detective.png",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/after-dark-detective.png",
+      "passed": true
+    },
+    {
+      "label": "PNG dimensions reports/watercycle-cloud-evidence/after-dark-detective.png",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/after-dark-filled.png",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/after-dark-filled.png",
+      "passed": true
+    },
+    {
+      "label": "PNG dimensions reports/watercycle-cloud-evidence/after-dark-filled.png",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/after-dark.png",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/after-dark.png",
+      "passed": true
+    },
+    {
+      "label": "PNG dimensions reports/watercycle-cloud-evidence/after-dark.png",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/after-desktop-detective.png",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/after-desktop-detective.png",
+      "passed": true
+    },
+    {
+      "label": "PNG dimensions reports/watercycle-cloud-evidence/after-desktop-detective.png",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/after-desktop-filled.png",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/after-desktop-filled.png",
+      "passed": true
+    },
+    {
+      "label": "PNG dimensions reports/watercycle-cloud-evidence/after-desktop-filled.png",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/after-desktop.png",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/after-desktop.png",
+      "passed": true
+    },
+    {
+      "label": "PNG dimensions reports/watercycle-cloud-evidence/after-desktop.png",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/after-detective-filled.png",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/after-detective-filled.png",
+      "passed": true
+    },
+    {
+      "label": "PNG dimensions reports/watercycle-cloud-evidence/after-detective-filled.png",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/after-evidence-filled.png",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/after-evidence-filled.png",
+      "passed": true
+    },
+    {
+      "label": "PNG dimensions reports/watercycle-cloud-evidence/after-evidence-filled.png",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/after-forced-dark-detective.png",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/after-forced-dark-detective.png",
+      "passed": true
+    },
+    {
+      "label": "PNG dimensions reports/watercycle-cloud-evidence/after-forced-dark-detective.png",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/after-forced-dark-filled.png",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/after-forced-dark-filled.png",
+      "passed": true
+    },
+    {
+      "label": "PNG dimensions reports/watercycle-cloud-evidence/after-forced-dark-filled.png",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/after-forced-dark-hint.png",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/after-forced-dark-hint.png",
+      "passed": true
+    },
+    {
+      "label": "PNG dimensions reports/watercycle-cloud-evidence/after-forced-dark-hint.png",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/after-forced-dark.png",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/after-forced-dark.png",
+      "passed": true
+    },
+    {
+      "label": "PNG dimensions reports/watercycle-cloud-evidence/after-forced-dark.png",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/after-forced-phone-detective.png",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/after-forced-phone-detective.png",
+      "passed": true
+    },
+    {
+      "label": "PNG dimensions reports/watercycle-cloud-evidence/after-forced-phone-detective.png",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/after-forced-phone-filled.png",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/after-forced-phone-filled.png",
+      "passed": true
+    },
+    {
+      "label": "PNG dimensions reports/watercycle-cloud-evidence/after-forced-phone-filled.png",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/after-forced-phone.png",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/after-forced-phone.png",
+      "passed": true
+    },
+    {
+      "label": "PNG dimensions reports/watercycle-cloud-evidence/after-forced-phone.png",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/after-host390-detective.png",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/after-host390-detective.png",
+      "passed": true
+    },
+    {
+      "label": "PNG dimensions reports/watercycle-cloud-evidence/after-host390-detective.png",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/after-host390-filled.png",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/after-host390-filled.png",
+      "passed": true
+    },
+    {
+      "label": "PNG dimensions reports/watercycle-cloud-evidence/after-host390-filled.png",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/after-host390.png",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/after-host390.png",
+      "passed": true
+    },
+    {
+      "label": "PNG dimensions reports/watercycle-cloud-evidence/after-host390.png",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/after-phone320-detective.png",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/after-phone320-detective.png",
+      "passed": true
+    },
+    {
+      "label": "PNG dimensions reports/watercycle-cloud-evidence/after-phone320-detective.png",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/after-phone320-filled.png",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/after-phone320-filled.png",
+      "passed": true
+    },
+    {
+      "label": "PNG dimensions reports/watercycle-cloud-evidence/after-phone320-filled.png",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/after-phone320.png",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/after-phone320.png",
+      "passed": true
+    },
+    {
+      "label": "PNG dimensions reports/watercycle-cloud-evidence/after-phone320.png",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/after-phone390-detective.png",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/after-phone390-detective.png",
+      "passed": true
+    },
+    {
+      "label": "PNG dimensions reports/watercycle-cloud-evidence/after-phone390-detective.png",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/after-phone390-filled.png",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/after-phone390-filled.png",
+      "passed": true
+    },
+    {
+      "label": "PNG dimensions reports/watercycle-cloud-evidence/after-phone390-filled.png",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/after-phone390.png",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/after-phone390.png",
+      "passed": true
+    },
+    {
+      "label": "PNG dimensions reports/watercycle-cloud-evidence/after-phone390.png",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/baseline-results.json",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/baseline-results.json",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/baseline-runtime.js",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/baseline-runtime.js",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/before-dark.png",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/before-dark.png",
+      "passed": true
+    },
+    {
+      "label": "PNG dimensions reports/watercycle-cloud-evidence/before-dark.png",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/before-desktop.png",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/before-desktop.png",
+      "passed": true
+    },
+    {
+      "label": "PNG dimensions reports/watercycle-cloud-evidence/before-desktop.png",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/before-forced-dark.png",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/before-forced-dark.png",
+      "passed": true
+    },
+    {
+      "label": "PNG dimensions reports/watercycle-cloud-evidence/before-forced-dark.png",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/before-forced-phone.png",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/before-forced-phone.png",
+      "passed": true
+    },
+    {
+      "label": "PNG dimensions reports/watercycle-cloud-evidence/before-forced-phone.png",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/before-host390.png",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/before-host390.png",
+      "passed": true
+    },
+    {
+      "label": "PNG dimensions reports/watercycle-cloud-evidence/before-host390.png",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/before-phone320.png",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/before-phone320.png",
+      "passed": true
+    },
+    {
+      "label": "PNG dimensions reports/watercycle-cloud-evidence/before-phone320.png",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/before-phone390.png",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/before-phone390.png",
+      "passed": true
+    },
+    {
+      "label": "PNG dimensions reports/watercycle-cloud-evidence/before-phone390.png",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/closure-metadata.json",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/closure-metadata.json",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/disclosure-results.json",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/disclosure-results.json",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/final-browser-summary.json",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/final-browser-summary.json",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/focused-harness.cjs",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/focused-harness.cjs",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/preview-check.json",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/preview-check.json",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/regression-results.json",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/regression-results.json",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/results.json",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/results.json",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/tested-harness.cjs",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/tested-harness.cjs",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/tested-runtime.js",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/tested-runtime.js",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/unit-loaded-runtime.json",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/unit-loaded-runtime.json",
+      "passed": true
+    },
+    {
+      "label": "artifact hash reports/watercycle-cloud-evidence/unit-results.json",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output reports/watercycle-cloud-evidence/unit-results.json",
+      "passed": true
+    },
+    {
+      "label": "artifact hash stem_lab/stem_tool_watercycle.js",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output stem_lab/stem_tool_watercycle.js",
+      "passed": true
+    },
+    {
+      "label": "artifact hash tests/watercycle_check_investigations.test.js",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output tests/watercycle_check_investigations.test.js",
+      "passed": true
+    },
+    {
+      "label": "artifact hash tests/watercycle_cloud_evidence.test.js",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output tests/watercycle_cloud_evidence.test.js",
+      "passed": true
+    },
+    {
+      "label": "artifact hash tests/watercycle_journey_chapters.test.js",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output tests/watercycle_journey_chapters.test.js",
+      "passed": true
+    },
+    {
+      "label": "artifact hash tests/watercycle_precipitation_lab.test.js",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output tests/watercycle_precipitation_lab.test.js",
+      "passed": true
+    },
+    {
+      "label": "artifact hash tests/watercycle_process_compare.test.js",
+      "passed": true
+    },
+    {
+      "label": "exclude mutable report output tests/watercycle_process_compare.test.js",
+      "passed": true
+    },
+    {
+      "label": "baseline completed and resources closed",
+      "passed": true
+    },
+    {
+      "label": "baseline rendered frozen buffer",
+      "passed": true
+    },
+    {
+      "label": "baseline live-host observations are preserved separately",
+      "passed": true
+    },
+    {
+      "label": "browser clean completion and closure",
+      "passed": true
+    },
+    {
+      "label": "browser sourceSha256",
+      "passed": true
+    },
+    {
+      "label": "browser publicSha256",
+      "passed": true
+    },
+    {
+      "label": "browser finalSourceSha256",
+      "passed": true
+    },
+    {
+      "label": "browser finalPublicSha256",
+      "passed": true
+    },
+    {
+      "label": "all native/browser checks passed",
+      "passed": true
+    },
+    {
+      "label": "browser manifest counts",
+      "passed": true,
+      "details": {
+        "checks": 864,
+        "cases": 265,
+        "actions": 104,
+        "audits": 15,
+        "captures": 24
+      }
+    },
+    {
+      "label": "scoped axe phone320",
+      "passed": true
+    },
+    {
+      "label": "scoped axe phone390",
+      "passed": true
+    },
+    {
+      "label": "scoped axe desktop",
+      "passed": true
+    },
+    {
+      "label": "scoped axe host390",
+      "passed": true
+    },
+    {
+      "label": "scoped axe dark",
+      "passed": true
+    },
+    {
+      "label": "scoped axe forced-phone",
+      "passed": true
+    },
+    {
+      "label": "scoped axe forced-dark",
+      "passed": true
+    },
+    {
+      "label": "scoped axe phone320 filled",
+      "passed": true
+    },
+    {
+      "label": "scoped axe phone390 filled",
+      "passed": true
+    },
+    {
+      "label": "scoped axe desktop filled",
+      "passed": true
+    },
+    {
+      "label": "scoped axe host390 filled",
+      "passed": true
+    },
+    {
+      "label": "scoped axe dark filled",
+      "passed": true
+    },
+    {
+      "label": "scoped axe forced-phone filled",
+      "passed": true
+    },
+    {
+      "label": "scoped axe forced-dark filled",
+      "passed": true
+    },
+    {
+      "label": "scoped axe 3d-guide",
+      "passed": true
+    },
+    {
+      "label": "disclosure clean completion and closure",
+      "passed": true
+    },
+    {
+      "label": "disclosure sourceSha256",
+      "passed": true
+    },
+    {
+      "label": "disclosure publicSha256",
+      "passed": true
+    },
+    {
+      "label": "disclosure finalSourceSha256",
+      "passed": true
+    },
+    {
+      "label": "disclosure finalPublicSha256",
+      "passed": true
+    },
+    {
+      "label": "all disclosure checks passed",
+      "passed": true
+    },
+    {
+      "label": "disclosure manifest counts",
+      "passed": true,
+      "details": {
+        "checks": 30,
+        "cases": 14,
+        "actions": 4,
+        "audits": 1,
+        "captures": 1
+      }
+    },
+    {
+      "label": "scoped axe forced-dark hint open",
+      "passed": true
+    },
+    {
+      "label": "only two generic checks overlap across browser runs",
+      "passed": true
+    },
+    {
+      "label": "combined browser instances and label counts",
+      "passed": true,
+      "details": {
+        "checkInstances": 894,
+        "checksExcludingCrossRunGenericDuplicates": 892,
+        "uniqueLabelStrings": 852,
+        "cases": 279,
+        "actions": 108,
+        "audits": 16,
+        "captures": 25
+      }
+    },
+    {
+      "label": "all scoped audits have zero incomplete items",
+      "passed": true
+    },
+    {
+      "label": "native named-gallery role and accessible-name evidence",
+      "passed": true
+    },
+    {
+      "label": "all saved layout, target and text checks are clear",
+      "passed": true
+    },
+    {
+      "label": "saved computed text contrast checks match report",
+      "passed": true
+    },
+    {
+      "label": "actual 3D object and hook identities retained",
+      "passed": true
+    },
+    {
+      "label": "seven matched capture contexts",
+      "passed": true
+    },
+    {
+      "label": "before capture phone320",
+      "passed": true
+    },
+    {
+      "label": "capture is dimension/hash pinned reports/watercycle-cloud-evidence/before-phone320.png",
+      "passed": true
+    },
+    {
+      "label": "final capture excludes diagnostics reports/watercycle-cloud-evidence/before-phone320.png",
+      "passed": true
+    },
+    {
+      "label": "after capture phone320",
+      "passed": true
+    },
+    {
+      "label": "capture is dimension/hash pinned reports/watercycle-cloud-evidence/after-phone320.png",
+      "passed": true
+    },
+    {
+      "label": "final capture excludes diagnostics reports/watercycle-cloud-evidence/after-phone320.png",
+      "passed": true
+    },
+    {
+      "label": "before capture phone390",
+      "passed": true
+    },
+    {
+      "label": "capture is dimension/hash pinned reports/watercycle-cloud-evidence/before-phone390.png",
+      "passed": true
+    },
+    {
+      "label": "final capture excludes diagnostics reports/watercycle-cloud-evidence/before-phone390.png",
+      "passed": true
+    },
+    {
+      "label": "after capture phone390",
+      "passed": true
+    },
+    {
+      "label": "capture is dimension/hash pinned reports/watercycle-cloud-evidence/after-phone390.png",
+      "passed": true
+    },
+    {
+      "label": "final capture excludes diagnostics reports/watercycle-cloud-evidence/after-phone390.png",
+      "passed": true
+    },
+    {
+      "label": "before capture desktop",
+      "passed": true
+    },
+    {
+      "label": "capture is dimension/hash pinned reports/watercycle-cloud-evidence/before-desktop.png",
+      "passed": true
+    },
+    {
+      "label": "final capture excludes diagnostics reports/watercycle-cloud-evidence/before-desktop.png",
+      "passed": true
+    },
+    {
+      "label": "after capture desktop",
+      "passed": true
+    },
+    {
+      "label": "capture is dimension/hash pinned reports/watercycle-cloud-evidence/after-desktop.png",
+      "passed": true
+    },
+    {
+      "label": "final capture excludes diagnostics reports/watercycle-cloud-evidence/after-desktop.png",
+      "passed": true
+    },
+    {
+      "label": "before capture host390",
+      "passed": true
+    },
+    {
+      "label": "capture is dimension/hash pinned reports/watercycle-cloud-evidence/before-host390.png",
+      "passed": true
+    },
+    {
+      "label": "final capture excludes diagnostics reports/watercycle-cloud-evidence/before-host390.png",
+      "passed": true
+    },
+    {
+      "label": "after capture host390",
+      "passed": true
+    },
+    {
+      "label": "capture is dimension/hash pinned reports/watercycle-cloud-evidence/after-host390.png",
+      "passed": true
+    },
+    {
+      "label": "final capture excludes diagnostics reports/watercycle-cloud-evidence/after-host390.png",
+      "passed": true
+    },
+    {
+      "label": "before capture dark",
+      "passed": true
+    },
+    {
+      "label": "capture is dimension/hash pinned reports/watercycle-cloud-evidence/before-dark.png",
+      "passed": true
+    },
+    {
+      "label": "final capture excludes diagnostics reports/watercycle-cloud-evidence/before-dark.png",
+      "passed": true
+    },
+    {
+      "label": "after capture dark",
+      "passed": true
+    },
+    {
+      "label": "capture is dimension/hash pinned reports/watercycle-cloud-evidence/after-dark.png",
+      "passed": true
+    },
+    {
+      "label": "final capture excludes diagnostics reports/watercycle-cloud-evidence/after-dark.png",
+      "passed": true
+    },
+    {
+      "label": "before capture forced-phone",
+      "passed": true
+    },
+    {
+      "label": "capture is dimension/hash pinned reports/watercycle-cloud-evidence/before-forced-phone.png",
+      "passed": true
+    },
+    {
+      "label": "final capture excludes diagnostics reports/watercycle-cloud-evidence/before-forced-phone.png",
+      "passed": true
+    },
+    {
+      "label": "after capture forced-phone",
+      "passed": true
+    },
+    {
+      "label": "capture is dimension/hash pinned reports/watercycle-cloud-evidence/after-forced-phone.png",
+      "passed": true
+    },
+    {
+      "label": "final capture excludes diagnostics reports/watercycle-cloud-evidence/after-forced-phone.png",
+      "passed": true
+    },
+    {
+      "label": "before capture forced-dark",
+      "passed": true
+    },
+    {
+      "label": "capture is dimension/hash pinned reports/watercycle-cloud-evidence/before-forced-dark.png",
+      "passed": true
+    },
+    {
+      "label": "final capture excludes diagnostics reports/watercycle-cloud-evidence/before-forced-dark.png",
+      "passed": true
+    },
+    {
+      "label": "after capture forced-dark",
+      "passed": true
+    },
+    {
+      "label": "capture is dimension/hash pinned reports/watercycle-cloud-evidence/after-forced-dark.png",
+      "passed": true
+    },
+    {
+      "label": "final capture excludes diagnostics reports/watercycle-cloud-evidence/after-forced-dark.png",
+      "passed": true
+    },
+    {
+      "label": "filled observation notes captured",
+      "passed": true
+    },
+    {
+      "label": "filled notes reports/watercycle-cloud-evidence/after-phone320-filled.png",
+      "passed": true
+    },
+    {
+      "label": "filled notes dimension/hash pin reports/watercycle-cloud-evidence/after-phone320-filled.png",
+      "passed": true
+    },
+    {
+      "label": "filled notes reports/watercycle-cloud-evidence/after-phone320-detective.png",
+      "passed": true
+    },
+    {
+      "label": "filled notes dimension/hash pin reports/watercycle-cloud-evidence/after-phone320-detective.png",
+      "passed": true
+    },
+    {
+      "label": "filled notes reports/watercycle-cloud-evidence/after-desktop-filled.png",
+      "passed": true
+    },
+    {
+      "label": "filled notes dimension/hash pin reports/watercycle-cloud-evidence/after-desktop-filled.png",
+      "passed": true
+    },
+    {
+      "label": "filled notes reports/watercycle-cloud-evidence/after-desktop-detective.png",
+      "passed": true
+    },
+    {
+      "label": "filled notes dimension/hash pin reports/watercycle-cloud-evidence/after-desktop-detective.png",
+      "passed": true
+    },
+    {
+      "label": "native disclosure capture reports/watercycle-cloud-evidence/after-forced-dark-hint.png",
+      "passed": true
+    },
+    {
+      "label": "unit sourceSha256Before",
+      "passed": true
+    },
+    {
+      "label": "unit sourceSha256After",
+      "passed": true
+    },
+    {
+      "label": "unit publicSha256Before",
+      "passed": true
+    },
+    {
+      "label": "unit publicSha256After",
+      "passed": true
+    },
+    {
+      "label": "unit clean isolated test process",
+      "passed": true
+    },
+    {
+      "label": "unit test bytes tests/watercycle_cloud_evidence.test.js",
+      "passed": true
+    },
+    {
+      "label": "unit baseline metadata",
+      "passed": true
+    },
+    {
+      "label": "regression sourceSha256Before",
+      "passed": true
+    },
+    {
+      "label": "regression sourceSha256After",
+      "passed": true
+    },
+    {
+      "label": "regression publicSha256Before",
+      "passed": true
+    },
+    {
+      "label": "regression publicSha256After",
+      "passed": true
+    },
+    {
+      "label": "regression clean isolated test process",
+      "passed": true
+    },
+    {
+      "label": "regression test bytes tests/watercycle_precipitation_lab.test.js",
+      "passed": true
+    },
+    {
+      "label": "regression test bytes tests/watercycle_process_compare.test.js",
+      "passed": true
+    },
+    {
+      "label": "regression test bytes tests/watercycle_journey_chapters.test.js",
+      "passed": true
+    },
+    {
+      "label": "regression test bytes tests/watercycle_check_investigations.test.js",
+      "passed": true
+    },
+    {
+      "label": "regression baseline metadata",
+      "passed": true
+    },
+    {
+      "label": "captured focused load metadata matches unit report",
+      "passed": true
+    },
+    {
+      "label": "browser summary final hash",
+      "passed": true
+    },
+    {
+      "label": "both browser closures have bound metadata",
+      "passed": true
+    },
+    {
+      "label": "closed report/harness results.json",
+      "passed": true
+    },
+    {
+      "label": "unit starts after results.json closes",
+      "passed": true
+    },
+    {
+      "label": "regression starts after results.json closes",
+      "passed": true
+    },
+    {
+      "label": "closed report/harness disclosure-results.json",
+      "passed": true
+    },
+    {
+      "label": "unit starts after disclosure-results.json closes",
+      "passed": true
+    },
+    {
+      "label": "regression starts after disclosure-results.json closes",
+      "passed": true
+    },
+    {
+      "label": "unit exact test files",
+      "passed": true,
+      "details": [
+        "watercycle_cloud_evidence.test.js"
+      ]
+    },
+    {
+      "label": "unit passed: watercycle_cloud_evidence.test.js::Water Cycle cloud evidence: canonical comparison identity loads the actual helper and five production pairs from both shipped files",
+      "passed": true
+    },
+    {
+      "label": "unit passed: watercycle_cloud_evidence.test.js::Water Cycle cloud evidence: canonical comparison identity retains towers identity across fresh saved copies",
+      "passed": true
+    },
+    {
+      "label": "unit passed: watercycle_cloud_evidence.test.js::Water Cycle cloud evidence: canonical comparison identity retains low-layers identity across fresh saved copies",
+      "passed": true
+    },
+    {
+      "label": "unit passed: watercycle_cloud_evidence.test.js::Water Cycle cloud evidence: canonical comparison identity retains rain-layers identity across fresh saved copies",
+      "passed": true
+    },
+    {
+      "label": "unit passed: watercycle_cloud_evidence.test.js::Water Cycle cloud evidence: canonical comparison identity retains high-ice identity across fresh saved copies",
+      "passed": true
+    },
+    {
+      "label": "unit passed: watercycle_cloud_evidence.test.js::Water Cycle cloud evidence: canonical comparison identity retains cloudlets identity across fresh saved copies",
+      "passed": true
+    },
+    {
+      "label": "unit passed: watercycle_cloud_evidence.test.js::Water Cycle cloud evidence: canonical comparison identity rejects a saved pair whose id no longer matches its canonical identity",
+      "passed": true
+    },
+    {
+      "label": "unit passed: watercycle_cloud_evidence.test.js::Water Cycle cloud evidence: canonical comparison identity rejects a saved pair whose clouds no longer matches its canonical identity",
+      "passed": true
+    },
+    {
+      "label": "unit passed: watercycle_cloud_evidence.test.js::Water Cycle cloud evidence: canonical comparison identity rejects a saved pair whose question no longer matches its canonical identity",
+      "passed": true
+    },
+    {
+      "label": "unit passed: watercycle_cloud_evidence.test.js::Water Cycle cloud evidence: canonical comparison identity rejects a saved pair whose answer no longer matches its canonical identity",
+      "passed": true
+    },
+    {
+      "label": "unit passed: watercycle_cloud_evidence.test.js::Water Cycle cloud evidence: canonical comparison identity rejects absent, unknown, and malformed pair identities",
+      "passed": true
+    },
+    {
+      "label": "unit passed: watercycle_cloud_evidence.test.js::Water Cycle cloud evidence: canonical comparison identity safely rejects cyclic, BigInt, and nonstring cloud array members",
+      "passed": true
+    },
+    {
+      "label": "unit passed: watercycle_cloud_evidence.test.js::Water Cycle cloud evidence: recoverable learner writing normalizes malformed note bags to an empty object",
+      "passed": true
+    },
+    {
+      "label": "unit passed: watercycle_cloud_evidence.test.js::Water Cycle cloud evidence: recoverable learner writing keeps only canonical keys and known string fields",
+      "passed": true
+    },
+    {
+      "label": "unit passed: watercycle_cloud_evidence.test.js::Water Cycle cloud evidence: recoverable learner writing omits malformed and empty entries without inventing learner notes",
+      "passed": true
+    },
+    {
+      "label": "unit passed: watercycle_cloud_evidence.test.js::Water Cycle cloud evidence: recoverable learner writing ignores inherited pair entries and inherited note fields",
+      "passed": true
+    },
+    {
+      "label": "unit passed: watercycle_cloud_evidence.test.js::Water Cycle cloud evidence: recoverable learner writing clips saved strings to the independent observation and uncertainty limits",
+      "passed": true
+    },
+    {
+      "label": "unit passed: watercycle_cloud_evidence.test.js::Water Cycle cloud evidence: recoverable learner writing preserves multiline writing and returns independent copies",
+      "passed": true
+    },
+    {
+      "label": "unit passed: watercycle_cloud_evidence.test.js::Water Cycle cloud evidence: recoverable learner writing returns fresh blank field values when a known pair has no saved note",
+      "passed": true
+    },
+    {
+      "label": "unit passed: watercycle_cloud_evidence.test.js::Water Cycle cloud evidence: recoverable learner writing returns a fresh selected note without exposing the saved object",
+      "passed": true
+    },
+    {
+      "label": "unit passed: watercycle_cloud_evidence.test.js::Water Cycle cloud evidence: recoverable learner writing round-trips independent writing for towers while keeping the other comparisons",
+      "passed": true
+    },
+    {
+      "label": "unit passed: watercycle_cloud_evidence.test.js::Water Cycle cloud evidence: recoverable learner writing round-trips independent writing for low-layers while keeping the other comparisons",
+      "passed": true
+    },
+    {
+      "label": "unit passed: watercycle_cloud_evidence.test.js::Water Cycle cloud evidence: recoverable learner writing round-trips independent writing for rain-layers while keeping the other comparisons",
+      "passed": true
+    },
+    {
+      "label": "unit passed: watercycle_cloud_evidence.test.js::Water Cycle cloud evidence: recoverable learner writing round-trips independent writing for high-ice while keeping the other comparisons",
+      "passed": true
+    },
+    {
+      "label": "unit passed: watercycle_cloud_evidence.test.js::Water Cycle cloud evidence: recoverable learner writing round-trips independent writing for cloudlets while keeping the other comparisons",
+      "passed": true
+    },
+    {
+      "label": "unit passed: watercycle_cloud_evidence.test.js::Water Cycle cloud evidence: recoverable learner writing ignores unknown fields and nonstring writes without altering valid saved notes",
+      "passed": true
+    },
+    {
+      "label": "unit passed: watercycle_cloud_evidence.test.js::Water Cycle cloud evidence: recoverable learner writing does not attach writing to unknown or changed comparison content",
+      "passed": true
+    },
+    {
+      "label": "unit passed: watercycle_cloud_evidence.test.js::Water Cycle cloud evidence: recoverable learner writing clears one field while retaining the other field and another pair",
+      "passed": true
+    },
+    {
+      "label": "unit passed: watercycle_cloud_evidence.test.js::Water Cycle cloud evidence: recoverable learner writing removes the selected entry only when both note fields are empty",
+      "passed": true
+    },
+    {
+      "label": "unit passed: watercycle_cloud_evidence.test.js::Water Cycle cloud evidence: recoverable learner writing clips writes and normalizes unrelated malformed entries in a pure copy",
+      "passed": true
+    },
+    {
+      "label": "unit passed: watercycle_cloud_evidence.test.js::Water Cycle cloud evidence: original science, engines, and scoring pins the frozen baseline and identical shipped runtime bytes",
+      "passed": true
+    },
+    {
+      "label": "unit passed: watercycle_cloud_evidence.test.js::Water Cycle cloud evidence: original science, engines, and scoring preserves both cloud banks, precipitation calculations and controls, engine refs, and cross-mode helpers",
+      "passed": true
+    },
+    {
+      "label": "unit passed: watercycle_cloud_evidence.test.js::Water Cycle cloud evidence: original science, engines, and scoring preserves the actual first-answer quiz and myth scoring statements",
+      "passed": true
+    },
+    {
+      "label": "unit passed: watercycle_cloud_evidence.test.js::Water Cycle cloud evidence: original science, engines, and scoring preserves the complete comparison and signal derivation ranges",
+      "passed": true
+    },
+    {
+      "label": "unit successful and no omitted tests",
+      "passed": true
+    },
+    {
+      "label": "unit unique identities",
+      "passed": true
+    },
+    {
+      "label": "regression exact test files",
+      "passed": true,
+      "details": [
+        "watercycle_check_investigations.test.js",
+        "watercycle_journey_chapters.test.js",
+        "watercycle_precipitation_lab.test.js",
+        "watercycle_process_compare.test.js"
+      ]
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check investigation preservation preserves model, condition, baseline, notebook, export, stage and existing comparison implementations",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check investigation preservation preserves the original first-answer score, attempt, streak and reward statements",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check investigation preservation ships identical source and public Check investigation implementations",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check original first-answer behavior still scores a first quiz answer once and disables all original answer choices",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check original first-answer behavior still counts a first myth response once with the original correct-answer reward",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: bounded destinations and exact question identity offers an explicit destination for myth +0 without changing its truth or answer",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: bounded destinations and exact question identity offers an explicit destination for myth 1 without changing its truth or answer",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: bounded destinations and exact question identity offers an explicit destination for myth 2 without changing its truth or answer",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: bounded destinations and exact question identity offers an explicit destination for myth 3 without changing its truth or answer",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: bounded destinations and exact question identity offers an explicit destination for myth 4 without changing its truth or answer",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: bounded destinations and exact question identity offers an explicit destination for myth 5 without changing its truth or answer",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: bounded destinations and exact question identity offers an explicit destination for myth 6 without changing its truth or answer",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: bounded destinations and exact question identity offers an explicit destination for myth 7 without changing its truth or answer",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: bounded destinations and exact question identity offers an explicit destination for myth 8 without changing its truth or answer",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: bounded destinations and exact question identity offers an explicit destination for myth 9 without changing its truth or answer",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: bounded destinations and exact question identity covers the authored or AI-supported concept evaporation without accepting arbitrary selectors",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: bounded destinations and exact question identity covers the authored or AI-supported concept condensation without accepting arbitrary selectors",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: bounded destinations and exact question identity covers the authored or AI-supported concept precipitation without accepting arbitrary selectors",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: bounded destinations and exact question identity covers the authored or AI-supported concept collection without accepting arbitrary selectors",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: bounded destinations and exact question identity covers the authored or AI-supported concept transpiration without accepting arbitrary selectors",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: bounded destinations and exact question identity covers the authored or AI-supported concept infiltration without accepting arbitrary selectors",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: bounded destinations and exact question identity covers the authored or AI-supported concept sublimation without accepting arbitrary selectors",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: bounded destinations and exact question identity covers the authored or AI-supported concept watershed without accepting arbitrary selectors",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: bounded destinations and exact question identity covers the authored or AI-supported concept Darcy's Law without accepting arbitrary selectors",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: bounded destinations and exact question identity covers the authored or AI-supported concept latent heat without accepting arbitrary selectors",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: bounded destinations and exact question identity covers the authored or AI-supported concept Clausius-Clapeyron without accepting arbitrary selectors",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: bounded destinations and exact question identity covers the authored or AI-supported concept Bowen ratio without accepting arbitrary selectors",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: bounded destinations and exact question identity covers the authored or AI-supported concept aquifer without accepting arbitrary selectors",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: bounded destinations and exact question identity matches identity using question content, not just the myth index or concept",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: bounded destinations and exact question identity requires an answered supported question and rejects forged destination and answer keys",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: bounded destinations and exact question identity returns detached destinations and navigation patches that callers cannot rewrite globally",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: actual investigation and return handlers quiz preserves every condition, baseline, notebook, paused-parcel and assessment field through navigation",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: actual investigation and return handlers myth preserves every condition, baseline, notebook, paused-parcel and assessment field through navigation",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: actual investigation and return handlers opens the actual temperature input with its existing value and baseline intact",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: actual investigation and return handlers opens actual wind transport controls rather than falling back to sunlight",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: actual investigation and return handlers renders process evidence without selecting a new journey stage or changing process-comparison writing",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: actual investigation and return handlers returns stale contexts to a safe heading without replacing a newer question or its scores",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: explanation, revised answer and non-duplicate rewards quiz saves reconsideration separately while all first-attempt scores and rewards remain unchanged",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: explanation, revised answer and non-duplicate rewards myth saves reconsideration separately while all first-attempt scores and rewards remain unchanged",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: explanation, revised answer and non-duplicate rewards keeps natural whitespace and invalidates the saved marker when evidence is edited",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: explanation, revised answer and non-duplicate rewards requires meaningful observation text and an offered revised answer",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: explanation, revised answer and non-duplicate rewards keeps a bounded, labeled observation field with unique explanatory references",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: explanation, revised answer and non-duplicate rewards preserves saved or draft notes when a new question clears the active investigation",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: explanation, revised answer and non-duplicate rewards keeps pending AI focus on the quiz heading and focuses the resolved question without losing notes or changing prior scores",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: explanation, revised answer and non-duplicate rewards retains existing notes when reopening the exact question and creates separate notes for a replacement question",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: persisted and unfamiliar assessment state rejects malformed reflection history without crashing and detaches accepted choices",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: persisted and unfamiliar assessment state ignores a malformed persisted investigation without changing protected learner state",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: persisted and unfamiliar assessment state offers a bounded related overview for unfamiliar AI concept without rendering inherited vocabulary properties",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: persisted and unfamiliar assessment state offers a bounded related overview for __proto__ without rendering inherited vocabulary properties",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: persisted and unfamiliar assessment state offers a bounded related overview for constructor without rendering inherited vocabulary properties",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: persisted and unfamiliar assessment state renders empty quiz and myth states as named tasks with native start buttons",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: canonical saved question provenance rejects a saved session whose questionText disagrees with its exact question key",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: canonical saved question provenance rejects a saved session whose originalAnswer disagrees with its exact question key",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: canonical saved question provenance rejects a saved session whose choices disagrees with its exact question key",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_check_investigations.test.js::Water Cycle Check: canonical saved question provenance rejects an answer object and does not grant a saved status to malformed imported reflection data",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_journey_chapters.test.js::Water Cycle chapter browser preservation preserves complete animation engines, route/replay handlers, models, notes and Check implementations",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_journey_chapters.test.js::Water Cycle chapter browser preservation preserves the original first-answer score, counter and reward statements",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_journey_chapters.test.js::Water Cycle chapter browser preservation ships byte-identical source and desktop chapter implementations",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_journey_chapters.test.js::Water Cycle chapter catalog and scientific descriptions returns detached bounded catalogs that callers cannot change",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_journey_chapters.test.js::Water Cycle chapter catalog and scientific descriptions rejects inherited keys, objects and unsupported saved selections without coercion",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_journey_chapters.test.js::Water Cycle chapter catalog and scientific descriptions follows the actual ocean parcel in the ocean chapter",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_journey_chapters.test.js::Water Cycle chapter catalog and scientific descriptions follows the actual evaporating parcel in the vapor chapter",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_journey_chapters.test.js::Water Cycle chapter catalog and scientific descriptions follows the actual condensing parcel in the cloud chapter",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_journey_chapters.test.js::Water Cycle chapter catalog and scientific descriptions follows the actual precipitating parcel in the precipitation chapter",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_journey_chapters.test.js::Water Cycle chapter catalog and scientific descriptions follows the actual ground_choice parcel in the land chapter",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_journey_chapters.test.js::Water Cycle chapter catalog and scientific descriptions follows the actual river_runoff parcel in the land chapter",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_journey_chapters.test.js::Water Cycle chapter catalog and scientific descriptions follows the actual infiltrating parcel in the land chapter",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_journey_chapters.test.js::Water Cycle chapter catalog and scientific descriptions follows the actual aquifer_flow parcel in the land chapter",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_journey_chapters.test.js::Water Cycle chapter catalog and scientific descriptions follows the actual plant_absorb parcel in the land chapter",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_journey_chapters.test.js::Water Cycle chapter catalog and scientific descriptions follows the actual transpiring parcel in the land chapter",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_journey_chapters.test.js::Water Cycle chapter catalog and scientific descriptions follows the actual complete parcel in the return chapter",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_journey_chapters.test.js::Water Cycle chapter catalog and scientific descriptions selects the ocean chapter independently of a paused underground parcel",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_journey_chapters.test.js::Water Cycle chapter catalog and scientific descriptions selects the vapor chapter independently of a paused underground parcel",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_journey_chapters.test.js::Water Cycle chapter catalog and scientific descriptions selects the cloud chapter independently of a paused underground parcel",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_journey_chapters.test.js::Water Cycle chapter catalog and scientific descriptions selects the precipitation chapter independently of a paused underground parcel",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_journey_chapters.test.js::Water Cycle chapter catalog and scientific descriptions selects the land chapter independently of a paused underground parcel",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_journey_chapters.test.js::Water Cycle chapter catalog and scientific descriptions selects the return chapter independently of a paused underground parcel",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_journey_chapters.test.js::Water Cycle chapter catalog and scientific descriptions starts inactive or invalid remembered parcels in ocean storage without claiming a traveled route",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_journey_chapters.test.js::Water Cycle chapter catalog and scientific descriptions describes condensation as vapor becoming liquid droplets and separates deposition",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_journey_chapters.test.js::Water Cycle chapter catalog and scientific descriptions keeps the infiltrating substep scientifically distinct with time and energy limits",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_journey_chapters.test.js::Water Cycle chapter catalog and scientific descriptions keeps the aquifer_flow substep scientifically distinct with time and energy limits",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_journey_chapters.test.js::Water Cycle chapter catalog and scientific descriptions keeps the plant_absorb substep scientifically distinct with time and energy limits",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_journey_chapters.test.js::Water Cycle chapter catalog and scientific descriptions keeps the transpiring substep scientifically distinct with time and energy limits",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_journey_chapters.test.js::Water Cycle native chapter controls and actual callbacks browses all six chapters with focus and without changing the inactive parcel or any saved learning",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_journey_chapters.test.js::Water Cycle native chapter controls and actual callbacks browses all six chapters with focus and without changing the moving 2D parcel or any saved learning",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_journey_chapters.test.js::Water Cycle native chapter controls and actual callbacks browses all six chapters with focus and without changing the paused 3D aquifer parcel or any saved learning",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_journey_chapters.test.js::Water Cycle native chapter controls and actual callbacks browses all six chapters with focus and without changing the scrubbed replay parcel or any saved learning",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_journey_chapters.test.js::Water Cycle native chapter controls and actual callbacks browses all six chapters with focus and without changing the land choice parcel or any saved learning",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_journey_chapters.test.js::Water Cycle native chapter controls and actual callbacks browses all six chapters with focus and without changing the completed loop parcel or any saved learning",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_journey_chapters.test.js::Water Cycle native chapter controls and actual callbacks inspects every land substep independently of the paused parcel and follows it again without choosing a route",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_journey_chapters.test.js::Water Cycle native chapter controls and actual callbacks keeps a chosen chapter while the parcel advances and follows the current parcel only on request",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_journey_chapters.test.js::Water Cycle native chapter controls and actual callbacks renders invalid saved chapter keys safely without rewriting parcel state or learner writing",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_journey_chapters.test.js::Water Cycle native chapter controls and actual callbacks distinguishes live parcel labels from scrubbed replay positions",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_journey_chapters.test.js::Water Cycle native chapter controls and actual callbacks does not mark other chapters completed merely because the parcel is later in the cycle",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_precipitation_lab.test.js::Water Cycle Precipitation Lab server-renders the expanded lab without mounting canvas refs",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_precipitation_lab.test.js::Water Cycle Precipitation Lab renders a phase-coded HUD, intensity meter, and connected atmospheric pathway",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_precipitation_lab.test.js::Water Cycle Precipitation Lab keeps the source and deploy mirror byte-identical",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_precipitation_lab.test.js::Water Cycle Precipitation Lab classifies the six investigation presets with the shared science kernel",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_precipitation_lab.test.js::Water Cycle Precipitation Lab uses the vertical profile for phase and lower-air humidity for virga",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_precipitation_lab.test.js::Water Cycle Precipitation Lab separates horizontal drift from vertical precipitation growth over plains",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_precipitation_lab.test.js::Water Cycle Precipitation Lab provides a lifecycle-safe 2.5D chamber and a bridge to the existing 3D journey",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_precipitation_lab.test.js::Water Cycle Precipitation Lab exposes a dedicated 3D cloud chamber without changing the default 2D lab",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_precipitation_lab.test.js::Water Cycle Precipitation Lab explains the magnified cloud-formation sequence in the warm inside-cloud lens",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_precipitation_lab.test.js::Water Cycle Precipitation Lab explains and keys the visible virga evaporation sequence without implying vapor is visible",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_precipitation_lab.test.js::Water Cycle Precipitation Lab labels the expanded controls and dynamic result for assistive technology",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_precipitation_lab.test.js::Water Cycle Precipitation Lab models phase changes by fall height and exposes the schematic thermal layer",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_precipitation_lab.test.js::Water Cycle Precipitation Lab supports a warm inversion with separate melting and refreezing layers",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_precipitation_lab.test.js::Water Cycle Precipitation Lab server-renders the interactive three-point temperature profile",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_precipitation_lab.test.js::Water Cycle Precipitation Lab checks flash-to-thunder distance estimates with qualitative feedback",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_precipitation_lab.test.js::Water Cycle Precipitation Lab limits lightning to cold mixed-phase deep convection",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_precipitation_lab.test.js::Water Cycle Precipitation Lab bridges the complete hail profile into the existing 3D renderer",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_precipitation_lab.test.js::Water Cycle Precipitation Lab models developing, mature, and weakening stages with cumulative ground effects",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_precipitation_lab.test.js::Water Cycle Precipitation Lab explains the flash-to-thunder delay and keeps sound optional",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_precipitation_lab.test.js::Water Cycle Precipitation Lab offers normalized, accessible guided lightning snapshots without changing the weather setup",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_precipitation_lab.test.js::Water Cycle Precipitation Lab models storm charge anatomy and deterministic thunder-wave travel",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_precipitation_lab.test.js::Water Cycle Precipitation Lab server-renders non-color storm anatomy, pathway, and instrument semantics",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_precipitation_lab.test.js::Water Cycle Precipitation Lab keeps one causal flash event active until the modeled thunder wave arrives",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_precipitation_lab.test.js::Water Cycle Precipitation Lab keeps enhanced storm cues semantic, pooled, and reduced-motion safe",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science exposes exactly the six canonical processes in both shipped helpers",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science does not let the exported ID list redefine valid processes",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science phase: 'evaporation' compared with 'condensation'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science phase: 'evaporation' compared with 'precipitation'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science phase: 'evaporation' compared with 'collection'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science phase: 'evaporation' compared with 'transpiration'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science phase: 'evaporation' compared with 'infiltration'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science phase: 'condensation' compared with 'evaporation'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science phase: 'condensation' compared with 'precipitation'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science phase: 'condensation' compared with 'collection'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science phase: 'condensation' compared with 'transpiration'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science phase: 'condensation' compared with 'infiltration'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science phase: 'precipitation' compared with 'evaporation'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science phase: 'precipitation' compared with 'condensation'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science phase: 'precipitation' compared with 'collection'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science phase: 'precipitation' compared with 'transpiration'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science phase: 'precipitation' compared with 'infiltration'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science phase: 'collection' compared with 'evaporation'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science phase: 'collection' compared with 'condensation'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science phase: 'collection' compared with 'precipitation'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science phase: 'collection' compared with 'transpiration'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science phase: 'collection' compared with 'infiltration'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science phase: 'transpiration' compared with 'evaporation'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science phase: 'transpiration' compared with 'condensation'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science phase: 'transpiration' compared with 'precipitation'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science phase: 'transpiration' compared with 'collection'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science phase: 'transpiration' compared with 'infiltration'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science phase: 'infiltration' compared with 'evaporation'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science phase: 'infiltration' compared with 'condensation'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science phase: 'infiltration' compared with 'precipitation'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science phase: 'infiltration' compared with 'collection'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science phase: 'infiltration' compared with 'transpiration'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science energy: 'evaporation' compared with 'condensation'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science energy: 'evaporation' compared with 'precipitation'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science energy: 'evaporation' compared with 'collection'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science energy: 'evaporation' compared with 'transpiration'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science energy: 'evaporation' compared with 'infiltration'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science energy: 'condensation' compared with 'evaporation'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science energy: 'condensation' compared with 'precipitation'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science energy: 'condensation' compared with 'collection'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science energy: 'condensation' compared with 'transpiration'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science energy: 'condensation' compared with 'infiltration'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science energy: 'precipitation' compared with 'evaporation'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science energy: 'precipitation' compared with 'condensation'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science energy: 'precipitation' compared with 'collection'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science energy: 'precipitation' compared with 'transpiration'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science energy: 'precipitation' compared with 'infiltration'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science energy: 'collection' compared with 'evaporation'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science energy: 'collection' compared with 'condensation'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science energy: 'collection' compared with 'precipitation'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science energy: 'collection' compared with 'transpiration'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science energy: 'collection' compared with 'infiltration'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science energy: 'transpiration' compared with 'evaporation'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science energy: 'transpiration' compared with 'condensation'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science energy: 'transpiration' compared with 'precipitation'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science energy: 'transpiration' compared with 'collection'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science energy: 'transpiration' compared with 'infiltration'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science energy: 'infiltration' compared with 'evaporation'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science energy: 'infiltration' compared with 'condensation'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science energy: 'infiltration' compared with 'precipitation'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science energy: 'infiltration' compared with 'collection'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science energy: 'infiltration' compared with 'transpiration'",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science preserves supplied source, driver, and latent heat evidence",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science scopes condensation to liquid droplets even when the scene trace mentions ice",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science does not turn infiltration into automatic groundwater recharge",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science uses explicit energy metadata rather than interpreting display wording",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science rejects unknown processes, repeated pairs, and unsupported questions",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: canonical science returns no classification for missing or malformed trace evidence",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: safe learner state starts with a distinct evaporation/transpiration pair and no checked answer",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: safe learner state recovers unknown and identical pairs to valid distinct selections",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: safe learner state keeps only supported questions and choices, and requires an answer before checked",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: safe learner state clears stale persisted feedback when repairing a pair or question",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: safe learner state retains only bounded text notes for valid ordered distinct pairs",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: safe learner state pair changes clear an old answer and feedback while keeping the chosen question",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: safe learner state question changes clear the old answer and feedback without changing the pair",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: safe learner state a revised answer needs another explicit check",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: safe learner state checking records an explicit check for every valid choice without awarding correctness",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: safe learner state same pair, question, or answer actions preserve an already checked comparison",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: safe learner state notes follow their ordered pair through switching and question changes",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: safe learner state bounds edited notes and preserves checked feedback during writing",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: safe learner state unknown actions return detached valid state without changing existing evidence",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: safe learner state normalization detaches notes from the supplied state",
+      "passed": true
+    },
+    {
+      "label": "regression passed: watercycle_process_compare.test.js::Water Cycle process comparison: safe learner state the public helper matches the source implementation",
+      "passed": true
+    },
+    {
+      "label": "regression successful and no omitted tests",
+      "passed": true
+    },
+    {
+      "label": "regression unique identities",
+      "passed": true
+    },
+    {
+      "label": "focused and regression identities do not overlap",
+      "passed": true
+    },
+    {
+      "label": "test manifest counts",
+      "passed": true
+    },
+    {
+      "label": "loaded focused runtime stem_lab/stem_tool_watercycle.js",
+      "passed": true
+    },
+    {
+      "label": "loaded focused runtime desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "passed": true
+    },
+    {
+      "label": "two focused runtime byte captures",
+      "passed": true
+    },
+    {
+      "label": "loaded focused test bytes",
+      "passed": true
+    },
+    {
+      "label": "preservation helper baseline binding",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors count",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors WATER_CYCLE_PRESETS",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors WCCheckInvestigation",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors WCJourneyChapters",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors WCProcessCompare",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors WC_CLOUD_COMPARISONS",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors WC_CLOUD_GUIDE",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors WC_PRECIP_DEFAULTS",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors WC_PRECIP_EXPERIMENT_INPUTS",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors WC_PRECIP_PRESETS",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors applyPrecipPreset",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors buildWcPrecipThermalStructure",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors canvasRef",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors checkWaterCycleChallenges",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors computeWcPrecipitationModel",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors iq",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors iqStored",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors journey3dRef",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors logPrecipObservation",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors normalizeWcPrecipConfig",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors openPrecipitationIn3d",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors precip3dRef",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors precipCanvasRef",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors precipConfig",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors precipModel",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors resetPrecipLab",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors setIQ",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors setPrecipCameraFocus",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors setPrecipControl",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors setPrecipViewMode",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors wcCloudGuideDrawing",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors wcPrecipExperiment",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors wcPrecipExperimentValue",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors wcPrecipPhaseAt",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors wcPrecipPhaseAtTransitions",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors wcPrecipPhaseFromModel",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors wcPrecipSetupSnapshot",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors wcPrecipTemperatureAt",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors wcQuizBank",
+      "passed": true
+    },
+    {
+      "label": "preserved anchors wcQuizQuestion",
+      "passed": true
+    },
+    {
+      "label": "unit anchors metadata matches bytes",
+      "passed": true
+    },
+    {
+      "label": "regression anchors metadata matches bytes",
+      "passed": true
+    },
+    {
+      "label": "manifest preserved anchors",
+      "passed": true
+    },
+    {
+      "label": "preserved scoring count",
+      "passed": true
+    },
+    {
+      "label": "preserved scoring myth",
+      "passed": true
+    },
+    {
+      "label": "preserved scoring quiz",
+      "passed": true
+    },
+    {
+      "label": "unit scoring metadata matches bytes",
+      "passed": true
+    },
+    {
+      "label": "regression scoring metadata matches bytes",
+      "passed": true
+    },
+    {
+      "label": "manifest preserved scoring",
+      "passed": true
+    },
+    {
+      "label": "preserved derivations count",
+      "passed": true
+    },
+    {
+      "label": "preserved derivations comparison",
+      "passed": true
+    },
+    {
+      "label": "preserved derivations signal",
+      "passed": true
+    },
+    {
+      "label": "unit derivations metadata matches bytes",
+      "passed": true
+    },
+    {
+      "label": "regression derivations metadata matches bytes",
+      "passed": true
+    },
+    {
+      "label": "manifest preserved derivations",
+      "passed": true
+    },
+    {
+      "label": "preview served final runtime",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "sourceSha256": "42eae634d0027b819ac0e5368801447780290c3d70e5da15aa402ff84d94314c",
+  "baselineSha256": "a0b86ac156e3045c52448226e518ed1ad4acd2b104c491d56efc7c1272b3579c",
+  "browser": {
+    "main": {
+      "checks": 864,
+      "cases": 265,
+      "actions": 104,
+      "audits": 15,
+      "captures": 24
+    },
+    "disclosure": {
+      "checks": 30,
+      "cases": 14,
+      "actions": 4,
+      "audits": 1,
+      "captures": 1
+    },
+    "combined": {
+      "checkInstances": 894,
+      "checksExcludingCrossRunGenericDuplicates": 892,
+      "uniqueLabelStrings": 852,
+      "cases": 279,
+      "actions": 108,
+      "audits": 16,
+      "captures": 25
+    },
+    "repeatedGenericChecks": [
+      "Frozen source unchanged throughout QA",
+      "No browser runtime errors"
+    ]
+  },
+  "incompleteAudits": [],
+  "tests": {
+    "unit": 34,
+    "regression": 201,
+    "total": 235
+  },
+  "passed": 566,
+  "failed": 0
+}

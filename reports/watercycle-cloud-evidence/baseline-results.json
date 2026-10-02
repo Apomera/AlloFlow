@@ -1,0 +1,2361 @@
+{
+  "kind": "baseline",
+  "sourceSha256": "a0b86ac156e3045c52448226e518ed1ad4acd2b104c491d56efc7c1272b3579c",
+  "publicSha256": "c34642735d36bc86cebe6e8e2f0747c347f6a880679c7738b2cd72a7dcfe908c",
+  "checks": [
+    {
+      "label": "phone320 no horizontal page overflow",
+      "passed": true
+    },
+    {
+      "label": "phone320 guide has no clipped width",
+      "passed": true
+    },
+    {
+      "label": "phone320 controls at least 44 px",
+      "passed": false,
+      "details": [
+        {
+          "id": "",
+          "text": "Notice",
+          "width": 62.8,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Explain",
+          "width": 65.3,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Investigate",
+          "width": 85.6,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Explore a thunderstorm scenario",
+          "width": 209.9,
+          "height": 42
+        },
+        {
+          "id": "wcCloudComparePair",
+          "text": "Heaps and towersSmooth and lumpy layersTwo broad layersWisps and veilsCloudlets ",
+          "width": 214,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Choose Cumulus",
+          "width": 190,
+          "height": 42
+        },
+        {
+          "id": "",
+          "text": "Choose Cumulonimbus",
+          "width": 190,
+          "height": 42
+        },
+        {
+          "id": "",
+          "text": "Show an observation hint",
+          "width": 214,
+          "height": 26
+        },
+        {
+          "id": "",
+          "text": "Next comparison",
+          "width": 122.6,
+          "height": 42
+        }
+      ]
+    },
+    {
+      "label": "phone320 cloud names fit without clipping",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "phone320 explanatory text at least 12 px",
+      "passed": false,
+      "details": [
+        {
+          "text": "Loads the summer-storm settings. The chamber illustrates storm processes; it does not clas",
+          "font": 11
+        },
+        {
+          "text": "Low base · variable height",
+          "font": 11
+        },
+        {
+          "text": "Low base · deep vertical growth",
+          "font": 11
+        },
+        {
+          "text": "Height bands vary with latitude and season. Rain type alone does not identify a cloud. WMO",
+          "font": 11
+        }
+      ]
+    },
+    {
+      "label": "phone320 scoped axe",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "phone390 no horizontal page overflow",
+      "passed": true
+    },
+    {
+      "label": "phone390 guide has no clipped width",
+      "passed": true
+    },
+    {
+      "label": "phone390 controls at least 44 px",
+      "passed": false,
+      "details": [
+        {
+          "id": "",
+          "text": "Notice",
+          "width": 62.8,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Explain",
+          "width": 65.3,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Investigate",
+          "width": 85.6,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Explore a thunderstorm scenario",
+          "width": 209.9,
+          "height": 42
+        },
+        {
+          "id": "wcCloudComparePair",
+          "text": "Heaps and towersSmooth and lumpy layersTwo broad layersWisps and veilsCloudlets ",
+          "width": 284,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Choose Cumulus",
+          "width": 123,
+          "height": 42
+        },
+        {
+          "id": "",
+          "text": "Show an observation hint",
+          "width": 284,
+          "height": 26
+        },
+        {
+          "id": "",
+          "text": "Next comparison",
+          "width": 122.6,
+          "height": 42
+        }
+      ]
+    },
+    {
+      "label": "phone390 cloud names fit without clipping",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "phone390 explanatory text at least 12 px",
+      "passed": false,
+      "details": [
+        {
+          "text": "Loads the summer-storm settings. The chamber illustrates storm processes; it does not clas",
+          "font": 11
+        },
+        {
+          "text": "Low base · variable height",
+          "font": 11
+        },
+        {
+          "text": "Low base · deep vertical growth",
+          "font": 11
+        },
+        {
+          "text": "Height bands vary with latitude and season. Rain type alone does not identify a cloud. WMO",
+          "font": 11
+        }
+      ]
+    },
+    {
+      "label": "phone390 scoped axe",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "desktop no horizontal page overflow",
+      "passed": true
+    },
+    {
+      "label": "desktop guide has no clipped width",
+      "passed": true
+    },
+    {
+      "label": "desktop controls at least 44 px",
+      "passed": false,
+      "details": [
+        {
+          "id": "",
+          "text": "Notice",
+          "width": 62.8,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Explain",
+          "width": 65.3,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Investigate",
+          "width": 85.6,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Explore a thunderstorm scenario",
+          "width": 209.9,
+          "height": 42
+        },
+        {
+          "id": "wcCloudComparePair",
+          "text": "Heaps and towersSmooth and lumpy layersTwo broad layersWisps and veilsCloudlets ",
+          "width": 659.4,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Choose Cumulus",
+          "width": 299.7,
+          "height": 42
+        },
+        {
+          "id": "",
+          "text": "Choose Cumulonimbus",
+          "width": 299.7,
+          "height": 42
+        },
+        {
+          "id": "",
+          "text": "Show an observation hint",
+          "width": 659.4,
+          "height": 26
+        },
+        {
+          "id": "",
+          "text": "Next comparison",
+          "width": 122.6,
+          "height": 42
+        }
+      ]
+    },
+    {
+      "label": "desktop cloud names fit without clipping",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "desktop explanatory text at least 12 px",
+      "passed": false,
+      "details": [
+        {
+          "text": "Loads the summer-storm settings. The chamber illustrates storm processes; it does not clas",
+          "font": 11
+        },
+        {
+          "text": "Low base · variable height",
+          "font": 11
+        },
+        {
+          "text": "Low base · deep vertical growth",
+          "font": 11
+        },
+        {
+          "text": "Height bands vary with latitude and season. Rain type alone does not identify a cloud. WMO",
+          "font": 11
+        }
+      ]
+    },
+    {
+      "label": "desktop scoped axe",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "host390 no horizontal page overflow",
+      "passed": true
+    },
+    {
+      "label": "host390 guide has no clipped width",
+      "passed": true
+    },
+    {
+      "label": "host390 controls at least 44 px",
+      "passed": false,
+      "details": [
+        {
+          "id": "",
+          "text": "Notice",
+          "width": 62.8,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Explain",
+          "width": 65.3,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Investigate",
+          "width": 85.6,
+          "height": 38
+        },
+        {
+          "id": "wcCloudComparePair",
+          "text": "Heaps and towersSmooth and lumpy layersTwo broad layersWisps and veilsCloudlets ",
+          "width": 334,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Choose Cumulus",
+          "width": 137,
+          "height": 42
+        },
+        {
+          "id": "",
+          "text": "Show an observation hint",
+          "width": 334,
+          "height": 26
+        },
+        {
+          "id": "",
+          "text": "Next comparison",
+          "width": 122.6,
+          "height": 42
+        }
+      ]
+    },
+    {
+      "label": "host390 cloud names fit without clipping",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "host390 explanatory text at least 12 px",
+      "passed": false,
+      "details": [
+        {
+          "text": "Loads the summer-storm settings. The chamber illustrates storm processes; it does not clas",
+          "font": 11
+        },
+        {
+          "text": "Low base · variable height",
+          "font": 11
+        },
+        {
+          "text": "Low base · deep vertical growth",
+          "font": 11
+        },
+        {
+          "text": "Height bands vary with latitude and season. Rain type alone does not identify a cloud. WMO",
+          "font": 11
+        }
+      ]
+    },
+    {
+      "label": "host390 scoped axe",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "dark no horizontal page overflow",
+      "passed": true
+    },
+    {
+      "label": "dark guide has no clipped width",
+      "passed": true
+    },
+    {
+      "label": "dark controls at least 44 px",
+      "passed": false,
+      "details": [
+        {
+          "id": "",
+          "text": "Notice",
+          "width": 62.8,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Explain",
+          "width": 65.3,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Investigate",
+          "width": 85.6,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Explore a thunderstorm scenario",
+          "width": 209.9,
+          "height": 42
+        },
+        {
+          "id": "wcCloudComparePair",
+          "text": "Heaps and towersSmooth and lumpy layersTwo broad layersWisps and veilsCloudlets ",
+          "width": 659.4,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Choose Cumulus",
+          "width": 299.7,
+          "height": 42
+        },
+        {
+          "id": "",
+          "text": "Choose Cumulonimbus",
+          "width": 299.7,
+          "height": 42
+        },
+        {
+          "id": "",
+          "text": "Show an observation hint",
+          "width": 659.4,
+          "height": 26
+        },
+        {
+          "id": "",
+          "text": "Next comparison",
+          "width": 122.6,
+          "height": 42
+        }
+      ]
+    },
+    {
+      "label": "dark cloud names fit without clipping",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "dark explanatory text at least 12 px",
+      "passed": false,
+      "details": [
+        {
+          "text": "Loads the summer-storm settings. The chamber illustrates storm processes; it does not clas",
+          "font": 11
+        },
+        {
+          "text": "Low base · variable height",
+          "font": 11
+        },
+        {
+          "text": "Low base · deep vertical growth",
+          "font": 11
+        },
+        {
+          "text": "Height bands vary with latitude and season. Rain type alone does not identify a cloud. WMO",
+          "font": 11
+        }
+      ]
+    },
+    {
+      "label": "dark scoped axe",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "forced-phone no horizontal page overflow",
+      "passed": true
+    },
+    {
+      "label": "forced-phone guide has no clipped width",
+      "passed": true
+    },
+    {
+      "label": "forced-phone controls at least 44 px",
+      "passed": false,
+      "details": [
+        {
+          "id": "",
+          "text": "Notice",
+          "width": 60.8,
+          "height": 36
+        },
+        {
+          "id": "",
+          "text": "Explain",
+          "width": 63.3,
+          "height": 36
+        },
+        {
+          "id": "",
+          "text": "Investigate",
+          "width": 83.6,
+          "height": 36
+        },
+        {
+          "id": "",
+          "text": "Explore a thunderstorm scenario",
+          "width": 209.9,
+          "height": 42
+        },
+        {
+          "id": "wcCloudComparePair",
+          "text": "Heaps and towersSmooth and lumpy layersTwo broad layersWisps and veilsCloudlets ",
+          "width": 214,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Choose Cumulus",
+          "width": 192,
+          "height": 42
+        },
+        {
+          "id": "",
+          "text": "Choose Cumulonimbus",
+          "width": 192,
+          "height": 42
+        },
+        {
+          "id": "",
+          "text": "Show an observation hint",
+          "width": 214,
+          "height": 26
+        },
+        {
+          "id": "",
+          "text": "Next comparison",
+          "width": 122.6,
+          "height": 42
+        }
+      ]
+    },
+    {
+      "label": "forced-phone cloud names fit without clipping",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "forced-phone explanatory text at least 12 px",
+      "passed": false,
+      "details": [
+        {
+          "text": "Loads the summer-storm settings. The chamber illustrates storm processes; it does not clas",
+          "font": 11
+        },
+        {
+          "text": "Low base · variable height",
+          "font": 11
+        },
+        {
+          "text": "Low base · deep vertical growth",
+          "font": 11
+        },
+        {
+          "text": "Height bands vary with latitude and season. Rain type alone does not identify a cloud. WMO",
+          "font": 11
+        }
+      ]
+    },
+    {
+      "label": "forced-phone scoped axe",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "forced-dark no horizontal page overflow",
+      "passed": true
+    },
+    {
+      "label": "forced-dark guide has no clipped width",
+      "passed": true
+    },
+    {
+      "label": "forced-dark controls at least 44 px",
+      "passed": false,
+      "details": [
+        {
+          "id": "",
+          "text": "Notice",
+          "width": 60.8,
+          "height": 36
+        },
+        {
+          "id": "",
+          "text": "Explain",
+          "width": 63.3,
+          "height": 36
+        },
+        {
+          "id": "",
+          "text": "Investigate",
+          "width": 83.6,
+          "height": 36
+        },
+        {
+          "id": "",
+          "text": "Explore a thunderstorm scenario",
+          "width": 209.9,
+          "height": 42
+        },
+        {
+          "id": "wcCloudComparePair",
+          "text": "Heaps and towersSmooth and lumpy layersTwo broad layersWisps and veilsCloudlets ",
+          "width": 659.4,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Choose Cumulus",
+          "width": 301.7,
+          "height": 42
+        },
+        {
+          "id": "",
+          "text": "Choose Cumulonimbus",
+          "width": 301.7,
+          "height": 42
+        },
+        {
+          "id": "",
+          "text": "Show an observation hint",
+          "width": 659.4,
+          "height": 26
+        },
+        {
+          "id": "",
+          "text": "Next comparison",
+          "width": 122.6,
+          "height": 42
+        }
+      ]
+    },
+    {
+      "label": "forced-dark cloud names fit without clipping",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "forced-dark explanatory text at least 12 px",
+      "passed": false,
+      "details": [
+        {
+          "text": "Loads the summer-storm settings. The chamber illustrates storm processes; it does not clas",
+          "font": 11
+        },
+        {
+          "text": "Low base · variable height",
+          "font": 11
+        },
+        {
+          "text": "Low base · deep vertical growth",
+          "font": 11
+        },
+        {
+          "text": "Height bands vary with latitude and season. Rain type alone does not identify a cloud. WMO",
+          "font": 11
+        }
+      ]
+    },
+    {
+      "label": "forced-dark scoped axe",
+      "passed": false,
+      "details": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": [
+            {
+              "html": "<summary>Cloud field guide<span>10 cloud types · shapes, height &amp; weather</span></summary>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 11.3pt (15px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span>10 cloud types · shapes, height &amp; weather</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<p>Choose a cloud to compare its shape and typical sky level. These drawings are identification sketches, not forecasts.</p>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span>Cumulonimbus</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span>Cumulus</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span>Stratus</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span>Stratocumulus</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span>Nimbostratus</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span>Altostratus</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span>Altocumulus</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span>Cirrus</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span>Cirrostratus</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span>Cirrocumulus</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<button type=\"button\" aria-pressed=\"true\">Notice</button>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<button type=\"button\" aria-pressed=\"false\">Explain</button>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<button type=\"button\" aria-pressed=\"false\">Investigate</button>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span class=\"wc-cloud-guide-band\">Low base · deep vertical growth</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<h4>Cumulonimbus</h4>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 15.8pt (21px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<p>A huge tower, often spreading into an anvil.</p>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<p><strong>Weather clue: </strong>Thunderstorms; heavy showers and sometimes hail.</p>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<strong>Weather clue: </strong>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.8pt (13px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<small>Loads the summer-storm settings. The chamber illustrates storm processes; it does not classify an observed cloud.</small>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<select id=\"wcCloudComparePair\">",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<strong>Cumulus</strong>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 11.3pt (15px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span>Low base · variable height</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<p>Separate heaps with rounded tops and flatter bases.</p>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<button type=\"button\" aria-pressed=\"false\">Choose Cumulus</button>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<strong>Cumulonimbus</strong>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 11.3pt (15px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span>Low base · deep vertical growth</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<p>A huge tower, often spreading into an anvil.</p>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<button type=\"button\" aria-pressed=\"false\">Choose Cumulonimbus</button>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<div class=\"wc-cloud-compare-feedback\" role=\"status\" data-result=\"waiting\">Choose the cloud that best matches the observation.</div>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<p class=\"wc-cloud-guide-footnote\">",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<a href=\"https://cloudatlas.wmo.int/en/clouds-genera.html\" target=\"_blank\" rel=\"noopener noreferrer\">WMO cloud genera</a>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.46 (foreground color: #8de1ff, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<a href=\"https://www.weather.gov/lmk/cloud_classification\" target=\"_blank\" rel=\"noopener noreferrer\">NWS identification guide</a>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.46 (foreground color: #8de1ff, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "No browser runtime errors",
+      "passed": true,
+      "details": []
+    }
+  ],
+  "failures": [
+    {
+      "label": "phone320 controls at least 44 px",
+      "passed": false,
+      "details": [
+        {
+          "id": "",
+          "text": "Notice",
+          "width": 62.8,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Explain",
+          "width": 65.3,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Investigate",
+          "width": 85.6,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Explore a thunderstorm scenario",
+          "width": 209.9,
+          "height": 42
+        },
+        {
+          "id": "wcCloudComparePair",
+          "text": "Heaps and towersSmooth and lumpy layersTwo broad layersWisps and veilsCloudlets ",
+          "width": 214,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Choose Cumulus",
+          "width": 190,
+          "height": 42
+        },
+        {
+          "id": "",
+          "text": "Choose Cumulonimbus",
+          "width": 190,
+          "height": 42
+        },
+        {
+          "id": "",
+          "text": "Show an observation hint",
+          "width": 214,
+          "height": 26
+        },
+        {
+          "id": "",
+          "text": "Next comparison",
+          "width": 122.6,
+          "height": 42
+        }
+      ]
+    },
+    {
+      "label": "phone320 explanatory text at least 12 px",
+      "passed": false,
+      "details": [
+        {
+          "text": "Loads the summer-storm settings. The chamber illustrates storm processes; it does not clas",
+          "font": 11
+        },
+        {
+          "text": "Low base · variable height",
+          "font": 11
+        },
+        {
+          "text": "Low base · deep vertical growth",
+          "font": 11
+        },
+        {
+          "text": "Height bands vary with latitude and season. Rain type alone does not identify a cloud. WMO",
+          "font": 11
+        }
+      ]
+    },
+    {
+      "label": "phone390 controls at least 44 px",
+      "passed": false,
+      "details": [
+        {
+          "id": "",
+          "text": "Notice",
+          "width": 62.8,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Explain",
+          "width": 65.3,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Investigate",
+          "width": 85.6,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Explore a thunderstorm scenario",
+          "width": 209.9,
+          "height": 42
+        },
+        {
+          "id": "wcCloudComparePair",
+          "text": "Heaps and towersSmooth and lumpy layersTwo broad layersWisps and veilsCloudlets ",
+          "width": 284,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Choose Cumulus",
+          "width": 123,
+          "height": 42
+        },
+        {
+          "id": "",
+          "text": "Show an observation hint",
+          "width": 284,
+          "height": 26
+        },
+        {
+          "id": "",
+          "text": "Next comparison",
+          "width": 122.6,
+          "height": 42
+        }
+      ]
+    },
+    {
+      "label": "phone390 explanatory text at least 12 px",
+      "passed": false,
+      "details": [
+        {
+          "text": "Loads the summer-storm settings. The chamber illustrates storm processes; it does not clas",
+          "font": 11
+        },
+        {
+          "text": "Low base · variable height",
+          "font": 11
+        },
+        {
+          "text": "Low base · deep vertical growth",
+          "font": 11
+        },
+        {
+          "text": "Height bands vary with latitude and season. Rain type alone does not identify a cloud. WMO",
+          "font": 11
+        }
+      ]
+    },
+    {
+      "label": "desktop controls at least 44 px",
+      "passed": false,
+      "details": [
+        {
+          "id": "",
+          "text": "Notice",
+          "width": 62.8,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Explain",
+          "width": 65.3,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Investigate",
+          "width": 85.6,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Explore a thunderstorm scenario",
+          "width": 209.9,
+          "height": 42
+        },
+        {
+          "id": "wcCloudComparePair",
+          "text": "Heaps and towersSmooth and lumpy layersTwo broad layersWisps and veilsCloudlets ",
+          "width": 659.4,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Choose Cumulus",
+          "width": 299.7,
+          "height": 42
+        },
+        {
+          "id": "",
+          "text": "Choose Cumulonimbus",
+          "width": 299.7,
+          "height": 42
+        },
+        {
+          "id": "",
+          "text": "Show an observation hint",
+          "width": 659.4,
+          "height": 26
+        },
+        {
+          "id": "",
+          "text": "Next comparison",
+          "width": 122.6,
+          "height": 42
+        }
+      ]
+    },
+    {
+      "label": "desktop explanatory text at least 12 px",
+      "passed": false,
+      "details": [
+        {
+          "text": "Loads the summer-storm settings. The chamber illustrates storm processes; it does not clas",
+          "font": 11
+        },
+        {
+          "text": "Low base · variable height",
+          "font": 11
+        },
+        {
+          "text": "Low base · deep vertical growth",
+          "font": 11
+        },
+        {
+          "text": "Height bands vary with latitude and season. Rain type alone does not identify a cloud. WMO",
+          "font": 11
+        }
+      ]
+    },
+    {
+      "label": "host390 controls at least 44 px",
+      "passed": false,
+      "details": [
+        {
+          "id": "",
+          "text": "Notice",
+          "width": 62.8,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Explain",
+          "width": 65.3,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Investigate",
+          "width": 85.6,
+          "height": 38
+        },
+        {
+          "id": "wcCloudComparePair",
+          "text": "Heaps and towersSmooth and lumpy layersTwo broad layersWisps and veilsCloudlets ",
+          "width": 334,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Choose Cumulus",
+          "width": 137,
+          "height": 42
+        },
+        {
+          "id": "",
+          "text": "Show an observation hint",
+          "width": 334,
+          "height": 26
+        },
+        {
+          "id": "",
+          "text": "Next comparison",
+          "width": 122.6,
+          "height": 42
+        }
+      ]
+    },
+    {
+      "label": "host390 explanatory text at least 12 px",
+      "passed": false,
+      "details": [
+        {
+          "text": "Loads the summer-storm settings. The chamber illustrates storm processes; it does not clas",
+          "font": 11
+        },
+        {
+          "text": "Low base · variable height",
+          "font": 11
+        },
+        {
+          "text": "Low base · deep vertical growth",
+          "font": 11
+        },
+        {
+          "text": "Height bands vary with latitude and season. Rain type alone does not identify a cloud. WMO",
+          "font": 11
+        }
+      ]
+    },
+    {
+      "label": "dark controls at least 44 px",
+      "passed": false,
+      "details": [
+        {
+          "id": "",
+          "text": "Notice",
+          "width": 62.8,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Explain",
+          "width": 65.3,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Investigate",
+          "width": 85.6,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Explore a thunderstorm scenario",
+          "width": 209.9,
+          "height": 42
+        },
+        {
+          "id": "wcCloudComparePair",
+          "text": "Heaps and towersSmooth and lumpy layersTwo broad layersWisps and veilsCloudlets ",
+          "width": 659.4,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Choose Cumulus",
+          "width": 299.7,
+          "height": 42
+        },
+        {
+          "id": "",
+          "text": "Choose Cumulonimbus",
+          "width": 299.7,
+          "height": 42
+        },
+        {
+          "id": "",
+          "text": "Show an observation hint",
+          "width": 659.4,
+          "height": 26
+        },
+        {
+          "id": "",
+          "text": "Next comparison",
+          "width": 122.6,
+          "height": 42
+        }
+      ]
+    },
+    {
+      "label": "dark explanatory text at least 12 px",
+      "passed": false,
+      "details": [
+        {
+          "text": "Loads the summer-storm settings. The chamber illustrates storm processes; it does not clas",
+          "font": 11
+        },
+        {
+          "text": "Low base · variable height",
+          "font": 11
+        },
+        {
+          "text": "Low base · deep vertical growth",
+          "font": 11
+        },
+        {
+          "text": "Height bands vary with latitude and season. Rain type alone does not identify a cloud. WMO",
+          "font": 11
+        }
+      ]
+    },
+    {
+      "label": "forced-phone controls at least 44 px",
+      "passed": false,
+      "details": [
+        {
+          "id": "",
+          "text": "Notice",
+          "width": 60.8,
+          "height": 36
+        },
+        {
+          "id": "",
+          "text": "Explain",
+          "width": 63.3,
+          "height": 36
+        },
+        {
+          "id": "",
+          "text": "Investigate",
+          "width": 83.6,
+          "height": 36
+        },
+        {
+          "id": "",
+          "text": "Explore a thunderstorm scenario",
+          "width": 209.9,
+          "height": 42
+        },
+        {
+          "id": "wcCloudComparePair",
+          "text": "Heaps and towersSmooth and lumpy layersTwo broad layersWisps and veilsCloudlets ",
+          "width": 214,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Choose Cumulus",
+          "width": 192,
+          "height": 42
+        },
+        {
+          "id": "",
+          "text": "Choose Cumulonimbus",
+          "width": 192,
+          "height": 42
+        },
+        {
+          "id": "",
+          "text": "Show an observation hint",
+          "width": 214,
+          "height": 26
+        },
+        {
+          "id": "",
+          "text": "Next comparison",
+          "width": 122.6,
+          "height": 42
+        }
+      ]
+    },
+    {
+      "label": "forced-phone explanatory text at least 12 px",
+      "passed": false,
+      "details": [
+        {
+          "text": "Loads the summer-storm settings. The chamber illustrates storm processes; it does not clas",
+          "font": 11
+        },
+        {
+          "text": "Low base · variable height",
+          "font": 11
+        },
+        {
+          "text": "Low base · deep vertical growth",
+          "font": 11
+        },
+        {
+          "text": "Height bands vary with latitude and season. Rain type alone does not identify a cloud. WMO",
+          "font": 11
+        }
+      ]
+    },
+    {
+      "label": "forced-dark controls at least 44 px",
+      "passed": false,
+      "details": [
+        {
+          "id": "",
+          "text": "Notice",
+          "width": 60.8,
+          "height": 36
+        },
+        {
+          "id": "",
+          "text": "Explain",
+          "width": 63.3,
+          "height": 36
+        },
+        {
+          "id": "",
+          "text": "Investigate",
+          "width": 83.6,
+          "height": 36
+        },
+        {
+          "id": "",
+          "text": "Explore a thunderstorm scenario",
+          "width": 209.9,
+          "height": 42
+        },
+        {
+          "id": "wcCloudComparePair",
+          "text": "Heaps and towersSmooth and lumpy layersTwo broad layersWisps and veilsCloudlets ",
+          "width": 659.4,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Choose Cumulus",
+          "width": 301.7,
+          "height": 42
+        },
+        {
+          "id": "",
+          "text": "Choose Cumulonimbus",
+          "width": 301.7,
+          "height": 42
+        },
+        {
+          "id": "",
+          "text": "Show an observation hint",
+          "width": 659.4,
+          "height": 26
+        },
+        {
+          "id": "",
+          "text": "Next comparison",
+          "width": 122.6,
+          "height": 42
+        }
+      ]
+    },
+    {
+      "label": "forced-dark explanatory text at least 12 px",
+      "passed": false,
+      "details": [
+        {
+          "text": "Loads the summer-storm settings. The chamber illustrates storm processes; it does not clas",
+          "font": 11
+        },
+        {
+          "text": "Low base · variable height",
+          "font": 11
+        },
+        {
+          "text": "Low base · deep vertical growth",
+          "font": 11
+        },
+        {
+          "text": "Height bands vary with latitude and season. Rain type alone does not identify a cloud. WMO",
+          "font": 11
+        }
+      ]
+    },
+    {
+      "label": "forced-dark scoped axe",
+      "passed": false,
+      "details": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": [
+            {
+              "html": "<summary>Cloud field guide<span>10 cloud types · shapes, height &amp; weather</span></summary>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 11.3pt (15px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span>10 cloud types · shapes, height &amp; weather</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<p>Choose a cloud to compare its shape and typical sky level. These drawings are identification sketches, not forecasts.</p>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span>Cumulonimbus</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span>Cumulus</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span>Stratus</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span>Stratocumulus</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span>Nimbostratus</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span>Altostratus</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span>Altocumulus</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span>Cirrus</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span>Cirrostratus</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span>Cirrocumulus</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<button type=\"button\" aria-pressed=\"true\">Notice</button>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<button type=\"button\" aria-pressed=\"false\">Explain</button>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<button type=\"button\" aria-pressed=\"false\">Investigate</button>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span class=\"wc-cloud-guide-band\">Low base · deep vertical growth</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<h4>Cumulonimbus</h4>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 15.8pt (21px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<p>A huge tower, often spreading into an anvil.</p>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<p><strong>Weather clue: </strong>Thunderstorms; heavy showers and sometimes hail.</p>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<strong>Weather clue: </strong>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.8pt (13px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<small>Loads the summer-storm settings. The chamber illustrates storm processes; it does not classify an observed cloud.</small>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<select id=\"wcCloudComparePair\">",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<strong>Cumulus</strong>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 11.3pt (15px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span>Low base · variable height</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<p>Separate heaps with rounded tops and flatter bases.</p>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<button type=\"button\" aria-pressed=\"false\">Choose Cumulus</button>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<strong>Cumulonimbus</strong>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 11.3pt (15px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span>Low base · deep vertical growth</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<p>A huge tower, often spreading into an anvil.</p>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<button type=\"button\" aria-pressed=\"false\">Choose Cumulonimbus</button>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<div class=\"wc-cloud-compare-feedback\" role=\"status\" data-result=\"waiting\">Choose the cloud that best matches the observation.</div>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<p class=\"wc-cloud-guide-footnote\">",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<a href=\"https://cloudatlas.wmo.int/en/clouds-genera.html\" target=\"_blank\" rel=\"noopener noreferrer\">WMO cloud genera</a>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.46 (foreground color: #8de1ff, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<a href=\"https://www.weather.gov/lmk/cloud_classification\" target=\"_blank\" rel=\"noopener noreferrer\">NWS identification guide</a>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.46 (foreground color: #8de1ff, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "cases": [
+    {
+      "label": "phone320 measurements",
+      "pageOverflow": false,
+      "scopeOverflow": false,
+      "smallTargets": [
+        {
+          "id": "",
+          "text": "Notice",
+          "width": 62.8,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Explain",
+          "width": 65.3,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Investigate",
+          "width": 85.6,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Explore a thunderstorm scenario",
+          "width": 209.9,
+          "height": 42
+        },
+        {
+          "id": "wcCloudComparePair",
+          "text": "Heaps and towersSmooth and lumpy layersTwo broad layersWisps and veilsCloudlets ",
+          "width": 214,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Choose Cumulus",
+          "width": 190,
+          "height": 42
+        },
+        {
+          "id": "",
+          "text": "Choose Cumulonimbus",
+          "width": 190,
+          "height": 42
+        },
+        {
+          "id": "",
+          "text": "Show an observation hint",
+          "width": 214,
+          "height": 26
+        },
+        {
+          "id": "",
+          "text": "Next comparison",
+          "width": 122.6,
+          "height": 42
+        }
+      ],
+      "wordClipping": [],
+      "smallText": [
+        {
+          "text": "Loads the summer-storm settings. The chamber illustrates storm processes; it does not clas",
+          "font": 11
+        },
+        {
+          "text": "Low base · variable height",
+          "font": 11
+        },
+        {
+          "text": "Low base · deep vertical growth",
+          "font": 11
+        },
+        {
+          "text": "Height bands vary with latitude and season. Rain type alone does not identify a cloud. WMO",
+          "font": 11
+        }
+      ]
+    },
+    {
+      "label": "phone390 measurements",
+      "pageOverflow": false,
+      "scopeOverflow": false,
+      "smallTargets": [
+        {
+          "id": "",
+          "text": "Notice",
+          "width": 62.8,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Explain",
+          "width": 65.3,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Investigate",
+          "width": 85.6,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Explore a thunderstorm scenario",
+          "width": 209.9,
+          "height": 42
+        },
+        {
+          "id": "wcCloudComparePair",
+          "text": "Heaps and towersSmooth and lumpy layersTwo broad layersWisps and veilsCloudlets ",
+          "width": 284,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Choose Cumulus",
+          "width": 123,
+          "height": 42
+        },
+        {
+          "id": "",
+          "text": "Show an observation hint",
+          "width": 284,
+          "height": 26
+        },
+        {
+          "id": "",
+          "text": "Next comparison",
+          "width": 122.6,
+          "height": 42
+        }
+      ],
+      "wordClipping": [],
+      "smallText": [
+        {
+          "text": "Loads the summer-storm settings. The chamber illustrates storm processes; it does not clas",
+          "font": 11
+        },
+        {
+          "text": "Low base · variable height",
+          "font": 11
+        },
+        {
+          "text": "Low base · deep vertical growth",
+          "font": 11
+        },
+        {
+          "text": "Height bands vary with latitude and season. Rain type alone does not identify a cloud. WMO",
+          "font": 11
+        }
+      ]
+    },
+    {
+      "label": "desktop measurements",
+      "pageOverflow": false,
+      "scopeOverflow": false,
+      "smallTargets": [
+        {
+          "id": "",
+          "text": "Notice",
+          "width": 62.8,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Explain",
+          "width": 65.3,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Investigate",
+          "width": 85.6,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Explore a thunderstorm scenario",
+          "width": 209.9,
+          "height": 42
+        },
+        {
+          "id": "wcCloudComparePair",
+          "text": "Heaps and towersSmooth and lumpy layersTwo broad layersWisps and veilsCloudlets ",
+          "width": 659.4,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Choose Cumulus",
+          "width": 299.7,
+          "height": 42
+        },
+        {
+          "id": "",
+          "text": "Choose Cumulonimbus",
+          "width": 299.7,
+          "height": 42
+        },
+        {
+          "id": "",
+          "text": "Show an observation hint",
+          "width": 659.4,
+          "height": 26
+        },
+        {
+          "id": "",
+          "text": "Next comparison",
+          "width": 122.6,
+          "height": 42
+        }
+      ],
+      "wordClipping": [],
+      "smallText": [
+        {
+          "text": "Loads the summer-storm settings. The chamber illustrates storm processes; it does not clas",
+          "font": 11
+        },
+        {
+          "text": "Low base · variable height",
+          "font": 11
+        },
+        {
+          "text": "Low base · deep vertical growth",
+          "font": 11
+        },
+        {
+          "text": "Height bands vary with latitude and season. Rain type alone does not identify a cloud. WMO",
+          "font": 11
+        }
+      ]
+    },
+    {
+      "label": "host390 measurements",
+      "pageOverflow": false,
+      "scopeOverflow": false,
+      "smallTargets": [
+        {
+          "id": "",
+          "text": "Notice",
+          "width": 62.8,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Explain",
+          "width": 65.3,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Investigate",
+          "width": 85.6,
+          "height": 38
+        },
+        {
+          "id": "wcCloudComparePair",
+          "text": "Heaps and towersSmooth and lumpy layersTwo broad layersWisps and veilsCloudlets ",
+          "width": 334,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Choose Cumulus",
+          "width": 137,
+          "height": 42
+        },
+        {
+          "id": "",
+          "text": "Show an observation hint",
+          "width": 334,
+          "height": 26
+        },
+        {
+          "id": "",
+          "text": "Next comparison",
+          "width": 122.6,
+          "height": 42
+        }
+      ],
+      "wordClipping": [],
+      "smallText": [
+        {
+          "text": "Loads the summer-storm settings. The chamber illustrates storm processes; it does not clas",
+          "font": 11
+        },
+        {
+          "text": "Low base · variable height",
+          "font": 11
+        },
+        {
+          "text": "Low base · deep vertical growth",
+          "font": 11
+        },
+        {
+          "text": "Height bands vary with latitude and season. Rain type alone does not identify a cloud. WMO",
+          "font": 11
+        }
+      ]
+    },
+    {
+      "label": "dark measurements",
+      "pageOverflow": false,
+      "scopeOverflow": false,
+      "smallTargets": [
+        {
+          "id": "",
+          "text": "Notice",
+          "width": 62.8,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Explain",
+          "width": 65.3,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Investigate",
+          "width": 85.6,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Explore a thunderstorm scenario",
+          "width": 209.9,
+          "height": 42
+        },
+        {
+          "id": "wcCloudComparePair",
+          "text": "Heaps and towersSmooth and lumpy layersTwo broad layersWisps and veilsCloudlets ",
+          "width": 659.4,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Choose Cumulus",
+          "width": 299.7,
+          "height": 42
+        },
+        {
+          "id": "",
+          "text": "Choose Cumulonimbus",
+          "width": 299.7,
+          "height": 42
+        },
+        {
+          "id": "",
+          "text": "Show an observation hint",
+          "width": 659.4,
+          "height": 26
+        },
+        {
+          "id": "",
+          "text": "Next comparison",
+          "width": 122.6,
+          "height": 42
+        }
+      ],
+      "wordClipping": [],
+      "smallText": [
+        {
+          "text": "Loads the summer-storm settings. The chamber illustrates storm processes; it does not clas",
+          "font": 11
+        },
+        {
+          "text": "Low base · variable height",
+          "font": 11
+        },
+        {
+          "text": "Low base · deep vertical growth",
+          "font": 11
+        },
+        {
+          "text": "Height bands vary with latitude and season. Rain type alone does not identify a cloud. WMO",
+          "font": 11
+        }
+      ]
+    },
+    {
+      "label": "forced-phone measurements",
+      "pageOverflow": false,
+      "scopeOverflow": false,
+      "smallTargets": [
+        {
+          "id": "",
+          "text": "Notice",
+          "width": 60.8,
+          "height": 36
+        },
+        {
+          "id": "",
+          "text": "Explain",
+          "width": 63.3,
+          "height": 36
+        },
+        {
+          "id": "",
+          "text": "Investigate",
+          "width": 83.6,
+          "height": 36
+        },
+        {
+          "id": "",
+          "text": "Explore a thunderstorm scenario",
+          "width": 209.9,
+          "height": 42
+        },
+        {
+          "id": "wcCloudComparePair",
+          "text": "Heaps and towersSmooth and lumpy layersTwo broad layersWisps and veilsCloudlets ",
+          "width": 214,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Choose Cumulus",
+          "width": 192,
+          "height": 42
+        },
+        {
+          "id": "",
+          "text": "Choose Cumulonimbus",
+          "width": 192,
+          "height": 42
+        },
+        {
+          "id": "",
+          "text": "Show an observation hint",
+          "width": 214,
+          "height": 26
+        },
+        {
+          "id": "",
+          "text": "Next comparison",
+          "width": 122.6,
+          "height": 42
+        }
+      ],
+      "wordClipping": [],
+      "smallText": [
+        {
+          "text": "Loads the summer-storm settings. The chamber illustrates storm processes; it does not clas",
+          "font": 11
+        },
+        {
+          "text": "Low base · variable height",
+          "font": 11
+        },
+        {
+          "text": "Low base · deep vertical growth",
+          "font": 11
+        },
+        {
+          "text": "Height bands vary with latitude and season. Rain type alone does not identify a cloud. WMO",
+          "font": 11
+        }
+      ]
+    },
+    {
+      "label": "forced-dark measurements",
+      "pageOverflow": false,
+      "scopeOverflow": false,
+      "smallTargets": [
+        {
+          "id": "",
+          "text": "Notice",
+          "width": 60.8,
+          "height": 36
+        },
+        {
+          "id": "",
+          "text": "Explain",
+          "width": 63.3,
+          "height": 36
+        },
+        {
+          "id": "",
+          "text": "Investigate",
+          "width": 83.6,
+          "height": 36
+        },
+        {
+          "id": "",
+          "text": "Explore a thunderstorm scenario",
+          "width": 209.9,
+          "height": 42
+        },
+        {
+          "id": "wcCloudComparePair",
+          "text": "Heaps and towersSmooth and lumpy layersTwo broad layersWisps and veilsCloudlets ",
+          "width": 659.4,
+          "height": 38
+        },
+        {
+          "id": "",
+          "text": "Choose Cumulus",
+          "width": 301.7,
+          "height": 42
+        },
+        {
+          "id": "",
+          "text": "Choose Cumulonimbus",
+          "width": 301.7,
+          "height": 42
+        },
+        {
+          "id": "",
+          "text": "Show an observation hint",
+          "width": 659.4,
+          "height": 26
+        },
+        {
+          "id": "",
+          "text": "Next comparison",
+          "width": 122.6,
+          "height": 42
+        }
+      ],
+      "wordClipping": [],
+      "smallText": [
+        {
+          "text": "Loads the summer-storm settings. The chamber illustrates storm processes; it does not clas",
+          "font": 11
+        },
+        {
+          "text": "Low base · variable height",
+          "font": 11
+        },
+        {
+          "text": "Low base · deep vertical growth",
+          "font": 11
+        },
+        {
+          "text": "Height bands vary with latitude and season. Rain type alone does not identify a cloud. WMO",
+          "font": 11
+        }
+      ]
+    }
+  ],
+  "actions": [],
+  "audits": [
+    {
+      "name": "phone320",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "nodes": 1
+        }
+      ],
+      "passes": 18
+    },
+    {
+      "name": "phone390",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "nodes": 1
+        }
+      ],
+      "passes": 18
+    },
+    {
+      "name": "desktop",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "nodes": 1
+        }
+      ],
+      "passes": 18
+    },
+    {
+      "name": "host390",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "nodes": 1
+        }
+      ],
+      "passes": 19
+    },
+    {
+      "name": "dark",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "nodes": 1
+        }
+      ],
+      "passes": 18
+    },
+    {
+      "name": "forced-phone",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "nodes": 1
+        }
+      ],
+      "passes": 18
+    },
+    {
+      "name": "forced-dark",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": [
+            {
+              "html": "<summary>Cloud field guide<span>10 cloud types · shapes, height &amp; weather</span></summary>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 11.3pt (15px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span>10 cloud types · shapes, height &amp; weather</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<p>Choose a cloud to compare its shape and typical sky level. These drawings are identification sketches, not forecasts.</p>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span>Cumulonimbus</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span>Cumulus</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span>Stratus</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span>Stratocumulus</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span>Nimbostratus</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span>Altostratus</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span>Altocumulus</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span>Cirrus</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span>Cirrostratus</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span>Cirrocumulus</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<button type=\"button\" aria-pressed=\"true\">Notice</button>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<button type=\"button\" aria-pressed=\"false\">Explain</button>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<button type=\"button\" aria-pressed=\"false\">Investigate</button>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span class=\"wc-cloud-guide-band\">Low base · deep vertical growth</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<h4>Cumulonimbus</h4>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 15.8pt (21px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<p>A huge tower, often spreading into an anvil.</p>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<p><strong>Weather clue: </strong>Thunderstorms; heavy showers and sometimes hail.</p>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<strong>Weather clue: </strong>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.8pt (13px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<small>Loads the summer-storm settings. The chamber illustrates storm processes; it does not classify an observed cloud.</small>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<select id=\"wcCloudComparePair\">",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<strong>Cumulus</strong>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 11.3pt (15px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span>Low base · variable height</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<p>Separate heaps with rounded tops and flatter bases.</p>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<button type=\"button\" aria-pressed=\"false\">Choose Cumulus</button>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<strong>Cumulonimbus</strong>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 11.3pt (15px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<span>Low base · deep vertical growth</span>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<p>A huge tower, often spreading into an anvil.</p>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<button type=\"button\" aria-pressed=\"false\">Choose Cumulonimbus</button>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<div class=\"wc-cloud-compare-feedback\" role=\"status\" data-result=\"waiting\">Choose the cloud that best matches the observation.</div>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<p class=\"wc-cloud-guide-footnote\">",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #e4f1f7, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<a href=\"https://cloudatlas.wmo.int/en/clouds-genera.html\" target=\"_blank\" rel=\"noopener noreferrer\">WMO cloud genera</a>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.46 (foreground color: #8de1ff, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "html": "<a href=\"https://www.weather.gov/lmk/cloud_classification\" target=\"_blank\" rel=\"noopener noreferrer\">NWS identification guide</a>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.46 (foreground color: #8de1ff, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        }
+      ],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "nodes": 1
+        }
+      ],
+      "passes": 18
+    }
+  ],
+  "captures": [
+    {
+      "file": "before-phone320.png",
+      "sha256": "03ac61bdf9e8e1d2127d760ef854be71c260e8f05d27115c0897a97e05e5371c"
+    },
+    {
+      "file": "before-phone390.png",
+      "sha256": "6bdc88205eaa9ddec68cf41c33dbbdedec2b41386c99f4fddf4f79f257e17721"
+    },
+    {
+      "file": "before-desktop.png",
+      "sha256": "796248612ee05bb88f980dcb608829b6a71bf81010e9da0bf6339048b7dbe694"
+    },
+    {
+      "file": "before-host390.png",
+      "sha256": "4e2db87b826530e106c82faa755301b10616cfed16e64840acee10694a82e57f"
+    },
+    {
+      "file": "before-dark.png",
+      "sha256": "f3e079e13dc2cf03d54ab29cb94e7db4651d5278b6494129134ef8c8f57e54a4"
+    },
+    {
+      "file": "before-forced-phone.png",
+      "sha256": "ea0274320178dca52696383e862ab5428cc9e9c5190dde820d9efeaee79b4662"
+    },
+    {
+      "file": "before-forced-dark.png",
+      "sha256": "d5007895c5913388d9bc784d69903d1cf9ac07f64228a0f2b5ac8e36160190a8"
+    }
+  ],
+  "errors": [],
+  "completed": true,
+  "browserClosed": true,
+  "serverClosed": true,
+  "finalSourceSha256": "c34642735d36bc86cebe6e8e2f0747c347f6a880679c7738b2cd72a7dcfe908c",
+  "finalPublicSha256": "c34642735d36bc86cebe6e8e2f0747c347f6a880679c7738b2cd72a7dcfe908c",
+  "passed": 28,
+  "failed": 15,
+  "successful": false
+}

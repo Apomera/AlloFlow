@@ -1,0 +1,466 @@
+{
+  "kind": "disclosure",
+  "sourceSha256": "42eae634d0027b819ac0e5368801447780290c3d70e5da15aa402ff84d94314c",
+  "publicSha256": "42eae634d0027b819ac0e5368801447780290c3d70e5da15aa402ff84d94314c",
+  "checks": [
+    {
+      "label": "forced-dark guide open has native disclosure marker",
+      "passed": true,
+      "details": {
+        "display": "list-item",
+        "listStyleType": "disclosure-open",
+        "content": "normal",
+        "open": true
+      }
+    },
+    {
+      "label": "forced-dark collapse guide preserves storm inputs",
+      "passed": true
+    },
+    {
+      "label": "forced-dark collapse guide preserves saved writing",
+      "passed": true
+    },
+    {
+      "label": "forced-dark collapse guide preserves outer state, mode and rewards",
+      "passed": true
+    },
+    {
+      "label": "forced-dark collapse guide preserves paused rendered canvas",
+      "passed": true
+    },
+    {
+      "label": "forced-dark collapse guide preserves exposed engine and render identities",
+      "passed": true,
+      "details": {
+        "kind": "2d",
+        "canvas": true,
+        "context": true,
+        "sync": true,
+        "cleanup": true,
+        "reset": true,
+        "focus": true,
+        "renderer": true,
+        "scene": true,
+        "camera": true
+      }
+    },
+    {
+      "label": "forced-dark guide closed has native disclosure marker",
+      "passed": true,
+      "details": {
+        "display": "list-item",
+        "listStyleType": "disclosure-closed",
+        "content": "normal",
+        "open": false
+      }
+    },
+    {
+      "label": "forced-dark reopen guide preserves storm inputs",
+      "passed": true
+    },
+    {
+      "label": "forced-dark reopen guide preserves saved writing",
+      "passed": true
+    },
+    {
+      "label": "forced-dark reopen guide preserves outer state, mode and rewards",
+      "passed": true
+    },
+    {
+      "label": "forced-dark reopen guide preserves paused rendered canvas",
+      "passed": true
+    },
+    {
+      "label": "forced-dark reopen guide preserves exposed engine and render identities",
+      "passed": true,
+      "details": {
+        "kind": "2d",
+        "canvas": true,
+        "context": true,
+        "sync": true,
+        "cleanup": true,
+        "reset": true,
+        "focus": true,
+        "renderer": true,
+        "scene": true,
+        "camera": true
+      }
+    },
+    {
+      "label": "forced-dark hint closed has native disclosure marker",
+      "passed": true,
+      "details": {
+        "display": "list-item",
+        "listStyleType": "disclosure-closed",
+        "content": "normal",
+        "open": false
+      }
+    },
+    {
+      "label": "forced-dark open observation hint preserves storm inputs",
+      "passed": true
+    },
+    {
+      "label": "forced-dark open observation hint preserves saved writing",
+      "passed": true
+    },
+    {
+      "label": "forced-dark open observation hint preserves outer state, mode and rewards",
+      "passed": true
+    },
+    {
+      "label": "forced-dark open observation hint preserves paused rendered canvas",
+      "passed": true
+    },
+    {
+      "label": "forced-dark open observation hint preserves exposed engine and render identities",
+      "passed": true,
+      "details": {
+        "kind": "2d",
+        "canvas": true,
+        "context": true,
+        "sync": true,
+        "cleanup": true,
+        "reset": true,
+        "focus": true,
+        "renderer": true,
+        "scene": true,
+        "camera": true
+      }
+    },
+    {
+      "label": "forced-dark hint open has native disclosure marker",
+      "passed": true,
+      "details": {
+        "display": "list-item",
+        "listStyleType": "disclosure-open",
+        "content": "normal",
+        "open": true
+      }
+    },
+    {
+      "label": "forced-dark hint open direct text contrast",
+      "passed": true,
+      "details": {
+        "measured": 70,
+        "minimum": 13.99,
+        "failures": []
+      }
+    },
+    {
+      "label": "forced-dark hint open scoped axe",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "forced-dark hint open axe has no incomplete nodes",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "forced-dark close observation hint preserves storm inputs",
+      "passed": true
+    },
+    {
+      "label": "forced-dark close observation hint preserves saved writing",
+      "passed": true
+    },
+    {
+      "label": "forced-dark close observation hint preserves outer state, mode and rewards",
+      "passed": true
+    },
+    {
+      "label": "forced-dark close observation hint preserves paused rendered canvas",
+      "passed": true
+    },
+    {
+      "label": "forced-dark close observation hint preserves exposed engine and render identities",
+      "passed": true,
+      "details": {
+        "kind": "2d",
+        "canvas": true,
+        "context": true,
+        "sync": true,
+        "cleanup": true,
+        "reset": true,
+        "focus": true,
+        "renderer": true,
+        "scene": true,
+        "camera": true
+      }
+    },
+    {
+      "label": "forced-dark hint closed again has native disclosure marker",
+      "passed": true,
+      "details": {
+        "display": "list-item",
+        "listStyleType": "disclosure-closed",
+        "content": "normal",
+        "open": false
+      }
+    },
+    {
+      "label": "Frozen source unchanged throughout QA",
+      "passed": true
+    },
+    {
+      "label": "No browser runtime errors",
+      "passed": true,
+      "details": []
+    }
+  ],
+  "failures": [],
+  "cases": [
+    {
+      "label": "forced-dark guide open marker",
+      "display": "list-item",
+      "listStyleType": "disclosure-open",
+      "content": "normal",
+      "open": true
+    },
+    {
+      "label": "forced-dark collapse guide before",
+      "mode": "precipHunt",
+      "outerSha256": "70cec4d71cb7d45716cdba30a866a050501a376bf4cb8b44420d1ebe0eb28073",
+      "iqSha256": "3d4a5f789fa5bbb92daf6469aa4cccb74001a022069ca7422508b229ea9b3c2c",
+      "writingSha256": "ab6fcfa788f8e3963b512fb95eef17ac5b88a9eef2da0afb48abd3972ce59fe4",
+      "canvasSha256": "8fbfbfc99d319cfe1783b09b6d2da8446072c06c0530f070464255ea90238089",
+      "focus": "",
+      "engine": {
+        "kind": "2d",
+        "canvas": true,
+        "context": true,
+        "sync": true,
+        "cleanup": true,
+        "reset": true,
+        "focus": true,
+        "renderer": true,
+        "scene": true,
+        "camera": true
+      }
+    },
+    {
+      "label": "forced-dark collapse guide after",
+      "mode": "precipHunt",
+      "outerSha256": "70cec4d71cb7d45716cdba30a866a050501a376bf4cb8b44420d1ebe0eb28073",
+      "iqSha256": "3d4a5f789fa5bbb92daf6469aa4cccb74001a022069ca7422508b229ea9b3c2c",
+      "writingSha256": "ab6fcfa788f8e3963b512fb95eef17ac5b88a9eef2da0afb48abd3972ce59fe4",
+      "canvasSha256": "8fbfbfc99d319cfe1783b09b6d2da8446072c06c0530f070464255ea90238089",
+      "focus": "",
+      "engine": {
+        "kind": "2d",
+        "canvas": true,
+        "context": true,
+        "sync": true,
+        "cleanup": true,
+        "reset": true,
+        "focus": true,
+        "renderer": true,
+        "scene": true,
+        "camera": true
+      }
+    },
+    {
+      "label": "forced-dark guide closed marker",
+      "display": "list-item",
+      "listStyleType": "disclosure-closed",
+      "content": "normal",
+      "open": false
+    },
+    {
+      "label": "forced-dark reopen guide before",
+      "mode": "precipHunt",
+      "outerSha256": "70cec4d71cb7d45716cdba30a866a050501a376bf4cb8b44420d1ebe0eb28073",
+      "iqSha256": "3d4a5f789fa5bbb92daf6469aa4cccb74001a022069ca7422508b229ea9b3c2c",
+      "writingSha256": "ab6fcfa788f8e3963b512fb95eef17ac5b88a9eef2da0afb48abd3972ce59fe4",
+      "canvasSha256": "8fbfbfc99d319cfe1783b09b6d2da8446072c06c0530f070464255ea90238089",
+      "focus": "",
+      "engine": {
+        "kind": "2d",
+        "canvas": true,
+        "context": true,
+        "sync": true,
+        "cleanup": true,
+        "reset": true,
+        "focus": true,
+        "renderer": true,
+        "scene": true,
+        "camera": true
+      }
+    },
+    {
+      "label": "forced-dark reopen guide after",
+      "mode": "precipHunt",
+      "outerSha256": "70cec4d71cb7d45716cdba30a866a050501a376bf4cb8b44420d1ebe0eb28073",
+      "iqSha256": "3d4a5f789fa5bbb92daf6469aa4cccb74001a022069ca7422508b229ea9b3c2c",
+      "writingSha256": "ab6fcfa788f8e3963b512fb95eef17ac5b88a9eef2da0afb48abd3972ce59fe4",
+      "canvasSha256": "8fbfbfc99d319cfe1783b09b6d2da8446072c06c0530f070464255ea90238089",
+      "focus": "",
+      "engine": {
+        "kind": "2d",
+        "canvas": true,
+        "context": true,
+        "sync": true,
+        "cleanup": true,
+        "reset": true,
+        "focus": true,
+        "renderer": true,
+        "scene": true,
+        "camera": true
+      }
+    },
+    {
+      "label": "forced-dark hint closed marker",
+      "display": "list-item",
+      "listStyleType": "disclosure-closed",
+      "content": "normal",
+      "open": false
+    },
+    {
+      "label": "forced-dark open observation hint before",
+      "mode": "precipHunt",
+      "outerSha256": "70cec4d71cb7d45716cdba30a866a050501a376bf4cb8b44420d1ebe0eb28073",
+      "iqSha256": "3d4a5f789fa5bbb92daf6469aa4cccb74001a022069ca7422508b229ea9b3c2c",
+      "writingSha256": "ab6fcfa788f8e3963b512fb95eef17ac5b88a9eef2da0afb48abd3972ce59fe4",
+      "canvasSha256": "8fbfbfc99d319cfe1783b09b6d2da8446072c06c0530f070464255ea90238089",
+      "focus": "",
+      "engine": {
+        "kind": "2d",
+        "canvas": true,
+        "context": true,
+        "sync": true,
+        "cleanup": true,
+        "reset": true,
+        "focus": true,
+        "renderer": true,
+        "scene": true,
+        "camera": true
+      }
+    },
+    {
+      "label": "forced-dark open observation hint after",
+      "mode": "precipHunt",
+      "outerSha256": "70cec4d71cb7d45716cdba30a866a050501a376bf4cb8b44420d1ebe0eb28073",
+      "iqSha256": "3d4a5f789fa5bbb92daf6469aa4cccb74001a022069ca7422508b229ea9b3c2c",
+      "writingSha256": "ab6fcfa788f8e3963b512fb95eef17ac5b88a9eef2da0afb48abd3972ce59fe4",
+      "canvasSha256": "8fbfbfc99d319cfe1783b09b6d2da8446072c06c0530f070464255ea90238089",
+      "focus": "",
+      "engine": {
+        "kind": "2d",
+        "canvas": true,
+        "context": true,
+        "sync": true,
+        "cleanup": true,
+        "reset": true,
+        "focus": true,
+        "renderer": true,
+        "scene": true,
+        "camera": true
+      }
+    },
+    {
+      "label": "forced-dark hint open marker",
+      "display": "list-item",
+      "listStyleType": "disclosure-open",
+      "content": "normal",
+      "open": true
+    },
+    {
+      "label": "forced-dark hint open contrast",
+      "measured": 70,
+      "minimum": 13.99,
+      "failures": []
+    },
+    {
+      "label": "forced-dark close observation hint before",
+      "mode": "precipHunt",
+      "outerSha256": "70cec4d71cb7d45716cdba30a866a050501a376bf4cb8b44420d1ebe0eb28073",
+      "iqSha256": "3d4a5f789fa5bbb92daf6469aa4cccb74001a022069ca7422508b229ea9b3c2c",
+      "writingSha256": "ab6fcfa788f8e3963b512fb95eef17ac5b88a9eef2da0afb48abd3972ce59fe4",
+      "canvasSha256": "b43241c047933369c5e0ad840660fa995369fcab5984e7a1bd4c9a5f3431540b",
+      "focus": "",
+      "engine": {
+        "kind": "2d",
+        "canvas": true,
+        "context": true,
+        "sync": true,
+        "cleanup": true,
+        "reset": true,
+        "focus": true,
+        "renderer": true,
+        "scene": true,
+        "camera": true
+      }
+    },
+    {
+      "label": "forced-dark close observation hint after",
+      "mode": "precipHunt",
+      "outerSha256": "70cec4d71cb7d45716cdba30a866a050501a376bf4cb8b44420d1ebe0eb28073",
+      "iqSha256": "3d4a5f789fa5bbb92daf6469aa4cccb74001a022069ca7422508b229ea9b3c2c",
+      "writingSha256": "ab6fcfa788f8e3963b512fb95eef17ac5b88a9eef2da0afb48abd3972ce59fe4",
+      "canvasSha256": "b43241c047933369c5e0ad840660fa995369fcab5984e7a1bd4c9a5f3431540b",
+      "focus": "",
+      "engine": {
+        "kind": "2d",
+        "canvas": true,
+        "context": true,
+        "sync": true,
+        "cleanup": true,
+        "reset": true,
+        "focus": true,
+        "renderer": true,
+        "scene": true,
+        "camera": true
+      }
+    },
+    {
+      "label": "forced-dark hint closed again marker",
+      "display": "list-item",
+      "listStyleType": "disclosure-closed",
+      "content": "normal",
+      "open": false
+    }
+  ],
+  "actions": [
+    {
+      "label": "forced-dark collapse guide",
+      "focus": ""
+    },
+    {
+      "label": "forced-dark reopen guide",
+      "focus": ""
+    },
+    {
+      "label": "forced-dark open observation hint",
+      "focus": ""
+    },
+    {
+      "label": "forced-dark close observation hint",
+      "focus": ""
+    }
+  ],
+  "audits": [
+    {
+      "name": "forced-dark hint open",
+      "violations": [],
+      "incomplete": [],
+      "passes": 20
+    }
+  ],
+  "captures": [
+    {
+      "file": "after-forced-dark-hint.png",
+      "sha256": "3b791078d5a62b708a148a4bcf2a19f7326ab11b688d97177ad7a57060ec723b"
+    }
+  ],
+  "errors": [],
+  "completed": true,
+  "browserClosed": true,
+  "serverClosed": true,
+  "finalSourceSha256": "42eae634d0027b819ac0e5368801447780290c3d70e5da15aa402ff84d94314c",
+  "finalPublicSha256": "42eae634d0027b819ac0e5368801447780290c3d70e5da15aa402ff84d94314c",
+  "passed": 30,
+  "failed": 0,
+  "successful": true
+}

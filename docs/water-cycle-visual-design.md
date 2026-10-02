@@ -199,3 +199,15 @@ Chapter cards and route records respond to the available panel width. Narrow emb
 Progress counters use explicit light and dark ink. Dark diagram symbols and direction arrows use a brighter accent. Forced colors retain system text, borders and focus outlines. Contrast measurements complement the scoped accessibility scans because gradients can prevent a scanner from determining the background. The plant-choice cue identifies liquid entering roots before the separate transpiration step.
 
 See [journey chapter review](../reports/watercycle-journey-chapters/README.md) for matched captures, native interactions, preserved state and model checks, and the saved verification command.
+
+## Observe cloud sketches and explain a choice
+
+The **Cloud field guide** gives each sketch a readable name, its existing height band, and an explicit selected marker. Its gallery and detail layout respond to the available panel width. Long cloud names remain whole on phones. Sketch, depth, hint, selection and navigation controls have at least 44px targets, with visible keyboard focus and explicit light, dark and system colors.
+
+Choosing a sketch or learning depth focuses the selected cloud heading. **Read the chosen sketch** opens the comparison choice at Explain depth; **Go to Cloud detective** returns focus to the comparison heading. Choosing an answer focuses its feedback, and changing or advancing the pair focuses the comparison heading. The existing identification clues, explanations, answers, hints and storm-scenario action retain their authored content and behavior.
+
+Each of the five comparison pairs has separate **observation** and **uncertainty** writing prompts. Drafts stay with their pair as the learner explores. Their identity includes the authored cloud choices, question and answer, so a changed comparison cannot receive an old draft. The helper copies and bounds valid strings, drops unknown or malformed entries, and ignores inherited draft fields. These notes do not change scoring or storm settings.
+
+The scope guidance distinguishes identification sketches from forecasting and asks what further observations would be needed. Guide browsing and comparison writing preserve the mounted model, paused progress, saved storm prediction and explanation, and existing evidence. The cloud sketch drawing code and storm calculations remain unchanged.
+
+See [cloud evidence review](../reports/watercycle-cloud-evidence/README.md) for matched captures, native interactions, preserved state, and the saved verification command.

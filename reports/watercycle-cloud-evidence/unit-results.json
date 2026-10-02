@@ -1,0 +1,662 @@
+{
+  "numTotalTestSuites": 4,
+  "numPassedTestSuites": 4,
+  "numFailedTestSuites": 0,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 34,
+  "numPassedTests": 34,
+  "numFailedTests": 0,
+  "numPendingTests": 0,
+  "numTodoTests": 0,
+  "snapshot": {
+    "added": 0,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0,
+    "didUpdate": false
+  },
+  "startTime": 1790910322385,
+  "success": true,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: canonical comparison identity"
+          ],
+          "fullName": "Water Cycle cloud evidence: canonical comparison identity loads the actual helper and five production pairs from both shipped files",
+          "status": "passed",
+          "title": "loads the actual helper and five production pairs from both shipped files",
+          "duration": 1.906099999999924,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: canonical comparison identity"
+          ],
+          "fullName": "Water Cycle cloud evidence: canonical comparison identity retains towers identity across fresh saved copies",
+          "status": "passed",
+          "title": "retains towers identity across fresh saved copies",
+          "duration": 0.25250000000005457,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: canonical comparison identity"
+          ],
+          "fullName": "Water Cycle cloud evidence: canonical comparison identity retains low-layers identity across fresh saved copies",
+          "status": "passed",
+          "title": "retains low-layers identity across fresh saved copies",
+          "duration": 0.1874000000000251,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: canonical comparison identity"
+          ],
+          "fullName": "Water Cycle cloud evidence: canonical comparison identity retains rain-layers identity across fresh saved copies",
+          "status": "passed",
+          "title": "retains rain-layers identity across fresh saved copies",
+          "duration": 0.1426000000001295,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: canonical comparison identity"
+          ],
+          "fullName": "Water Cycle cloud evidence: canonical comparison identity retains high-ice identity across fresh saved copies",
+          "status": "passed",
+          "title": "retains high-ice identity across fresh saved copies",
+          "duration": 0.19290000000000873,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: canonical comparison identity"
+          ],
+          "fullName": "Water Cycle cloud evidence: canonical comparison identity retains cloudlets identity across fresh saved copies",
+          "status": "passed",
+          "title": "retains cloudlets identity across fresh saved copies",
+          "duration": 0.1696999999999207,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: canonical comparison identity"
+          ],
+          "fullName": "Water Cycle cloud evidence: canonical comparison identity rejects a saved pair whose id no longer matches its canonical identity",
+          "status": "passed",
+          "title": "rejects a saved pair whose id no longer matches its canonical identity",
+          "duration": 0.6865999999999985,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: canonical comparison identity"
+          ],
+          "fullName": "Water Cycle cloud evidence: canonical comparison identity rejects a saved pair whose clouds no longer matches its canonical identity",
+          "status": "passed",
+          "title": "rejects a saved pair whose clouds no longer matches its canonical identity",
+          "duration": 0.5408999999999651,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: canonical comparison identity"
+          ],
+          "fullName": "Water Cycle cloud evidence: canonical comparison identity rejects a saved pair whose question no longer matches its canonical identity",
+          "status": "passed",
+          "title": "rejects a saved pair whose question no longer matches its canonical identity",
+          "duration": 0.5656000000001313,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: canonical comparison identity"
+          ],
+          "fullName": "Water Cycle cloud evidence: canonical comparison identity rejects a saved pair whose answer no longer matches its canonical identity",
+          "status": "passed",
+          "title": "rejects a saved pair whose answer no longer matches its canonical identity",
+          "duration": 0.5304000000000997,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: canonical comparison identity"
+          ],
+          "fullName": "Water Cycle cloud evidence: canonical comparison identity rejects absent, unknown, and malformed pair identities",
+          "status": "passed",
+          "title": "rejects absent, unknown, and malformed pair identities",
+          "duration": 0.42889999999988504,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: canonical comparison identity"
+          ],
+          "fullName": "Water Cycle cloud evidence: canonical comparison identity safely rejects cyclic, BigInt, and nonstring cloud array members",
+          "status": "passed",
+          "title": "safely rejects cyclic, BigInt, and nonstring cloud array members",
+          "duration": 1.375,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: recoverable learner writing"
+          ],
+          "fullName": "Water Cycle cloud evidence: recoverable learner writing normalizes malformed note bags to an empty object",
+          "status": "passed",
+          "title": "normalizes malformed note bags to an empty object",
+          "duration": 0.3181999999999334,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: recoverable learner writing"
+          ],
+          "fullName": "Water Cycle cloud evidence: recoverable learner writing keeps only canonical keys and known string fields",
+          "status": "passed",
+          "title": "keeps only canonical keys and known string fields",
+          "duration": 0.18630000000007385,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: recoverable learner writing"
+          ],
+          "fullName": "Water Cycle cloud evidence: recoverable learner writing omits malformed and empty entries without inventing learner notes",
+          "status": "passed",
+          "title": "omits malformed and empty entries without inventing learner notes",
+          "duration": 0.5561000000000149,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: recoverable learner writing"
+          ],
+          "fullName": "Water Cycle cloud evidence: recoverable learner writing ignores inherited pair entries and inherited note fields",
+          "status": "passed",
+          "title": "ignores inherited pair entries and inherited note fields",
+          "duration": 0.24500000000011823,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: recoverable learner writing"
+          ],
+          "fullName": "Water Cycle cloud evidence: recoverable learner writing clips saved strings to the independent observation and uncertainty limits",
+          "status": "passed",
+          "title": "clips saved strings to the independent observation and uncertainty limits",
+          "duration": 0.13940000000002328,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: recoverable learner writing"
+          ],
+          "fullName": "Water Cycle cloud evidence: recoverable learner writing preserves multiline writing and returns independent copies",
+          "status": "passed",
+          "title": "preserves multiline writing and returns independent copies",
+          "duration": 0.24849999999992178,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: recoverable learner writing"
+          ],
+          "fullName": "Water Cycle cloud evidence: recoverable learner writing returns fresh blank field values when a known pair has no saved note",
+          "status": "passed",
+          "title": "returns fresh blank field values when a known pair has no saved note",
+          "duration": 0.24520000000006803,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: recoverable learner writing"
+          ],
+          "fullName": "Water Cycle cloud evidence: recoverable learner writing returns a fresh selected note without exposing the saved object",
+          "status": "passed",
+          "title": "returns a fresh selected note without exposing the saved object",
+          "duration": 0.17840000000001055,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: recoverable learner writing"
+          ],
+          "fullName": "Water Cycle cloud evidence: recoverable learner writing round-trips independent writing for towers while keeping the other comparisons",
+          "status": "passed",
+          "title": "round-trips independent writing for towers while keeping the other comparisons",
+          "duration": 1.4462999999998374,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: recoverable learner writing"
+          ],
+          "fullName": "Water Cycle cloud evidence: recoverable learner writing round-trips independent writing for low-layers while keeping the other comparisons",
+          "status": "passed",
+          "title": "round-trips independent writing for low-layers while keeping the other comparisons",
+          "duration": 1.225400000000036,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: recoverable learner writing"
+          ],
+          "fullName": "Water Cycle cloud evidence: recoverable learner writing round-trips independent writing for rain-layers while keeping the other comparisons",
+          "status": "passed",
+          "title": "round-trips independent writing for rain-layers while keeping the other comparisons",
+          "duration": 1.2018000000000484,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: recoverable learner writing"
+          ],
+          "fullName": "Water Cycle cloud evidence: recoverable learner writing round-trips independent writing for high-ice while keeping the other comparisons",
+          "status": "passed",
+          "title": "round-trips independent writing for high-ice while keeping the other comparisons",
+          "duration": 1.0681999999999334,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: recoverable learner writing"
+          ],
+          "fullName": "Water Cycle cloud evidence: recoverable learner writing round-trips independent writing for cloudlets while keeping the other comparisons",
+          "status": "passed",
+          "title": "round-trips independent writing for cloudlets while keeping the other comparisons",
+          "duration": 1.0161000000000513,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: recoverable learner writing"
+          ],
+          "fullName": "Water Cycle cloud evidence: recoverable learner writing ignores unknown fields and nonstring writes without altering valid saved notes",
+          "status": "passed",
+          "title": "ignores unknown fields and nonstring writes without altering valid saved notes",
+          "duration": 0.8668999999999869,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: recoverable learner writing"
+          ],
+          "fullName": "Water Cycle cloud evidence: recoverable learner writing does not attach writing to unknown or changed comparison content",
+          "status": "passed",
+          "title": "does not attach writing to unknown or changed comparison content",
+          "duration": 0.3046999999999116,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: recoverable learner writing"
+          ],
+          "fullName": "Water Cycle cloud evidence: recoverable learner writing clears one field while retaining the other field and another pair",
+          "status": "passed",
+          "title": "clears one field while retaining the other field and another pair",
+          "duration": 0.18329999999991742,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: recoverable learner writing"
+          ],
+          "fullName": "Water Cycle cloud evidence: recoverable learner writing removes the selected entry only when both note fields are empty",
+          "status": "passed",
+          "title": "removes the selected entry only when both note fields are empty",
+          "duration": 0.17780000000016116,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: recoverable learner writing"
+          ],
+          "fullName": "Water Cycle cloud evidence: recoverable learner writing clips writes and normalizes unrelated malformed entries in a pure copy",
+          "status": "passed",
+          "title": "clips writes and normalizes unrelated malformed entries in a pure copy",
+          "duration": 0.24339999999983775,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: original science, engines, and scoring"
+          ],
+          "fullName": "Water Cycle cloud evidence: original science, engines, and scoring pins the frozen baseline and identical shipped runtime bytes",
+          "status": "passed",
+          "title": "pins the frozen baseline and identical shipped runtime bytes",
+          "duration": 22.880800000000136,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: original science, engines, and scoring"
+          ],
+          "fullName": "Water Cycle cloud evidence: original science, engines, and scoring preserves both cloud banks, precipitation calculations and controls, engine refs, and cross-mode helpers",
+          "status": "passed",
+          "title": "preserves both cloud banks, precipitation calculations and controls, engine refs, and cross-mode helpers",
+          "duration": 388.24030000000016,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: original science, engines, and scoring"
+          ],
+          "fullName": "Water Cycle cloud evidence: original science, engines, and scoring preserves the actual first-answer quiz and myth scoring statements",
+          "status": "passed",
+          "title": "preserves the actual first-answer quiz and myth scoring statements",
+          "duration": 411.4475,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: original science, engines, and scoring"
+          ],
+          "fullName": "Water Cycle cloud evidence: original science, engines, and scoring preserves the complete comparison and signal derivation ranges",
+          "status": "passed",
+          "title": "preserves the complete comparison and signal derivation ranges",
+          "duration": 9.820200000000114,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790910323973,
+      "endTime": 1790910324822.8203,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_cloud_evidence.test.js"
+    }
+  ],
+  "waterCycleCloudEvidenceVerification": {
+    "sourceSha256Before": "42eae634d0027b819ac0e5368801447780290c3d70e5da15aa402ff84d94314c",
+    "sourceSha256After": "42eae634d0027b819ac0e5368801447780290c3d70e5da15aa402ff84d94314c",
+    "publicSha256Before": "42eae634d0027b819ac0e5368801447780290c3d70e5da15aa402ff84d94314c",
+    "publicSha256After": "42eae634d0027b819ac0e5368801447780290c3d70e5da15aa402ff84d94314c",
+    "testFiles": [
+      {
+        "path": "tests/watercycle_cloud_evidence.test.js",
+        "sha256Before": "a0ac08c15fa73fdcc3a6c08174c42822e793cb95b4824129e2b1bea169ed3ed3",
+        "sha256After": "a0ac08c15fa73fdcc3a6c08174c42822e793cb95b4824129e2b1bea169ed3ed3"
+      }
+    ],
+    "loadedRuntimes": [
+      {
+        "path": "stem_lab/stem_tool_watercycle.js",
+        "sha256": "42eae634d0027b819ac0e5368801447780290c3d70e5da15aa402ff84d94314c"
+      },
+      {
+        "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+        "sha256": "42eae634d0027b819ac0e5368801447780290c3d70e5da15aa402ff84d94314c"
+      }
+    ],
+    "loadedTest": {
+      "path": "tests/watercycle_cloud_evidence.test.js",
+      "sha256": "a0ac08c15fa73fdcc3a6c08174c42822e793cb95b4824129e2b1bea169ed3ed3"
+    },
+    "preservation": {
+      "baselinePath": "reports/watercycle-cloud-evidence/baseline-runtime.js",
+      "baselineSha256": "a0b86ac156e3045c52448226e518ed1ad4acd2b104c491d56efc7c1272b3579c",
+      "anchors": [
+        {
+          "name": "journey3dRef",
+          "sha256": "3e0b1948cea51fef6137c1e760cdb286c163b2a17dd70e92ede98af46c7fb4aa"
+        },
+        {
+          "name": "canvasRef",
+          "sha256": "1b33ed71c593daecfd3c852ec249e38daef6d3aaef976ed6388d7df8b17536a5"
+        },
+        {
+          "name": "precip3dRef",
+          "sha256": "20c9c11cade3c694fd8ec0c733444e9cb2b4af22be7a3e5f3169e56d97944790"
+        },
+        {
+          "name": "precipCanvasRef",
+          "sha256": "b970e65b975f83503658a4928e9574b92d9b4ecf4132df8129bf65922e0c5d5c"
+        },
+        {
+          "name": "openPrecipitationIn3d",
+          "sha256": "ded3dd6ef0428621427246c3b25e67485b0c93acec325fb06ab5ef4c7ae6cff3"
+        },
+        {
+          "name": "logPrecipObservation",
+          "sha256": "f2032a3244bd8e8c91267600ab99614eab120591562e3c40fb4f3e7770d33d80"
+        },
+        {
+          "name": "resetPrecipLab",
+          "sha256": "da110ff15ea45bac2ba2d23e5ba4993e0bc84135ea80fce1a860b31102cd5a13"
+        },
+        {
+          "name": "applyPrecipPreset",
+          "sha256": "df1794bd36119b29537ddf6be185dccd6deef19799a88555f972bbd2eae84fd4"
+        },
+        {
+          "name": "setPrecipCameraFocus",
+          "sha256": "20917460429982f7288e386921640f16d5214e315061b709c5291b55e5db3c38"
+        },
+        {
+          "name": "setPrecipViewMode",
+          "sha256": "f5369dc58cef32e629d290b8408f96bca2014551f28150f21bfdcfedb8b7bb28"
+        },
+        {
+          "name": "setPrecipControl",
+          "sha256": "791c3d4b2640b621e6ec94c166cbbf2076c6737365887b864ec17bf079b7602e"
+        },
+        {
+          "name": "setIQ",
+          "sha256": "2d81907ea3a5bb59d268c287500fc095954af5bb9dddbca82a37aaf5eee9e28b"
+        },
+        {
+          "name": "precipConfig",
+          "sha256": "4fb1582d7f60c250493e71856230f23052501f27a763c67222ce137a5bbda61b"
+        },
+        {
+          "name": "precipModel",
+          "sha256": "0c978c6c7662bcbb3f301b8e26c1c813006198c9e5c7a86f925897278643390c"
+        },
+        {
+          "name": "iq",
+          "sha256": "70423374b974ef39b9abb42616f1de066de31b8a68047f1e1e44c8019e998c60"
+        },
+        {
+          "name": "iqStored",
+          "sha256": "75086e95ef2b24d4e961de0c6f2b3812f199f927c0f5e686389c08ff140029ba"
+        },
+        {
+          "name": "checkWaterCycleChallenges",
+          "sha256": "5ebaedbdcfbff0f3e39e04ae1e39a41746c9b5081a9dbba0887ad2f6330a1a5f"
+        },
+        {
+          "name": "wcPrecipExperiment",
+          "sha256": "2ba07171749c8b473dd3c66c2230a0717c6163356aaad9f0f51952f1338004d1"
+        },
+        {
+          "name": "wcPrecipExperimentValue",
+          "sha256": "49c0744b002cf5ab9a52fa056eba0d1729b861d2bf8568cbc6edb6964076920c"
+        },
+        {
+          "name": "wcPrecipSetupSnapshot",
+          "sha256": "6db71b7a9a9d4dc40ef9dd2be64b506b2bfc3b4c5204eb3586c72516f70d4e5b"
+        },
+        {
+          "name": "WC_PRECIP_EXPERIMENT_INPUTS",
+          "sha256": "d09da164201a05bcdd98f3db44b73798a757ae2148a7c1057132ac79952938be"
+        },
+        {
+          "name": "wcPrecipPhaseAt",
+          "sha256": "1accf9572082154abfd983859d5c4cede1e57a257ba9ab2f1cdec6a7f927c67f"
+        },
+        {
+          "name": "wcPrecipPhaseFromModel",
+          "sha256": "b6257da2ad5b0a760cd1e02d57397638091f7c55e144794a850fa39f5032028a"
+        },
+        {
+          "name": "wcPrecipPhaseAtTransitions",
+          "sha256": "17ef2e8888a6f211b0172ca9102359551c8f8a0dcca39a86870b0c3efab72da6"
+        },
+        {
+          "name": "computeWcPrecipitationModel",
+          "sha256": "01d0a78646cafbc11459296425e0674dd308d4201bf4b58ab4324b8f4b4aa88e"
+        },
+        {
+          "name": "buildWcPrecipThermalStructure",
+          "sha256": "c876d75d0ec5ca5a63bbabdac15c6dc5b66767b4c603025f6fa47c37fd3cd360"
+        },
+        {
+          "name": "wcPrecipTemperatureAt",
+          "sha256": "087d9089835a39401cb0f2c56d7e5a3302604851c2b26424a52f63eae91afdeb"
+        },
+        {
+          "name": "normalizeWcPrecipConfig",
+          "sha256": "9b968009281e991f870072d14a1b74f7036f08e77966c3c7760b5d990a2637b6"
+        },
+        {
+          "name": "WC_PRECIP_PRESETS",
+          "sha256": "dd8b800709339a35e35ec9d0dd8b00a8bc8b2d39fe0498e50aa994c24adf560a"
+        },
+        {
+          "name": "WC_PRECIP_DEFAULTS",
+          "sha256": "e2f88e8943e3fe2b30bbf0ceeb0e86be4b6762511c171757107cdb30ba2a520e"
+        },
+        {
+          "name": "wcQuizBank",
+          "sha256": "5f6378b528d90eac9974fb003bedce3f4f9d76981dcca17ddfa7616d281dcf41"
+        },
+        {
+          "name": "wcQuizQuestion",
+          "sha256": "a4b6613b91b16ef64b10104906049fe8fb2cc156ead7e539cf7be0e3c5bee1c5"
+        },
+        {
+          "name": "WCProcessCompare",
+          "sha256": "6b2869a0e86c41c8b86fc3c2722200b716210ebeba4e407ffc56a1c1f2051c46"
+        },
+        {
+          "name": "WCJourneyChapters",
+          "sha256": "6b87b9ca6210dfb5ebc710395142956738f30845189020728d96230a5a41866f"
+        },
+        {
+          "name": "WCCheckInvestigation",
+          "sha256": "69e47c9d4d859f88cef5b92b56454caf90738399c91c18f4863dfb0c7a242316"
+        },
+        {
+          "name": "WATER_CYCLE_PRESETS",
+          "sha256": "0d83add1268900e7e27e917c72000ebad2ba47d994302e1afed9b5257e838535"
+        },
+        {
+          "name": "wcCloudGuideDrawing",
+          "sha256": "6e7b9f055be0144c8dd65ba35331b0b673011b54da1b51709d4ea068db64d179"
+        },
+        {
+          "name": "WC_CLOUD_COMPARISONS",
+          "sha256": "6e87a34e9914b669bea8f6bbed01d27d9c8a2a842541022b2119ab0b69064e3e"
+        },
+        {
+          "name": "WC_CLOUD_GUIDE",
+          "sha256": "8e5cb5f4f45012533212ea8a8228a4f1b552094832ae127e946f4c51c5e692f6"
+        }
+      ],
+      "scoring": [
+        {
+          "name": "myth",
+          "sha256": "d62ec9d1e25b1f51a3e3df672121855b3a471f5fce9b421d22666c3340a33aa0"
+        },
+        {
+          "name": "quiz",
+          "sha256": "bead9c9e4285cdf1f96692a5bcb695d2554a27b14c8d82948a0e08c46af746fb"
+        }
+      ],
+      "derivations": [
+        {
+          "name": "comparison",
+          "sha256": "12e3f9595438a0ad4bd2326ef4e2553c337d6bbae798cfe1e656dab3a4700507"
+        },
+        {
+          "name": "signal",
+          "sha256": "9716c3180a30c1e21957919d1901b19cb2121a17992eed6c6caa1cfee88a9baf"
+        }
+      ]
+    },
+    "startedAt": "2026-10-02T03:05:21.992Z",
+    "completedAt": "2026-10-02T03:05:24.955Z",
+    "processExitCode": 0,
+    "singleWorker": true,
+    "fileParallelism": false
+  }
+}

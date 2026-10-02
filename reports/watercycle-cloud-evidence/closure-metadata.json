@@ -1,0 +1,27 @@
+{
+  "sourceSha256": "42eae634d0027b819ac0e5368801447780290c3d70e5da15aa402ff84d94314c",
+  "main": {
+    "report": "results.json",
+    "reportSha256": "f2a57dadb14261e3b3aad0ec56361e42cd89d88514bb42739486ee85d9a0b319",
+    "harness": "tested-harness.cjs",
+    "harnessSha256": "99e26515369c9dd353d231c92841850f3b3b7d3ead876436178d23526cb5f886",
+    "processId": 44932,
+    "observedClosedAt": "2026-10-02T02:59:31.549Z",
+    "browserClosed": true,
+    "serverClosed": true,
+    "successful": true,
+    "incompleteNodes": 0
+  },
+  "focused": {
+    "report": "disclosure-results.json",
+    "reportSha256": "8f90188f228290c2c50c5abe6a7daadd732bc6428bbf66f2c8515ba14d47c46a",
+    "harness": "focused-harness.cjs",
+    "harnessSha256": "99e26515369c9dd353d231c92841850f3b3b7d3ead876436178d23526cb5f886",
+    "processId": 50876,
+    "observedClosedAt": "2026-10-02T03:03:58.919Z",
+    "browserClosed": true,
+    "serverClosed": true,
+    "successful": true,
+    "incompleteNodes": 0
+  }
+}

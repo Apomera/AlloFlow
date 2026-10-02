@@ -46,6 +46,44 @@
     {id:'cloudlets',label:'Cloudlets at two levels',clouds:['cirrocumulus','altocumulus'],answer:'cirrocumulus',question:'Which example combines finer ripples with a high sky level?',hint:'Use both the cloud texture and the height label.',reason:'Cirrocumulus is the high example with finer ripples. Altocumulus is the middle-level example with larger, shaded elements. In real skies, apparent size also depends on distance.'}
   ];
 
+  var WCCloudEvidence = (function() {
+    var limits = { observation: 800, uncertainty: 600 };
+    function key(pair) {
+      if (!pair || typeof pair !== 'object' || !Array.isArray(pair.clouds)) return '';
+      var canonical = WC_CLOUD_COMPARISONS.filter(function(item) { return item.id === pair.id; })[0];
+      if (!canonical || pair.question !== canonical.question || pair.answer !== canonical.answer || pair.clouds.length !== canonical.clouds.length || canonical.clouds.some(function(id, index) { return id !== pair.clouds[index]; })) return '';
+      return JSON.stringify([canonical.id, canonical.clouds, canonical.question, canonical.answer]);
+    }
+    function normalize(value) {
+      var result = {};
+      if (!value || typeof value !== 'object' || Array.isArray(value)) return result;
+      WC_CLOUD_COMPARISONS.forEach(function(pair) {
+        var id = key(pair);
+        if (!Object.prototype.hasOwnProperty.call(value, id)) return;
+        var entry = value[id];
+        if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return;
+        var observation = Object.prototype.hasOwnProperty.call(entry, 'observation') && typeof entry.observation === 'string' ? entry.observation.slice(0, limits.observation) : '';
+        var uncertainty = Object.prototype.hasOwnProperty.call(entry, 'uncertainty') && typeof entry.uncertainty === 'string' ? entry.uncertainty.slice(0, limits.uncertainty) : '';
+        if (observation || uncertainty) result[id] = { observation: observation, uncertainty: uncertainty };
+      });
+      return result;
+    }
+    function note(value, pair) {
+      var entry = normalize(value)[key(pair)];
+      return entry ? { observation: entry.observation, uncertainty: entry.uncertainty } : { observation: '', uncertainty: '' };
+    }
+    function write(value, pair, field, text) {
+      var result = normalize(value), id = key(pair);
+      if (!id || !Object.prototype.hasOwnProperty.call(limits, field) || typeof text !== 'string') return result;
+      var entry = note(result, pair);
+      entry[field] = text.slice(0, limits[field]);
+      if (entry.observation || entry.uncertainty) result[id] = entry;
+      else delete result[id];
+      return result;
+    }
+    return { key: key, normalize: normalize, note: note, write: write };
+  })();
+
   function wcCloudGuideDrawing(h, cloud) {
     var shapes = [], kind = cloud.shape;
     function ellipse(x,y,rx,ry,opacity) { shapes.push(h('ellipse',{key:'e'+shapes.length,cx:x,cy:y,rx:rx,ry:ry,fill:'#f1f5f9',opacity:opacity == null ? 1 : opacity})); }
@@ -4612,6 +4650,10 @@
     var wcChapterFinalStyle = document.getElementById('wc-five-mode-style');
     if (wcChapterFinalStyle) wcChapterFinalStyle.textContent += "\n/* Keep playback within reach and long process names whole. */\n.wc-explorer-root .wc-journey-panel button{min-height:44px;min-width:44px}\n.wc-explorer-root .wc-journey-panel .wc-speed-segments button[aria-pressed=true]{background:#0369a1;color:#fff}\n.wc-explorer-root .wc-journey-panel .wc-route-leader-badge{font-size:12px!important;line-height:1.5!important}\n.wc-explorer-root .wc-journey-panel .wc-route-choice-card :is(p,.wc-2d-route-share){opacity:1;color:#334155}\n.dark .wc-explorer-root .wc-journey-panel .wc-route-choice-card :is(p,.wc-2d-route-share){color:#e2e8f0}\n.wc-explorer-root .wc-journey-panel .wc-journey-stats{font-size:13px;line-height:1.6}\n.wc-explorer-root .wc-journey-panel .wc-journey-counter-loops{color:#0e7490}.wc-explorer-root .wc-journey-panel .wc-journey-counter-runoff{color:#1d4ed8}.wc-explorer-root .wc-journey-panel .wc-journey-counter-infiltrate{color:#92400e}.wc-explorer-root .wc-journey-panel .wc-journey-counter-plant{color:#047857}\n.dark .wc-explorer-root .wc-journey-panel .wc-journey-counter-loops{color:#67e8f9}.dark .wc-explorer-root .wc-journey-panel .wc-journey-counter-runoff{color:#93c5fd}.dark .wc-explorer-root .wc-journey-panel .wc-journey-counter-infiltrate{color:#fcd34d}.dark .wc-explorer-root .wc-journey-panel .wc-journey-counter-plant{color:#6ee7b7}\n.dark .wc-explorer-root .wc-journey-chapters :is(.wc-chapter-water svg,.wc-chapter-direction){color:#5eead4}\n@container wc-journey (max-width:360px){.wc-explorer-root .wc-journey-chapters .wc-journey-timeline,.wc-explorer-root .wc-journey-chapters .wc-chapter-land-options{grid-template-columns:minmax(0,1fr)}.wc-explorer-root .wc-journey-chapters .wc-timeline-step>button{display:flex;align-items:center;gap:10px;min-height:68px;padding:10px 12px}.wc-explorer-root .wc-journey-chapters .wc-timeline-step strong{overflow-wrap:normal;word-break:normal}.wc-explorer-root .wc-chapter-number{flex-shrink:0}}\n@media(forced-colors:active){\n .wc-explorer-root .wc-journey-panel{forced-color-adjust:none;background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;box-shadow:none!important}\n .wc-explorer-root .wc-journey-panel :is(div,p,span,strong,small,h4,h5,dl,dt,dd,svg){forced-color-adjust:none;background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;box-shadow:none!important}\n .wc-explorer-root .wc-journey-panel :is(button,input,select){forced-color-adjust:none;background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important;filter:none!important}\n .wc-explorer-root .wc-journey-panel button :is(span,strong,small){forced-color-adjust:none;background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}\n .wc-explorer-root .wc-journey-panel button[aria-pressed=true]{border:2px solid Highlight!important}\n .wc-explorer-root .wc-journey-panel :is(button,input,select):focus-visible,.wc-explorer-root #wcJourneyChapterTitle:focus{outline:3px solid Highlight!important;outline-offset:3px}\n .wc-explorer-root .wc-journey-panel .wc-journey-scrub{accent-color:Highlight}\n}\n";
   }
+  if (typeof document !== 'undefined') {
+    var wcCloudEvidenceStyle = document.getElementById('wc-five-mode-style');
+    if (wcCloudEvidenceStyle) wcCloudEvidenceStyle.textContent += "\n/* Cloud observation: readable sketches, deliberate focus, and pair-owned writing. */\n.wc-cloud-learning.wc-cloud-guide{container:wc-cloud / inline-size;--cl-ink:#173f4c;--cl-muted:#465e69;--cl-line:#a9c6cf;--cl-paper:#fff;--cl-tint:#f2f8fa;--cl-accent:#0e7490;color:var(--cl-ink);background:var(--cl-tint);border-color:var(--cl-line);padding:18px;font-size:14px;line-height:1.65}\n.dark .wc-cloud-learning.wc-cloud-guide{--cl-ink:#e6f4f8;--cl-muted:#bfd5dc;--cl-line:#64818d;--cl-paper:#132d3a;--cl-tint:#193947;--cl-accent:#67e8f9}\n.wc-cloud-learning.wc-cloud-guide *{box-sizing:border-box}\n.wc-cloud-learning.wc-cloud-guide :is(p,small,label,summary,button,select,textarea){font-size:14px;line-height:1.6;color:var(--cl-ink)}\n.wc-cloud-learning.wc-cloud-guide :is(h4,h5){line-height:1.4;overflow-wrap:normal;word-break:normal}\n.wc-cloud-learning.wc-cloud-guide :is(summary,button,select){min-height:44px;min-width:44px}\n.wc-cloud-learning.wc-cloud-guide summary{padding:8px 0;display:list-item;font-size:17px;list-style:revert}\n.wc-cloud-learning.wc-cloud-guide summary span,.wc-cloud-learning.wc-cloud-guide .wc-cloud-guide-band,.wc-cloud-learning.wc-cloud-guide .wc-cloud-guide-footnote{font-size:13px;line-height:1.6;color:var(--cl-muted)}\n.wc-cloud-learning.wc-cloud-guide :is(button,select,textarea){border:1px solid var(--cl-line);border-radius:12px;background:var(--cl-paper);color:var(--cl-ink);font-family:inherit}\n.wc-cloud-learning.wc-cloud-guide :is(button,select){padding:10px 12px;white-space:normal;overflow-wrap:normal;word-break:normal}\n.wc-cloud-learning.wc-cloud-guide :is(button,select,textarea,summary):focus-visible{outline:3px solid var(--cl-accent);outline-offset:3px}\n.wc-cloud-learning.wc-cloud-guide :is(h4,h5)[tabindex='-1']:focus{outline:2px solid var(--cl-accent);outline-offset:4px;border-radius:4px}\n.wc-cloud-learning.wc-cloud-guide button[aria-pressed=true]{border:2px solid var(--cl-accent);background:var(--cl-tint);box-shadow:inset 0 0 0 1px var(--cl-accent)}\n.wc-cloud-learning .wc-cloud-guide-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:18px 0}\n.wc-cloud-learning .wc-cloud-guide-grid button{padding:12px;text-align:left;min-width:0}\n.wc-cloud-learning .wc-cloud-guide-grid svg{width:100%;max-width:240px;margin:auto;border-radius:10px}\n.wc-cloud-learning .wc-cloud-guide-grid button span{font-size:14px;overflow-wrap:normal;word-break:normal;margin:9px 0 0}\n.wc-cloud-learning .wc-cloud-tile-copy strong{display:block;font-size:15px;line-height:1.45}\n.wc-cloud-learning .wc-cloud-tile-copy small{display:block;font-size:12px;line-height:1.5;margin-top:5px;color:var(--cl-muted)}\n.wc-cloud-learning .wc-cloud-tile-copy .wc-cloud-selected{font-weight:800;color:var(--cl-accent)}\n.wc-cloud-learning .wc-cloud-guide-levels{gap:10px;margin:18px 0;flex-wrap:wrap}\n.wc-cloud-learning .wc-cloud-guide-detail{grid-template-columns:minmax(0,1fr);gap:20px;padding:20px;background:var(--cl-paper);border:1px solid var(--cl-line);border-radius:18px}\n.wc-cloud-learning .wc-cloud-guide-art{width:100%;max-width:360px;margin:auto}\n.wc-cloud-learning .wc-cloud-guide-detail h4{font-size:24px;margin:5px 0 10px}\n.wc-cloud-learning .wc-cloud-guide-detail p{font-size:14px;line-height:1.7}\n.wc-cloud-learning .wc-cloud-guide-detail button{margin:8px 8px 0 0}\n.wc-cloud-learning .wc-cloud-compare{padding:20px;margin-top:20px;border:1px solid var(--cl-line);border-radius:18px;background:var(--cl-paper);color:var(--cl-ink)}\n.wc-cloud-learning .wc-cloud-compare-heading{gap:14px;flex-wrap:wrap;margin-bottom:16px}\n.wc-cloud-learning .wc-cloud-compare h4{font-size:22px}\n.wc-cloud-learning .wc-cloud-compare-heading>span{font-size:13px;color:var(--cl-muted)}\n.wc-cloud-learning .wc-cloud-compare label{display:block;font-weight:700;margin:12px 0 6px}\n.wc-cloud-learning .wc-cloud-compare select{width:100%;max-width:none}\n.wc-cloud-learning .wc-cloud-compare-prompt{font-size:18px;font-weight:800;margin:18px 0}\n.wc-cloud-learning .wc-cloud-compare-pair{grid-template-columns:minmax(0,1fr);gap:16px}\n.wc-cloud-learning .wc-cloud-compare-card{min-width:0;padding:14px;border:1px solid var(--cl-line);background:var(--cl-tint);border-radius:16px}\n.wc-cloud-learning .wc-cloud-compare-card[data-chosen=true]{border:2px solid var(--cl-accent);box-shadow:inset 0 0 0 1px var(--cl-accent)}\n.wc-cloud-learning .wc-cloud-compare-card svg{width:100%;max-width:360px;margin:auto;display:block}\n.wc-cloud-learning .wc-cloud-compare-card figcaption strong{font-size:18px;line-height:1.5;margin-top:10px}\n.wc-cloud-learning .wc-cloud-compare-card figcaption span{font-size:13px;color:var(--cl-muted);line-height:1.6}\n.wc-cloud-learning .wc-cloud-compare-card p{font-size:14px;line-height:1.65}\n.wc-cloud-learning .wc-cloud-compare-card button{width:100%;margin-top:12px;font-size:14px}\n.wc-cloud-learning .wc-cloud-compare-hint{margin:16px 0;border-block:1px solid var(--cl-line);padding:8px 0}\n.wc-cloud-learning .wc-cloud-compare-feedback{padding:16px;margin:16px 0;border:1px solid var(--cl-line);border-left:4px solid var(--cl-accent);border-radius:12px;background:var(--cl-tint);color:var(--cl-ink);font-size:14px;line-height:1.65}\n.wc-cloud-learning .wc-cloud-compare-feedback h5{font-size:17px;margin:0 0 8px}\n.wc-cloud-learning .wc-cloud-evidence{min-width:0;margin:20px 0;padding:18px;border:1px solid var(--cl-line);border-radius:16px;background:var(--cl-tint)}\n.wc-cloud-learning .wc-cloud-evidence legend{font-size:18px;font-weight:800;padding:0 6px;color:var(--cl-ink)}\n.wc-cloud-learning .wc-cloud-evidence p{font-size:13px;color:var(--cl-muted);line-height:1.65}\n.wc-cloud-learning .wc-cloud-evidence textarea{display:block;width:100%;resize:vertical;min-height:112px;padding:12px;font-size:15px;line-height:1.6}\n@container wc-cloud (min-width:560px){.wc-cloud-learning .wc-cloud-guide-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.wc-cloud-learning .wc-cloud-guide-detail{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr)}.wc-cloud-learning .wc-cloud-compare-pair{grid-template-columns:repeat(2,minmax(0,1fr))}}\n@container wc-cloud (min-width:760px){.wc-cloud-learning .wc-cloud-guide-grid{grid-template-columns:repeat(5,minmax(0,1fr))}}\n@container wc-cloud (max-width:360px){.wc-cloud-learning .wc-cloud-guide-grid{grid-template-columns:minmax(0,1fr)}.wc-cloud-learning .wc-cloud-guide-grid button{display:grid;grid-template-columns:72px minmax(0,1fr);align-items:center;gap:12px}.wc-cloud-learning .wc-cloud-guide-grid button span{margin:0}.wc-cloud-learning .wc-cloud-guide-detail,.wc-cloud-learning .wc-cloud-compare,.wc-cloud-learning .wc-cloud-evidence{padding:14px}.wc-cloud-learning .wc-cloud-guide-levels button{flex:1 1 90px;min-width:min-content}}\n@container wc-cloud (max-width:250px){.wc-cloud-learning .wc-cloud-guide-grid button{display:block}.wc-cloud-learning .wc-cloud-guide-grid svg{max-width:160px}.wc-cloud-learning .wc-cloud-guide-grid button span{margin-top:10px}}\n@media(forced-colors:active){.wc-cloud-learning.wc-cloud-guide{--cl-ink:CanvasText!important;--cl-muted:CanvasText!important;--cl-line:CanvasText!important;--cl-paper:Canvas!important;--cl-tint:Canvas!important;--cl-accent:Highlight!important;forced-color-adjust:none}.wc-cloud-learning.wc-cloud-guide :is(article,section,div,figure,fieldset,p,small,span,strong,h4,h5,legend,label){color:CanvasText!important;background:Canvas!important;border-color:CanvasText!important;box-shadow:none!important}.wc-cloud-learning.wc-cloud-guide :is(button,select,textarea){forced-color-adjust:none;background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}.wc-cloud-learning.wc-cloud-guide button :is(span,strong,small){background:ButtonFace!important;color:ButtonText!important}.wc-cloud-learning.wc-cloud-guide button[aria-pressed=true],.wc-cloud-learning .wc-cloud-compare-card[data-chosen=true]{border:3px solid Highlight!important}.wc-cloud-learning.wc-cloud-guide :is(button,select,textarea,summary):focus-visible,.wc-cloud-learning.wc-cloud-guide :is(h4,h5)[tabindex='-1']:focus{outline-color:Highlight!important}.wc-cloud-learning.wc-cloud-guide svg{forced-color-adjust:none}.wc-cloud-learning.wc-cloud-guide a{color:LinkText!important}}\n\n.wc-cloud-learning .wc-cloud-evidence textarea::placeholder{color:var(--cl-muted);opacity:1}\n";
+  }
   var wcWorldsLoading = null;
   function loadWaterWorlds() {
     if (window.WaterWorldsView && window.WaterWorldsKernel) return Promise.resolve();
@@ -6926,17 +6968,22 @@ const d = labToolData.waterCycle || {};
                 h('p', { className: 'wc-storm-experiment-note' }, __alloT("stem.watercycle.storm_experiment_model_note", "Read these as model experiments. Intensity is a relative 0–100 index, not a measured rainfall rate. The air column uses three temperature levels; real storms vary continuously with height and time.")));
             }
 
+            function setCloudEvidence(pair, field, text) {
+              setIQ({ cloudEvidence: WCCloudEvidence.write(iq.cloudEvidence, pair, field, text) });
+            }
+
             function renderCloudComparison() {
               var pair = WC_CLOUD_COMPARISONS.filter(function(item) { return item.id === iq.cloudComparePair; })[0] || WC_CLOUD_COMPARISONS[0];
               var index = WC_CLOUD_COMPARISONS.indexOf(pair);
               var choice = pair.clouds.indexOf(iq.cloudCompareAnswer) >= 0 ? iq.cloudCompareAnswer : '';
               var correct = choice === pair.answer;
+              var note = WCCloudEvidence.note(iq.cloudEvidence, pair);
               return h('section',{className:'wc-cloud-compare','aria-labelledby':'wcCloudCompareTitle'},
                 h('div',{className:'wc-cloud-compare-heading'},
-                  h('div',null,h('span',{className:'wc-cloud-guide-band'},'Look · compare · explain'),h('h4',{id:'wcCloudCompareTitle'},'Cloud detective')),
+                  h('div',null,h('span',{className:'wc-cloud-guide-band'},'Look · compare · explain'),h('h4',{id:'wcCloudCompareTitle',tabIndex:-1},'Cloud detective')),
                   h('span',null,'Pair '+(index+1)+' of '+WC_CLOUD_COMPARISONS.length)),
                 h('label',{htmlFor:'wcCloudComparePair'},'Compare shapes',
-                  h('select',{id:'wcCloudComparePair',value:pair.id,onChange:function(event){setIQ({cloudComparePair:event.target.value,cloudCompareAnswer:''});}},WC_CLOUD_COMPARISONS.map(function(item){return h('option',{key:item.id,value:item.id},item.label);}))),
+                  h('select',{id:'wcCloudComparePair',value:pair.id,onChange:function(event){setIQ({cloudComparePair:event.target.value,cloudCompareAnswer:''});stormExperimentFocus('wcCloudCompareTitle');}},WC_CLOUD_COMPARISONS.map(function(item){return h('option',{key:item.id,value:item.id},item.label);}))),
                 h('p',{id:'wcCloudComparePrompt',className:'wc-cloud-compare-prompt','aria-live':'polite'},pair.question),
                 h('div',{className:'wc-cloud-compare-pair',role:'group','aria-labelledby':'wcCloudComparePrompt'},pair.clouds.map(function(id){
                   var cloud=WC_CLOUD_GUIDE.filter(function(item){return item.id===id;})[0];
@@ -6944,34 +6991,43 @@ const d = labToolData.waterCycle || {};
                     wcCloudGuideDrawing(h,cloud),
                     h('figcaption',null,h('strong',null,cloud.name),h('span',null,cloud.band),
                       h('p',null,cloud.clue),
-                      h('button',{type:'button','aria-pressed':choice===id,onClick:function(){setIQ({cloudCompareAnswer:id});}},'Choose '+cloud.name)));
+                      h('button',{type:'button','aria-pressed':choice===id,onClick:function(){setIQ({cloudCompareAnswer:id});stormExperimentFocus('wcCloudCompareFeedback');}},'Choose '+cloud.name)));
                 })),
                 h('details',{key:pair.id,className:'wc-cloud-compare-hint'},h('summary',null,'Show an observation hint'),h('p',null,pair.hint)),
                 h('div',{className:'wc-cloud-compare-feedback',role:'status','data-result':choice?(correct?'supported':'retry'):'waiting'},
-                  choice ? h(React.Fragment,null,h('strong',null,correct?'Your choice matches the clues.':'Take another look.'),
+                  h('h5',{id:'wcCloudCompareFeedback',tabIndex:-1},choice?(correct?'Your choice matches the clues.':'Take another look.'):'Compare the clues'),
+                  choice ? h(React.Fragment,null,
                     h('p',null,correct?pair.reason:pair.hint+' You can change your choice.')) : 'Choose the cloud that best matches the observation.'),
-                correct && h('p',{className:'wc-cloud-guide-question'},'Explain your evidence: “I chose this cloud because I noticed…”'),
-                h('button',{type:'button',className:'wc-precip-btn',onClick:function(){setIQ({cloudComparePair:WC_CLOUD_COMPARISONS[(index+1)%WC_CLOUD_COMPARISONS.length].id,cloudCompareAnswer:''});}},index===WC_CLOUD_COMPARISONS.length-1?'Return to first comparison':'Next comparison'));
+                choice && h('button',{type:'button',id:'wcCloudReadChoice',className:'wc-precip-btn',onClick:function(){setIQ({cloudGuideType:choice,cloudGuideLevel:'explain'});stormExperimentFocus('wcCloudGuideName');}},'Read the chosen sketch'),
+                h('fieldset',{className:'wc-cloud-evidence','aria-describedby':'wcCloudEvidenceScope','data-cloud-evidence-pair':pair.id},
+                  h('legend',null,'Explain your cloud evidence'),
+                  h('p',{id:'wcCloudEvidenceScope'},'Your writing stays with this pair as you explore. These sketches support identification practice; forecasting needs further observations.'),
+                  h('label',{htmlFor:'wcCloudObservation'},'What shape or height evidence supports your choice?'),
+                  h('textarea',{id:'wcCloudObservation',rows:4,maxLength:800,value:note.observation,placeholder:'I noticed… This supports my choice because…',onChange:function(event){setCloudEvidence(pair,'observation',event.target.value);}}),
+                  h('label',{htmlFor:'wcCloudUncertainty'},'What would you still need to observe?'),
+                  h('textarea',{id:'wcCloudUncertainty',rows:3,maxLength:600,value:note.uncertainty,placeholder:'I would check… A sketch cannot establish…',onChange:function(event){setCloudEvidence(pair,'uncertainty',event.target.value);}})),
+                h('button',{type:'button',className:'wc-precip-btn',onClick:function(){setIQ({cloudComparePair:WC_CLOUD_COMPARISONS[(index+1)%WC_CLOUD_COMPARISONS.length].id,cloudCompareAnswer:''});stormExperimentFocus('wcCloudCompareTitle');}},index===WC_CLOUD_COMPARISONS.length-1?'Return to first comparison':'Next comparison'));
             }
 
             function renderCloudFieldGuide() {
               var selected = WC_CLOUD_GUIDE.filter(function(cloud) { return cloud.id === iq.cloudGuideType; })[0] || WC_CLOUD_GUIDE[0];
               var level = ['notice','explain','investigate'].indexOf(iq.cloudGuideLevel) >= 0 ? iq.cloudGuideLevel : 'notice';
-              return h('details', {className:'wc-cloud-guide'},
+              return h('details', {className:'wc-cloud-guide wc-cloud-learning'},
                 h('summary',null,'Cloud field guide',h('span',null,'10 cloud types · shapes, height & weather')),
                 h('p',null,'Choose a cloud to compare its shape and typical sky level. These drawings are identification sketches, not forecasts.'),
-                h('div',{className:'wc-cloud-guide-grid','aria-label':__alloT('stem.watercycle.choose_a_cloud_type','Choose a cloud type')},WC_CLOUD_GUIDE.map(function(cloud){
-                  return h('button',{key:cloud.id,type:'button','aria-pressed':selected.id===cloud.id,onClick:function(){setIQ({cloudGuideType:cloud.id});}},wcCloudGuideDrawing(h,cloud),h('span',null,cloud.name));
+                h('div',{className:'wc-cloud-guide-grid',role:'group','aria-label':__alloT('stem.watercycle.choose_a_cloud_type','Choose a cloud type')},WC_CLOUD_GUIDE.map(function(cloud){
+                  return h('button',{key:cloud.id,type:'button','aria-pressed':selected.id===cloud.id,onClick:function(){setIQ({cloudGuideType:cloud.id});stormExperimentFocus('wcCloudGuideName');}},wcCloudGuideDrawing(h,cloud),h('span',{className:'wc-cloud-tile-copy'},h('strong',null,cloud.name),h('small',null,cloud.band),selected.id===cloud.id&&h('small',{className:'wc-cloud-selected'},'✓ Selected sketch')));
                 })),
                 h('div',{className:'wc-cloud-guide-levels',role:'group','aria-label':__alloT('stem.watercycle.cloud_explanation_depth','Cloud explanation depth')},[['notice','Notice'],['explain','Explain'],['investigate','Investigate']].map(function(item){
-                  return h('button',{key:item[0],type:'button','aria-pressed':level===item[0],onClick:function(){setIQ({cloudGuideLevel:item[0]});}},item[1]);
+                  return h('button',{key:item[0],type:'button','aria-pressed':level===item[0],onClick:function(){setIQ({cloudGuideLevel:item[0]});stormExperimentFocus('wcCloudGuideName');}},item[1]);
                 })),
-                h('article',{className:'wc-cloud-guide-detail','data-cloud-type':selected.id,'data-learning-depth':level,'aria-live':'polite'},
+                h('article',{className:'wc-cloud-guide-detail','data-cloud-type':selected.id,'data-learning-depth':level,'aria-labelledby':'wcCloudGuideName'},
                   h('div',{className:'wc-cloud-guide-art'},wcCloudGuideDrawing(h,selected)),
-                  h('div',null,h('span',{className:'wc-cloud-guide-band'},selected.band),h('h4',null,selected.name),h('p',null,selected.clue),
+                  h('div',null,h('span',{className:'wc-cloud-guide-band'},selected.band),h('h4',{id:'wcCloudGuideName',tabIndex:-1},selected.name),h('p',null,selected.clue),
                     h('p',null,h('strong',null,'Weather clue: '),selected.weather),
                     level!=='notice' && h('p',null,selected.why),
                     level==='investigate' && h('p',{className:'wc-cloud-guide-question'},'Compare this sketch with another cloud. Which evidence comes from shape, which from height, and what would you still need to observe?'),
+                    h('button',{id:'wcCloudBackToComparison',type:'button',className:'wc-precip-btn',onClick:function(){stormExperimentFocus('wcCloudCompareTitle');}},'Go to Cloud detective'),
                     selected.id==='cumulonimbus' && h('button',{type:'button',className:'wc-precip-btn',onClick:function(){applyPrecipPreset('summerStorm');}},'Explore a thunderstorm scenario'),
                     selected.id==='cumulonimbus' && h('small',null,'Loads the summer-storm settings. The chamber illustrates storm processes; it does not classify an observed cloud.'))),
                 renderCloudComparison(),

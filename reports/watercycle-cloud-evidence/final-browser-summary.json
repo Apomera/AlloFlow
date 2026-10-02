@@ -1,0 +1,34 @@
+{
+  "sourceSha256": "42eae634d0027b819ac0e5368801447780290c3d70e5da15aa402ff84d94314c",
+  "main": {
+    "passed": 864,
+    "failed": 0,
+    "actions": 104,
+    "audits": 15,
+    "captures": 24
+  },
+  "focused": {
+    "passed": 30,
+    "failed": 0,
+    "actions": 4,
+    "audits": 1,
+    "captures": 1
+  },
+  "recordedChecks": 894,
+  "distinctChecks": 892,
+  "uniqueCheckLabels": 852,
+  "crossRunRepeatedCheckLabels": [
+    "Frozen source unchanged throughout QA",
+    "No browser runtime errors"
+  ],
+  "withinMainRepeatedLabels": 40,
+  "passedDistinct": 892,
+  "failedDistinct": 0,
+  "distinctAuditNames": 16,
+  "browserActions": 108,
+  "captures": 25,
+  "incompleteRules": 0,
+  "incompleteNodes": 0,
+  "closed": true,
+  "countingMethod": "Each fixture scenario retains its assertion records; matching generic checks repeated across the main and focused runs are counted once. Six different malformed imports use repeated labels within the main run. uniqueCheckLabels is the separate conservative label count."
+}
