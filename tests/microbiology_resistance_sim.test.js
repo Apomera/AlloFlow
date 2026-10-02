@@ -974,27 +974,36 @@ describe('Mounted resistance controls', { timeout: 60000 }, () => {
     expect(latestData.microbiology.resistanceNotebook.records[1].reviewNote).toBe('Reflection on partial evidence.');
   });
 
-  it('requires an explicit repaired-record selection and clears stale pair preferences before saving a reflection', () => {
+  it('keeps repaired records unavailable and preserves raw pair preferences while selecting and reflecting on an original ID', () => {
     const book = comparisonNotebook(); book.records[0].id = 'bad'; book.selectedId = 1;
     book.records[0].reviewNote = 'Attached to repaired A'; book.records[1].reviewNote = 'Attached to valid B';
+    const original = JSON.parse(JSON.stringify(book));
     mount({ resistanceNotebook: book, resistanceComparison: { aId: 1, bId: 9 } });
     openNotebook(); openComparison();
     expect(container.querySelector('[data-resistance-reflection]')).toBe(null);
     expect(container.querySelector('#micro-resistance-compare-a').value).toBe('');
+    expect(container.querySelector('#micro-resistance-evidence-1').disabled).toBe(true);
+    expect(container.querySelector('#micro-resistance-selection-help').textContent).toContain('missing or duplicate IDs');
+    act(() => container.querySelector('#micro-resistance-evidence-1').click());
+    expect(latestData.microbiology.resistanceNotebook).toEqual(original);
     act(() => container.querySelector('#micro-resistance-evidence-9').click());
+    expect(latestData.microbiology.resistanceNotebook).toEqual({ ...original, selectedId: 9 });
     writeReflection('Edited valid B');
-    expect(latestData.microbiology.resistanceNotebook.records.map(item => [item.id, item.reviewNote])).toEqual([[1, 'Attached to repaired A'], [9, 'Edited valid B']]);
-    expect(latestData.microbiology.resistanceComparison).toEqual({ aId: null, bId: 9 });
+    expect(latestData.microbiology.resistanceNotebook).toEqual({ ...original, selectedId: 9,
+      records: [original.records[0], { ...original.records[1], reviewNote: 'Edited valid B' }] });
+    expect(latestData.microbiology.resistanceComparison).toEqual({ aId: 1, bId: 9 });
     const saved = JSON.parse(JSON.stringify(latestData.microbiology));
     act(() => root.unmount()); root = null; mount(saved); openNotebook(); openComparison();
     expect(container.querySelector('#micro-resistance-compare-a').value).toBe('');
     expect(container.querySelector('#micro-resistance-comparison-table')).toBe(null);
+    expect(container.querySelector('#micro-resistance-evidence-1').disabled).toBe(true);
     act(() => container.querySelector('#micro-resistance-evidence-1').click());
-    expect(container.querySelector('#micro-resistance-reflection-1').value).toBe('Attached to repaired A');
-    writeReflection('Explicitly edited A');
-    expect(latestData.microbiology.resistanceNotebook.records.map(item => item.reviewNote)).toEqual(['Explicitly edited A', 'Edited valid B']);
+    expect(container.querySelector('#micro-resistance-reflection-1')).toBe(null);
+    expect(container.querySelector('#micro-resistance-reflection-9').value).toBe('Edited valid B');
+    expect(latestData.microbiology.resistanceNotebook).toEqual(saved.resistanceNotebook);
+    expect(latestData.microbiology.resistanceNotebook.records.map(item => item.reviewNote)).toEqual(['Attached to repaired A', 'Edited valid B']);
     expect(latestData.microbiology.resistanceNotebook.records.map(item => item.evidence.notes)).toEqual(['Original A', 'Original B']);
-    expect(latestData.microbiology.resistanceComparison).toEqual({ aId: null, bId: 9 });
+    expect(latestData.microbiology.resistanceComparison).toEqual({ aId: 1, bId: 9 });
   });
 
   it('downloads original notes and later reflections separately from the reviewed record without changing saved or live work', () => {
@@ -1301,6 +1310,7 @@ describe('Mounted resistance controls', { timeout: 60000 }, () => {
     openComparison();
     expect(comparisonCells('resistant')).toEqual(['Resistant cells', '2', '12', '+10']);
     openNotebook(); act(() => container.querySelector('#micro-resistance-evidence-9').click());
+    expect(latestData.microbiology.resistanceNotebook).toEqual({ ...notebook, selectedId: 9 });
     expect(latestData.microbiology.resistanceComparison).toEqual(pair);
     click('↺ Reset current run');
     const restored = JSON.parse(JSON.stringify(latestData.microbiology));
@@ -1310,7 +1320,7 @@ describe('Mounted resistance controls', { timeout: 60000 }, () => {
     expect(container.querySelector('#micro-resistance-compare-b').value).toBe('4');
     expect(region.querySelector('caption').textContent).toBe('Saved counts at shared round 1');
     expect(latestData.microbiology.resistanceNotebook.selectedId).toBe(9);
-    expect(latestData.microbiology.resistanceNotebook.records).toEqual(window.__MicrobiologyCore.resistance.normalizeNotebook(notebook).records);
+    expect(latestData.microbiology.resistanceNotebook.records).toEqual(notebook.records);
     expect(latestData.microbiology.resistanceComparison).toEqual(pair);
     expect(comparisonCells('sharePct')).toEqual(['Resistant share', '100%', '50%', '-50 percentage points']);
   });
@@ -1389,7 +1399,7 @@ describe('Mounted resistance controls', { timeout: 60000 }, () => {
     expect(latestData.microbiology.resistanceNotebook).toEqual(notebook);
   });
 
-  it.each(['review', 'save', 'remove'])('clears missing repaired-ID preferences before a %s notebook mutation and JSON reload', action => {
+  it.each(['review', 'save', 'remove'])('keeps imported comparison identity consistent during %s and JSON reload', action => {
     const notebook = comparisonNotebook(); notebook.records[0].id = 'bad'; notebook.selectedId = action === 'remove' ? 9 : 1;
     const active = { ...notebook.records[1].evidence, notes: 'A distinct current run' };
     mount({ resistanceNotebook: notebook, resistanceComparison: { aId: 1, bId: 9 }, resistanceInvestigation: active });
@@ -1399,12 +1409,20 @@ describe('Mounted resistance controls', { timeout: 60000 }, () => {
     expect(container.querySelector('#micro-resistance-comparison-download-csv').disabled).toBe(true);
     if (action === 'save') click('Save evidence');
     else { openNotebook(); if (action === 'remove') click('Remove selected evidence'); else act(() => container.querySelector('#micro-resistance-evidence-9').click()); }
-    expect(latestData.microbiology.resistanceNotebook.records[0].id).toBe(1);
-    expect(latestData.microbiology.resistanceComparison).toEqual({ aId: null, bId: action === 'remove' ? null : 9 });
+    if (action === 'review') {
+      expect(container.querySelector('#micro-resistance-evidence-1').disabled).toBe(true);
+      expect(latestData.microbiology.resistanceNotebook).toEqual({ ...notebook, selectedId: 9 });
+      expect(latestData.microbiology.resistanceComparison).toEqual({ aId: 1, bId: 9 });
+    } else {
+      expect(latestData.microbiology.resistanceNotebook.records[0].id).toBe(1);
+      expect(latestData.microbiology.resistanceComparison).toEqual({ aId: null, bId: action === 'remove' ? null : 9 });
+    }
     expect(latestData.microbiology.resistanceNotebook.selectedId).toBe(action === 'save' ? 10 : action === 'remove' ? 1 : 9);
     expect(region.querySelector('#micro-resistance-comparison-table')).toBe(null);
     const saved = JSON.parse(JSON.stringify(latestData.microbiology));
     act(() => root.unmount()); root = null; mount(saved);
+    expect(latestData.microbiology.resistanceNotebook).toEqual(saved.resistanceNotebook);
+    expect(latestData.microbiology.resistanceComparison).toEqual(saved.resistanceComparison);
     expect(openComparison().querySelector('#micro-resistance-comparison-table')).toBe(null);
     expect(container.querySelector('#micro-resistance-compare-a').value).toBe('');
     expect(container.querySelector('#micro-resistance-comparison-download-text').disabled).toBe(true);
@@ -1412,7 +1430,10 @@ describe('Mounted resistance controls', { timeout: 60000 }, () => {
       const canonical = JSON.stringify(latestData.microbiology.resistanceNotebook);
       compareSelect('a', 1);
       expect(container.querySelector('#micro-resistance-comparison-download-text').disabled).toBe(false);
-      expect(JSON.stringify(latestData.microbiology.resistanceNotebook)).toBe(canonical);
+      if (action === 'review') {
+        expect(latestData.microbiology.resistanceNotebook.records.map(record => record.id)).toEqual([1, 9]);
+        expect(latestData.microbiology.resistanceNotebook.selectedId).toBe(9);
+      } else expect(JSON.stringify(latestData.microbiology.resistanceNotebook)).toBe(canonical);
       expect(latestData.microbiology.resistanceComparison).toEqual({ aId: 1, bId: 9 });
     }
   });

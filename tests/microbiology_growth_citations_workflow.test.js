@@ -176,14 +176,22 @@ describe('Growth evidence citations beside a saved explanation', { timeout: 3000
     expect(book().trials[0].prediction).toBe('lower');
   });
 
-  it('requires a valid selected saved trial, including explicit selection of an ID repaired from saved data', () => {
-    mount(fixture({ growthReviewHour: '6', growthInvestigation: { selectedId: 1, trials: [trial(null)] } }));
+  it('requires an original valid selected trial and keeps a generated repair ID unavailable without rewriting it', () => {
+    mount(fixture({ growthReviewHour: '6', growthInvestigation: { selectedId: 1, trials: [trial(null), trial(9)] } }));
+    const original = JSON.parse(JSON.stringify(mounted.state.growthInvestigation));
     expect(node('#gl-evidence-hour')).toBe(null);
+    expect(node('#gl-trial-1').disabled).toBe(true);
+    expect(node('#gl-selection-help').textContent).toContain('missing or duplicate IDs');
     click('#gl-trial-1');
+    expect(mounted.state.growthInvestigation).toEqual(original);
+    expect(node('#gl-evidence-hour')).toBe(null);
+    click('#gl-trial-9');
+    expect(mounted.state.growthInvestigation).toEqual({ ...original, selectedId: 9 });
     expect(node('#gl-evidence-hour').value).toBe('24');
     expect(node('#gl-evidence-pin').textContent).toBe('Keep model hour 24');
     click('#gl-evidence-pin');
-    expect(book().trials[0].citedHours).toEqual([24]);
+    expect(mounted.state.growthInvestigation.trials[0]).toEqual(original.trials[0]);
+    expect(mounted.state.growthInvestigation.trials[1]).toEqual({ ...original.trials[1], citedHours: [24] });
     act(() => mounted.setData({ microbiology: fixture({ growthInvestigation: { trials: [null, {}, []], selectedId: 1 } }) }));
     expect(node('#gl-evidence-hour')).toBe(null);
     expect(node('#gl-evidence-pin')).toBe(null);

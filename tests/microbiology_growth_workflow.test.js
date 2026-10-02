@@ -831,17 +831,22 @@ describe('Growth removal recovery workflow', { timeout: 20000 }, () => {
     expect(mounted.state.growthReviewHour).toBe(6);
   });
 
-  it('requires an explicit selection when a stale restored ID matches a newly repaired record', () => {
+  it('keeps a generated repair ID unavailable while selecting and editing an original ID without rewriting imported data', () => {
     mount({ growthInvestigation: { trials: [{ ...trial(2), id: 'bad', explanation: 'Recovered text' }, trial(1)], selectedId: 2 } });
+    const original = JSON.parse(JSON.stringify(mounted.state.growthInvestigation));
     expect(book().selectedId).toBeNull();
     expect(mounted.container.querySelector('#gl-explanation')).toBeNull();
     expect(mounted.container.querySelector('#gl-trial-2').getAttribute('aria-pressed')).toBe('false');
+    expect(mounted.container.querySelector('#gl-trial-2').disabled).toBe(true);
+    expect(mounted.container.querySelector('#gl-selection-help').textContent).toContain('missing or duplicate IDs');
     click(mounted.container.querySelector('#gl-trial-2'));
-    expect(book().selectedId).toBe(2);
-    expect(mounted.container.querySelector('#gl-explanation').value).toBe('Recovered text');
-    write('#gl-explanation', 'Explicitly reviewed recovered text');
-    expect(book().trials[0]).toMatchObject({ id: 2, explanation: 'Explicitly reviewed recovered text' });
-    expect(book().trials[1].explanation).toBe('<b>Literal saved evidence</b> 1');
+    expect(mounted.state.growthInvestigation).toEqual(original);
+    expect(mounted.container.querySelector('#gl-explanation')).toBeNull();
+    click(mounted.container.querySelector('#gl-trial-1'));
+    expect(mounted.state.growthInvestigation).toEqual({ ...original, selectedId: 1 });
+    write('#gl-explanation', 'Explicitly reviewed original record');
+    expect(mounted.state.growthInvestigation).toEqual({ ...original, selectedId: 1,
+      trials: [original.trials[0], { ...original.trials[1], explanation: 'Explicitly reviewed original record' }] });
   });
 });
 

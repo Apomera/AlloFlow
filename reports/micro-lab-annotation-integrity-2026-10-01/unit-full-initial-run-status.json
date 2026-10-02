@@ -1,0 +1,12 @@
+{
+  "kind": "unit",
+  "pid": 69144,
+  "started": "2026-10-01T23:28:59.784Z",
+  "phase": "failed",
+  "sourceSha256": "468efedbbe19d147c15af70184650fab8db3b90a8103d0c64738eafee2574165",
+  "expected": 723,
+  "exitCode": 1,
+  "signal": null,
+  "finished": "2026-10-01T23:32:57.319Z",
+  "sourceStillMatches": true
+}

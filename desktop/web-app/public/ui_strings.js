@@ -66652,7 +66652,16 @@
       "workspace_portfolio_include_all": "Include all available activities",
       "workspace_portfolio_clear_selection": "Clear selection",
       "workspace_portfolio_selection_empty": "Select at least one activity with evidence or working notes.",
-      "workspace_portfolio_download_selected": "Download selected activities"
+      "workspace_portfolio_download_selected": "Download selected activities",
+      "resistance_restored_completed_without_prediction": "No prediction was saved for this restored run. Its observed outcome is shown without a prediction comparison.",
+      "resistance_restored_without_prediction": "No prediction was saved for this restored run. You can continue observing its evidence.",
+      "resistance_observation_summary": "Observation summary. ",
+      "resistance_observed_extinction": "The population died out. There is no surviving population from which to calculate a resistant share.",
+      "resistance_observed_similar": "The resistant share stayed about the same (a {points}-point change; changes within 5 points count as similar).",
+      "resistance_observed_increase": "The resistant share increased by {points} percentage points.",
+      "resistance_observed_decrease": "The resistant share decreased by {points} percentage points.",
+      "resistance_selection_unavailable": "Some imported entries have missing or duplicate IDs. Their stored data is kept, but those entries cannot be selected for editing.",
+      "investigation_selection_unavailable": "Some imported entries have missing or duplicate IDs. Their stored data is kept, but those entries cannot be selected for editing."
     },
     "migration": {
       "sr_perfect_v_formation_achieved_20_experience_points": "Perfect V formation achieved. 20 experience points awarded.",

@@ -585,6 +585,43 @@
       function existingId(id) { return validId(id) && records.some(function(item) { return item.id === id; }) ? id : null; }
       return Object.freeze({ aId: existingId(raw.aId), bId: existingId(raw.bId) });
     }
+    function annotationTarget(value, id) {
+      if (!value || typeof value !== 'object' || Array.isArray(value) || !Array.isArray(value.records) || !validId(id)) return null;
+      var retained = value.records.map(function(item, index) { return { item: item, index: index }; }).filter(function(entry) {
+        var item = entry.item;
+        return item && typeof item === 'object' && item.evidence && typeof item.evidence === 'object' && !Array.isArray(item.evidence);
+      }).filter(function(entry) { return evidence(entry.item.evidence).day > 0; }).slice(-MAX_RECORDS);
+      // Use the same valid-evidence window as normalization, retaining the
+      // original source position and first valid-ID owner without repairing it.
+      return retained.find(function(entry) { return validId(entry.item.id) && entry.item.id === id; }) || null;
+    }
+    function annotationOwner(value, id) {
+      var target = annotationTarget(value, id);
+      return target ? Object.freeze({ id: id, record: target.item }) : null;
+    }
+    function selectRecord(value, id, owner) {
+      function result(status, notebook) { return Object.freeze({ notebook: notebook === undefined ? value : notebook, changed: status === 'selected', status: status,
+        id: status === 'selected' || status === 'unchanged' || status === 'stale' ? id : null }); }
+      if (!value || typeof value !== 'object' || Array.isArray(value) || !Array.isArray(value.records) || !validId(id)) return result('invalid');
+      var target = annotationTarget(value, id);
+      if (!target) return result('missing');
+      if (owner !== undefined && (!owner || typeof owner !== 'object' || Array.isArray(owner) || owner.id !== id || owner.record !== target.item)) return result('stale');
+      if (value.selectedId === id) return result('unchanged');
+      return result('selected', Object.assign({}, value, { selectedId: id }));
+    }
+    function changeReviewNote(value, id, text, owner) {
+      function result(status, notebook) { return Object.freeze({ notebook: notebook === undefined ? value : notebook, changed: status === 'updated', status: status,
+        id: status === 'updated' || status === 'unchanged' || status === 'stale' ? id : null }); }
+      if (!value || typeof value !== 'object' || Array.isArray(value) || !Array.isArray(value.records) || !validId(id) || typeof text !== 'string') return result('invalid');
+      var target = annotationTarget(value, id);
+      if (!target) return result('missing');
+      if (owner !== undefined && (!owner || typeof owner !== 'object' || Array.isArray(owner) || owner.id !== id || owner.record !== target.item)) return result('stale');
+      var nextText = normalizeReviewNote(text);
+      if (normalizeReviewNote(target.item.reviewNote) === nextText) return result('unchanged');
+      var records = value.records.slice();
+      records[target.index] = Object.assign({}, target.item, { reviewNote: nextText });
+      return result('updated', Object.assign({}, value, { records: records }));
+    }
     function setReviewNote(value, id, note) {
       var notebook = normalizeNotebook(value);
       if (normalizeComparison({ aId: id }, value).aId === null) return { notebook: notebook, status: 'missing', id: null };
@@ -702,7 +739,7 @@
       })).join('\r\n');
     }
     return Object.freeze({ evidence: evidence, status: function(value) { return evidence(value).status; }, normalizeNotebook: normalizeNotebook,
-      save: save, setReviewNote: setReviewNote, removeRecord: removeRecord, restoreRecord: restoreRecord, keepRemoval: keepRemoval,
+      save: save, setReviewNote: setReviewNote, annotationOwner: annotationOwner, changeReviewNote: changeReviewNote, selectRecord: selectRecord, removeRecord: removeRecord, restoreRecord: restoreRecord, keepRemoval: keepRemoval,
       normalizeComparison: normalizeComparison, compare: compare, exportText: exportText, exportCSV: exportCSV,
       exportComparisonText: exportComparisonText, exportComparisonCSV: exportComparisonCSV, maxRecords: MAX_RECORDS });
   })();
@@ -856,6 +893,8 @@
     var shareText = pctRes === null ? 'undefined (no survivors)' : pctRes + '%';
     var finished = day >= duration || (day > 0 && totalAlive === 0);
     var initialPct = history.length > 0 ? Math.round((history[0].resistant / Math.max(1, (history[0].sensitive + history[0].resistant))) * 100) : initRes;
+    var observedTrend = finished && history.length > 1 ? classifyResistanceTrend(initialPct, pctRes) : null;
+    var observedShareChange = pctRes === null ? null : pctRes - initialPct;
     var predictionReview = finished && history.length > 1 && prediction ? evaluateResistancePrediction(initialPct, pctRes, prediction) : null;
     var outcome = { totalAlive: totalAlive, finalPct: pctRes, dose: dose };
     var investigationReady = !!prediction || day > 0;
@@ -1090,10 +1129,15 @@
         notebook.records.length ? hh('details', { className: 'micro-resistance-saved' },
           hh('summary', { style: { cursor: 'pointer', fontWeight: 800, padding: '8px 0' } }, __alloMBT('stem.microbiology.resistance_notebook_review', 'Review saved resistance evidence')),
           hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,180px),1fr))', gap: 8, margin: '10px 0' } }, notebook.records.map(function(item) {
-            return hh('button', { key: item.id, id: 'micro-resistance-evidence-' + item.id, type: 'button', 'aria-pressed': notebook.selectedId === item.id, onClick: function() { updateNotebook(Object.assign({}, notebook, { selectedId: item.id })); }, style: Object.assign({}, notebookButtonStyle, { textAlign: 'left' }) },
+            var owner = MicroResistanceNotebook.annotationOwner(rawNotebook, item.id);
+            return hh('button', { key: item.id, id: 'micro-resistance-evidence-' + item.id, type: 'button', 'aria-pressed': notebook.selectedId === item.id,
+              disabled: !owner, 'aria-describedby': !owner ? 'micro-resistance-selection-help' : undefined,
+              onClick: function() { if (owner && typeof props.selectEvidence === 'function') props.selectEvidence(item.id, owner); }, style: Object.assign({}, notebookButtonStyle, { textAlign: 'left' }) },
               hh('strong', null, __alloMBT('stem.microbiology.resistance_notebook_evidence', 'Evidence') + ' ' + item.id), hh('br'), evidenceStatus(item.evidence.status), hh('br'),
               __alloMBT('stem.microbiology.resistance_notebook_round', 'Round') + ' ' + item.evidence.day + '/' + item.evidence.duration + ' · ' + __alloMBT('stem.microbiology.resistance_notebook_strength', 'Strength') + ' ' + item.evidence.dose + '/100');
           })),
+          notebook.records.some(function(item) { return !MicroResistanceNotebook.annotationOwner(rawNotebook, item.id); }) ?
+            hh('p', { id: 'micro-resistance-selection-help' }, __alloMBT('stem.microbiology.resistance_selection_unavailable', 'Some imported entries have missing or duplicate IDs. Their stored data is kept, but those entries cannot be selected for editing.')) : null,
           saved ? hh('div', { 'data-resistance-evidence': selectedEvidence.id },
             hh('h4', { style: { fontSize: 16, marginBottom: 8 } }, __alloMBT('stem.microbiology.resistance_notebook_evidence', 'Evidence') + ' ' + selectedEvidence.id + ' · ' + evidenceStatus(saved.status)),
             hh('p', null, __alloMBT('stem.microbiology.resistance_notebook_saved_settings', 'Saved settings') + ': ' + __alloMBT('stem.microbiology.resistance_notebook_strength', 'Strength') + ' ' + saved.dose + '/100 · ' + saved.duration + ' ' + __alloMBT('stem.microbiology.resistance_notebook_planned_rounds', 'planned rounds') + ' · ' + saved.initRes + '% ' + __alloMBT('stem.microbiology.resistance_notebook_requested', 'initial resistance requested') + '. ' + __alloMBT('stem.microbiology.resistance_notebook_actual_start', 'Actual starting resistant count') + ': ' + saved.history[0].resistant + '/80 (' + saved.initialPct + '%).'),
@@ -1111,8 +1155,9 @@
             hh('label', { htmlFor: 'micro-resistance-reflection-' + selectedEvidence.id, style: { display: 'block', fontWeight: 700, marginBottom: 5 } }, __alloMBT('stem.microbiology.resistance_notebook_reflection', 'My reflection on saved evidence') + ' ' + selectedEvidence.id),
             hh('textarea', { id: 'micro-resistance-reflection-' + selectedEvidence.id, 'data-resistance-reflection': selectedEvidence.id, rows: 3, maxLength: 1200, value: selectedEvidence.reviewNote,
               'aria-describedby': 'micro-resistance-review-note-hint', onChange: function(event) {
-                var result = MicroResistanceNotebook.setReviewNote(rawNotebook, selectedEvidence.id, event.target.value);
-                if (result.status === 'updated') updateNotebook(result.notebook);
+                var owner = MicroResistanceNotebook.annotationOwner(rawNotebook, selectedEvidence.id);
+                if (typeof props.annotate === 'function') props.annotate(selectedEvidence.id, event.target.value, owner);
+                setComparisonNotice('');
               }, style: { display: 'block', boxSizing: 'border-box', width: '100%', minHeight: 88, resize: 'vertical', padding: 10, font: 'inherit', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', border: '1px solid #64748b', borderRadius: 7 } }),
             hh('p', { id: 'micro-resistance-review-note-hint', style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloMBT('stem.microbiology.resistance_notebook_reflection_hint', 'Saved as you type with this record and included separately in downloads. Use the saved counts to explain what you think now. Original notes, predictions, and outcomes stay unchanged; this reflection is not graded.')),
             hh('div', { role: 'region', tabIndex: 0, 'aria-label': __alloMBT('stem.microbiology.resistance_notebook_table_region', 'Saved resistance counts; scroll horizontally if needed'), style: { overflowX: 'auto' } },
@@ -1220,7 +1265,7 @@
       ),
       day > 0 ? hh('p', { style: { fontSize: 14, color: microInk('#fde68a'), textAlign: 'center' } }, __alloMBT('stem.microbiology.resistance_notebook_reset_reminder', 'Reset clears the current observations and notes. Save evidence below first if you want to keep them. Saved notebook records stay available.')) : null,
       !investigationReady && day === 0 ? hh('div', { role: 'status', style: { marginBottom: 10, color: microInk('#fde68a'), fontSize: 14, textAlign: 'center', fontWeight: 700 } }, 'Choose a prediction to unlock the culture controls.') : null,
-      day > 0 && !prediction ? hh('p', { role: 'status', style: { fontSize: 14, color: microInk('#fde68a') } }, 'No prediction was saved for this restored run. You can continue observing its evidence.') : null,
+      day > 0 && !prediction ? hh('p', { role: 'status', style: { fontSize: 14, color: microInk('#fde68a') } }, finished ? __alloMBT('stem.microbiology.resistance_restored_completed_without_prediction', 'No prediction was saved for this restored run. Its observed outcome is shown without a prediction comparison.') : __alloMBT('stem.microbiology.resistance_restored_without_prediction', 'No prediction was saved for this restored run. You can continue observing its evidence.')) : null,
       hh('details', { style: { marginBottom: 12, padding: 9, borderRadius: 8, background: 'rgba(148,163,184,0.08)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14 } },
         hh('summary', { style: { cursor: 'pointer', fontWeight: 700 } }, 'View counts by exposure round'),
         hh('table', { 'data-resistance-current-history': 'true', 'aria-describedby': 'micro-resistance-share-help', style: { width: '100%', tableLayout: 'fixed', overflowWrap: 'anywhere', borderCollapse: 'collapse', marginTop: 8, textAlign: 'right' } },
@@ -1230,7 +1275,12 @@
         )
       ),
       finished && history.length > 1 ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.30)', fontSize: 14, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-        hh('div', { role: 'status', 'aria-live': 'polite', style: { marginBottom: 8, paddingBottom: 7, borderBottom: '1px solid rgba(167,243,208,0.25)' } }, hh('strong', { style: { color: predictionReview && predictionReview.correct ? '#86efac' : '#fde68a' } }, predictionReview && predictionReview.correct ? 'Prediction matched. ' : 'Prediction review. '), pctRes === null ? 'The population died out. There is no surviving population from which to calculate a resistant share.' : predictionReview && predictionReview.observed === 'similar' ? 'The resistant share stayed about the same (a ' + Math.abs(predictionReview.change) + '-point change; changes within 5 points count as similar).' : 'The resistant share ' + (predictionReview ? predictionReview.observedLabel : 'was not classified') + ' by ' + Math.abs(predictionReview ? predictionReview.change : 0) + ' percentage points.'),
+        hh('div', { id: 'micro-resistance-outcome-summary', role: 'status', 'aria-live': 'polite', 'aria-atomic': true, style: { marginBottom: 8, paddingBottom: 7, borderBottom: '1px solid rgba(167,243,208,0.25)' } },
+          hh('strong', { style: { color: predictionReview && predictionReview.correct ? '#86efac' : '#fde68a' } }, predictionReview ? (predictionReview.correct ? 'Prediction matched. ' : 'Prediction review. ') : __alloMBT('stem.microbiology.resistance_observation_summary', 'Observation summary. ')),
+          pctRes === null ? __alloMBT('stem.microbiology.resistance_observed_extinction', 'The population died out. There is no surviving population from which to calculate a resistant share.')
+            : observedTrend === 'similar' ? __alloMBT('stem.microbiology.resistance_observed_similar', 'The resistant share stayed about the same (a {points}-point change; changes within 5 points count as similar).').replace('{points}', String(Math.abs(observedShareChange)))
+            : observedTrend === 'increase' ? __alloMBT('stem.microbiology.resistance_observed_increase', 'The resistant share increased by {points} percentage points.').replace('{points}', String(Math.abs(observedShareChange)))
+            : __alloMBT('stem.microbiology.resistance_observed_decrease', 'The resistant share decreased by {points} percentage points.').replace('{points}', String(Math.abs(observedShareChange)))),
         hh('strong', { style: { color: microInk('#22c55e') } }, '2. Observe: '),
         'The dish started with ' + history[0].resistant + ' resistant cells out of 80 (' + initialPct + '%). After ' + day + ' exposure rounds at strength ' + dose + '/100, ' + totalAlive + ' cells remain, including ' + totalRes + ' resistant cells. The resistant share is ' + shareText + '. ',
         evaluateResistanceExplanation(initialPct, null, outcome).feedback,
@@ -2501,6 +2551,41 @@
       if (!validTrial(value)) return Object.freeze([]);
       return Object.freeze(normalizeCitedHours(value.citedHours).map(function(hour) { return evidenceAt(value, hour); }));
     }
+    function annotationTarget(value, id) {
+      if (!value || typeof value !== 'object' || Array.isArray(value) || !Array.isArray(value.trials) || !validId(id)) return null;
+      var retained = value.trials.map(function(item, index) { return { item: item, index: index }; })
+        .filter(function(entry) { return validTrial(entry.item); }).slice(-MAX_RECORDS);
+      // Normalization reserves original valid IDs; their first retained owner
+      // keeps that ID. Repaired IDs never authorize an annotation by themselves.
+      return retained.find(function(entry) { return validId(entry.item.id) && entry.item.id === id; }) || null;
+    }
+    function annotationOwner(value, id) {
+      var target = annotationTarget(value, id);
+      return target ? Object.freeze({ id: id, record: target.item }) : null;
+    }
+    function selectTrial(value, id, owner) {
+      function result(status, notebook) { return Object.freeze({ notebook: notebook === undefined ? value : notebook, changed: status === 'selected', status: status,
+        id: status === 'selected' || status === 'unchanged' || status === 'stale' ? id : null }); }
+      if (!value || typeof value !== 'object' || Array.isArray(value) || !Array.isArray(value.trials) || !validId(id)) return result('invalid');
+      var target = annotationTarget(value, id);
+      if (!target) return result('missing');
+      if (owner !== undefined && (!owner || typeof owner !== 'object' || Array.isArray(owner) || owner.id !== id || owner.record !== target.item)) return result('stale');
+      if (value.selectedId === id) return result('unchanged');
+      return result('selected', Object.assign({}, value, { selectedId: id }));
+    }
+    function changeExplanation(value, id, text, owner) {
+      function result(status, notebook) { return Object.freeze({ notebook: notebook === undefined ? value : notebook, changed: status === 'updated', status: status,
+        id: status === 'updated' || status === 'unchanged' || status === 'stale' ? id : null }); }
+      if (!value || typeof value !== 'object' || Array.isArray(value) || !Array.isArray(value.trials) || !validId(id) || typeof text !== 'string') return result('invalid');
+      var target = annotationTarget(value, id);
+      if (!target) return result('missing');
+      if (owner !== undefined && (!owner || typeof owner !== 'object' || Array.isArray(owner) || owner.id !== id || owner.record !== target.item)) return result('stale');
+      var nextText = plainText(text, 1200);
+      if (plainText(target.item.explanation, 1200) === nextText) return result('unchanged');
+      var trials = value.trials.slice();
+      trials[target.index] = Object.assign({}, target.item, { explanation: nextText });
+      return result('updated', Object.assign({}, value, { trials: trials }));
+    }
     function setCitedHour(value, trialId, hour, pinned) {
       var raw = record(value);
       function result(status, notebook) { return { notebook: notebook || raw, status: status }; }
@@ -2608,7 +2693,7 @@
       profiles: profiles, normalizeConditions: normalizeConditions, simulate: simulate, compare: compare, sweep: sweep, sweepSteps: sweepSteps,
       normalizeNotebook: normalizeNotebook, removeTrial: removeTrial, restoreTrial: restoreTrial, keepRemoval: keepRemoval, saveTrial: saveTrial,
       saveSweep: saveSweep, restoreSweep: restoreSweep, designPreview: designPreview, prepareSingleVariable: prepareSingleVariable,
-      reviewNotebook: reviewNotebook, reviewCSV: reviewCSV, csv: csv, evidenceAt: evidenceAt, citedEvidence: citedEvidence, setCitedHour: setCitedHour, similarThreshold: SIMILAR_THRESHOLD, maxRecords: MAX_RECORDS
+      reviewNotebook: reviewNotebook, reviewCSV: reviewCSV, csv: csv, evidenceAt: evidenceAt, citedEvidence: citedEvidence, setCitedHour: setCitedHour, annotationOwner: annotationOwner, changeExplanation: changeExplanation, selectTrial: selectTrial, similarThreshold: SIMILAR_THRESHOLD, maxRecords: MAX_RECORDS
     });
   })();
 
@@ -3634,6 +3719,37 @@
             s.growthLab = Object.assign({}, DEFAULT_MICROBIOLOGY_STATE.growthLab, prior.growthLab || {}, patch.growthLab);
           }
           return Object.assign({}, prev, { microbiology: s });
+        });
+      }
+
+      // Annotation edits use the latest raw notebook and never persist its display projection.
+      function updateNotebookAnnotation(kind, id, value, owner) {
+        if (!owner || (kind !== 'growth' && kind !== 'resistance')) return;
+        var growth = kind === 'growth', field = growth ? 'growthInvestigation' : 'resistanceNotebook';
+        var api = growth ? MicroGrowth : MicroResistanceNotebook;
+        __alloMBUpdateVersion++;
+        setLabToolData(function(previous) {
+          var current = previous && previous.microbiology;
+          if (!current || current.tab !== (growth ? 'growthLab' : 'resistance') || api.normalizeNotebook(current[field]).selectedId !== id) return previous;
+          var result = growth ? api.changeExplanation(current[field], id, value, owner) : api.changeReviewNote(current[field], id, value, owner);
+          if (!result.changed) return previous;
+          var patch = {}; patch[field] = result.notebook;
+          return Object.assign({}, previous, { microbiology: Object.assign({}, current, patch) });
+        });
+      }
+
+      function updateNotebookSelection(kind, id, owner) {
+        if (!owner || (kind !== 'growth' && kind !== 'resistance')) return;
+        var growth = kind === 'growth', field = growth ? 'growthInvestigation' : 'resistanceNotebook';
+        var api = growth ? MicroGrowth : MicroResistanceNotebook;
+        __alloMBUpdateVersion++;
+        setLabToolData(function(previous) {
+          var current = previous && previous.microbiology;
+          if (!current || current.tab !== (growth ? 'growthLab' : 'resistance')) return previous;
+          var result = growth ? api.selectTrial(current[field], id, owner) : api.selectRecord(current[field], id, owner);
+          if (!result.changed) return previous;
+          var patch = {}; patch[field] = result.notebook;
+          return Object.assign({}, previous, { microbiology: Object.assign({}, current, patch) });
         });
       }
 
@@ -5130,7 +5246,9 @@
             h('strong', null, __alloT('stem.microbiology.antibiotic_resistance_is_a_global_heal', '⚠️ Antibiotic resistance is a global health crisis. ')),
             __alloT('stem.microbiology.antibiotic_resistant_infections_killed', 'Antibiotic-resistant infections killed at least 1.27 million people in 2019, with millions more deaths in which resistance contributed. The CDC ranks it among the top global health threats of this century.')
           ),
-          h(AntibioticResistanceSim, { d: d, upd: upd, awardXP: awardXP, isDark: microbiologyDark }),
+          h(AntibioticResistanceSim, { d: d, upd: upd, awardXP: awardXP, isDark: microbiologyDark,
+            annotate: function(id, value, owner) { updateNotebookAnnotation('resistance', id, value, owner); },
+            selectEvidence: function(id, owner) { updateNotebookSelection('resistance', id, owner); } }),
           sectionCard('How resistance evolves (in 5 steps)',
             h('ol', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.85 } },
               h('li', null, h('strong', { style: { color: microAccentText('#6ee7b7') } }, __alloT('stem.microbiology.random_mutation', 'Random mutation. ')), __alloT('stem.microbiology.a_bacterium_s_dna_copies_with_rare_err', 'A bacterium\'s DNA copies with rare errors. Most are harmful or neutral. Occasionally, one happens to make the bacterium less sensitive to an antibiotic.')),
@@ -7940,21 +8058,29 @@
         }
         function explanationEditor() {
           var selectedIndex = book.trials.findIndex(function(trial) { return trial.id === selected.id; });
-          var nextUnexplained = book.trials.slice(selectedIndex + 1).concat(book.trials.slice(0, selectedIndex)).find(function(trial) { return !trial.explanation.trim(); });
+          var nextUnexplained = book.trials.slice(selectedIndex + 1).concat(book.trials.slice(0, selectedIndex)).find(function(trial) {
+            return !trial.explanation.trim() && G.annotationOwner(d.growthInvestigation, trial.id);
+          });
           return h('div', null,
             selected.hypothesis && h('blockquote', null, h('strong', null, gt('saved_reasoning', 'Your reasoning before this run') + ': '), selected.hypothesis),
             h(MicroGrowthCitations, { key: selected.id, React: React, selected: selected, rawBook: d.growthInvestigation, hour: review.hour,
               setHour: function(hour) { upd({ growthReviewHour: hour }); }, save: function(notebook) { upd({ growthInvestigation: notebook }); }, translate: gt }),
             h('label', { htmlFor: 'gl-explanation' }, gt('explanation', 'My evidence and explanation')),
             h('p', { className: 'micro-growth-muted', id: 'gl-explanation-hint' }, gt('explain_prompt', 'Name what changed, cite values or a pattern in the curves, and explain how the organism’s metabolism or environmental limits could account for it.')),
-            h('textarea', { id: 'gl-explanation', rows: 3, maxLength: 1200, 'aria-describedby': 'gl-explanation-hint', value: selected.explanation, onChange: function(e) { var value = e.target.value; saveBook({ trials: book.trials.map(function(r) { return r.id === selected.id ? Object.assign({}, r, { explanation: value }) : r; }) }); } }),
+            h('textarea', { id: 'gl-explanation', rows: 3, maxLength: 1200, 'aria-describedby': 'gl-explanation-hint', value: selected.explanation,
+              ref: function(field) { if (field) { var owner = G.annotationOwner(d.growthInvestigation, selected.id); field.__microGrowthAnnotationOwner = owner && owner.record; } }, onChange: function(e) {
+              updateNotebookAnnotation('growth', selected.id, e.target.value, G.annotationOwner(d.growthInvestigation, selected.id));
+            } }),
             nextUnexplained ? h('button', { type: 'button', 'data-next-unexplained-trial': nextUnexplained.id, style: { marginTop: 10 }, onClick: function(event) {
-              var targetId = nextUnexplained.id;
+              var targetId = nextUnexplained.id, targetOwner = G.annotationOwner(d.growthInvestigation, targetId);
+              if (!targetOwner) return;
               var owner = event.currentTarget.closest('[data-micro-growth]');
               var priorResult = owner && owner.querySelector('#gl-saved-result');
-              saveBook({ selectedId: targetId });
+              updateNotebookSelection('growth', targetId, targetOwner);
               __alloMicroGrowthQueueFocus(owner, priorResult, '#gl-explanation', function(workspace, result) {
-                return (result.getAttribute('data-micro-growth-result') || result.getAttribute('data-micro-growth-recovered')) === String(targetId);
+                var field = result.querySelector('#gl-explanation');
+                return (result.getAttribute('data-micro-growth-result') || result.getAttribute('data-micro-growth-recovered')) === String(targetId) &&
+                  field && field.__microGrowthAnnotationOwner === targetOwner.record;
               });
             } }, gt('next_unexplained', 'Next trial without an explanation') + ' · ' + gt('trial', 'Trial') + ' ' + nextUnexplained.id) : null
           );
@@ -7995,7 +8121,9 @@
                   h('th', { scope: 'col' }, gt('difference', 'Trial − control')))),
                 h('tbody', null, review.rows.map(function(row) {
                   return h('tr', { key: row.id, 'data-review-trial': row.id },
-                    h('th', { scope: 'row' }, h('button', { type: 'button', 'aria-pressed': row.id === book.selectedId, onClick: function() { saveBook({ selectedId: row.id }); } }, gt('trial', 'Trial') + ' ' + row.id)),
+                    h('th', { scope: 'row' }, h('button', { type: 'button', 'aria-pressed': row.id === book.selectedId,
+                      disabled: !G.annotationOwner(d.growthInvestigation, row.id), 'aria-describedby': !G.annotationOwner(d.growthInvestigation, row.id) ? 'gl-selection-help' : undefined,
+                      onClick: function() { updateNotebookSelection('growth', row.id, G.annotationOwner(d.growthInvestigation, row.id)); } }, gt('trial', 'Trial') + ' ' + row.id)),
                     h('td', null, row.control ? row.changed.length ? row.changed.map(function(key) { return labels[key]; }).join(', ') : gt('none', 'None') : gt('review_unavailable', 'Unavailable')),
                     h('td', null, predictionLabel(row.prediction)),
                     h('td', null, row.outcome ? predictionLabel(row.outcome) : gt('review_unavailable', 'Unavailable')),
@@ -8127,9 +8255,14 @@
               h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
                 h('button', { type: 'button', disabled: !book.trials.length && !book.sweep, onClick: function() { exportNotebook('text'); } }, gt('download', 'Download notebook')),
                 h('button', { type: 'button', disabled: !book.trials.length, onClick: function() { exportNotebook('csv'); } }, gt('download_csv', 'Download trial CSV')))),
+            book.trials.some(function(trial) { return !G.annotationOwner(d.growthInvestigation, trial.id); }) ?
+              h('p', { id: 'gl-selection-help' }, gt('selection_unavailable', 'Some imported entries have missing or duplicate IDs. Their stored data is kept, but those entries cannot be selected for editing.')) : null,
             book.trials.length ? notebookReview() : null,
             book.trials.length ? h('ol', { className: 'micro-growth-trials' }, book.trials.map(function(r) {
-              return h('li', { key: r.id }, h('button', { id: 'gl-trial-' + r.id, type: 'button', 'aria-pressed': r.id === book.selectedId, onClick: function() { saveBook({ selectedId: r.id }); } },
+              var owner = G.annotationOwner(d.growthInvestigation, r.id);
+              return h('li', { key: r.id }, h('button', { id: 'gl-trial-' + r.id, type: 'button', 'aria-pressed': r.id === book.selectedId,
+                disabled: !owner, 'aria-describedby': !owner ? 'gl-selection-help' : undefined,
+                onClick: function() { if (owner) updateNotebookSelection('growth', r.id, owner); } },
                 h('strong', null, gt('trial', 'Trial') + ' ' + r.id), h('span', null, summary(r.conditions)),
                 h('span', { className: 'micro-growth-muted' }, r.explanation.trim() ? gt('has_explanation', 'Explanation recorded') : gt('needs_explanation', 'Add an explanation'))));
             })) : h('p', { className: 'micro-growth-muted' }, gt('notebook_empty', 'Your first comparison will be saved here. You can return to each trial, add an explanation, and download the data.')),

@@ -1,0 +1,1300 @@
+{
+  "_threeLoaded": true,
+  "unrelatedNotebook": {
+    "note": "Keep another tool.",
+    "metadata": {
+      "untouched": true
+    }
+  },
+  "microbiology": {
+    "tab": "growthLab",
+    "showMicroLibrary": false,
+    "selectedBacterium": "ecoli",
+    "selectedVirus": "covid",
+    "selectedScope": "lightbright",
+    "selectedMicrobiome": "gut",
+    "selectedFerment": "sourdough",
+    "selectedCase": "snow",
+    "scopeOrganism": "ecoli",
+    "magnification": 400,
+    "microscopeFocus": 10,
+    "microscopeTargetFocus": 50,
+    "gramStep": 0,
+    "quizIdx": 0,
+    "quizAnswers": [
+      0,
+      1
+    ],
+    "quizSubmitted": false,
+    "quizCorrect": 0,
+    "growthReviewHour": 6,
+    "growthLab": {
+      "profile": "ecoli",
+      "tempC": 32,
+      "pH": 7,
+      "oxygen": 100,
+      "hypothesis": "Independent next-run hypothesis.",
+      "explanation": "Independent legacy draft.",
+      "understood": true,
+      "stuckRevealed": true,
+      "log": [
+        {
+          "t": 32,
+          "p": 7,
+          "o": 100,
+          "rawLog": {
+            "keep": true
+          }
+        }
+      ],
+      "legacyMetadata": {
+        "keep": true
+      }
+    },
+    "growthInvestigation": {
+      "trials": [
+        {
+          "id": 100,
+          "control": {
+            "profile": "ecoli",
+            "tempC": 37,
+            "pH": 7,
+            "oxygen": 100,
+            "controlMarker": {
+              "index": 0
+            }
+          },
+          "conditions": {
+            "profile": "ecoli",
+            "tempC": 30,
+            "pH": 7,
+            "oxygen": 100,
+            "rawSetting": "Preserve this."
+          },
+          "prediction": "similar",
+          "hypothesis": "Original reasoning 0",
+          "explanation": "Earlier explanation 0",
+          "citedHours": [
+            0,
+            6,
+            24
+          ],
+          "history": [
+            {
+              "imported": true,
+              "index": 0
+            }
+          ],
+          "trialMetadata": {
+            "index": 0,
+            "nested": [
+              "Original metadata."
+            ]
+          }
+        },
+        {
+          "id": 103,
+          "control": {
+            "profile": "ecoli",
+            "tempC": 37,
+            "pH": 7,
+            "oxygen": 100,
+            "controlMarker": {
+              "index": 1
+            }
+          },
+          "conditions": {
+            "profile": "ecoli",
+            "tempC": 31,
+            "pH": 7,
+            "oxygen": 100,
+            "rawSetting": "Preserve this."
+          },
+          "prediction": "similar",
+          "hypothesis": "Original reasoning 1",
+          "explanation": "Earlier explanation 1",
+          "citedHours": [
+            0,
+            6,
+            24
+          ],
+          "history": [
+            {
+              "imported": true,
+              "index": 1
+            }
+          ],
+          "trialMetadata": {
+            "index": 1,
+            "nested": [
+              "Original metadata."
+            ]
+          }
+        },
+        {
+          "id": 106,
+          "control": {
+            "profile": "ecoli",
+            "tempC": 37,
+            "pH": 7,
+            "oxygen": 100,
+            "controlMarker": {
+              "index": 2
+            }
+          },
+          "conditions": {
+            "profile": "ecoli",
+            "tempC": 32,
+            "pH": 7,
+            "oxygen": 100,
+            "rawSetting": "Preserve this."
+          },
+          "prediction": "similar",
+          "hypothesis": "Original reasoning 2",
+          "explanation": "Earlier explanation 2",
+          "citedHours": [
+            0,
+            6,
+            24
+          ],
+          "history": [
+            {
+              "imported": true,
+              "index": 2
+            }
+          ],
+          "trialMetadata": {
+            "index": 2,
+            "nested": [
+              "Original metadata."
+            ]
+          }
+        },
+        null,
+        {
+          "id": 9999,
+          "conditions": "Malformed row must remain raw."
+        },
+        {
+          "id": "broken-growth-id",
+          "control": {
+            "profile": "ecoli",
+            "tempC": 37,
+            "pH": 7,
+            "oxygen": 100,
+            "controlMarker": {
+              "index": 40
+            }
+          },
+          "conditions": {
+            "profile": "ecoli",
+            "tempC": 30,
+            "pH": 7,
+            "oxygen": 100,
+            "rawSetting": "Preserve this."
+          },
+          "prediction": "similar",
+          "hypothesis": "Original reasoning 40",
+          "explanation": "Earlier explanation 40",
+          "citedHours": [
+            0,
+            6,
+            24
+          ],
+          "history": [
+            {
+              "imported": true,
+              "index": 40
+            }
+          ],
+          "trialMetadata": {
+            "index": 40,
+            "nested": [
+              "Original metadata."
+            ]
+          }
+        },
+        {
+          "id": 109,
+          "control": {
+            "profile": "ecoli",
+            "tempC": 37,
+            "pH": 7,
+            "oxygen": 100,
+            "controlMarker": {
+              "index": 3
+            }
+          },
+          "conditions": {
+            "profile": "ecoli",
+            "tempC": 33,
+            "pH": 7,
+            "oxygen": 100,
+            "rawSetting": "Preserve this."
+          },
+          "prediction": "similar",
+          "hypothesis": "Original reasoning 3",
+          "explanation": "Earlier explanation 3",
+          "citedHours": [
+            0,
+            6,
+            24
+          ],
+          "history": [
+            {
+              "imported": true,
+              "index": 3
+            }
+          ],
+          "trialMetadata": {
+            "index": 3,
+            "nested": [
+              "Original metadata."
+            ]
+          }
+        },
+        {
+          "id": 112,
+          "control": {
+            "profile": "ecoli",
+            "tempC": 37,
+            "pH": 7,
+            "oxygen": 100,
+            "controlMarker": {
+              "index": 4
+            }
+          },
+          "conditions": {
+            "profile": "ecoli",
+            "tempC": 34,
+            "pH": 7,
+            "oxygen": 100,
+            "rawSetting": "Preserve this."
+          },
+          "prediction": "similar",
+          "hypothesis": "Original reasoning 4",
+          "explanation": "Earlier explanation 4",
+          "citedHours": [
+            0,
+            6,
+            24
+          ],
+          "history": [
+            {
+              "imported": true,
+              "index": 4
+            }
+          ],
+          "trialMetadata": {
+            "index": 4,
+            "nested": [
+              "Original metadata."
+            ]
+          }
+        },
+        {
+          "id": 115,
+          "control": {
+            "profile": "ecoli",
+            "tempC": 37,
+            "pH": 7,
+            "oxygen": 100,
+            "controlMarker": {
+              "index": 5
+            }
+          },
+          "conditions": {
+            "profile": "ecoli",
+            "tempC": 35,
+            "pH": 7,
+            "oxygen": 100,
+            "rawSetting": "Preserve this."
+          },
+          "prediction": "similar",
+          "hypothesis": "Original reasoning 5",
+          "explanation": "Earlier explanation 5",
+          "citedHours": [
+            0,
+            6,
+            24
+          ],
+          "history": [
+            {
+              "imported": true,
+              "index": 5
+            }
+          ],
+          "trialMetadata": {
+            "index": 5,
+            "nested": [
+              "Original metadata."
+            ]
+          }
+        },
+        {
+          "id": 118,
+          "control": {
+            "profile": "ecoli",
+            "tempC": 37,
+            "pH": 7,
+            "oxygen": 100,
+            "controlMarker": {
+              "index": 6
+            }
+          },
+          "conditions": {
+            "profile": "ecoli",
+            "tempC": 36,
+            "pH": 7,
+            "oxygen": 100,
+            "rawSetting": "Preserve this."
+          },
+          "prediction": "similar",
+          "hypothesis": "Original reasoning 6",
+          "explanation": "Earlier explanation 6",
+          "citedHours": [
+            0,
+            6,
+            24
+          ],
+          "history": [
+            {
+              "imported": true,
+              "index": 6
+            }
+          ],
+          "trialMetadata": {
+            "index": 6,
+            "nested": [
+              "Original metadata."
+            ]
+          }
+        },
+        {
+          "id": 121,
+          "control": {
+            "profile": "ecoli",
+            "tempC": 37,
+            "pH": 7,
+            "oxygen": 100,
+            "controlMarker": {
+              "index": 7
+            }
+          },
+          "conditions": {
+            "profile": "ecoli",
+            "tempC": 37,
+            "pH": 7,
+            "oxygen": 100,
+            "rawSetting": "Preserve this."
+          },
+          "prediction": "similar",
+          "hypothesis": "Original reasoning 7",
+          "explanation": "Earlier explanation 7",
+          "citedHours": [
+            0,
+            6,
+            24
+          ],
+          "history": [
+            {
+              "imported": true,
+              "index": 7
+            }
+          ],
+          "trialMetadata": {
+            "index": 7,
+            "nested": [
+              "Original metadata."
+            ]
+          }
+        },
+        {
+          "id": 124,
+          "control": {
+            "profile": "ecoli",
+            "tempC": 37,
+            "pH": 7,
+            "oxygen": 100,
+            "controlMarker": {
+              "index": 8
+            }
+          },
+          "conditions": {
+            "profile": "ecoli",
+            "tempC": 30,
+            "pH": 7,
+            "oxygen": 100,
+            "rawSetting": "Preserve this."
+          },
+          "prediction": "similar",
+          "hypothesis": "Original reasoning 8",
+          "explanation": "Earlier explanation 8",
+          "citedHours": [
+            0,
+            6,
+            24
+          ],
+          "history": [
+            {
+              "imported": true,
+              "index": 8
+            }
+          ],
+          "trialMetadata": {
+            "index": 8,
+            "nested": [
+              "Original metadata."
+            ]
+          }
+        },
+        {
+          "id": 127,
+          "control": {
+            "profile": "ecoli",
+            "tempC": 37,
+            "pH": 7,
+            "oxygen": 100,
+            "controlMarker": {
+              "index": 9
+            }
+          },
+          "conditions": {
+            "profile": "ecoli",
+            "tempC": 31,
+            "pH": 7,
+            "oxygen": 100,
+            "rawSetting": "Preserve this."
+          },
+          "prediction": "similar",
+          "hypothesis": "Original reasoning 9",
+          "explanation": "Earlier explanation 9",
+          "citedHours": [
+            0,
+            6,
+            24
+          ],
+          "history": [
+            {
+              "imported": true,
+              "index": 9
+            }
+          ],
+          "trialMetadata": {
+            "index": 9,
+            "nested": [
+              "Original metadata."
+            ]
+          }
+        },
+        {
+          "id": 130,
+          "control": {
+            "profile": "ecoli",
+            "tempC": 37,
+            "pH": 7,
+            "oxygen": 100,
+            "controlMarker": {
+              "index": 10
+            }
+          },
+          "conditions": {
+            "profile": "ecoli",
+            "tempC": 32,
+            "pH": 7,
+            "oxygen": 100,
+            "rawSetting": "Preserve this."
+          },
+          "prediction": "similar",
+          "hypothesis": "Original reasoning 10",
+          "explanation": "Earlier explanation 10",
+          "citedHours": [
+            0,
+            6,
+            24
+          ],
+          "history": [
+            {
+              "imported": true,
+              "index": 10
+            }
+          ],
+          "trialMetadata": {
+            "index": 10,
+            "nested": [
+              "Original metadata."
+            ]
+          }
+        },
+        {
+          "id": 133,
+          "control": {
+            "profile": "ecoli",
+            "tempC": 37,
+            "pH": 7,
+            "oxygen": 100,
+            "controlMarker": {
+              "index": 11
+            }
+          },
+          "conditions": {
+            "profile": "ecoli",
+            "tempC": 33,
+            "pH": 7,
+            "oxygen": 100,
+            "rawSetting": "Preserve this."
+          },
+          "prediction": "similar",
+          "hypothesis": "Original reasoning 11",
+          "explanation": "Earlier explanation 11",
+          "citedHours": [
+            0,
+            6,
+            24
+          ],
+          "history": [
+            {
+              "imported": true,
+              "index": 11
+            }
+          ],
+          "trialMetadata": {
+            "index": 11,
+            "nested": [
+              "Original metadata."
+            ]
+          }
+        },
+        {
+          "id": 136,
+          "control": {
+            "profile": "ecoli",
+            "tempC": 37,
+            "pH": 7,
+            "oxygen": 100,
+            "controlMarker": {
+              "index": 12
+            }
+          },
+          "conditions": {
+            "profile": "ecoli",
+            "tempC": 34,
+            "pH": 7,
+            "oxygen": 100,
+            "rawSetting": "Preserve this."
+          },
+          "prediction": "similar",
+          "hypothesis": "Original reasoning 12",
+          "explanation": "Earlier explanation 12",
+          "citedHours": [
+            0,
+            6,
+            24
+          ],
+          "history": [
+            {
+              "imported": true,
+              "index": 12
+            }
+          ],
+          "trialMetadata": {
+            "index": 12,
+            "nested": [
+              "Original metadata."
+            ]
+          }
+        },
+        {
+          "id": 139,
+          "control": {
+            "profile": "ecoli",
+            "tempC": 37,
+            "pH": 7,
+            "oxygen": 100,
+            "controlMarker": {
+              "index": 13
+            }
+          },
+          "conditions": {
+            "profile": "ecoli",
+            "tempC": 35,
+            "pH": 7,
+            "oxygen": 100,
+            "rawSetting": "Preserve this."
+          },
+          "prediction": "similar",
+          "hypothesis": "Original reasoning 13",
+          "explanation": "Earlier explanation 13",
+          "citedHours": [
+            0,
+            6,
+            24
+          ],
+          "history": [
+            {
+              "imported": true,
+              "index": 13
+            }
+          ],
+          "trialMetadata": {
+            "index": 13,
+            "nested": [
+              "Original metadata."
+            ]
+          }
+        },
+        {
+          "id": 142,
+          "control": {
+            "profile": "ecoli",
+            "tempC": 37,
+            "pH": 7,
+            "oxygen": 100,
+            "controlMarker": {
+              "index": 14
+            }
+          },
+          "conditions": {
+            "profile": "ecoli",
+            "tempC": 36,
+            "pH": 7,
+            "oxygen": 100,
+            "rawSetting": "Preserve this."
+          },
+          "prediction": "similar",
+          "hypothesis": "Original reasoning 14",
+          "explanation": "Growth new annotation original.",
+          "citedHours": [
+            0,
+            6,
+            24
+          ],
+          "history": [
+            {
+              "imported": true,
+              "index": 14
+            }
+          ],
+          "trialMetadata": {
+            "index": 14,
+            "nested": [
+              "Original metadata."
+            ]
+          }
+        }
+      ],
+      "selectedId": 142,
+      "nextId": 1200,
+      "control": {
+        "profile": "ecoli",
+        "tempC": 37,
+        "pH": 7,
+        "oxygen": 20,
+        "workingMetadata": true
+      },
+      "prediction": "unsure",
+      "hypothesis": "Next-run reasoning remains independent.",
+      "explanation": "Next-run working explanation.",
+      "sweepVariable": "pH",
+      "sweep": {
+        "variable": "oxygen",
+        "conditions": {
+          "profile": "ecoli",
+          "tempC": 37,
+          "pH": 7,
+          "oxygen": 100
+        },
+        "sweepMetadata": [
+          "Keep sweep."
+        ]
+      },
+      "previousSweep": {
+        "variable": "pH",
+        "conditions": {
+          "profile": "ecoli",
+          "tempC": 37,
+          "pH": 6,
+          "oxygen": 100
+        },
+        "previousMetadata": {
+          "keep": true
+        }
+      },
+      "removed": {
+        "trial": {
+          "id": 900,
+          "control": {
+            "profile": "ecoli",
+            "tempC": 37,
+            "pH": 7,
+            "oxygen": 100,
+            "controlMarker": {
+              "index": 90
+            }
+          },
+          "conditions": {
+            "profile": "ecoli",
+            "tempC": 32,
+            "pH": 7,
+            "oxygen": 100,
+            "rawSetting": "Preserve this."
+          },
+          "prediction": "similar",
+          "hypothesis": "Original reasoning 90",
+          "explanation": "Earlier explanation 90",
+          "citedHours": [
+            0,
+            6,
+            24
+          ],
+          "history": [
+            {
+              "imported": true,
+              "index": 90
+            }
+          ],
+          "trialMetadata": {
+            "index": 90,
+            "nested": [
+              "Original metadata."
+            ]
+          }
+        },
+        "index": 5,
+        "rawRemovalMetadata": "Keep removed notes and citations."
+      },
+      "notebookMetadata": {
+        "imported": "Growth raw book."
+      }
+    },
+    "resistanceNotebook": {
+      "records": [
+        {
+          "id": 200,
+          "evidence": {
+            "dose": 30,
+            "duration": 3,
+            "initRes": 10,
+            "prediction": "increase",
+            "notes": "Original snapshot notes; do not replace with a later reflection.",
+            "history": [
+              {
+                "day": 0,
+                "sensitive": 72,
+                "resistant": 8,
+                "source": 0
+              },
+              {
+                "day": 1,
+                "sensitive": 60,
+                "resistant": 8,
+                "source": 0
+              }
+            ],
+            "originalMetadata": {
+              "keep": "Unnormalized snapshot metadata."
+            }
+          },
+          "reviewNote": "Earlier reflection 0",
+          "recordMetadata": {
+            "index": 0,
+            "keep": [
+              "Imported provenance."
+            ]
+          }
+        },
+        {
+          "id": 203,
+          "evidence": {
+            "dose": 30,
+            "duration": 3,
+            "initRes": 10,
+            "prediction": "increase",
+            "notes": "Original snapshot notes; do not replace with a later reflection.",
+            "history": [
+              {
+                "day": 0,
+                "sensitive": 72,
+                "resistant": 8,
+                "source": 1
+              },
+              {
+                "day": 1,
+                "sensitive": 60,
+                "resistant": 8,
+                "source": 1
+              }
+            ],
+            "originalMetadata": {
+              "keep": "Unnormalized snapshot metadata."
+            }
+          },
+          "reviewNote": "Earlier reflection 1",
+          "recordMetadata": {
+            "index": 1,
+            "keep": [
+              "Imported provenance."
+            ]
+          }
+        },
+        null,
+        {
+          "id": 8888,
+          "evidence": "Malformed snapshot must remain raw."
+        },
+        {
+          "id": 8889,
+          "evidence": {
+            "dose": 30,
+            "duration": 3,
+            "initRes": 10,
+            "prediction": "increase",
+            "notes": "Original snapshot notes; do not replace with a later reflection.",
+            "history": [
+              {
+                "day": 0,
+                "sensitive": 72,
+                "resistant": 8
+              }
+            ],
+            "originalMetadata": {
+              "keep": "Unnormalized snapshot metadata."
+            }
+          },
+          "readyMetadata": true
+        },
+        {
+          "id": "broken-resistance-id",
+          "evidence": {
+            "dose": 30,
+            "duration": 3,
+            "initRes": 10,
+            "prediction": "increase",
+            "notes": "Original snapshot notes; do not replace with a later reflection.",
+            "history": [
+              {
+                "day": 0,
+                "sensitive": 72,
+                "resistant": 8,
+                "source": 40
+              },
+              {
+                "day": 1,
+                "sensitive": 60,
+                "resistant": 8,
+                "source": 40
+              }
+            ],
+            "originalMetadata": {
+              "keep": "Unnormalized snapshot metadata."
+            }
+          },
+          "reviewNote": "Earlier reflection 40",
+          "recordMetadata": {
+            "index": 40,
+            "keep": [
+              "Imported provenance."
+            ]
+          }
+        },
+        {
+          "id": 206,
+          "evidence": {
+            "dose": 30,
+            "duration": 3,
+            "initRes": 10,
+            "prediction": "increase",
+            "notes": "Original snapshot notes; do not replace with a later reflection.",
+            "history": [
+              {
+                "day": 0,
+                "sensitive": 72,
+                "resistant": 8,
+                "source": 2
+              },
+              {
+                "day": 1,
+                "sensitive": 60,
+                "resistant": 8,
+                "source": 2
+              }
+            ],
+            "originalMetadata": {
+              "keep": "Unnormalized snapshot metadata."
+            }
+          },
+          "reviewNote": "Earlier reflection 2",
+          "recordMetadata": {
+            "index": 2,
+            "keep": [
+              "Imported provenance."
+            ]
+          }
+        },
+        {
+          "id": 209,
+          "evidence": {
+            "dose": 30,
+            "duration": 3,
+            "initRes": 10,
+            "prediction": "increase",
+            "notes": "Original snapshot notes; do not replace with a later reflection.",
+            "history": [
+              {
+                "day": 0,
+                "sensitive": 72,
+                "resistant": 8,
+                "source": 3
+              },
+              {
+                "day": 1,
+                "sensitive": 60,
+                "resistant": 8,
+                "source": 3
+              }
+            ],
+            "originalMetadata": {
+              "keep": "Unnormalized snapshot metadata."
+            }
+          },
+          "reviewNote": "Earlier reflection 3",
+          "recordMetadata": {
+            "index": 3,
+            "keep": [
+              "Imported provenance."
+            ]
+          }
+        },
+        {
+          "id": 212,
+          "evidence": {
+            "dose": 30,
+            "duration": 3,
+            "initRes": 10,
+            "prediction": "increase",
+            "notes": "Original snapshot notes; do not replace with a later reflection.",
+            "history": [
+              {
+                "day": 0,
+                "sensitive": 72,
+                "resistant": 8,
+                "source": 4
+              },
+              {
+                "day": 1,
+                "sensitive": 60,
+                "resistant": 8,
+                "source": 4
+              }
+            ],
+            "originalMetadata": {
+              "keep": "Unnormalized snapshot metadata."
+            }
+          },
+          "reviewNote": "Earlier reflection 4",
+          "recordMetadata": {
+            "index": 4,
+            "keep": [
+              "Imported provenance."
+            ]
+          }
+        },
+        {
+          "id": 215,
+          "evidence": {
+            "dose": 30,
+            "duration": 3,
+            "initRes": 10,
+            "prediction": "increase",
+            "notes": "Original snapshot notes; do not replace with a later reflection.",
+            "history": [
+              {
+                "day": 0,
+                "sensitive": 72,
+                "resistant": 8,
+                "source": 5
+              },
+              {
+                "day": 1,
+                "sensitive": 60,
+                "resistant": 8,
+                "source": 5
+              }
+            ],
+            "originalMetadata": {
+              "keep": "Unnormalized snapshot metadata."
+            }
+          },
+          "reviewNote": "Earlier reflection 5",
+          "recordMetadata": {
+            "index": 5,
+            "keep": [
+              "Imported provenance."
+            ]
+          }
+        },
+        {
+          "id": 218,
+          "evidence": {
+            "dose": 30,
+            "duration": 3,
+            "initRes": 10,
+            "prediction": "increase",
+            "notes": "Original snapshot notes; do not replace with a later reflection.",
+            "history": [
+              {
+                "day": 0,
+                "sensitive": 72,
+                "resistant": 8,
+                "source": 6
+              },
+              {
+                "day": 1,
+                "sensitive": 60,
+                "resistant": 8,
+                "source": 6
+              }
+            ],
+            "originalMetadata": {
+              "keep": "Unnormalized snapshot metadata."
+            }
+          },
+          "reviewNote": "Earlier reflection 6",
+          "recordMetadata": {
+            "index": 6,
+            "keep": [
+              "Imported provenance."
+            ]
+          }
+        },
+        {
+          "id": 221,
+          "evidence": {
+            "dose": 30,
+            "duration": 3,
+            "initRes": 10,
+            "prediction": "increase",
+            "notes": "Original snapshot notes; do not replace with a later reflection.",
+            "history": [
+              {
+                "day": 0,
+                "sensitive": 72,
+                "resistant": 8,
+                "source": 7
+              },
+              {
+                "day": 1,
+                "sensitive": 60,
+                "resistant": 8,
+                "source": 7
+              }
+            ],
+            "originalMetadata": {
+              "keep": "Unnormalized snapshot metadata."
+            }
+          },
+          "reviewNote": "Earlier reflection 7",
+          "recordMetadata": {
+            "index": 7,
+            "keep": [
+              "Imported provenance."
+            ]
+          }
+        },
+        {
+          "id": 224,
+          "evidence": {
+            "dose": 30,
+            "duration": 3,
+            "initRes": 10,
+            "prediction": "increase",
+            "notes": "Original snapshot notes; do not replace with a later reflection.",
+            "history": [
+              {
+                "day": 0,
+                "sensitive": 72,
+                "resistant": 8,
+                "source": 8
+              },
+              {
+                "day": 1,
+                "sensitive": 60,
+                "resistant": 8,
+                "source": 8
+              }
+            ],
+            "originalMetadata": {
+              "keep": "Unnormalized snapshot metadata."
+            }
+          },
+          "reviewNote": "Earlier reflection 8",
+          "recordMetadata": {
+            "index": 8,
+            "keep": [
+              "Imported provenance."
+            ]
+          }
+        },
+        {
+          "id": 227,
+          "evidence": {
+            "dose": 30,
+            "duration": 3,
+            "initRes": 10,
+            "prediction": "increase",
+            "notes": "Original snapshot notes; do not replace with a later reflection.",
+            "history": [
+              {
+                "day": 0,
+                "sensitive": 72,
+                "resistant": 8,
+                "source": 9
+              },
+              {
+                "day": 1,
+                "sensitive": 60,
+                "resistant": 8,
+                "source": 9
+              }
+            ],
+            "originalMetadata": {
+              "keep": "Unnormalized snapshot metadata."
+            }
+          },
+          "reviewNote": "Earlier reflection 9",
+          "recordMetadata": {
+            "index": 9,
+            "keep": [
+              "Imported provenance."
+            ]
+          }
+        },
+        {
+          "id": 230,
+          "evidence": {
+            "dose": 30,
+            "duration": 3,
+            "initRes": 10,
+            "prediction": "increase",
+            "notes": "Original snapshot notes; do not replace with a later reflection.",
+            "history": [
+              {
+                "day": 0,
+                "sensitive": 72,
+                "resistant": 8,
+                "source": 10
+              },
+              {
+                "day": 1,
+                "sensitive": 60,
+                "resistant": 8,
+                "source": 10
+              }
+            ],
+            "originalMetadata": {
+              "keep": "Unnormalized snapshot metadata."
+            }
+          },
+          "reviewNote": "Resistance annotation original.",
+          "recordMetadata": {
+            "index": 10,
+            "keep": [
+              "Imported provenance."
+            ]
+          }
+        }
+      ],
+      "selectedId": 230,
+      "nextId": 1200,
+      "removed": {
+        "record": {
+          "id": 999,
+          "evidence": {
+            "dose": 30,
+            "duration": 3,
+            "initRes": 10,
+            "prediction": "increase",
+            "notes": "Original snapshot notes; do not replace with a later reflection.",
+            "history": [
+              {
+                "day": 0,
+                "sensitive": 72,
+                "resistant": 8,
+                "source": 90
+              },
+              {
+                "day": 1,
+                "sensitive": 60,
+                "resistant": 8,
+                "source": 90
+              }
+            ],
+            "originalMetadata": {
+              "keep": "Unnormalized snapshot metadata."
+            }
+          },
+          "reviewNote": "Earlier reflection 90",
+          "recordMetadata": {
+            "index": 90,
+            "keep": [
+              "Imported provenance."
+            ]
+          }
+        },
+        "index": 3,
+        "rawRemovalMetadata": "Keep recoverable snapshot."
+      },
+      "notebookMetadata": {
+        "imported": "Resistance raw book."
+      }
+    },
+    "resistanceComparison": {
+      "aId": 221,
+      "bId": 230,
+      "rawPreference": {
+        "keep": true
+      }
+    },
+    "resistanceInvestigation": {
+      "dose": 0,
+      "duration": 3,
+      "initRes": 10,
+      "prediction": null,
+      "explanation": null,
+      "explanationSubmitted": false,
+      "notes": "Current live notes stay separate from saved reflections.",
+      "history": [
+        {
+          "day": 0,
+          "sensitive": 72,
+          "resistant": 8
+        },
+        {
+          "day": 1,
+          "sensitive": 72,
+          "resistant": 8
+        },
+        {
+          "day": 2,
+          "sensitive": 72,
+          "resistant": 8
+        },
+        {
+          "day": 3,
+          "sensitive": 72,
+          "resistant": 8
+        }
+      ],
+      "runAwarded": true,
+      "explanationAwarded": false
+    },
+    "externalMarker": {
+      "keep": "Other Micro Lab work."
+    },
+    "gramInvestigation": {
+      "step": 2,
+      "maxStep": 4,
+      "explanation": "Independent Gram draft."
+    }
+  }
+}

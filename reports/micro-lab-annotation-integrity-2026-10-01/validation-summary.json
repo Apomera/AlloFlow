@@ -1,0 +1,101 @@
+{
+  "date": "2026-10-01",
+  "sourceFile": "stem_lab/stem_tool_microbiology.js",
+  "sourceSha256": "468efedbbe19d147c15af70184650fab8db3b90a8103d0c64738eafee2574165",
+  "runners": [
+    {
+      "kind": "unit",
+      "pid": 19764,
+      "started": "2026-10-01T23:45:58.999Z",
+      "phase": "passed",
+      "sourceSha256": "468efedbbe19d147c15af70184650fab8db3b90a8103d0c64738eafee2574165",
+      "expected": 723,
+      "exitCode": 0,
+      "signal": null,
+      "finished": "2026-10-01T23:59:58.506Z",
+      "sourceStillMatches": true
+    },
+    {
+      "kind": "browser",
+      "pid": 64712,
+      "started": "2026-10-01T23:28:59.610Z",
+      "phase": "passed",
+      "sourceSha256": "468efedbbe19d147c15af70184650fab8db3b90a8103d0c64738eafee2574165",
+      "expected": 49,
+      "exitCode": 0,
+      "signal": null,
+      "finished": "2026-10-01T23:36:57.313Z",
+      "sourceStillMatches": true
+    }
+  ],
+  "testInputs": {
+    "tests/microbiology_annotation_integrity.test.js": "4a3aaa80da8ed923e401f13fd394fa604c4cc3b969ecce1fc59eafdd20071645",
+    "tests/microbiology_annotation_integrity_workflow.test.js": "e9e335e5973101d34abf0eae49b6a2be8da05fd2ba5edb018cf71a0b2aa2ab57",
+    "tests/microbiology_gram_workflow.test.js": "4d2d2b2c20924e542225cd8e92de5f627aa46e7e4fa34011706b1d570d7a99f4",
+    "tests/microbiology_growth_citations.test.js": "5963181c7ee9fff4342b2a85bced2c0431e8ba32ab3f3f20a2355612a0c111d0",
+    "tests/microbiology_growth_citations_workflow.test.js": "113a2810af996ce4ad9c3ca67d8d560188b932ea25800a987cb8ad23c1fb2084",
+    "tests/microbiology_growth_model.test.js": "35de4749d77b7a3d67123cd9638260fde8362db4b5a639bc499a20405351e3be",
+    "tests/microbiology_growth_workflow.test.js": "37fd53fb23439377a7dfa0424a024debedd8efd372d44c65f1e655ab34088cc8",
+    "tests/microbiology_microscope.test.js": "82c49e4101179041d657ae29a7bd1c15b4d7e4908ca864eef10abe8e8657fea4",
+    "tests/microbiology_mystery_workflow.test.js": "89131790ebebc4d4e469ba76cca442e549499296280a2f08d865498833f2c365",
+    "tests/microbiology_portfolio.test.js": "3a0d6128ccc8402d7ff0d9261ed3b94baa7772d58a9abc10cd89348d0451bf6d",
+    "tests/microbiology_portfolio_selection.test.js": "d2a542069cde51943eaead679664a1d2a4e76d47c30376fc598e0454c4865d70",
+    "tests/microbiology_portfolio_selection_workflow.test.js": "69c51e5233870745a955e93e99ab3b475893d30d06ea5069d3148b5bb4def01f",
+    "tests/microbiology_portfolio_workflow.test.js": "792e54f4a2ec915f60aa25cb4902f7831c34a0ff30cae38b9938109d8b660c94",
+    "tests/microbiology_print_reference.test.js": "9bb81d757b1971d40d7c1f638636500497e6e400380a410f68f9d65500b1e9f0",
+    "tests/microbiology_quiz_workflow.test.js": "e76b57cc0b9406b24fef6d0f9ddf70406dd71fb6317de1a0d437619feda7d79b",
+    "tests/microbiology_resistance_outcomes.test.js": "70b6e5a6453728d8ddb8aa40c36360b89e5f44146b2fc2085168780f6d4711c1",
+    "tests/microbiology_resistance_sim.test.js": "0d1e8fd05ea67441df8329877d16a98802a3db5588c65904a191860459a4e200",
+    "tests/microbiology_snow_map.test.js": "02cba43ee5332db54397c07d7e0cb2236b886d1a7e70563a8accae38d381022f",
+    "tests/microbiology_workspace.test.js": "d1954f371cbdeff80ab6d604fd7a5e89e98de05a1ce1d1eec7063414e219ce51",
+    "tests/microbiology_workspace_navigation.test.js": "892b4b4cf0834f4c9d332cb3d203d6a3212b5a388235aa155375deb30fb553e3",
+    "tests/microbiology_workspace_resume.test.js": "83d0ebdb4e1aa8128acb5f3a11665a8aee2fc8220bbc2965a795c6c8b0068159",
+    "tests/stem_microbiology_quiz.test.js": "596738e754d3398abad2aed336915685cc65c1484b32aac34083363778542224",
+    "tests/e2e/microbiology-annotation-integrity.spec.ts": "18e5274d85b33fd66b5aa71d1f0402b551f4a17360fbf81e110337804ed78f75",
+    "tests/e2e/microbiology-portfolio-selection.spec.ts": "61b2403c4b533c6c345a410a6599476b27834439e3db6b38a0f5feed13049dc8",
+    "tests/e2e/microbiology-growth-citations.spec.ts": "362be56275547026649bea84b5ba7de33d354dc4118cb4259d1f7189a4cdf9d1",
+    "tests/e2e/microbiology-portfolio.spec.ts": "7a93ca443e7a2579c43cbe4fcbb405a5cff5e7a1406e5fef6eb0c36c4139a5af",
+    "tests/e2e/microbiology-experiment-design.spec.ts": "b7b9aa5a3e77a1d09d461c081e3c3008f80b87c7c8c1069fd19d9a44acfe963e",
+    "tests/e2e/microbiology-guided-resume.spec.ts": "7c6d0c203269eb9096e5680ae6cefeddb54972c8957dd0e2a97832d8bb4dca5b",
+    "tests/e2e/microbiology-evidence-review.spec.ts": "8016126d531f49d04b69af18ce07ba356afa2fb5b4f9292c9a272dcc2ffade7f",
+    "tests/e2e/microbiology-evidence-recovery.spec.ts": "7e084c6e37799ee2a2bf66d9159682a1428c335b0e37dfdf3fc29f5f06ee0eb1"
+  },
+  "unit": {
+    "passed": 723,
+    "failed": 0,
+    "files": 22,
+    "report": "unit-results.json",
+    "priorRuns": [
+      "unit-full-initial-results.json",
+      "unit-initial-results.json",
+      "unit-outcomes-initial-results.json"
+    ],
+    "note": "The final consolidated focused regression run passes. Earlier attempt reports, if any, are retained."
+  },
+  "browser": {
+    "passed": 49,
+    "failed": 0,
+    "skipped": 0,
+    "flaky": 0,
+    "project": "chromium",
+    "report": "browser-results.json",
+    "priorRuns": [
+      "browser-initial-results.json"
+    ],
+    "scope": "Raw-preserving Growth explanations, Resistance reflections and saved-record navigation, retained original-ID ownership and stale-write guards, actual observed Resistance outcomes without a saved prediction, keyboard and narrow layouts, and retained selected/full portfolios, Growth citations, design, evidence, recovery and navigation workflows, served from the local working tree."
+  },
+  "interface": {
+    "keys": 1888,
+    "missing": 0,
+    "changedFallbacks": 0,
+    "runtimeMirrored": true,
+    "microbiologyNamespacesMatch": true,
+    "syntaxChecksPassed": true
+  },
+  "visualReview": [
+    "annotation-growth-desktop.png",
+    "annotation-resistance-phone.png",
+    "annotation-zoom.png"
+  ],
+  "scope": "Micro Lab source, desktop mirror, Micro Lab translation entries, focused tests, and validation artifacts."
+}
