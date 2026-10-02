@@ -267,6 +267,139 @@ window.StemLab = window.StemLab || {
     if (!Object.prototype.hasOwnProperty.call(v, 'launchHeight')) return 0;
     return physFinite(v.launchHeight) && v.launchHeight >= 0 && v.launchHeight <= 50 ? v.launchHeight : null;
   }
+  // Persist completed observations in an explicit envelope: JSON drops named
+  // properties from arrays. These limits apply to whole original recordings.
+  var PHYS_RECORDED_FLIGHT_LIMITS = Object.freeze({ version: 1, count: 5, points: 4096, characters: 600 * 1024 });
+  var physTrustedRecordedFlights = new WeakSet();
+  var physTrustedRecordedFlightLists = new WeakSet();
+  var physRecordedFlightCosts = new WeakMap();
+  var physEmptyRecordedFlights = Object.freeze([]);
+  physTrustedRecordedFlightLists.add(physEmptyRecordedFlights);
+  function physRecordedFlightShape(value, keys) {
+    return physRecord(value) && Object.keys(value).length === keys.length && keys.every(function(key) {
+      return Object.prototype.hasOwnProperty.call(value, key);
+    });
+  }
+  function physRecordedFlightRun(run) {
+    return Number.isSafeInteger(run) && run > 0 && run < Number.MAX_SAFE_INTEGER;
+  }
+  function physRecordedFlightParameters(p) {
+    return physRecordedFlightShape(p, ['angle', 'velocity', 'gravity', 'mass', 'launchHeight', 'drag']) &&
+      typeof p.drag === 'boolean' && ['angle', 'velocity', 'gravity', 'mass', 'launchHeight'].every(function(key) { return physFinite(p[key]); }) &&
+      p.launchHeight >= 0 && p.launchHeight <= 50 && p.angle >= (p.launchHeight > 0 ? 0 : 5) && p.angle <= 85 &&
+      p.velocity >= 5 && p.velocity <= 50 && p.gravity >= 1 && p.gravity <= 25 && p.mass >= 1 && p.mass <= 10;
+  }
+  function physValidateRecordedFlight(raw) {
+    if (physTrustedRecordedFlights.has(raw)) return raw;
+    if (!physRecordedFlightShape(raw, ['version', 'run', 'modelVersion', 'parameters', 'points', 'apex', 'prediction', 'mission']) ||
+        raw.version !== PHYS_RECORDED_FLIGHT_LIMITS.version || !physRecordedFlightRun(raw.run) ||
+        raw.modelVersion !== PHYS_MODEL_VERSION || !physRecordedFlightParameters(raw.parameters) ||
+        !Array.isArray(raw.points) || raw.points.length < 2 || raw.points.length > PHYS_RECORDED_FLIGHT_LIMITS.points) return null;
+    if (raw.prediction !== null && (!physFinite(raw.prediction) || raw.prediction < 0)) return null;
+    var mission = raw.mission;
+    if (mission !== null && (!physRecordedFlightShape(mission, ['targetMode', 'targetRound', 'challengeTier']) ||
+        typeof mission.targetMode !== 'boolean' || !Number.isInteger(mission.targetRound) || mission.targetRound < 0 || mission.targetRound > 10 ||
+        mission.challengeTier !== null && (!Number.isInteger(mission.challengeTier) || mission.challengeTier < 0 || mission.challengeTier > 3))) return null;
+    var apex = raw.apex;
+    if (apex !== null && (!physRecordedFlightShape(apex, ['tSec', 'mX', 'mY', 'vx']) ||
+        !['tSec', 'mX', 'mY', 'vx'].every(function(key) { return physFinite(apex[key]) && apex[key] >= 0; }))) return null;
+    var p = raw.parameters, points = [], inspection = [], previous = null, highest = p.launchHeight, apexFound = false;
+    var launchRadians = p.angle * Math.PI / 180;
+    var launchVx = p.velocity * Math.cos(launchRadians), launchVy = p.velocity * Math.sin(launchRadians);
+    for (var index = 0; index < raw.points.length; index++) {
+      var point = raw.points[index];
+      if (!Array.isArray(point) || point.length !== 5 || !point.every(physFinite) ||
+          point[0] < 0 || point[1] < 0 || point[2] < 0 || point[3] < 0 ||
+          previous && (point[0] <= previous[0] || point[0] - previous[0] > PHYS_DT + 1e-9 || point[1] < previous[1])) return null;
+      if (index === 0 && (point[0] !== 0 || point[1] !== 0 || point[2] !== p.launchHeight ||
+          Math.abs(point[3] - launchVx) > 1e-10 || Math.abs(point[4] - launchVy) > 1e-10)) return null;
+      if (index === raw.points.length - 1 && (point[0] <= 0 || point[2] !== 0 || point[4] > 0)) return null;
+      highest = Math.max(highest, point[2]);
+      if (apex && point[0] === apex.tSec && point[1] === apex.mX && point[2] === apex.mY && point[3] === apex.vx && point[4] === 0) apexFound = true;
+      points.push(Object.freeze(point.slice()));
+      inspection.push({ t: point[0], mX: point[1], mY: point[2], mVx: point[3], mVy: point[4] });
+      previous = point;
+    }
+    if (apex && (!apexFound || apex.mY !== highest)) return null;
+    // Reuse the inspection contract for finite derived forces and energy too.
+    inspection.parameters = p; inspection.modelVersion = raw.modelVersion; inspection.run = raw.run; inspection.apex = apex;
+    for (var sample = 0; sample < inspection.length; sample++) if (!physInspectSample(inspection, sample)) return null;
+    var record = Object.freeze({
+      version: PHYS_RECORDED_FLIGHT_LIMITS.version, run: raw.run, modelVersion: raw.modelVersion,
+      parameters: Object.freeze({ angle: p.angle, velocity: p.velocity, gravity: p.gravity, mass: p.mass, launchHeight: p.launchHeight, drag: p.drag }),
+      points: Object.freeze(points),
+      apex: apex === null ? null : Object.freeze({ tSec: apex.tSec, mX: apex.mX, mY: apex.mY, vx: apex.vx }),
+      prediction: raw.prediction,
+      mission: mission === null ? null : Object.freeze({ targetMode: mission.targetMode, targetRound: mission.targetRound, challengeTier: mission.challengeTier })
+    });
+    physTrustedRecordedFlights.add(record);
+    physRecordedFlightCosts.set(record, JSON.stringify(record).length);
+    return record;
+  }
+  function physCaptureRecordedFlight(trail, summary, run) {
+    if (!Array.isArray(trail) || trail.length < 2 || trail.length > PHYS_RECORDED_FLIGHT_LIMITS.points ||
+        trail.modelVersion !== PHYS_MODEL_VERSION || !physRecordedFlightParameters(trail.parameters)) return null;
+    var id = run === undefined ? trail.run === undefined ? summary && summary.n : trail.run : run;
+    if (!physRecordedFlightRun(id) || trail.run !== undefined && trail.run !== id ||
+        summary != null && (!physRecord(summary) || summary.n !== undefined && summary.n !== id)) return null;
+    var p = trail.parameters;
+    var named = { angle: 'angle', velocity: 'velocity', gravity: 'gravity', mass: 'mass', launchHeight: 'launchHeight', drag: 'drag' };
+    if (!Object.keys(named).every(function(key) { return trail[key] === undefined || trail[key] === p[named[key]]; })) return null;
+    var points = [];
+    for (var index = 0; index < trail.length; index++) {
+      var point = trail[index];
+      if (!physRecord(point)) return null;
+      points.push([point.t, point.mX, point.mY, point.mVx, point.mVy]);
+    }
+    var record = physValidateRecordedFlight({
+      version: PHYS_RECORDED_FLIGHT_LIMITS.version, run: id, modelVersion: trail.modelVersion,
+      parameters: p, points: points, apex: trail.apex == null ? null : trail.apex,
+      prediction: trail.prediction === undefined ? null : trail.prediction,
+      mission: trail.mission === undefined ? null : trail.mission
+    });
+    if (!record) return null;
+    if (summary != null) {
+      var end = record.points[record.points.length - 1];
+      var maxH = record.points.reduce(function(height, sample) { return Math.max(height, sample[2]); }, p.launchHeight);
+      if (summary.angle !== p.angle || summary.vel !== p.velocity || summary.grav !== p.gravity ||
+          summary.mass !== p.mass || summary.launchHeight !== p.launchHeight || summary.drag !== p.drag ||
+          summary.range !== end[1] || summary.time !== end[0] || summary.maxH !== maxH ||
+          summary.modelVersion !== undefined && summary.modelVersion !== record.modelVersion) return null;
+    }
+    return record;
+  }
+  function physNormalizeRecordedFlights(raw) {
+    if (physTrustedRecordedFlightLists.has(raw)) return raw;
+    if (!Array.isArray(raw) || !raw.length) return physEmptyRecordedFlights;
+    var records = [], seen = Object.create(null), characters = 2;
+    // Input order is chronological. The newest valid duplicate wins, and only
+    // whole records fitting the shared JSON budget are retained.
+    for (var index = raw.length - 1; index >= 0 && records.length < PHYS_RECORDED_FLIGHT_LIMITS.count; index--) {
+      var record = physValidateRecordedFlight(raw[index]);
+      if (!record || seen[record.run]) continue;
+      seen[record.run] = true;
+      var cost = physRecordedFlightCosts.get(record) + (records.length ? 1 : 0);
+      if (characters + cost > PHYS_RECORDED_FLIGHT_LIMITS.characters) continue;
+      records.push(record); characters += cost;
+    }
+    if (!records.length) return physEmptyRecordedFlights;
+    records.reverse(); Object.freeze(records); physTrustedRecordedFlightLists.add(records);
+    return records;
+  }
+  function physRestoreRecordedFlight(raw) {
+    var record = physValidateRecordedFlight(raw);
+    if (!record) return null;
+    var p = record.parameters;
+    var trail = record.points.map(function(point) { return { t: point[0], mX: point[1], mY: point[2], mVx: point[3], mVy: point[4] }; });
+    trail.run = record.run; trail.modelVersion = record.modelVersion;
+    trail.angle = p.angle; trail.velocity = p.velocity; trail.gravity = p.gravity;
+    trail.mass = p.mass; trail.launchHeight = p.launchHeight; trail.drag = p.drag;
+    trail.parameters = Object.freeze({ angle: p.angle, velocity: p.velocity, gravity: p.gravity, mass: p.mass, launchHeight: p.launchHeight, drag: p.drag });
+    trail.apex = record.apex === null ? null : Object.freeze({ mX: record.apex.mX, mY: record.apex.mY, vx: record.apex.vx, tSec: record.apex.tSec });
+    trail.prediction = record.prediction;
+    trail.mission = record.mission === null ? null : Object.freeze({ targetMode: record.mission.targetMode, targetRound: record.mission.targetRound, challengeTier: record.mission.challengeTier });
+    return trail;
+  }
   function physEvidenceRun(v) {
     if (!physRecord(v) || !Number.isSafeInteger(v.n) || v.n <= 0 || typeof v.drag !== 'boolean') return null;
     if (!['angle', 'vel', 'grav', 'mass', 'range', 'maxH', 'time'].every(function(k) { return physFinite(v[k]); })) return null;
@@ -481,6 +614,7 @@ window.StemLab = window.StemLab || {
   }
   try {
     window.StemLab._physics = { DT: PHYS_DT, DRAG_K: PHYS_DRAG_K, MODEL_VERSION: PHYS_MODEL_VERSION, step: physStep, recordSample: physRecordSample, simulate: physSimulate, vacuum: physVacuum, solveVelocity: physSolveVelocity, solveAngle: physSolveAngle, inspectSample: physInspectSample, recordedMoments: physRecordedMoments, formatSampleValue: physFormatSampleValue, compareMeasurements: physCompareMeasurements,
+      RECORDED_FLIGHT_LIMITS: PHYS_RECORDED_FLIGHT_LIMITS, captureRecordedFlight: physCaptureRecordedFlight, normalizeRecordedFlights: physNormalizeRecordedFlights, restoreRecordedFlight: physRestoreRecordedFlight,
       findTrialRun: physFindTrialRun, normalizeInvestigationDraft: physNormalizeInvestigationDraft, normalizeInvestigations: physNormalizeInvestigations, compareRuns: physCompareRuns, createInvestigation: physCreateInvestigation, formatInvestigationReport: physFormatInvestigationReport };
   } catch (e) {}
 
@@ -738,6 +872,7 @@ window.StemLab = window.StemLab || {
               lastPredictionRange: finite(raw.lastPredictionRange) && raw.lastPredictionRange >= 0 ? raw.lastPredictionRange : null,
               lastFlight: flight(raw.lastFlight),
               runLog: log,
+              recordedFlights: physNormalizeRecordedFlights(raw.recordedFlights),
               runCount: Math.max(counter(raw.runCount), ...log.map(function(r) { return r.n; })),
               targetList: Array.isArray(raw.targetList) ? raw.targetList.filter(function(t) {
                 return isRecord(t) && finite(t.x) && t.x >= 0 && finite(t.y) && finite(t.radius) && t.radius > 0;
@@ -770,6 +905,7 @@ window.StemLab = window.StemLab || {
             state.selectedInvestigationId = selectedInvestigation ? selectedInvestigation.id : null;
             state.investigations.forEach(function(item) { item.runs.forEach(function(r) { state.runCount = Math.max(state.runCount, r.n); }); });
             if (state.lastFlight && validId(state.lastFlight.n)) state.runCount = Math.max(state.runCount, state.lastFlight.n);
+            state.recordedFlights.forEach(function(record) { state.runCount = Math.max(state.runCount, record.run); });
             state.modelComparison = null;
             var paired = raw.modelComparison;
             if (isRecord(paired) && isRecord(paired.parameters)) {
@@ -1065,8 +1201,9 @@ window.StemLab = window.StemLab || {
             // the cause of the "projectile passes through targets" plus
             // "first target disappears on launch" bugs.
             canvasEl._onTargetLand = function(landingMX, mission) {
+              var recordingEpoch = canvasEl._recordingEpoch || 0;
               setTimeout(function() {
-                if (!canvasEl.isConnected || !mission || !mission.targetMode || !canvasEl._settings.targetMode || mission.targetRound !== canvasEl._settings.targetRound) return;
+                if (recordingEpoch !== (canvasEl._recordingEpoch || 0) || !canvasEl.isConnected || !mission || !mission.targetMode || !canvasEl._settings.targetMode || mission.targetRound !== canvasEl._settings.targetRound) return;
                 if (typeof checkTargetHit === 'function') checkTargetHit(landingMX);
               }, 0);
             };
@@ -1077,13 +1214,16 @@ window.StemLab = window.StemLab || {
             //   bullseye (within 5%) → +25 XP, streak++
             //   close    (within 15%) → +10 XP, streak++
             //   miss     (worse)      → +0 XP, streak reset to 0
-            canvasEl._onAnyLand = function(actualMX, summary) {
+            canvasEl._onAnyLand = function(actualMX, summary, recordedTrail) {
+              // Capture before the deferred callbacks or another launch can
+              // change canvas history. The envelope owns every original point.
+              var recording = physCaptureRecordedFlight(recordedTrail, summary);
+              var recordingEpoch = canvasEl._recordingEpoch || 0;
               setTimeout(function() {
-                if (!canvasEl.isConnected) return;
+                var recordingRetained = recordingEpoch === (canvasEl._recordingEpoch || 0);
                 // Measured results of the flight that just ended, for the
                 // "Last flight" strip (measured vs formula, drag cost).
                 if (summary) {
-                  upd('lastFlight', summary);
                   if (summary.drag && !d.dragTried) upd('dragTried', true);
                   // Append to the experiment log. Functional update: several
                   // landings can queue inside setTimeout chains (symmetry demo
@@ -1101,9 +1241,18 @@ window.StemLab = window.StemLab || {
                       range: summary.range, maxH: summary.maxH, time: summary.time,
                       modelVersion: summary.modelVersion || PHYS_MODEL_VERSION
                     }]).slice(-8);
-                    return Object.assign({}, prev, { physics: Object.assign({}, prev.physics, { runLog: log, runCount: nextNo }) });
+                    var recordings = recordingRetained && recording && recording.run === nextNo
+                      ? physNormalizeRecordedFlights(clean.recordedFlights.concat([recording]))
+                      : clean.recordedFlights;
+                    return Object.assign({}, prev, { physics: Object.assign({}, prev.physics, {
+                      lastFlight: recordingRetained ? summary : prev.physics.lastFlight,
+                      runLog: log, runCount: nextNo, recordedFlights: recordings
+                    }) });
                   });
                 }
+                // Completed measurements can outlive the canvas. Rewards and
+                // mission UI belong to the current, uncleared controller only.
+                if (!canvasEl.isConnected || !recordingRetained) return;
                 // Tier challenge completion (50 m flag / 100 m through air /
                 // 200 m on Mars). Nothing checked these before, so a tier
                 // could be started but never finished.
@@ -1195,6 +1344,17 @@ window.StemLab = window.StemLab || {
             canvasEl._fill = function (tpl, vals) { return String(tpl).replace(/\{(\w+)\}/g, function (m, k) { return vals[k] != null ? vals[k] : m; }); };
 
             if (canvasEl._physInit) {
+              // The host can hydrate saved tool data after this canvas mounts.
+              // Restore only into an empty, idle controller.
+              if (canvasEl._restoreRecordedFlights && canvasEl._restoreRecordedFlights(d.recordedFlights)) {
+                Promise.resolve().then(function() {
+                  if (!canvasEl.isConnected) return;
+                  setLabToolData(function(prev) { return Object.assign({}, prev, { physics: Object.assign({}, prev.physics, {
+                    recordedFlights: physNormalizeRecordedFlights(prev.physics.recordedFlights),
+                    inspectionSnapshot: '', liveTick: (prev.physics.liveTick || 0) + 1
+                  }) }); });
+                });
+              }
               if (canvasEl._physScheduleFrame) canvasEl._physScheduleFrame();
               return;
 
@@ -1226,6 +1386,7 @@ window.StemLab = window.StemLab || {
 
             var tick = canvasEl._tick || 0;
 
+            var restoreRecordings = !Array.isArray(canvasEl._trails) && d.recordedFlights.length > 0;
             var trails = canvasEl._trails || [];
 
             var ball = canvasEl._ball || null;
@@ -1235,6 +1396,54 @@ window.StemLab = window.StemLab || {
             var impactParticles = canvasEl._impactParticles || [];
 
             var landingMarkers = canvasEl._landingMarkers || [];
+            function restorePhysicsRecordings(records) {
+              if (launched || trails.length || !records.length) return false;
+              var restored = records.map(physRestoreRecordedFlight).filter(Boolean);
+              if (!restored.length) return false;
+              restored.forEach(function(trail) { trails.push(trail); });
+              // Restored observations are stationary evidence. They never
+              // resume a flight or repeat landing rewards and mission callbacks.
+              var restoredTrail = trails[trails.length - 1];
+              var restoredEnd = restoredTrail[restoredTrail.length - 1];
+              var restoredParameters = restoredTrail.parameters;
+              ball = Object.assign({}, restoredEnd, {
+                grav: restoredParameters.gravity, drag: restoredParameters.drag ? PHYS_DRAG_K : 0,
+                mass: restoredParameters.mass, launchHeight: restoredParameters.launchHeight,
+                speed: Math.sqrt(restoredEnd.mVx * restoredEnd.mVx + restoredEnd.mVy * restoredEnd.mVy),
+                E0: .5 * restoredParameters.mass * restoredParameters.velocity * restoredParameters.velocity +
+                  restoredParameters.mass * restoredParameters.gravity * restoredParameters.launchHeight,
+                maxH: restoredTrail.reduce(function(highest, point) { return Math.max(highest, point.mY); }, 0), landed: true
+              });
+              launched = false;
+              landingMarkers = trails.map(function(trail) {
+                var end = trail[trail.length - 1];
+                return { mX: end.mX, alpha: 1, ring: 1, dist: end.mX.toFixed(1) };
+              });
+              canvasEl._apex = restoredTrail.apex;
+              canvasEl._ball = ball;
+              canvasEl._launched = false;
+              canvasEl._landingMarkers = landingMarkers;
+              canvasEl.dataset.lastRange = restoredEnd.mX.toFixed(1);
+              canvasEl.dataset.lastMaxH = ball.maxH.toFixed(1);
+              canvasEl._trails = trails;
+              if (canvasEl._physScheduleFrame) canvasEl._physScheduleFrame();
+              return true;
+            }
+            canvasEl._restoreRecordedFlights = restorePhysicsRecordings;
+            if (restoreRecordings) restorePhysicsRecordings(d.recordedFlights);
+            canvasEl._trails = trails;
+            if (restoreRecordings || labToolData.physics.recordedFlights != null) {
+              Promise.resolve().then(function() {
+                if (!canvasEl.isConnected) return;
+                setLabToolData(function(prev) {
+                  if (prev.physics !== labToolData.physics) return prev;
+                  return Object.assign({}, prev, { physics: Object.assign({}, prev.physics, {
+                    recordedFlights: d.recordedFlights, inspectionSnapshot: '',
+                    liveTick: (prev.physics.liveTick || 0) + 1
+                  }) });
+                });
+              });
+            }
             var physAlive = true;
             var physMotionReduced = false;
             try { physMotionReduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
@@ -1268,6 +1477,7 @@ window.StemLab = window.StemLab || {
               if (typeof document !== 'undefined') ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange'].forEach(function(name) { document.removeEventListener(name, onPhysicsFullscreenChange); });
               canvasEl._physCleanup = null;
               canvasEl._physScheduleFrame = null;
+              canvasEl._restoreRecordedFlights = null;
               canvasEl._physInit = false;
             }
 
@@ -2029,9 +2239,14 @@ window.StemLab = window.StemLab || {
                   // Stamp the run number on the trail at LANDING, not at launch:
                   // only a flight that lands earns a log row, so a launch the
                   // student interrupts never consumes a number. data-run-next is
-                  // this flight's number because the row is appended after this.
-                  var _runNo = parseInt(canvasEl.dataset.runNext || '0', 10);
-                  if (_trL && isFinite(_runNo) && _runNo > 0) _trL.run = _runNo;
+                  // React may not refresh data-run-next between two short
+                  // flights. Reserve completed IDs on this controller as well.
+                  var _runNo = Math.max(parseInt(canvasEl.dataset.runNext || '1', 10) || 1,
+                    (canvasEl._lastCompletedRun || 0) + 1);
+                  if (_trL && isFinite(_runNo) && _runNo > 0) {
+                    canvasEl._lastCompletedRun = _runNo;
+                    _trL.run = _runNo;
+                  }
                   if (canvasEl._onAnyLand) canvasEl._onAnyLand(exactLandX, {
                     range: exactLandX, maxH: _landMaxH, time: ball.t || 0,
                     apexT: canvasEl._apex ? canvasEl._apex.tSec : null,
@@ -2039,7 +2254,7 @@ window.StemLab = window.StemLab || {
                     drag: ball.drag > 0, mass: ball.mass || 1, launchHeight: ball.launchHeight || 0,
                     prediction: _trL ? _trL.prediction : null, mission: _trL ? _trL.mission : null,
                     modelVersion: PHYS_MODEL_VERSION
-                  });
+                  }, _trL);
                   if (canvasEl._demo) {
                     var demo = canvasEl._demo;
                     demo.ranges.push(exactLandX);
@@ -2632,6 +2847,15 @@ window.StemLab = window.StemLab || {
               var sample = physSelectedInspection(cv);
               var selectedIndex = sample ? trails.indexOf(cv._inspection.trail) : trails.length - 1;
               var trail = trails[selectedIndex];
+              var end = trail[trail.length - 1] || {};
+              var recording = d.recordedFlights.find(function(record) {
+                var point = record.points[record.points.length - 1], p = record.parameters;
+                return record.run === trail.run && record.modelVersion === trail.modelVersion &&
+                  p.angle === trail.angle && p.velocity === trail.velocity && p.gravity === trail.gravity &&
+                  p.mass === trail.mass && p.launchHeight === trail.launchHeight && p.drag === trail.drag &&
+                  point[0] === end.t && point[1] === end.mX && point[2] === end.mY &&
+                  point[3] === end.mVx && point[4] === end.mVy;
+              });
               return React.createElement('section', { 'data-physics-flight-history': true, 'aria-label': __alloT('stem.physics.history_title', 'Recent recorded flights') },
                 React.createElement('label', { htmlFor: 'physics-history-flight' }, __alloT('stem.physics.history_choose', 'Inspect a recorded flight')),
                 React.createElement('select', { id: 'physics-history-flight', 'data-physics-history-select': true, value: selectedIndex, 'aria-describedby': 'physics-history-help',
@@ -2645,7 +2869,14 @@ window.StemLab = window.StemLab || {
                   })),
                 React.createElement('button', { type: 'button', 'data-physics-history-inspect': true,
                   onClick: function() { if (physSelectSample(sample ? sample.index : trail.length - 1, trail)) physRevealInspection(); } }, __alloT('stem.physics.history_open', 'Inspect this flight')),
-                React.createElement('p', { id: 'physics-history-help' }, __alloT('stem.physics.history_help', 'Up to five flights are kept in this session. Choosing a flight pauses playback and links its recorded canvas, graphs, and table.')));
+                React.createElement('div', { className: 'phys-history-recording', 'data-physics-history-recording': recording ? 'saved' : 'session' },
+                  React.createElement('strong', null, recording
+                    ? __alloT('stem.physics.history_kept_recording', 'Kept recording')
+                    : trail.run == null ? __alloT('stem.physics.history_unfinished', 'Unfinished flight')
+                      : __alloT('stem.physics.history_session_recording', 'Session recording')),
+                  physFinite(end.t) && end.t >= 0 && React.createElement('span', null,
+                    trail.length + ' ' + __alloT('stem.physics.history_original_points', 'original points') + ' · ' + end.t.toFixed(3) + ' s')),
+                React.createElement('p', { id: 'physics-history-help' }, __alloT('stem.physics.history_saved_help', 'Completed recordings reopen with the simulator. Up to five are kept; very long flights can reduce this count. Choosing a flight pauses playback and links its recorded canvas, graphs, and data.')));
             }
 
           // Each view reads the same captured trail. The canvas remains outside the workspace.
@@ -3582,6 +3813,8 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
               #physics-fs-outer [data-physics-flight-history] select{flex:1 1 280px;min-width:0;width:100%;min-height:44px;padding:9px;background:var(--phys-soft);color:var(--phys-ink);border:1px solid var(--phys-line);border-radius:8px;font-size:14px}
               #physics-fs-outer [data-physics-flight-history] button{min-height:44px;padding:9px 12px;background:var(--phys-selected);color:var(--phys-accent);border:1px solid var(--phys-accent);border-radius:8px;font-size:12px;font-weight:750}
               #physics-fs-outer [data-physics-flight-history] p{flex-basis:100%;margin:0;font-size:12px;line-height:1.65;color:var(--phys-muted)}
+              #physics-fs-outer .phys-history-recording{flex-basis:100%;display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;padding:9px 12px;background:var(--phys-soft);border:1px solid var(--phys-line);border-radius:9px;font-size:12px;line-height:1.65;color:var(--phys-muted)}
+              #physics-fs-outer .phys-history-recording strong{color:var(--phys-accent);font-weight:750}
               #physics-fs-outer [data-physics-run-log] [data-physics-run-inspect]{display:block;margin-top:6px;white-space:nowrap}
               #physics-fs-outer .phys-sample-time{font-size:1.5rem;font-weight:750;font-variant-numeric:tabular-nums;color:var(--phys-accent);white-space:nowrap}
               #physics-fs-outer .phys-capture-settings{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
@@ -4089,12 +4322,15 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                     // next frame and this button did nothing.
                     var cv = typeof document !== 'undefined' ? document.getElementById('physicsCanvas') : null;
                     if (cv) {
+                      cv._recordingEpoch = (cv._recordingEpoch || 0) + 1;
                       if (cv._cancelFlight) cv._cancelFlight();
                       ['_trails', '_impactParticles', '_landingMarkers'].forEach(function (k) { if (Array.isArray(cv[k])) cv[k].length = 0; else cv[k] = []; });
                       cv._apex = null;
                       if (cv._physScheduleFrame) cv._physScheduleFrame();
                     }
-                    upd('lastFlight', null);
+                    setLabToolData(function(prev) { return Object.assign({}, prev, { physics: Object.assign({}, prev.physics, {
+                      lastFlight: null, recordedFlights: physNormalizeRecordedFlights([])
+                    }) }); });
                   },
                   className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-slate-100 text-slate-700 border border-slate-300 hover:bg-slate-200"
                 }, "\u{1F9F9} " + __alloT('stem.physics.clear_trails', 'Clear Trails')),

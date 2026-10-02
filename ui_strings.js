@@ -73219,7 +73219,11 @@
       "quiz_world_jupiter": "Jupiter’s gravity is ~2.5× Earth’s — flights are short and brutal.",
       "sr_correct": "Correct.",
       "sr_not_quite": "Not quite.",
-      "toast_snapshot_saved": "Snapshot saved!"
+      "toast_snapshot_saved": "Snapshot saved!",
+      "history_kept_recording": "Kept recording",
+      "history_session_recording": "Session recording",
+      "history_original_points": "original points",
+      "history_saved_help": "Completed recordings reopen with the simulator. Up to five are kept; very long flights can reduce this count. Choosing a flight pauses playback and links its recorded canvas, graphs, and data."
     },
     "planet_quiz": {
       "u2705_correct": "✅ Correct! ",
