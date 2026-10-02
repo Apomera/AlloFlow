@@ -211,3 +211,15 @@ Each of the five comparison pairs has separate **observation** and **uncertainty
 The scope guidance distinguishes identification sketches from forecasting and asks what further observations would be needed. Guide browsing and comparison writing preserve the mounted model, paused progress, saved storm prediction and explanation, and existing evidence. The cloud sketch drawing code and storm calculations remain unchanged.
 
 See [cloud evidence review](../reports/watercycle-cloud-evidence/README.md) for matched captures, native interactions, preserved state, and the saved verification command.
+
+## Inspect the Steward campaign record
+
+**Inspect the campaign** turns the final trend chart into a saved-evidence inspector. Learners choose a whole watershed component name, quality, connectivity or community support, and a completed year. A single series makes its history easier to trace. Fixed-size HTML axes and markers remain readable as the plot adapts to narrow panels; circle, square and diamond markers accompany solid, dashed and dotted lines.
+
+The selected score and its change from the previous recorded year are shown beside a native saved-score table. Missing values remain gaps rather than invented zeroes. A comparison that spans missing years names both recorded endpoints. Scores and differences are rounded separately to one decimal place, using saved values before rounding.
+
+**Investigate year** follows one score through the recorded actions, routine change, event, difficulty adjustment and connected effects. An unscored question asks for the largest displayed change in either direction; equally large displayed changes are accepted. Incomplete or inconsistent step records explain why the answer cannot be established. All-zero displayed changes are identified without claiming that the underlying values must be identical.
+
+Feedback belongs to the campaign seed, component, score, year and recorded values. Changing that context clears old feedback. The history is also available in **Compare completed years** during annual review and subsequent planning years. Inspection preserves the campaign calculations, actions, hours, events, saved snapshots, outcomes and rewards.
+
+See [Steward history review](../reports/watercycle-steward-history/README.md) for native interactions, before/after captures and verification of the recorded values and campaign behavior.

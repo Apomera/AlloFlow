@@ -1,0 +1,16 @@
+{
+  "loadedRuntimes": [
+    {
+      "path": "stem_lab/stem_tool_watercycle.js",
+      "sha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a"
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "sha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a"
+    }
+  ],
+  "loadedTest": {
+    "path": "tests/watercycle_cloud_evidence.test.js",
+    "sha256": "a0ac08c15fa73fdcc3a6c08174c42822e793cb95b4824129e2b1bea169ed3ed3"
+  }
+}

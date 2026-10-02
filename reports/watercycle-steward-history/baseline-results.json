@@ -1,0 +1,120 @@
+{
+  "mode": "baseline",
+  "pid": 63596,
+  "startedAt": "2026-10-02T11:39:56.437Z",
+  "sourceSha256": "42eae634d0027b819ac0e5368801447780290c3d70e5da15aa402ff84d94314c",
+  "sourceBytes": 3012613,
+  "publicSha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+  "harnessSha256": "5d0c89f2587b41be568f04296bc6325f5c1f7ab91a476d7cd89e45fe644abc5c",
+  "checks": [],
+  "nativeActions": [],
+  "audits": [],
+  "captures": [
+    {
+      "path": "baseline-desktop.png",
+      "sha256": "be81d97061b2d397d085ff06612dd13c47204736c0e0108b8f24d999e5b02d0d",
+      "bytes": 26874,
+      "width": 768,
+      "height": 325,
+      "sourceSha256": "42eae634d0027b819ac0e5368801447780290c3d70e5da15aa402ff84d94314c",
+      "capturedAt": "2026-10-02T11:40:17.614Z"
+    },
+    {
+      "path": "baseline-phone320.png",
+      "sha256": "a5a3fc5532b1e7e6bdfca5e6034f90afeefd8119f5faf92e596721e20cb4b9b7",
+      "bytes": 9254,
+      "width": 270,
+      "height": 161,
+      "sourceSha256": "42eae634d0027b819ac0e5368801447780290c3d70e5da15aa402ff84d94314c",
+      "capturedAt": "2026-10-02T11:40:24.209Z"
+    },
+    {
+      "path": "baseline-phone390.png",
+      "sha256": "651b90ac9698730edcc57e0656dabf5756193a16b73515e818173d9d3af442bd",
+      "bytes": 12029,
+      "width": 340,
+      "height": 168,
+      "sourceSha256": "42eae634d0027b819ac0e5368801447780290c3d70e5da15aa402ff84d94314c",
+      "capturedAt": "2026-10-02T11:40:24.442Z"
+    },
+    {
+      "path": "baseline-dark.png",
+      "sha256": "5e9833bb4d959b8848be241ecd291a286b82db3198949bd7f71c91273cd83742",
+      "bytes": 35770,
+      "width": 768,
+      "height": 325,
+      "sourceSha256": "42eae634d0027b819ac0e5368801447780290c3d70e5da15aa402ff84d94314c",
+      "capturedAt": "2026-10-02T11:40:24.852Z"
+    },
+    {
+      "path": "baseline-host390.png",
+      "sha256": "1b7969b1752b2178d3a2537a6037dd8b89355a5229fb4fdefd23bc9cac3fccc6",
+      "bytes": 11228,
+      "width": 320,
+      "height": 161,
+      "sourceSha256": "42eae634d0027b819ac0e5368801447780290c3d70e5da15aa402ff84d94314c",
+      "capturedAt": "2026-10-02T11:40:25.041Z"
+    },
+    {
+      "path": "baseline-forced-phone.png",
+      "sha256": "a1d5090841eab0310cf5714739b57e9092d089dc250d6b9dc8b851c1e066c1f5",
+      "bytes": 8117,
+      "width": 270,
+      "height": 161,
+      "sourceSha256": "42eae634d0027b819ac0e5368801447780290c3d70e5da15aa402ff84d94314c",
+      "capturedAt": "2026-10-02T11:40:25.388Z"
+    },
+    {
+      "path": "baseline-forced-dark.png",
+      "sha256": "1469218c1180d32c449ac71a545429dd367789bce9781a810d0ce09f0d4f88de",
+      "bytes": 8183,
+      "width": 270,
+      "height": 161,
+      "sourceSha256": "42eae634d0027b819ac0e5368801447780290c3d70e5da15aa402ff84d94314c",
+      "capturedAt": "2026-10-02T11:40:25.576Z"
+    }
+  ],
+  "errors": [],
+  "consoleErrors": [],
+  "cases": [
+    {
+      "name": "desktop",
+      "phase": "debrief"
+    },
+    {
+      "name": "phone320",
+      "phase": "debrief"
+    },
+    {
+      "name": "phone390",
+      "phase": "debrief"
+    },
+    {
+      "name": "dark",
+      "phase": "debrief"
+    },
+    {
+      "name": "host390",
+      "phase": "debrief"
+    },
+    {
+      "name": "forced-phone",
+      "phase": "debrief"
+    },
+    {
+      "name": "forced-dark",
+      "phase": "debrief"
+    }
+  ],
+  "contrastReadings": [],
+  "completed": true,
+  "successful": true,
+  "resourcesClosed": true,
+  "browserClosed": true,
+  "serverUsed": false,
+  "serverClosed": true,
+  "serverClosedAt": null,
+  "browserLaunchedAt": "2026-10-02T11:39:57.930Z",
+  "browserClosedAt": "2026-10-02T11:40:29.783Z",
+  "completedAt": "2026-10-02T11:40:29.783Z"
+}

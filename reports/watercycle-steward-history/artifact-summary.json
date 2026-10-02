@@ -1,0 +1,629 @@
+{
+  "title": "Steward campaign history verification",
+  "status": "final",
+  "finalizedAt": "2026-10-02T11:48:01.251Z",
+  "sourcePath": "stem_lab/stem_tool_watercycle.js",
+  "publicPath": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+  "sourceSha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+  "baselinePath": "reports/watercycle-cloud-evidence/tested-runtime.js",
+  "baselineSha256": "42eae634d0027b819ac0e5368801447780290c3d70e5da15aa402ff84d94314c",
+  "baselinePublicSha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+  "testedRuntimePath": "reports/watercycle-steward-history/browser-tested-runtime.js",
+  "testedHarnessPath": "reports/watercycle-steward-history/browser-tested-harness.cjs",
+  "baselineHarnessPath": "reports/watercycle-steward-history/baseline-tested-harness.cjs",
+  "browserHarnessPath": "dev-tools/watercycle_steward_history_qa.cjs",
+  "baselineRuntimeInputs": [
+    "reports/watercycle-steward-history/baseline-runtime.js"
+  ],
+  "fixturePaths": [
+    "reports/watercycle-steward-history/baseline-campaign-fixtures.json",
+    "reports/watercycle-steward-history/browser-campaign-fixtures.json"
+  ],
+  "testPath": "tests/watercycle_steward_history.test.js",
+  "regressionFiles": [
+    "tests/watercycle_steward_decisions.test.js",
+    "tests/watercycle_cloud_evidence.test.js"
+  ],
+  "regressionBaselineInputs": [
+    {
+      "path": "reports/watercycle-cloud-evidence/baseline-runtime.js",
+      "sha256": "a0b86ac156e3045c52448226e518ed1ad4acd2b104c491d56efc7c1272b3579c"
+    }
+  ],
+  "reports": {
+    "baseline": "reports/watercycle-steward-history/baseline-results.json",
+    "browser": "reports/watercycle-steward-history/browser-results.json",
+    "unit": "reports/watercycle-steward-history/unit-results.json",
+    "regression": "reports/watercycle-steward-history/regression-results.json",
+    "unitBefore": "reports/watercycle-steward-history/unit-verification-before.json",
+    "unitAfter": "reports/watercycle-steward-history/unit-verification-after.json",
+    "regressionBefore": "reports/watercycle-steward-history/regression-verification-before.json",
+    "regressionAfter": "reports/watercycle-steward-history/regression-verification-after.json",
+    "unitLoaded": "reports/watercycle-steward-history/unit-loaded-runtime.json",
+    "regressionLoaded": "reports/watercycle-steward-history/regression-loaded-runtime.json",
+    "preview": "reports/watercycle-steward-history/preview-check.json"
+  },
+  "requiredInputs": [
+    "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+    "dev-tools/watercycle_steward_history_qa.cjs",
+    "reports/watercycle-cloud-evidence/baseline-runtime.js",
+    "reports/watercycle-cloud-evidence/tested-runtime.js",
+    "reports/watercycle-steward-history/baseline-campaign-fixtures.json",
+    "reports/watercycle-steward-history/baseline-dark.png",
+    "reports/watercycle-steward-history/baseline-desktop.png",
+    "reports/watercycle-steward-history/baseline-forced-dark.png",
+    "reports/watercycle-steward-history/baseline-forced-phone.png",
+    "reports/watercycle-steward-history/baseline-host390.png",
+    "reports/watercycle-steward-history/baseline-phone320.png",
+    "reports/watercycle-steward-history/baseline-phone390.png",
+    "reports/watercycle-steward-history/baseline-results.json",
+    "reports/watercycle-steward-history/baseline-runtime.js",
+    "reports/watercycle-steward-history/baseline-tested-harness.cjs",
+    "reports/watercycle-steward-history/browser-answered-real-record-phone320.png",
+    "reports/watercycle-steward-history/browser-answered-real-record.png",
+    "reports/watercycle-steward-history/browser-campaign-fixtures.json",
+    "reports/watercycle-steward-history/browser-connectivity-year1.png",
+    "reports/watercycle-steward-history/browser-dark.png",
+    "reports/watercycle-steward-history/browser-desktop.png",
+    "reports/watercycle-steward-history/browser-forced-dark.png",
+    "reports/watercycle-steward-history/browser-forced-phone.png",
+    "reports/watercycle-steward-history/browser-host390.png",
+    "reports/watercycle-steward-history/browser-legacy-record.png",
+    "reports/watercycle-steward-history/browser-missing-component-gap.png",
+    "reports/watercycle-steward-history/browser-phone320.png",
+    "reports/watercycle-steward-history/browser-phone390.png",
+    "reports/watercycle-steward-history/browser-planning-one-year.png",
+    "reports/watercycle-steward-history/browser-results.json",
+    "reports/watercycle-steward-history/browser-review-one-year.png",
+    "reports/watercycle-steward-history/browser-support-year1.png",
+    "reports/watercycle-steward-history/browser-tested-harness.cjs",
+    "reports/watercycle-steward-history/browser-tested-runtime.js",
+    "reports/watercycle-steward-history/browser-tied-record.png",
+    "reports/watercycle-steward-history/preview-check.json",
+    "reports/watercycle-steward-history/regression-loaded-runtime.json",
+    "reports/watercycle-steward-history/regression-results.json",
+    "reports/watercycle-steward-history/regression-verification-after.json",
+    "reports/watercycle-steward-history/regression-verification-before.json",
+    "reports/watercycle-steward-history/unit-loaded-runtime.json",
+    "reports/watercycle-steward-history/unit-results.json",
+    "reports/watercycle-steward-history/unit-verification-after.json",
+    "reports/watercycle-steward-history/unit-verification-before.json",
+    "stem_lab/stem_tool_watercycle.js",
+    "tests/watercycle_cloud_evidence.test.js",
+    "tests/watercycle_steward_decisions.test.js",
+    "tests/watercycle_steward_history.test.js"
+  ],
+  "artifacts": [
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "sha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "bytes": 3035457
+    },
+    {
+      "path": "dev-tools/watercycle_steward_history_qa.cjs",
+      "sha256": "5d0c89f2587b41be568f04296bc6325f5c1f7ab91a476d7cd89e45fe644abc5c",
+      "bytes": 32126
+    },
+    {
+      "path": "reports/watercycle-cloud-evidence/baseline-runtime.js",
+      "sha256": "a0b86ac156e3045c52448226e518ed1ad4acd2b104c491d56efc7c1272b3579c",
+      "bytes": 2999560
+    },
+    {
+      "path": "reports/watercycle-cloud-evidence/tested-runtime.js",
+      "sha256": "42eae634d0027b819ac0e5368801447780290c3d70e5da15aa402ff84d94314c",
+      "bytes": 3012613
+    },
+    {
+      "path": "reports/watercycle-steward-history/baseline-campaign-fixtures.json",
+      "sha256": "3e35053f6abd3882f42c05d0ec542186ed5a8cee8d3538011af81d6998c1bdc0",
+      "bytes": 286034
+    },
+    {
+      "path": "reports/watercycle-steward-history/baseline-dark.png",
+      "sha256": "5e9833bb4d959b8848be241ecd291a286b82db3198949bd7f71c91273cd83742",
+      "bytes": 35770,
+      "width": 768,
+      "height": 325
+    },
+    {
+      "path": "reports/watercycle-steward-history/baseline-desktop.png",
+      "sha256": "be81d97061b2d397d085ff06612dd13c47204736c0e0108b8f24d999e5b02d0d",
+      "bytes": 26874,
+      "width": 768,
+      "height": 325
+    },
+    {
+      "path": "reports/watercycle-steward-history/baseline-forced-dark.png",
+      "sha256": "1469218c1180d32c449ac71a545429dd367789bce9781a810d0ce09f0d4f88de",
+      "bytes": 8183,
+      "width": 270,
+      "height": 161
+    },
+    {
+      "path": "reports/watercycle-steward-history/baseline-forced-phone.png",
+      "sha256": "a1d5090841eab0310cf5714739b57e9092d089dc250d6b9dc8b851c1e066c1f5",
+      "bytes": 8117,
+      "width": 270,
+      "height": 161
+    },
+    {
+      "path": "reports/watercycle-steward-history/baseline-host390.png",
+      "sha256": "1b7969b1752b2178d3a2537a6037dd8b89355a5229fb4fdefd23bc9cac3fccc6",
+      "bytes": 11228,
+      "width": 320,
+      "height": 161
+    },
+    {
+      "path": "reports/watercycle-steward-history/baseline-phone320.png",
+      "sha256": "a5a3fc5532b1e7e6bdfca5e6034f90afeefd8119f5faf92e596721e20cb4b9b7",
+      "bytes": 9254,
+      "width": 270,
+      "height": 161
+    },
+    {
+      "path": "reports/watercycle-steward-history/baseline-phone390.png",
+      "sha256": "651b90ac9698730edcc57e0656dabf5756193a16b73515e818173d9d3af442bd",
+      "bytes": 12029,
+      "width": 340,
+      "height": 168
+    },
+    {
+      "path": "reports/watercycle-steward-history/baseline-results.json",
+      "sha256": "559fe66c126f7c84708734bf5d2d3758562b266c46dcef9c560a479e1aea42f4",
+      "bytes": 3637
+    },
+    {
+      "path": "reports/watercycle-steward-history/baseline-runtime.js",
+      "sha256": "42eae634d0027b819ac0e5368801447780290c3d70e5da15aa402ff84d94314c",
+      "bytes": 3012613
+    },
+    {
+      "path": "reports/watercycle-steward-history/baseline-tested-harness.cjs",
+      "sha256": "5d0c89f2587b41be568f04296bc6325f5c1f7ab91a476d7cd89e45fe644abc5c",
+      "bytes": 32126
+    },
+    {
+      "path": "reports/watercycle-steward-history/browser-answered-real-record-phone320.png",
+      "sha256": "191d1851732cf985dda64d1a8f10e740558a2b2a465a0e2c7ebfd0607a392096",
+      "bytes": 109405,
+      "width": 270,
+      "height": 3237
+    },
+    {
+      "path": "reports/watercycle-steward-history/browser-answered-real-record.png",
+      "sha256": "688db936d03f420095bd18c4f89ef50f378fe9f03e38d4e04262c9612f9fa971",
+      "bytes": 108564,
+      "width": 768,
+      "height": 1996
+    },
+    {
+      "path": "reports/watercycle-steward-history/browser-campaign-fixtures.json",
+      "sha256": "3e35053f6abd3882f42c05d0ec542186ed5a8cee8d3538011af81d6998c1bdc0",
+      "bytes": 286034
+    },
+    {
+      "path": "reports/watercycle-steward-history/browser-connectivity-year1.png",
+      "sha256": "b8d666498f0583cdab1e72b717110859270878f0a80cbb2a3d6564d0557f32f5",
+      "bytes": 102331,
+      "width": 768,
+      "height": 1973
+    },
+    {
+      "path": "reports/watercycle-steward-history/browser-dark.png",
+      "sha256": "f6f2adc7609fba1f817a53109bc09ea1d54d279ff6b62518c482b8809035c49c",
+      "bytes": 103837,
+      "width": 768,
+      "height": 2204
+    },
+    {
+      "path": "reports/watercycle-steward-history/browser-desktop.png",
+      "sha256": "483b8ed2bf43b18dfde188d81a2751a020fcff0b4f16865befca2e7ba4fdb15b",
+      "bytes": 103720,
+      "width": 768,
+      "height": 2204
+    },
+    {
+      "path": "reports/watercycle-steward-history/browser-forced-dark.png",
+      "sha256": "6c103af95e99000e372613ea8c8df1f7ddf72f82afd4541ad6118bc6787558d6",
+      "bytes": 78709,
+      "width": 270,
+      "height": 3207
+    },
+    {
+      "path": "reports/watercycle-steward-history/browser-forced-phone.png",
+      "sha256": "6c103af95e99000e372613ea8c8df1f7ddf72f82afd4541ad6118bc6787558d6",
+      "bytes": 78709,
+      "width": 270,
+      "height": 3207
+    },
+    {
+      "path": "reports/watercycle-steward-history/browser-host390.png",
+      "sha256": "6ce44a75af43a0f2e916312a7cdf782b0426b6b3ef2da901ed16f183008d5598",
+      "bytes": 101686,
+      "width": 320,
+      "height": 3079
+    },
+    {
+      "path": "reports/watercycle-steward-history/browser-legacy-record.png",
+      "sha256": "2e16f68eb5c2d056775995274f988c6e551aecb8500e8d139873bcc01326dbd8",
+      "bytes": 91236,
+      "width": 768,
+      "height": 1712
+    },
+    {
+      "path": "reports/watercycle-steward-history/browser-missing-component-gap.png",
+      "sha256": "05df0350af71f9a6db15e4b4568eaf6caf8b47d2b2b929cb9dd4966cc2e27b3d",
+      "bytes": 73325,
+      "width": 768,
+      "height": 1501
+    },
+    {
+      "path": "reports/watercycle-steward-history/browser-phone320.png",
+      "sha256": "0f9fbd9cc10ac8f8163712427009200b0b569d471f9c5937572ad465d7aa7765",
+      "bytes": 102609,
+      "width": 270,
+      "height": 3207
+    },
+    {
+      "path": "reports/watercycle-steward-history/browser-phone390.png",
+      "sha256": "279e6bbcc7b2e8befe3028e369b3072f4a15685bd536ddaf43d0b862d780d422",
+      "bytes": 101673,
+      "width": 340,
+      "height": 2948
+    },
+    {
+      "path": "reports/watercycle-steward-history/browser-planning-one-year.png",
+      "sha256": "321d86a5c450aeeddb4eac3e905706d144ccac12c9e41be456b7941619300e7f",
+      "bytes": 54536,
+      "width": 916,
+      "height": 966
+    },
+    {
+      "path": "reports/watercycle-steward-history/browser-results.json",
+      "sha256": "64b5b180a88990ce94441ac700d124ff067656c70f0b4d87e2524bfb81e2e1b2",
+      "bytes": 1106156
+    },
+    {
+      "path": "reports/watercycle-steward-history/browser-review-one-year.png",
+      "sha256": "4585fac527325a2abed4980a47c3e92d961f49ed2e9ceb265f44fc3dc436ff8e",
+      "bytes": 55055,
+      "width": 738,
+      "height": 1009
+    },
+    {
+      "path": "reports/watercycle-steward-history/browser-support-year1.png",
+      "sha256": "dac60db4529f1b3ff8241ba9b8fa80c7ee8be2d569796a77adc17bb9871a9ea6",
+      "bytes": 107511,
+      "width": 768,
+      "height": 1973
+    },
+    {
+      "path": "reports/watercycle-steward-history/browser-tested-harness.cjs",
+      "sha256": "5d0c89f2587b41be568f04296bc6325f5c1f7ab91a476d7cd89e45fe644abc5c",
+      "bytes": 32126
+    },
+    {
+      "path": "reports/watercycle-steward-history/browser-tested-runtime.js",
+      "sha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "bytes": 3035457
+    },
+    {
+      "path": "reports/watercycle-steward-history/browser-tied-record.png",
+      "sha256": "c63366b951706ed90e0b69c03bfe1297a703aa54e20011f69b03833e7356968f",
+      "bytes": 103141,
+      "width": 768,
+      "height": 1996
+    },
+    {
+      "path": "reports/watercycle-steward-history/preview-check.json",
+      "sha256": "243bb1d6151c1b683b4fdfe04421e551dcfe2c46c6b2ccd18af2c4eda5da9284",
+      "bytes": 244
+    },
+    {
+      "path": "reports/watercycle-steward-history/regression-loaded-runtime.json",
+      "sha256": "3066e02841e402c1a865580f8fce6d7697980dec5e4dff4c6998f296fdec3c3a",
+      "bytes": 503
+    },
+    {
+      "path": "reports/watercycle-steward-history/regression-results.json",
+      "sha256": "4ebe31b3026508cb6a1ff27c2a1b65c816e3e5a5094d32271b86744650752b41",
+      "bytes": 31310
+    },
+    {
+      "path": "reports/watercycle-steward-history/regression-verification-after.json",
+      "sha256": "23d68f24106ec4116f9f54aabb2368c765ce47b8a32e63d78dbb5037004ef4d4",
+      "bytes": 8980
+    },
+    {
+      "path": "reports/watercycle-steward-history/regression-verification-before.json",
+      "sha256": "1a78e979e44b570e342101dee864befcac8f9d4a113d40b5f0d63cc5b9c81d61",
+      "bytes": 5719
+    },
+    {
+      "path": "reports/watercycle-steward-history/unit-loaded-runtime.json",
+      "sha256": "caf20905b42925fe98e19c6dd0ac89e33f30a1fe56e00108cc625a6749491344",
+      "bytes": 659
+    },
+    {
+      "path": "reports/watercycle-steward-history/unit-results.json",
+      "sha256": "ea43066f09859bf7c5fa634fe42b56acbf9fbb451baa1146155a3a42d0fd68a9",
+      "bytes": 36381
+    },
+    {
+      "path": "reports/watercycle-steward-history/unit-verification-after.json",
+      "sha256": "a0703c947a235f932d685c2e865b0273b761a8f51cb907fecf9a3bbb24499425",
+      "bytes": 8311
+    },
+    {
+      "path": "reports/watercycle-steward-history/unit-verification-before.json",
+      "sha256": "ace04978c6e63fe3e2a9c51fae5630ad80f1179428c11b018467598f045b571b",
+      "bytes": 5537
+    },
+    {
+      "path": "stem_lab/stem_tool_watercycle.js",
+      "sha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "bytes": 3035457
+    },
+    {
+      "path": "tests/watercycle_cloud_evidence.test.js",
+      "sha256": "a0ac08c15fa73fdcc3a6c08174c42822e793cb95b4824129e2b1bea169ed3ed3",
+      "bytes": 18734
+    },
+    {
+      "path": "tests/watercycle_steward_decisions.test.js",
+      "sha256": "0c70b8e0d89c4ef652754635e26970ece1719d791a489cdf43c10a0232fa17e6",
+      "bytes": 5495
+    },
+    {
+      "path": "tests/watercycle_steward_history.test.js",
+      "sha256": "11f87287d3a8c47411d64676829539a66dfbea7b83eed0fa05b98c09c3388d0b",
+      "bytes": 31348
+    }
+  ],
+  "browser": {
+    "counts": {
+      "checkInstances": 750,
+      "uniqueCheckLabels": 750,
+      "cases": 189,
+      "nativeActions": 243,
+      "audits": 7,
+      "captures": 16
+    },
+    "componentIDs": [
+      "headwaterStreams",
+      "riverMainstem",
+      "floodplainWetlands",
+      "forestBuffer",
+      "agriculturalWatershed",
+      "suburbanEdges"
+    ],
+    "requiredSemanticChecks": [
+      "Real campaign step scores and raw signed deltas match saved record",
+      "Wrong real-record answer invites reconsideration",
+      "Supported real-record answer focuses feedback",
+      "Changing metric clears prior answer",
+      "Changing campaign seed invalidates prior answer",
+      "Unrounded saved-value change invalidates prior answer",
+      "Tied actions signed-change choice accepted",
+      "Tied drift signed-change choice accepted",
+      "zero displayed-zero explanation",
+      "subprecision displayed-zero explanation",
+      "Legacy incomplete record retains endpoint and explains missing steps",
+      "Missing component value is not rendered as zero",
+      "Missing year gap and nonconsecutive comparison are explicit",
+      "Duplicate-year evidence is unavailable",
+      "review completed-history access opens native disclosure",
+      "review history IDs are unique",
+      "planning completed-history access opens native disclosure",
+      "planning history IDs are unique",
+      "wcStewardHistoryComponent retains native keyboard focus",
+      "wcStewardHistoryComponent has visible focus",
+      "wcStewardHistoryMetric retains native keyboard focus",
+      "wcStewardHistoryMetric has visible focus",
+      "wcStewardHistoryYear retains native keyboard focus",
+      "wcStewardHistoryYear has visible focus",
+      "phone320 scoped geometry fits",
+      "phone320 controls at least44px",
+      "phone320 axes have fixed readable text",
+      "dark scoped geometry fits",
+      "dark controls at least44px",
+      "dark axes have fixed readable text",
+      "forced-dark scoped geometry fits",
+      "forced-dark controls at least44px",
+      "forced-dark axes have fixed readable text",
+      "host390 scoped geometry fits",
+      "host390 controls at least44px",
+      "host390 axes have fixed readable text",
+      "phone390 scoped geometry fits",
+      "phone390 controls at least44px",
+      "phone390 axes have fixed readable text",
+      "desktop scoped geometry fits",
+      "desktop controls at least44px",
+      "desktop axes have fixed readable text",
+      "forced-phone scoped geometry fits",
+      "forced-phone controls at least44px",
+      "forced-phone axes have fixed readable text"
+    ],
+    "audit": {
+      "automatedViolations": 0,
+      "incompleteItems": 7,
+      "incompleteNodes": 70,
+      "resolution": "Exact year-label targets with positive text Range bounds, inherited foreground/composed-background contrast and scoped clipping evidence."
+    },
+    "contrast": {
+      "readings": 775,
+      "minimum": 6.409936245386048
+    },
+    "savedReadingCases": 180,
+    "derivedFixtureDescriptions": [
+      "Tie: selected raw steps40,45,40,42,42,43 with matching action/end snapshots",
+      "Displayed zero: all steps50",
+      "Subprecision:50 followed by50.04",
+      "Legacy: yearStart/stages removed",
+      "Gap: year5 component endpoint removed",
+      "Gap: year5 record removed",
+      "Duplicate: year3 record duplicated",
+      "Identity: campaign seed changed",
+      "Identity: raw starting value changed by0.001"
+    ]
+  },
+  "captures": {
+    "pairs": [
+      {
+        "context": "desktop",
+        "before": "reports/watercycle-steward-history/baseline-desktop.png",
+        "after": "reports/watercycle-steward-history/browser-desktop.png"
+      },
+      {
+        "context": "phone320",
+        "before": "reports/watercycle-steward-history/baseline-phone320.png",
+        "after": "reports/watercycle-steward-history/browser-phone320.png"
+      },
+      {
+        "context": "phone390",
+        "before": "reports/watercycle-steward-history/baseline-phone390.png",
+        "after": "reports/watercycle-steward-history/browser-phone390.png"
+      },
+      {
+        "context": "dark",
+        "before": "reports/watercycle-steward-history/baseline-dark.png",
+        "after": "reports/watercycle-steward-history/browser-dark.png"
+      },
+      {
+        "context": "host390",
+        "before": "reports/watercycle-steward-history/baseline-host390.png",
+        "after": "reports/watercycle-steward-history/browser-host390.png"
+      },
+      {
+        "context": "forced-phone",
+        "before": "reports/watercycle-steward-history/baseline-forced-phone.png",
+        "after": "reports/watercycle-steward-history/browser-forced-phone.png"
+      },
+      {
+        "context": "forced-dark",
+        "before": "reports/watercycle-steward-history/baseline-forced-dark.png",
+        "after": "reports/watercycle-steward-history/browser-forced-dark.png"
+      }
+    ],
+    "additional": [
+      "reports/watercycle-steward-history/browser-answered-real-record.png",
+      "reports/watercycle-steward-history/browser-answered-real-record-phone320.png",
+      "reports/watercycle-steward-history/browser-support-year1.png",
+      "reports/watercycle-steward-history/browser-connectivity-year1.png",
+      "reports/watercycle-steward-history/browser-tied-record.png",
+      "reports/watercycle-steward-history/browser-legacy-record.png",
+      "reports/watercycle-steward-history/browser-missing-component-gap.png",
+      "reports/watercycle-steward-history/browser-review-one-year.png",
+      "reports/watercycle-steward-history/browser-planning-one-year.png"
+    ]
+  },
+  "tests": {
+    "unit": 47,
+    "regression": 40,
+    "total": 87,
+    "files": 3
+  },
+  "preservation": {
+    "baselinePath": "reports/watercycle-cloud-evidence/tested-runtime.js",
+    "baselineSha256": "42eae634d0027b819ac0e5368801447780290c3d70e5da15aa402ff84d94314c",
+    "anchors": [
+      {
+        "name": "MAINE_WATERSHED_COMPONENTS",
+        "sha256": "28bd80ebc3f356736a37b858059db4ab4dd6eae90051c775015bcaadaee5fd0d"
+      },
+      {
+        "name": "STEWARD_TECHNIQUES",
+        "sha256": "ad8f394d20b6de43edfeda32bab1a428417762035a72a183284191b6ea51d601"
+      },
+      {
+        "name": "STEWARD_EVENTS",
+        "sha256": "8a5293c1e49c76c986851d99ec5cfd1e42b8d1ff74bacc00938c34e991d141fe"
+      },
+      {
+        "name": "STEWARD_FEEDBACK_RULES",
+        "sha256": "f52975ed9ae354fe6bb1a621121dd9007a24d8a53d28d6d421d370582e27c2a5"
+      },
+      {
+        "name": "STEWARD_CASCADE_HINTS",
+        "sha256": "51d64e72ad554b69ae5057cd35ee96ee54fe97b69e512bb736a2c9cf25d0ad24"
+      },
+      {
+        "name": "STEWARD_DIFFICULTIES",
+        "sha256": "42330ab94b15c04ff293a1e01a7d508c70ac46230b657b5aa37931dacbb11e96"
+      },
+      {
+        "name": "wcWatershedCopy",
+        "sha256": "48aecf282d28072eb48cca17931c55eb40e88b06044cca9adf236844266f55ab"
+      },
+      {
+        "name": "localizeWatershedComponents",
+        "sha256": "e3c0b6036d7cc4e127bf2b139f32c9f5d54589223df1886bc31af7d0573b51f0"
+      },
+      {
+        "name": "wcStewardCopy",
+        "sha256": "524e4fe068234d3310b666c5d1d668d597def5bbd1f43a7855f5aa53442e2bf7"
+      },
+      {
+        "name": "applyStewardCopy",
+        "sha256": "73b36099c7f0824fcb0a2a476a46a4b157609841addd1969b908d75debaf9f1e"
+      },
+      {
+        "name": "defaultStewardState",
+        "sha256": "965e598ed05fb1456b199e7d857b7024d693446879b96a56226d434abdfa7f19"
+      },
+      {
+        "name": "watershedComponents",
+        "sha256": "f849135da8151e7bb03a3dbe61391e84f1de82f8a4318bdecf46d9c1822f48b6"
+      },
+      {
+        "name": "getWatershedComponent",
+        "sha256": "fca9c1f5ca4a7ac6beced78e29fbd93bc857214bb85ad7588305df389ac7387c"
+      },
+      {
+        "name": "stewardRng",
+        "sha256": "58513c2e33d6bc54fe54b8b572120af9b14d1c446a9b5abb396112a2c2d2f0be"
+      },
+      {
+        "name": "stewardClamp",
+        "sha256": "b7d88e92780096999af8bd2b8213586ae296998326c03cc706e7b644e9694933"
+      },
+      {
+        "name": "startStewardCampaign",
+        "sha256": "9daa9fab30d4f1fc246fc476a1a569be87dab87042baee4c06677fd7372a8632"
+      },
+      {
+        "name": "resetSteward",
+        "sha256": "62ef415a8ff0f7cdeebfb9ee7deafbe96b60ed0f3d87ca0042f961f1e07d2328"
+      },
+      {
+        "name": "applyStewardTech",
+        "sha256": "aba0f7987e30d7e169e4d2bbf57a27d900392456b3099e28c496249ee7820493"
+      },
+      {
+        "name": "endStewardYear",
+        "sha256": "e5d481f999f4e269dee447489e984e8fd0dcaca1d936f946f77782d4b2a36cba"
+      },
+      {
+        "name": "advanceFromStewardReview",
+        "sha256": "af3d29b439204da8cfc221da4152aed2c52b75cb5360de4b4c191c77b5309033"
+      },
+      {
+        "name": "stewardCoachingTip",
+        "sha256": "59c5b60c88acbd36e285540f2d157e5421734411d2f4e4c917c736fecbba0ee5"
+      },
+      {
+        "name": "stewardYearDebrief",
+        "sha256": "44fcf149ab59652a50ed88f6017b3d553d2ed96a4ea1cade86ad03a161a33660"
+      },
+      {
+        "name": "checkWaterCycleChallenges",
+        "sha256": "5ebaedbdcfbff0f3e39e04ae1e39a41746c9b5081a9dbba0887ad2f6330a1a5f"
+      },
+      {
+        "name": "WATER_CYCLE_CHALLENGES",
+        "sha256": "1c17d9a5ff22715589d3bc1416fa6ba6b9a28076b52546402e3e81ed199c3315"
+      }
+    ]
+  }
+}

@@ -1096,6 +1096,83 @@
     return _wcLocalizedCache;
   }
 
+  // Read saved campaign evidence without changing the campaign model.
+  var WCStewardHistory = (function() {
+    var specs = [
+      { key: 'quality', label: 'Quality', meaning: 'The component quality score in this campaign.', shape: 'circle', dash: '' },
+      { key: 'connectivity', label: 'Connectivity', meaning: 'The component connectivity score in this campaign.', shape: 'square', dash: '8 4' },
+      { key: 'support', label: 'Community support', meaning: 'The community support score for this component in the campaign.', shape: 'diamond', dash: '2 4' }
+    ];
+    var names = [['start','Start of year'],['actions','After your actions'],['drift','Routine yearly change'],['event','Yearly event'],['difficulty','Difficulty adjustment'],['cascade','Connected watershed effects']];
+    function own(value, key) { return value && typeof value === 'object' && !Array.isArray(value) && Object.prototype.hasOwnProperty.call(value, key) ? value[key] : undefined; }
+    function finite(value) { return typeof value === 'number' && isFinite(value); }
+    function round(value) { var rounded = Math.round(Math.abs(value) * 10) / 10 * (value < 0 ? -1 : 1); return rounded === 0 ? 0 : rounded; }
+    function score(value) { return finite(value) ? String(round(value)) : 'Not recorded'; }
+    function signed(value) { if (!finite(value)) return 'Not recorded'; var rounded = round(value); return (rounded > 0 ? '+' : '') + String(rounded); }
+    function read(list, id, metric) {
+      if (!id || !Array.isArray(list)) return null;
+      var matches = list.filter(function(item) { return own(item, 'id') === id; });
+      if (matches.length !== 1) return null;
+      var value = own(matches[0], metric);
+      return finite(value) && value >= 0 && value <= 100 ? value : null;
+    }
+    function stage(record, id, component, metric) {
+      var stages = own(record, 'stages');
+      if (!Array.isArray(stages)) return null;
+      var matches = stages.filter(function(item) { return own(item, 'id') === id; });
+      return matches.length === 1 ? read(own(matches[0], 'components'), component, metric) : null;
+    }
+    function describe(log, selection, components, seed) {
+      var definitions = Array.isArray(components) ? components.filter(function(item) { return item && typeof item.id === 'string'; }) : [];
+      var component = definitions.filter(function(item) { return item.id === own(selection, 'component'); })[0] || definitions.filter(function(item) { return item.id === 'riverMainstem'; })[0] || definitions[0] || { id: '', name: 'Watershed component' };
+      var metric = specs.filter(function(item) { return item.key === own(selection, 'metric'); })[0] || specs[0];
+      var records = {}, counts = {}, lastYear = 0;
+      (Array.isArray(log) ? log : []).forEach(function(record) {
+        var year = own(record, 'year');
+        if (!finite(year) || year % 1 || year < 1 || year > 10) return;
+        counts[year] = (counts[year] || 0) + 1;
+        records[year] = record;
+        lastYear = Math.max(lastYear, year);
+      });
+      var rows = [], previous = null;
+      for (var year = 1; year <= lastYear; year++) {
+        var record = counts[year] === 1 ? records[year] : null;
+        var value = read(own(record, 'post'), component.id, metric.key);
+        var event = own(record, 'event'), actions = own(record, 'actions');
+        var row = { year: year, hasRecord: !!record, value: value, event: typeof event === 'string' ? event.slice(0, 160) : '', actionsCount: Array.isArray(actions) ? actions.length : null,
+          previousYear: previous ? previous.year : null, change: record && previous && value !== null && previous.value !== null ? value - previous.value : null };
+        rows.push(row);
+        if (record) previous = row;
+      }
+      var saved = rows.filter(function(row) { return row.hasRecord; });
+      var chosenYear = own(selection, 'year');
+      if (typeof chosenYear === 'string' && /^(?:[1-9]|10)$/.test(chosenYear)) chosenYear = Number(chosenYear);
+      var selected = saved.filter(function(row) { return row.year === chosenYear; })[0] || saved[saved.length - 1] || null;
+      var prior = selected ? saved.filter(function(row) { return row.year < selected.year; }).slice(-1)[0] || null : null;
+      var current = selected ? records[selected.year] : null;
+      var steps = names.map(function(item, index) {
+        var value = item[0] === 'start' ? read(own(current, 'yearStart'), component.id, metric.key) : item[0] === 'actions' ? read(own(current, 'pre'), component.id, metric.key) : stage(current, item[0], component.id, metric.key);
+        return { id: item[0], label: item[1], value: value, delta: null, displayedDelta: null };
+      });
+      steps.forEach(function(step, index) {
+        var before = index ? steps[index - 1].value : null;
+        step.delta = before !== null && step.value !== null ? step.value - before : null;
+        step.displayedDelta = step.delta === null ? null : round(step.delta);
+      });
+      var actionStage = stage(current, 'actions', component.id, metric.key);
+      var complete = !!selected && selected.value !== null && steps.every(function(step) { return step.value !== null; }) && actionStage !== null && Math.abs(actionStage - steps[1].value) < 1e-8 && Math.abs(steps[5].value - selected.value) < 1e-8;
+      var largest = complete ? Math.max.apply(Math, steps.slice(1).map(function(step) { return Math.abs(step.displayedDelta); })) : null;
+      var question = { status: !complete ? 'incomplete' : largest === 0 ? 'unchanged' : 'ready', largest: largest,
+        winners: complete && largest > 0 ? steps.slice(1).filter(function(step) { return Math.abs(step.displayedDelta) === largest; }).map(function(step) { return step.id; }) : [] };
+      var identity = selected ? JSON.stringify([typeof seed === 'string' ? seed : '', component.id, metric.key, selected.year, steps.map(function(step) { return step.value; }), actionStage, selected.value]) : '';
+      var answer = question.status === 'ready' && own(selection, 'identity') === identity && steps.slice(1).some(function(step) { return step.id === own(selection, 'answer'); }) ? own(selection, 'answer') : '';
+      return { component: component, metric: metric, rows: rows, selected: selected, previous: prior, delta: selected && prior && selected.value !== null && prior.value !== null ? selected.value - prior.value : null,
+        identity: identity, steps: steps, complete: complete, question: question, answer: answer, result: !answer ? 'waiting' : question.winners.indexOf(answer) >= 0 ? 'supported' : 'retry' };
+    }
+    return { metrics: function() { return specs.map(function(spec) { return Object.assign({}, spec); }); }, describe: describe, score: score, signed: signed };
+  })();
+  var WC_STEWARD_HISTORY_STYLE = ".wc-steward-history{--sh-paper:#f7fcfc;--sh-tint:#eaf4f3;--sh-ink:#123842;--sh-muted:#365d68;--sh-line:#97b8be;--sh-accent:#086979;--sh-mark:#b45309;container-type:inline-size;container-name:steward-history;margin:16px 0;padding:20px;border:1px solid var(--sh-line);border-radius:20px;background:var(--sh-paper);color:var(--sh-ink);font-size:14px;line-height:1.6;min-width:0;box-shadow:0 8px 22px rgba(18,56,66,.06)}\n.wc-steward-history.is-dark{--sh-paper:#102a36;--sh-tint:#193c48;--sh-ink:#effaff;--sh-muted:#c5dee5;--sh-line:#50717d;--sh-accent:#6de0e3;--sh-mark:#fbbf24}\n.wc-steward-history.is-contrast{--sh-paper:#fff;--sh-tint:#fff;--sh-ink:#111;--sh-muted:#222;--sh-line:#111;--sh-accent:#005266;--sh-mark:#733800}\n.wc-steward-history :is(p,h4,h5,figure,dl){margin:0}.wc-steward-history p{margin-top:10px}.wc-steward-history h4{font-size:21px;line-height:1.3;color:var(--sh-ink)}.wc-steward-history h5{font-size:16px;line-height:1.4}.wc-history-kicker{display:block;margin-bottom:5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;font-size:12px;color:var(--sh-muted)}\n.wc-history-controls{display:grid;gap:12px;margin:18px 0}.wc-history-controls label{display:grid;gap:5px;font-weight:800;color:var(--sh-ink)}.wc-steward-history select,.wc-steward-history button{width:100%;min-height:44px;padding:9px 12px;border:1px solid var(--sh-line);border-radius:10px;background:var(--sh-paper);color:var(--sh-ink);font:inherit;font-weight:700;white-space:normal}.wc-steward-history select{padding-right:28px;min-width:0}.wc-steward-history button{cursor:pointer}\n.wc-steward-history :is(select,button,summary):focus-visible,.wc-steward-history [tabindex='-1']:focus{outline:3px solid var(--sh-accent);outline-offset:3px}.wc-steward-history button[aria-pressed=true]{border:2px solid var(--sh-accent);background:var(--sh-tint)}\n.wc-history-readings{display:grid;gap:10px;margin:16px 0!important}.wc-history-readings>div{padding:14px;border:1px solid var(--sh-line);border-radius:13px;background:var(--sh-tint);min-width:0}.wc-history-readings dt{font-size:13px;font-weight:700;color:var(--sh-muted)}.wc-history-readings dd{margin:4px 0 0;font-size:28px;font-weight:800;line-height:1.2;overflow-wrap:anywhere}.wc-history-readings dd small{font-size:13px;font-weight:600;margin-left:5px}\n.wc-history-chart{margin:18px 0!important;padding:16px;border:1px solid var(--sh-line);border-radius:14px;background:var(--sh-paper)}.wc-history-chart figcaption{font-weight:800}.wc-history-key{display:flex;gap:10px;align-items:center;margin-top:6px;color:var(--sh-muted);font-size:13px}.wc-history-key-mark{position:relative;flex:0 0 38px;height:16px}.wc-history-key-mark:before{content:'';position:absolute;left:0;right:0;top:7px;border-top:2px solid var(--sh-accent)}[data-history-metric=connectivity] .wc-history-key-mark:before{border-top-style:dashed}[data-history-metric=support] .wc-history-key-mark:before{border-top-style:dotted}\n.wc-history-chart-grid{display:grid;grid-template-columns:30px minmax(0,1fr);gap:10px;margin-top:22px}.wc-history-y-axis{height:180px;position:relative;color:var(--sh-muted);font-size:12px;line-height:1}.wc-history-y-axis span{position:absolute;right:0;transform:translateY(-50%)}.wc-history-plot{position:relative;height:180px;min-width:0}.wc-history-plot svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}.wc-history-grid-line{stroke:var(--sh-line);stroke-width:1;stroke-dasharray:2 5;vector-effect:non-scaling-stroke}.wc-history-series{fill:none;stroke:var(--sh-accent);stroke-width:2.5;vector-effect:non-scaling-stroke}\n.wc-history-point{position:absolute;width:10px;height:10px;box-sizing:border-box;display:block;background:var(--sh-accent);border:1px solid var(--sh-paper);border-radius:50%;transform:translate(-50%,-50%);z-index:1}.wc-history-point[data-shape=square]{border-radius:1px}.wc-history-point[data-shape=diamond]{border-radius:0;transform:translate(-50%,-50%) rotate(45deg)}.wc-history-point[data-selected=true]{background:var(--sh-mark);outline:2px solid var(--sh-ink);outline-offset:3px;z-index:2}.wc-history-key-mark .wc-history-point{left:50%;top:50%;width:9px;height:9px}\n.wc-history-x-axis{display:flex;justify-content:space-between;gap:0;margin:12px 0 0 40px;color:var(--sh-muted);font-size:12px;line-height:1.2}.wc-history-x-axis.single{justify-content:center}.wc-history-x-axis span{width:0;text-align:center;display:flex;justify-content:center;white-space:nowrap}.wc-history-axis-label{margin-top:8px!important;text-align:center;color:var(--sh-muted);font-size:13px}.wc-history-chart-note{font-size:13px;color:var(--sh-muted)}\n.wc-steward-history details{margin-top:16px;border-top:1px solid var(--sh-line)}.wc-steward-history summary{display:list-item;list-style:revert;min-height:44px;padding:12px 2px;cursor:pointer;font-weight:800}.wc-history-table{width:100%;border-collapse:collapse;font-size:14px;table-layout:fixed}.wc-history-table caption{text-align:left;padding:6px 0 10px;color:var(--sh-muted);font-size:13px}.wc-history-table :is(th,td){padding:9px 5px;text-align:left;border-bottom:1px solid var(--sh-line);overflow-wrap:normal}.wc-history-table th{font-weight:800}.wc-history-table tr[data-selected=true]{background:var(--sh-tint);outline:2px solid var(--sh-accent);outline-offset:-2px}\n.wc-history-context{padding:12px 14px;background:var(--sh-tint);border-radius:12px;margin:16px 0}.wc-history-context p{margin-top:3px}.wc-history-stages{list-style:none;margin:14px 0;padding:0;display:grid;gap:8px}.wc-history-stages li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:start;padding:12px;border:1px solid var(--sh-line);border-radius:10px}.wc-history-step-score{text-align:right;font-weight:800}.wc-history-step-score small{display:block;font-size:13px;font-weight:600;color:var(--sh-muted)}.wc-history-question{padding:14px;border:1px solid var(--sh-line);border-radius:14px;background:var(--sh-tint)}.wc-history-answer-options{display:grid;gap:8px;margin-top:12px}.wc-history-feedback{margin-top:12px;padding:12px;border-left:3px solid var(--sh-accent);background:var(--sh-paper);border-radius:0 10px 10px 0}.wc-history-feedback p{margin-top:4px}.wc-history-scope{font-size:13px;color:var(--sh-muted)}.wc-history-review{margin:14px 0;padding:10px 14px;border:1px solid #97b8be;border-radius:14px}.wc-history-review>summary{display:list-item;list-style:revert;min-height:44px;padding:8px 0;font-size:14px;font-weight:800;cursor:pointer}\n@container steward-history (min-width:560px){.wc-history-controls{grid-template-columns:1.3fr 1fr .8fr}.wc-history-readings{grid-template-columns:repeat(3,minmax(0,1fr))}.wc-history-answer-options{grid-template-columns:repeat(2,minmax(0,1fr))}}\n@container steward-history (max-width:300px){.wc-history-chart{padding:12px}.wc-history-stages li{grid-template-columns:minmax(0,1fr)}.wc-history-step-score{text-align:left}.wc-history-readings dd{font-size:25px}.wc-history-chart-grid{grid-template-columns:26px minmax(0,1fr);gap:8px}.wc-history-x-axis{margin-left:34px}}\n@media(forced-colors:active){.wc-steward-history{--sh-paper:Canvas!important;--sh-tint:Canvas!important;--sh-ink:CanvasText!important;--sh-muted:CanvasText!important;--sh-line:CanvasText!important;--sh-accent:Highlight!important;--sh-mark:Highlight!important;forced-color-adjust:none;box-shadow:none}.wc-steward-history :is(select,button){background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}.wc-history-review{border-color:CanvasText}.wc-history-series{stroke:Highlight!important}.wc-history-point{background:Highlight!important;border-color:Canvas!important}.wc-history-point[data-selected=true]{outline-color:CanvasText!important}}\n";
+
   function getWatershedComponent(id) {
     var list = watershedComponents();
     for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
@@ -5787,72 +5864,96 @@ const d = labToolData.waterCycle || {};
 
           // ── Multi-line week-by-week trend chart ──
           function renderStewardTrendChart(yearLog) {
-            if (!yearLog || yearLog.length === 0) return null;
-            var w = 600, hgt = 220, padL = 36, padR = 110, padT = 12, padB = 24;
-            var ix = w - padL - padR;
-            var iy = hgt - padT - padB;
-            var components = watershedComponents();
-            function ptsFor(cid) {
-              return yearLog.map(function(snap, i) {
-                var post = (snap.post || []).find(function(p) { return p.id === cid; });
-                var v = post ? post.quality : 0;
-                var x = padL + (yearLog.length === 1 ? ix / 2 : (i / (yearLog.length - 1)) * ix);
-                var y = padT + iy - (v / 100) * iy;
-                return { x: x, y: y, v: v };
-              });
+            var history = WCStewardHistory.describe(yearLog, d.wcStewardHistory, watershedComponents(), steward.seed);
+            if (!history.selected) return h('p', { className: 'wc-steward-model-note' }, 'No unambiguous completed-year record is available.');
+            var selected = history.selected, metric = history.metric, component = history.component;
+            var lastYear = history.rows.length;
+            function x(year) { return lastYear === 1 ? 50 : (year - 1) / (lastYear - 1) * 100; }
+            var paths = [], path = '';
+            history.rows.forEach(function(row) {
+              if (row.value === null) { if (path) paths.push(path); path = ''; return; }
+              path += (path ? ' L' : 'M') + x(row.year) + ',' + (100 - row.value);
+            });
+            if (path) paths.push(path);
+            function choose(field, value) {
+              var next = { component: component.id, metric: metric.key, year: selected.year };
+              next[field] = value;
+              upd('wcStewardHistory', next);
             }
-            function pathStr(pts) { return pts.map(function(p, i) { return (i === 0 ? 'M' : 'L') + p.x + ',' + p.y; }).join(' '); }
-            return h('div', {
-              style: {
-                background: isDark ? 'rgba(15,23,42,0.6)' : '#f8fafc',
-                borderRadius: 12,
-                padding: 12,
-                marginBottom: 14,
-                border: isDark ? '1px solid #334155' : '1px solid #cbd5e1'
-              }
-            },
-              h('div', { style: { fontSize: 12, fontWeight: 700, color: isDark ? '#cbd5e1' : '#334155', marginBottom: 8 } }, t('stem.watercycle.component_quality_across_the_10_year_c', '📈 Component quality across the 10-year campaign')),
-              h('svg', { viewBox: '0 0 ' + w + ' ' + hgt, style: { width: '100%', height: 'auto', display: 'block' }, 'aria-label': t('stem.watercycle.year_by_year_quality_trend_chart_by_wa', 'Year-by-year quality trend chart by watershed component') },
-                [0, 25, 50, 75, 100].map(function(g, gi) {
-                  var y = padT + iy - (g / 100) * iy;
-                  return h('g', { key: 'g' + gi },
-                    h('line', { x1: padL, y1: y, x2: padL + ix, y2: y, stroke: isDark ? '#1e293b' : '#cbd5e1', strokeWidth: 1 }),
-                    h('text', { x: padL - 4, y: y + 3, fontSize: 9, fill: isDark ? '#64748b' : '#475569', textAnchor: 'end' }, g)
-                  );
-                }),
-                yearLog.map(function(snap, i) {
-                  var x = padL + (yearLog.length === 1 ? ix / 2 : (i / (yearLog.length - 1)) * ix);
-                  return h('text', { key: 'xl' + i, x: x, y: hgt - 8, fontSize: 9, fill: isDark ? '#64748b' : '#475569', textAnchor: 'middle' }, 'Y' + snap.year);
-                }),
-                components.map(function(comp) {
-                  var pts = ptsFor(comp.id);
-                  return h('g', { key: comp.id },
-                    h('path', { d: pathStr(pts), stroke: comp.color, strokeWidth: 2.2, fill: 'none', strokeLinejoin: 'round', strokeLinecap: 'round' }),
-                    // Point markers make single readings legible; the final year
-                    // gets a halo dot so the campaign endpoint stands out.
-                    pts.map(function(p, pi) {
-                      var isLast = pi === pts.length - 1;
-                      return h('circle', {
-                        key: 'pt' + pi, cx: p.x, cy: p.y, r: isLast ? 3.4 : 2,
-                        fill: comp.color,
-                        stroke: isLast ? (isDark ? '#0f172a' : '#ffffff') : 'none',
-                        strokeWidth: isLast ? 1.5 : 0
-                      });
-                    })
-                  );
-                }),
-                components.map(function(comp, ci) {
-                  var pts = ptsFor(comp.id);
-                  var lastV = pts.length ? Math.round(pts[pts.length - 1].v) : 0;
-                  return h('g', { key: 'leg' + comp.id },
-                    h('line', { x1: w - padR + 6, y1: padT + 8 + ci * 16, x2: w - padR + 20, y2: padT + 8 + ci * 16, stroke: comp.color, strokeWidth: 2.5, strokeLinecap: 'round' }),
-                    h('text', { x: w - padR + 24, y: padT + 12 + ci * 16, fontSize: 10, fill: isDark ? '#cbd5e1' : '#334155' }, comp.icon + ' ' + comp.name.split(' ')[0] + ' · ' + lastV)
-                  );
-                })
-              )
+            function answer(id) {
+              upd('wcStewardHistory', { component: component.id, metric: metric.key, year: selected.year, identity: history.identity, answer: id });
+              setTimeout(function() {
+                var target = document.getElementById('wcStewardHistoryFeedback');
+                if (target) { target.focus(); target.scrollIntoView({ block: 'nearest', behavior: 'auto' }); }
+              }, 0);
+            }
+            var chosenStep = history.steps.filter(function(step) { return step.id === history.answer; })[0];
+            return h('section', { className: 'wc-steward-history' + (isDark ? ' is-dark' : '') + (isContrast ? ' is-contrast' : ''), 'aria-labelledby': 'wcStewardHistoryTitle', 'data-history-component': component.id, 'data-history-metric': metric.key },
+              h('style', null, WC_STEWARD_HISTORY_STYLE),
+              h('span', { className: 'wc-history-kicker' }, 'Saved campaign evidence'),
+              h('h4', { id: 'wcStewardHistoryTitle' }, 'Inspect the campaign'),
+              h('p', null, 'Follow one component across completed years. Choose a score, inspect its saved values, then investigate the recorded changes.'),
+              h('div', { className: 'wc-history-controls' },
+                h('label', { htmlFor: 'wcStewardHistoryComponent' }, 'Watershed component', h('select', { id: 'wcStewardHistoryComponent', value: component.id, onChange: function(event) { choose('component', event.target.value); } }, watershedComponents().map(function(item) { return h('option', { key: item.id, value: item.id }, item.name); }))),
+                h('label', { htmlFor: 'wcStewardHistoryMetric' }, 'Campaign score', h('select', { id: 'wcStewardHistoryMetric', value: metric.key, onChange: function(event) { choose('metric', event.target.value); } }, WCStewardHistory.metrics().map(function(item) { return h('option', { key: item.key, value: item.key }, item.label); }))),
+                h('label', { htmlFor: 'wcStewardHistoryYear' }, 'Completed year', h('select', { id: 'wcStewardHistoryYear', value: selected.year, onChange: function(event) { choose('year', Number(event.target.value)); } }, history.rows.filter(function(row) { return row.hasRecord; }).map(function(row) { return h('option', { key: row.year, value: row.year }, 'Year ' + row.year); })))
+              ),
+              h('p', { className: 'wc-history-scope' }, metric.meaning + ' Independent game scores run from 0 to 100; they are not field measurements or a water budget.'),
+              h('p', { className: 'sr-only', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, component.name + ', ' + metric.label + ', year ' + selected.year + ': ' + WCStewardHistory.score(selected.value) + '. Change from previous recorded year: ' + WCStewardHistory.signed(history.delta) + '.'),
+              h('dl', { className: 'wc-history-readings' },
+                h('div', null, h('dt', null, 'Selected year · ' + selected.year), h('dd', { 'data-history-selected-score': 'true' }, WCStewardHistory.score(selected.value), selected.value !== null && h('small', null, '/100'))),
+                h('div', null, h('dt', null, history.previous ? 'Previous recorded year · ' + history.previous.year : 'Previous recorded year'), h('dd', { 'data-history-previous-score': 'true' }, history.previous ? WCStewardHistory.score(history.previous.value) : 'First record')),
+                h('div', null, h('dt', null, 'Change between these records'), h('dd', { 'data-history-net-change': 'true' }, WCStewardHistory.signed(history.delta), history.delta !== null && h('small', null, 'points')))
+              ),
+              h('p', { className: 'wc-history-scope' }, 'Scores and changes are rounded separately to one decimal place. Changes are calculated from the saved values before rounding.'),
+              history.previous && selected.year - history.previous.year > 1 && h('p', { className: 'wc-history-scope' }, 'This comparison spans years ' + history.previous.year + ' to ' + selected.year + '. Intervening years were not recorded.'),
+              h('figure', { className: 'wc-history-chart', role: 'group', 'aria-labelledby': 'wcStewardHistoryChartLabel' },
+                h('figcaption', { id: 'wcStewardHistoryChartLabel' }, component.name + ' · ' + metric.label),
+                h('div', { className: 'wc-history-key' }, h('span', { className: 'wc-history-key-mark', 'aria-hidden': true }, h('span', { className: 'wc-history-point', 'data-shape': metric.shape })), h('span', null, 'Year-end scores · ' + metric.shape + ' markers')),
+                h('div', { className: 'wc-history-chart-grid' },
+                  h('div', { className: 'wc-history-y-axis', 'aria-hidden': true }, [100,75,50,25,0].map(function(value) { return h('span', { key: value, style: { top: (100 - value) + '%' } }, value); })),
+                  h('div', { className: 'wc-history-plot' },
+                    h('svg', { viewBox: '0 0 100 100', preserveAspectRatio: 'none', role: 'img', 'aria-labelledby': 'wcStewardHistoryPlotTitle wcStewardHistoryPlotDesc' },
+                      h('title', { id: 'wcStewardHistoryPlotTitle' }, component.name + ': ' + metric.label + ' across saved years'),
+                      h('desc', { id: 'wcStewardHistoryPlotDesc' }, 'Vertical scale: campaign score from 0 to 100. Horizontal scale: completed years 1 to ' + lastYear + '. Missing values leave gaps. Year ' + selected.year + ' is inspected. Read the saved scores table for the values.'),
+                      [0,25,50,75,100].map(function(value) { return h('line', { key: value, className: 'wc-history-grid-line', x1: 0, x2: 100, y1: value, y2: value }); }),
+                      paths.map(function(line, index) { return h('path', { key: index, className: 'wc-history-series', d: line, strokeDasharray: metric.dash, 'data-history-line': metric.key }); })
+                    ),
+                    history.rows.filter(function(row) { return row.value !== null; }).map(function(row) { return h('span', { key: row.year, className: 'wc-history-point', 'data-shape': metric.shape, 'data-selected': String(row.year === selected.year), 'data-history-point-year': row.year, 'aria-hidden': true, style: { left: x(row.year) + '%', top: (100 - row.value) + '%' } }); })
+                  )
+                ),
+                h('div', { className: 'wc-history-x-axis' + (lastYear === 1 ? ' single' : ''), 'aria-hidden': true }, history.rows.map(function(row) { return h('span', { key: row.year }, row.year); })),
+                h('p', { className: 'wc-history-axis-label' }, 'Completed campaign year'),
+                h('p', { className: 'wc-history-chart-note' }, 'The outlined marker is the inspected year. Gaps mean unavailable evidence, not a score of zero.')
+              ),
+              h('details', { className: 'wc-history-values' },
+                h('summary', null, 'Read the saved scores'),
+                h('table', { id: 'wcStewardHistoryTable', className: 'wc-history-table' },
+                  h('caption', null, component.name + ' · ' + metric.label + '. Change compares the previous recorded year.'),
+                  h('thead', null, h('tr', null, h('th', { scope: 'col' }, 'Year'), h('th', { scope: 'col' }, 'Score'), h('th', { scope: 'col' }, 'Change'))),
+                  h('tbody', null, history.rows.map(function(row) { return h('tr', { key: row.year, 'data-history-table-year': row.year, 'data-selected': String(row.year === selected.year) }, h('th', { scope: 'row' }, 'Year ' + row.year), h('td', null, WCStewardHistory.score(row.value)), h('td', null, WCStewardHistory.signed(row.change))); }))
+                )
+              ),
+              h('details', { id: 'wcStewardHistoryInvestigation', key: history.identity },
+                h('summary', null, 'Investigate year ' + selected.year),
+                h('div', { className: 'wc-history-context' }, h('strong', null, component.name + ' · ' + metric.label), h('p', null, 'Recorded event: ' + (selected.event || 'Name not recorded')), h('p', null, 'Recorded actions: ' + (selected.actionsCount === null ? 'Not recorded' : selected.actionsCount))),
+                h('p', null, 'Each score is recorded after its named step. Each change compares the row directly above it.'),
+                h('ol', { className: 'wc-history-stages' }, history.steps.map(function(step) { return h('li', { key: step.id, 'data-history-step': step.id }, h('strong', null, step.label), h('span', { className: 'wc-history-step-score' }, WCStewardHistory.score(step.value), h('small', null, step.id === 'start' ? 'Starting score' : WCStewardHistory.signed(step.delta) + (step.delta === null ? '' : ' points')))); })),
+                history.question.status === 'incomplete' ? h('p', { className: 'wc-history-context' }, 'This year does not contain a complete, consistent step record for this score. The saved end value remains available; the largest change cannot be established from the missing steps.') :
+                  history.question.status === 'unchanged' ? h('p', { className: 'wc-history-context' }, 'No step has a nonzero displayed change. Saved scores can still contain differences smaller than the displayed precision.') :
+                    h('section', { className: 'wc-history-question', 'aria-labelledby': 'wcStewardHistoryQuestion' },
+                      h('h5', { id: 'wcStewardHistoryQuestion' }, 'Which step has the largest displayed change?'),
+                      h('p', null, 'Compare the size in either direction. An increase and a decrease of the same size both count.'),
+                      h('div', { className: 'wc-history-answer-options', role: 'group', 'aria-labelledby': 'wcStewardHistoryQuestion' }, history.steps.slice(1).map(function(step) { return h('button', { key: step.id, type: 'button', 'data-history-answer': step.id, 'aria-pressed': history.answer === step.id, onClick: function() { answer(step.id); } }, step.label); })),
+                      h('div', { className: 'wc-history-feedback', role: 'status', 'data-history-result': history.result },
+                        h('h5', { id: 'wcStewardHistoryFeedback', tabIndex: -1 }, history.result === 'supported' ? 'Your choice matches the recorded differences.' : history.result === 'retry' ? 'Trace the differences again.' : 'Choose a recorded step.'),
+                        h('p', null, history.result === 'supported' ? chosenStep.label + ' has a recorded change of ' + WCStewardHistory.signed(chosenStep.displayedDelta) + ' points when rounded to one decimal. Any equally large displayed change also matches.' : history.result === 'retry' ? 'Another step has a larger displayed change. You can change your choice.' : 'Use the signed changes in the rows above. This practice is unscored.')
+                      )
+                    )
+              ),
+              h('p', { className: 'wc-history-scope' }, 'Recorded model steps explain this simulated record; they do not establish the outcome of a real restoration project.')
             );
           }
-
           // ── AI Watershed Reading: safe-framing AI educator ──
           function readWatershed() {
             if (!callGemini || steward.aiReadLoading) return;
@@ -6414,6 +6515,7 @@ const d = labToolData.waterCycle || {};
                 })(),
 
                 renderStewardYearLedger(lastSnap),
+                h('details', { className: 'wc-history-review' }, h('summary', null, 'Compare completed years'), renderStewardTrendChart(steward.yearLog)),
 
                 // Per-component deltas
                 h('div', {
@@ -6472,6 +6574,7 @@ const d = labToolData.waterCycle || {};
                 }, t('stem.watercycle.water_cycle_explorer_4', '← Water Cycle Explorer')),
                 h('h3', { className: 'text-lg font-bold  tracking-tight' + (isDark ? 'text-slate-100' : 'text-slate-800') }, '💧 Watershed Steward · Year ' + steward.year)
               ),
+              steward.yearLog && steward.yearLog.length > 0 && h('details', { className: 'wc-history-review' }, h('summary', null, 'Compare completed years'), renderStewardTrendChart(steward.yearLog)),
               coachingTip ? h('div', {
                 role: 'note',
                 style: {

@@ -1,0 +1,233 @@
+{
+  "mode": "unit",
+  "expectedRuntimeSha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+  "startedAt": "2026-10-02T11:43:36.909Z",
+  "runtimeFiles": [
+    {
+      "path": "stem_lab/stem_tool_watercycle.js",
+      "sha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "bytes": 3035457
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "sha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "bytes": 3035457
+    }
+  ],
+  "testFiles": [
+    {
+      "path": "tests/watercycle_steward_history.test.js",
+      "sha256": "11f87287d3a8c47411d64676829539a66dfbea7b83eed0fa05b98c09c3388d0b",
+      "bytes": 31348
+    }
+  ],
+  "closureEvidence": [
+    {
+      "path": "reports/watercycle-steward-history/browser-results.json",
+      "sha256": "64b5b180a88990ce94441ac700d124ff067656c70f0b4d87e2524bfb81e2e1b2",
+      "bytes": 1106156,
+      "mode": "browser",
+      "sourceSha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "publicSha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "browserClosedAt": "2026-10-02T11:41:18.092Z",
+      "resourcesClosed": true,
+      "serverUsed": false,
+      "serverClosed": true,
+      "serverClosedAt": null
+    },
+    {
+      "path": "reports/watercycle-steward-history/baseline-results.json",
+      "sha256": "559fe66c126f7c84708734bf5d2d3758562b266c46dcef9c560a479e1aea42f4",
+      "bytes": 3637,
+      "mode": "baseline",
+      "sourceSha256": "42eae634d0027b819ac0e5368801447780290c3d70e5da15aa402ff84d94314c",
+      "publicSha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "browserClosedAt": "2026-10-02T11:40:29.783Z",
+      "resourcesClosed": true,
+      "serverUsed": false,
+      "serverClosed": true,
+      "serverClosedAt": null
+    }
+  ],
+  "preservation": {
+    "baselinePath": "reports/watercycle-cloud-evidence/tested-runtime.js",
+    "baselineSha256": "42eae634d0027b819ac0e5368801447780290c3d70e5da15aa402ff84d94314c",
+    "anchors": [
+      {
+        "name": "MAINE_WATERSHED_COMPONENTS",
+        "sha256": "28bd80ebc3f356736a37b858059db4ab4dd6eae90051c775015bcaadaee5fd0d"
+      },
+      {
+        "name": "STEWARD_TECHNIQUES",
+        "sha256": "ad8f394d20b6de43edfeda32bab1a428417762035a72a183284191b6ea51d601"
+      },
+      {
+        "name": "STEWARD_EVENTS",
+        "sha256": "8a5293c1e49c76c986851d99ec5cfd1e42b8d1ff74bacc00938c34e991d141fe"
+      },
+      {
+        "name": "STEWARD_FEEDBACK_RULES",
+        "sha256": "f52975ed9ae354fe6bb1a621121dd9007a24d8a53d28d6d421d370582e27c2a5"
+      },
+      {
+        "name": "STEWARD_CASCADE_HINTS",
+        "sha256": "51d64e72ad554b69ae5057cd35ee96ee54fe97b69e512bb736a2c9cf25d0ad24"
+      },
+      {
+        "name": "STEWARD_DIFFICULTIES",
+        "sha256": "42330ab94b15c04ff293a1e01a7d508c70ac46230b657b5aa37931dacbb11e96"
+      },
+      {
+        "name": "wcWatershedCopy",
+        "sha256": "48aecf282d28072eb48cca17931c55eb40e88b06044cca9adf236844266f55ab"
+      },
+      {
+        "name": "localizeWatershedComponents",
+        "sha256": "e3c0b6036d7cc4e127bf2b139f32c9f5d54589223df1886bc31af7d0573b51f0"
+      },
+      {
+        "name": "wcStewardCopy",
+        "sha256": "524e4fe068234d3310b666c5d1d668d597def5bbd1f43a7855f5aa53442e2bf7"
+      },
+      {
+        "name": "applyStewardCopy",
+        "sha256": "73b36099c7f0824fcb0a2a476a46a4b157609841addd1969b908d75debaf9f1e"
+      },
+      {
+        "name": "defaultStewardState",
+        "sha256": "965e598ed05fb1456b199e7d857b7024d693446879b96a56226d434abdfa7f19"
+      },
+      {
+        "name": "watershedComponents",
+        "sha256": "f849135da8151e7bb03a3dbe61391e84f1de82f8a4318bdecf46d9c1822f48b6"
+      },
+      {
+        "name": "getWatershedComponent",
+        "sha256": "fca9c1f5ca4a7ac6beced78e29fbd93bc857214bb85ad7588305df389ac7387c"
+      },
+      {
+        "name": "stewardRng",
+        "sha256": "58513c2e33d6bc54fe54b8b572120af9b14d1c446a9b5abb396112a2c2d2f0be"
+      },
+      {
+        "name": "stewardClamp",
+        "sha256": "b7d88e92780096999af8bd2b8213586ae296998326c03cc706e7b644e9694933"
+      },
+      {
+        "name": "startStewardCampaign",
+        "sha256": "9daa9fab30d4f1fc246fc476a1a569be87dab87042baee4c06677fd7372a8632"
+      },
+      {
+        "name": "resetSteward",
+        "sha256": "62ef415a8ff0f7cdeebfb9ee7deafbe96b60ed0f3d87ca0042f961f1e07d2328"
+      },
+      {
+        "name": "applyStewardTech",
+        "sha256": "aba0f7987e30d7e169e4d2bbf57a27d900392456b3099e28c496249ee7820493"
+      },
+      {
+        "name": "endStewardYear",
+        "sha256": "e5d481f999f4e269dee447489e984e8fd0dcaca1d936f946f77782d4b2a36cba"
+      },
+      {
+        "name": "advanceFromStewardReview",
+        "sha256": "af3d29b439204da8cfc221da4152aed2c52b75cb5360de4b4c191c77b5309033"
+      },
+      {
+        "name": "stewardCoachingTip",
+        "sha256": "59c5b60c88acbd36e285540f2d157e5421734411d2f4e4c917c736fecbba0ee5"
+      },
+      {
+        "name": "stewardYearDebrief",
+        "sha256": "44fcf149ab59652a50ed88f6017b3d553d2ed96a4ea1cade86ad03a161a33660"
+      },
+      {
+        "name": "checkWaterCycleChallenges",
+        "sha256": "5ebaedbdcfbff0f3e39e04ae1e39a41746c9b5081a9dbba0887ad2f6330a1a5f"
+      },
+      {
+        "name": "WATER_CYCLE_CHALLENGES",
+        "sha256": "1c17d9a5ff22715589d3bc1416fa6ba6b9a28076b52546402e3e81ed199c3315"
+      }
+    ]
+  },
+  "singleWorker": true,
+  "fileParallelism": false,
+  "completedAt": "2026-10-02T11:43:40.921Z",
+  "processExitCode": 0,
+  "processSignal": null,
+  "runtimeFilesAfter": [
+    {
+      "path": "stem_lab/stem_tool_watercycle.js",
+      "sha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "bytes": 3035457
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "sha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "bytes": 3035457
+    }
+  ],
+  "testFilesAfter": [
+    {
+      "path": "tests/watercycle_steward_history.test.js",
+      "sha256": "11f87287d3a8c47411d64676829539a66dfbea7b83eed0fa05b98c09c3388d0b",
+      "bytes": 31348
+    }
+  ],
+  "loadedFiles": [
+    {
+      "path": "stem_lab/stem_tool_watercycle.js",
+      "sha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "bytes": 3035457,
+      "loadedAt": "2026-10-02T11:43:39.184Z",
+      "pid": 49560
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "sha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "bytes": 3035457,
+      "loadedAt": "2026-10-02T11:43:39.242Z",
+      "pid": 49560
+    },
+    {
+      "path": "tests/watercycle_steward_history.test.js",
+      "sha256": "11f87287d3a8c47411d64676829539a66dfbea7b83eed0fa05b98c09c3388d0b",
+      "bytes": 31348,
+      "loadedAt": "2026-10-02T11:43:39.244Z",
+      "pid": 49560
+    },
+    {
+      "path": "tests/watercycle_steward_history.test.js",
+      "sha256": "11f87287d3a8c47411d64676829539a66dfbea7b83eed0fa05b98c09c3388d0b",
+      "bytes": 31348,
+      "loadedAt": "2026-10-02T11:43:39.102Z",
+      "pid": 54008
+    }
+  ],
+  "loadedReport": {
+    "loadedAt": "2026-10-02T11:43:39.145Z",
+    "completedAt": "2026-10-02T11:43:40.797Z",
+    "loadedRuntimes": [
+      {
+        "path": "stem_lab/stem_tool_watercycle.js",
+        "sha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+        "bytes": 3035457
+      },
+      {
+        "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+        "sha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+        "bytes": 3035457
+      }
+    ],
+    "loadedTest": {
+      "path": "tests/watercycle_steward_history.test.js",
+      "sha256": "11f87287d3a8c47411d64676829539a66dfbea7b83eed0fa05b98c09c3388d0b",
+      "bytes": 31348
+    }
+  },
+  "sourceSha256Before": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+  "sourceSha256After": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+  "publicSha256Before": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+  "publicSha256After": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a"
+}
