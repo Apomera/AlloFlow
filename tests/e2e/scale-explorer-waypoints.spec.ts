@@ -1,0 +1,77 @@
+import {test,expect} from '@playwright/test';
+import {GlHarness,looksBlank} from './helpers/stem_gl_harness';
+import {mkdirSync,readFileSync} from 'node:fs';
+import path from 'node:path';
+test.describe.configure({mode:'serial',retries:0,timeout:180000});
+test.use({video:'off',trace:'off',hasTouch:true});
+const out=path.resolve('reports/scale-explorer-alpine-detail'),data=JSON.parse(readFileSync('stem_lab/assets/terrain/everest-elevation.json','utf8'));
+const harness=new GlHarness({toolFile:'stem_lab/stem_tool_scaleexplorer.js',toolId:'scaleExplorer',width:1400,height:1100,layout:'document',preScripts:['stem_lab/stem_lab_module.js'],
+ probes:"const Original=THREE.WebGLRenderer;THREE.WebGLRenderer=new Proxy(Original,{construct(target,args){const r=Reflect.construct(target,args),render=r.render;window.__waypointRenderer=r;r.render=function(s,c){window.__waypointCamera=c;return render.apply(this,arguments);};return r;}});"});
+test.beforeAll(async()=>{mkdirSync(out,{recursive:true});await harness.start();});
+test.afterAll(async()=>{await harness.stop();});
+test.afterEach(async({page})=>{await harness.unmount(page);expect(await harness.leakedAfterUnmount(page)).toEqual([]);});
+const canvas=(p:any)=>p.locator('[data-atlas-ready]');
+async function pose(p:any){return JSON.parse((await canvas(p).getAttribute('data-atlas-air-position'))!);}
+async function mount(page:any,phone=false){
+ await page.emulateMedia({reducedMotion:'reduce'});await page.setViewportSize(phone?{width:320,height:780}:{width:1400,height:1100});
+ const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'&&m.text().includes('THREE.WebGLProgram'))errors.push(m.text());});
+ await harness.mount(page,{},'!!document.querySelector("[data-atlas-ready]")');
+ const all=page.getByRole('button',{name:'Show all tools',exact:true});if(await all.count())await all.click();
+ await page.addStyleTag({content:'#wrap{width:100%!important}body{font-family:system-ui,sans-serif}button,input,select,textarea{font-family:inherit}'});
+ await page.getByRole('combobox',{name:'Choose a destination',exact:true}).selectOption('everest');
+ await expect(canvas(page)).toHaveAttribute('data-atlas-terrain','ready');
+ await page.locator('.sx-details').getByRole('button',{name:'Fly through Everest',exact:true}).click();
+ await expect(canvas(page)).toHaveAttribute('data-atlas-terrain-flight','active');await canvas(page).scrollIntoViewIfNeeded();
+ return errors;
+}
+test('measured course updates while flying, projects onto the terrain and restores from the notebook',async({page})=>{
+ const errors=await mount(page),map=page.getByRole('application',{name:'Flight waypoint map',exact:true});await map.press('Home');
+ await expect(canvas(page)).toHaveAttribute('data-atlas-air-waypoint','{"east":0,"north":900}');
+ const start=await pose(page),range=Math.hypot(start.east,start.north-900);
+ expect(Number(await canvas(page).getAttribute('data-atlas-air-waypoint-range'))).toBeCloseTo(range,1);
+ await expect(page.locator('[data-air-stat="waypoint-range"]')).toHaveText((range/1000).toFixed(1)+' km');
+ const marker=page.locator('[data-air-world-waypoint]');await expect(marker).toBeVisible();
+ const projection=await page.evaluate(()=>{
+  const w=window as any,T=w.THREE,r=w.__waypointRenderer,c=w.__waypointCamera,rec=w.__glRecorder.records.find((x:any)=>!x.ctx.isContextLost());let root:any;
+  rec.scene.traverse((n:any)=>{if(n.userData.itemId==='everest')root=n;});
+  const cv=document.querySelector('[data-atlas-ready]') as HTMLCanvasElement,shape=root.userData.model.userData.everest;
+  const n=shape.data.width,alt=shape.data.elevations[108*n+120],p=new T.Vector3(0,(alt+40)/8849,-900/8849);root.userData.model.localToWorld(p);p.project(c);
+  const node=document.querySelector('[data-air-world-waypoint]') as HTMLElement,actual=node.style.transform.split(')')[0].slice(10).split(',').map(v=>parseFloat(v));
+  const programs=r.info.programs.filter((program:any)=>rec.ctx.getShaderSource(program.fragmentShader)?.includes('alpineCover'));
+  return {expected:[(p.x*.5+.5)*cv.clientWidth,(-p.y*.5+.5)*cv.clientHeight],actual,programs:programs.length,linked:programs.every((p:any)=>rec.ctx.getProgramParameter(p.program,rec.ctx.LINK_STATUS)),height:shape.land.geometry.attributes.position.getY(108*n+120)*8849};
+ });
+ expect(projection.programs).toBeGreaterThan(0);expect(projection.linked).toBe(true);expect(projection.height).toBeCloseTo(data.elevations[108*241+120],2);
+ projection.actual.forEach((v:number,i:number)=>expect(v).toBeCloseTo(projection.expected[i],1));
+ await canvas(page).focus();await page.keyboard.down('w');await expect.poll(async()=>Number(await canvas(page).getAttribute('data-atlas-air-waypoint-range'))).toBeLessThan(range-40);await page.keyboard.press('Space');await page.keyboard.up('w');
+ const saved=await pose(page),book=page.getByRole('region',{name:'Field notebook',exact:true});await book.getByRole('textbox').fill('A course toward the central ridge.');await book.getByRole('button',{name:'Save observation',exact:true}).click();
+ await page.getByRole('combobox',{name:'Choose a destination',exact:true}).selectOption('moon');
+ await book.locator('[data-observation="everest:everest-flight"]').getByRole('button',{name:/^Return to/}).click();
+ await expect(canvas(page)).toHaveAttribute('data-atlas-air-waypoint','{"east":0,"north":900}');await expect.poll(()=>pose(page)).toEqual(saved);
+ await page.locator('.sx-stage').screenshot({path:path.join(out,'alpine-course-desktop.png')});expect(looksBlank(await harness.glPixels(page))).toBe(false);
+ await page.getByRole('button',{name:'Clear waypoint',exact:true}).click();await expect(map).toBeFocused();await expect(marker).toBeHidden();await expect(canvas(page)).not.toHaveAttribute('data-atlas-air-waypoint');
+ expect(errors).toEqual([]);
+});
+test('a waypoint beyond a ridge hides its world marker until the flight clears the sight line',async({page})=>{
+ const ridge={...data,elevations:data.elevations.map((_:number,i:number)=>Math.abs(Math.floor(i/241)-120)<2?7000:5000)};
+ let fixtureLoads=0;await page.route('**/everest-elevation.json*',r=>{fixtureLoads++;return r.fulfill({contentType:'application/json',body:JSON.stringify(ridge)});});
+ const errors=await mount(page),map=page.getByRole('application',{name:'Flight waypoint map',exact:true});expect(fixtureLoads).toBe(1);expect(await page.evaluate(()=>{let root:any;(window as any).__glRecorder.records.find((r:any)=>!r.ctx.isContextLost()).scene.traverse((n:any)=>{if(n.userData.itemId==='everest')root=n;});return root.userData.model.userData.everest.data.elevations[0];})).toBe(5000);await map.press('Home');for(let i=0;i<5;i++)await map.press('Shift+ArrowUp');
+ await page.getByRole('slider',{name:'Travel speed',exact:true}).press('End');await canvas(page).scrollIntoViewIfNeeded();await expect(canvas(page)).toBeInViewport();await canvas(page).focus();await page.waitForTimeout(150);await page.keyboard.down('Shift');await page.keyboard.down('q');
+ await expect.poll(async()=>(await pose(page)).altitude,{timeout:45000}).toBeLessThan(6500);await page.keyboard.press('Space');await page.keyboard.up('q');await page.keyboard.up('Shift');
+ await expect(canvas(page)).toHaveAttribute('data-atlas-air-waypoint-visible','false');await expect(page.locator('[data-air-world-waypoint]')).toBeHidden();await expect(page.locator('[data-air-stat="waypoint-state"]')).toHaveText('Beyond a ridge');
+ await canvas(page).focus();await page.keyboard.down('Shift');await page.keyboard.down('e');await expect.poll(async()=>(await pose(page)).altitude,{timeout:45000}).toBeGreaterThan(11000);await page.keyboard.press('Space');await page.keyboard.up('e');await page.keyboard.up('Shift');
+ await expect(canvas(page)).toHaveAttribute('data-atlas-air-waypoint-visible','true');await expect(page.locator('[data-air-stat="waypoint-state"]')).toHaveText('Clear line of sight');
+ await page.getByRole('button',{name:'Return to map',exact:true}).click();await expect(canvas(page)).not.toHaveAttribute('data-atlas-air-waypoint');expect(errors).toEqual([]);
+});
+test('WebGL 1 supports touch course selection, keyboard adjustments and a readable narrow cockpit',async({page})=>{
+ await page.addInitScript(()=>{const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type:any,...args:any[]){return type==='webgl2'?null:(original as any).call(this,type,...args);} as any;});
+ const errors=await mount(page,true),map=page.getByRole('application',{name:'Flight waypoint map',exact:true}),box=(await map.boundingBox())!;
+ await map.tap({position:{x:box.width*.6,y:box.height*.35}});await expect(canvas(page)).toHaveAttribute('data-atlas-air-waypoint',/east/);
+ const target=JSON.parse((await canvas(page).getAttribute('data-atlas-air-waypoint'))!);expect(Math.abs(target.east-1800)).toBeLessThan(250);expect(Math.abs(target.north-2700)).toBeLessThan(250);
+ await map.press('ArrowLeft');await expect(canvas(page)).toHaveAttribute('data-atlas-air-waypoint',JSON.stringify({...target,east:target.east-250}));
+ await map.press('Shift+ArrowUp');await expect(canvas(page)).toHaveAttribute('data-atlas-air-waypoint',JSON.stringify({...target,east:target.east-250,north:target.north+1000}));
+ await expect(page.locator('[data-air-stat="waypoint-range"]')).not.toHaveText('—');
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);expect(await canvas(page).evaluate((n:HTMLElement)=>n.getBoundingClientRect().height)).toBeGreaterThan(320);
+ const shader=await page.evaluate(()=>{const w=window as any,r=w.__waypointRenderer,gl=r.getContext();return {version:gl.getParameter(gl.VERSION),linked:r.info.programs.filter((p:any)=>gl.getShaderSource(p.fragmentShader)?.includes('alpineCover')).every((p:any)=>gl.getProgramParameter(p.program,gl.LINK_STATUS))};});
+ expect(shader.version).toContain('WebGL 1.0');expect(shader.linked).toBe(true);
+ await page.locator('.sx-stage').screenshot({path:path.join(out,'alpine-course-phone.png')});await map.press('Delete');await expect(map).toBeFocused();await expect(canvas(page)).not.toHaveAttribute('data-atlas-air-waypoint');expect(errors).toEqual([]);
+});
