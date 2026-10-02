@@ -7,7 +7,6 @@
 // landing score counts a rough site, and the outcome card, the descent briefing and
 // the debrief chain all say so. Handlers are the real ones (the tool has no hooks).
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import fs from 'node:fs';
 import { loadTool, makeCtx, newStore, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 // Overridable so a mutation can run against a COPY; other sessions edit this file.
@@ -117,13 +116,17 @@ describe('Moon Mission descent events have costs', () => {
     expect(card).toContain('costs 10 s of hover fuel.');
   });
 
-  it('the landing starts from those costs (the hinges in the flight loop)', () => {
-    const src = fs.readFileSync(FILE, 'utf8');
-    expect(src).toContain('var _evCost = mmEventCosts(d.decisionLog);');
-    expect(src).toMatch(/var hVel = MM_DESCENT\.handoverHv \+ _evCost\.drift;/);
-    expect(src).toMatch(/var fuel = Math\.max\(10, .*- _evCost\.fuel\);/);
-    expect(src).not.toMatch(/_mcc === 'skipped' \? MM_DESCENT\.skip/);
-    expect(src).toContain('mmLandingScore(Math.abs(vVel), Math.abs(hVel), fuel, _evCost.boulders)');
+  it('the selected landing applies the authored reserve, drift and site costs once', () => {
+    loadTool(FILE, ID);
+    const P = window.MoonMissionPure;
+    const raw = { descentMode: 'practice', difficulty: 'pilot', decisionLog: [
+      { effects: { hoverFuel: 8, drift: 3, site: 'boulders' } }] };
+    const receipt = P.descentHandover(raw);
+    expect(receipt.state.fuel).toBe(102);
+    expect(receipt.state.hVel).toBe(7);
+    expect(receipt.boulders).toBe(true);
+    expect(P.cleanDescentStart(receipt)).toEqual(receipt);
+    expect(P.descentHandover({ ...raw, mccChoice: 'skipped' })).toEqual(receipt);
   });
 
   it('the debrief chain names the costly call and totals what the landing started short', () => {

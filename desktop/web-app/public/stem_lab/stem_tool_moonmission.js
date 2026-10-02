@@ -576,7 +576,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       mcc: d.mccChoice === 'corrected' || d.mccChoice === 'skipped' ? d.mccChoice : null,
       landing: lr ? { crashed: !!lr.crashed, score: mmNum(lr.score) ? lr.score : 0, grade: String(lr.grade || ''),
         vVel: lr.vVel, hVel: mmNum(lr.hVel) ? lr.hVel : 0, fuel: mmNum(lr.fuel) ? lr.fuel : 0, fuelUnit: lr.fuelUnit === 's' ? 's' : '%',
-        flight: mmDescentRecordingSummary(lr.recording) } : null,
+        start: mmCleanDescentStart(lr.start), flight: mmDescentRecordingSummary(lr.recording) } : null,
       entry: eo ? eo.modelVersion === 1 ? eo : { outcome: eo.outcome, angle: eo.angle, peakG: eo.peakG } : null,
       quiz: { correct: mmNum(d.quizCorrect) ? d.quizCorrect : 0, total: totals.quiz || 0 },
       samples: mmSampleTypeCount(d.lunarSamples), sampleTotal: totals.samples || 8,
@@ -703,7 +703,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       : (L.crashed ? 'hard landing at ' : 'touchdown at ') + L.vVel.toFixed(1) + ' m/s, drift ' + L.hVel.toFixed(1) + ' m/s, '
         + (L.fuelUnit === 's' ? L.fuel + ' s of fuel left' : L.fuel + '% fuel left') + (L.crashed ? '' : ', score ' + L.score + ' (' + L.grade + ')')));
     if (L && L.flight) ln('Descent: ' + L.flight.duration.toFixed(1) + ' s, hover fuel used ' + L.flight.fuelUsed.toFixed(1) + ' s, displacement ' + L.flight.displacement.toFixed(1) + ' m.');
-    if (sum.poweredApproach) ln('Powered lunar approach: ' + sum.poweredApproach.duration.toFixed(1) + ' s; DPS propellant used ' + sum.poweredApproach.propellantUsed.toFixed(1) + ' kg; remaining ' + sum.poweredApproach.propellantRemaining.toFixed(1) + ' kg; downrange ' + (sum.poweredApproach.downrange/1000).toFixed(1) + ' km. Final landing practice resets its fuel reserve.');
+    if (sum.poweredApproach) ln('Powered lunar approach: ' + sum.poweredApproach.duration.toFixed(1) + ' s; DPS propellant used ' + sum.poweredApproach.propellantUsed.toFixed(1) + ' kg; remaining ' + sum.poweredApproach.propellantRemaining.toFixed(1) + ' kg; downrange ' + (sum.poweredApproach.downrange/1000).toFixed(1) + ' km. Landing can continue from the measured 300 m state.');
+    if (L) ln('Landing start: ' + mmDescentStartText(L.start));
     if (sum.returnFlight) ln('Earth return: ' + (sum.returnFlight.duration / 3600).toFixed(2) + ' h; interface at 122 km, ' + (sum.returnFlight.interfaceSpeed / 1000).toFixed(3) + ' km/s and ' + sum.returnFlight.angle.toFixed(1) + MM_DEG_SIGN + '; radial closing speed ' + (-sum.returnFlight.interfaceRadialSpeed / 1000).toFixed(3) + ' km/s. Earth-only preset, matched to entry.');
     var E = sum.entry;
     ln('Entry: ' + (!E ? 'not flown' : E.angle.toFixed(1) + MM_DEG_SIGN + ', ' + (E.modelVersion === 1
@@ -1048,7 +1049,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   // The computer flies from 15 km; the student takes over the last 300 m.
   // NASA: lunar g/radius (science.nasa.gov/moon/by-the-numbers/); DPS 46.7 kN
   // (ntrs.nasa.gov/citations/20090016298); Isp 311 s and engine lag 0.11 s
-  // (aviationsystems.arc.nasa.gov/publications/2008/AF2008100.pdf).
+  // from Bilimoria’s lunar lander handling-qualities model (2009).
   // Retained mass is a rounded 7,000 kg, including the ascent stage and its fuel.
   // Constant Isp, continuous throttle and assisted attitude hold simplify Apollo's
   // hardware; separate RCS propellant and terrain slopes are not simulated here.
@@ -1067,6 +1068,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   function mmLunarGravity(alt) {
     var ratio = MM_DESCENT.radius / (MM_DESCENT.radius + Math.max(0, Number(alt) || 0));
     return MM_DESCENT.g * ratio * ratio;
+  }
+  // Fixed physics cadence is independent of paint cadence. Active slow frames
+  // can advance up to one second; paused/hidden transitions discard their gap.
+  function mmDescentFrame(clock, now, held) {
+    var step = 1000 / 60, prior = clock.last, wasHeld = !!clock.held;
+    if (!mmNum(now) || now < 0 || (mmNum(prior) && now < prior)) {
+      clock.last = null; clock.acc = 0; clock.held = true; return 0;
+    }
+    clock.last = now; clock.held = !!held;
+    if (!mmNum(prior) || held || wasHeld) { clock.acc = 0; return 0; }
+    var elapsed = Math.min(1000, Math.max(0, now - prior));
+    var carry = mmNum(clock.acc) ? Math.max(0, Math.min(step, clock.acc)) : 0;
+    var total = carry + elapsed, steps = Math.min(60, Math.floor((total + 1e-7) / step));
+    clock.acc = Math.max(0, total - steps * step); return steps;
   }
   function mmDescentMass(fuel) {
     return MM_DESCENT.dryMass * Math.exp(MM_DESCENT.g * Math.max(0, Number(fuel) || 0) / (MM_DESCENT.isp * MM_DESCENT.earthG));
@@ -1274,6 +1289,86 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       approachPlaybackRate:[1,10,60].indexOf(raw.approachPlaybackRate)>=0?raw.approachPlaybackRate:60,
       approachView:raw.approachView==='local'?'local':'whole'};
   }
+  // Freeze the measured 300 m crossing into a detached start receipt. Fuel is
+  // still expressed as ideal surface-hover seconds; the rocket equation makes
+  // that reserve agree with the mass carried by the powered approach.
+  function mmDescentHandover(raw) {
+    raw = mmIsObj(raw) ? raw : {};
+    var D = MM_DESCENT, difficulty = ['tourist', 'pilot', 'commander'].indexOf(raw.difficulty) >= 0 ? raw.difficulty : 'pilot';
+    var practiceFuel = { tourist: 160, pilot: 110, commander: 90 }, source = 'practice', planDuration = null;
+    var baseFuel = practiceFuel[difficulty], priorTime = 0, priorDownrange = 0;
+    var alt = D.handoverAlt, vVel = D.handoverVv, hVel = D.handoverHv, thrust = 0, tilt = 0;
+    var playback = raw.descentMode === 'practice' ? null : mmCleanApproachPlayback(raw), profile, end;
+    if (playback && playback.approachRun && playback.approachRun.recorded && playback.approachResult && playback.approachResult.outcome === 'handover') {
+      profile = mmApproachProfile(playback.approachPlan); end = profile.events.end;
+      if (!mmNum(end.pitch) || Math.abs(end.pitch) > D.maxTilt) return mmDescentHandover(Object.assign({}, raw, { descentMode: 'practice' }));
+      source = 'approach'; planDuration = profile.plan.duration;
+      baseFuel = Math.max(0, D.isp * D.earthG / D.g * Math.log(end.mass / D.dryMass));
+      priorTime = end.time; priorDownrange = end.downrange;
+      alt = end.altitude; vVel = end.radialSpeed; hVel = end.tangentialSpeed;
+      thrust = end.throttle; tilt = end.pitch;
+    }
+    // Authored decisions are small. Bound both rows and totals so hostile saved
+    // values cannot overflow the live flight state while retaining normal costs.
+    var requestedEventFuel = 0, eventDrift = 0, boulders = false;
+    var log = Array.isArray(raw.decisionLog) ? raw.decisionLog : [], i, row, effect;
+    for (i = 0; i < Math.min(log.length, 1000); i++) {
+      row = log[i]; effect = mmIsObj(row) && mmIsObj(row.effects) ? row.effects : null;
+      if (!effect) continue;
+      if (mmNum(effect.hoverFuel)) requestedEventFuel = Math.min(1000000, requestedEventFuel + Math.max(0, Math.min(1000000, effect.hoverFuel)));
+      if (mmNum(effect.drift)) eventDrift = Math.min(10000, eventDrift + Math.max(0, Math.min(10000, effect.drift)));
+      boulders = boulders || effect.site === 'boulders';
+    }
+    var eventFuelApplied = Math.min(baseFuel, requestedEventFuel), fuel = Math.max(0, baseFuel - eventFuelApplied);
+    var mass = mmDescentMass(fuel);
+    return { version: 1, source: source, difficulty: difficulty, planDuration: planDuration,
+      requestedEventFuel: requestedEventFuel, eventFuelApplied: eventFuelApplied, eventDrift: eventDrift, boulders: boulders,
+      baseFuel: baseFuel, priorTime: priorTime, priorDownrange: priorDownrange,
+      mass: mass, propellant: mass - D.dryMass,
+      state: { alt: alt, vVel: vVel, hVel: hVel + eventDrift, fuel: fuel, thrust: fuel > 0 ? thrust : 0,
+        tilt: tilt, x: 0, elapsed: 0 } };
+  }
+  // A receipt is independent of later planner choices. Rebuild its original
+  // start from its own inputs and accept only the complete matching evidence.
+  function mmCleanDescentStart(raw) {
+    if (!mmIsObj(raw) || raw.version !== 1 || ['approach', 'practice'].indexOf(raw.source) < 0 ||
+      ['tourist', 'pilot', 'commander'].indexOf(raw.difficulty) < 0 || typeof raw.boulders !== 'boolean' ||
+      !mmNum(raw.requestedEventFuel) || raw.requestedEventFuel < 0 || raw.requestedEventFuel > 1000000 ||
+      !mmNum(raw.eventDrift) || raw.eventDrift < 0 || raw.eventDrift > 10000 || !mmIsObj(raw.state)) return null;
+    if (raw.source === 'approach' ? [600, 720, 900].indexOf(raw.planDuration) < 0 : raw.planDuration !== null) return null;
+    var input = { difficulty: raw.difficulty, descentMode: raw.source === 'practice' ? 'practice' : 'approach',
+      decisionLog: [{ effects: { hoverFuel: raw.requestedEventFuel, drift: raw.eventDrift, site: raw.boulders ? 'boulders' : '' } }] };
+    var profile;
+    if (raw.source === 'approach') {
+      profile = mmApproachProfile({ duration: raw.planDuration });
+      input.approachPlan = { version: 1, duration: raw.planDuration };
+      input.approachRun = { version: 1, duration: raw.planDuration, time: profile.summary.duration, recorded: true };
+      input.approachResult = Object.assign({}, profile.summary);
+    }
+    var expected = mmDescentHandover(input);
+    function equalNumber(a, b) { return mmNum(a) && Math.abs(a - b) <= Math.max(1e-7, Math.abs(b) * 1e-12); }
+    var keys = Object.keys(expected), stateKeys = Object.keys(expected.state);
+    if (Object.keys(raw).length !== keys.length || Object.keys(raw.state).length !== stateKeys.length) return null;
+    var valid = keys.every(function (key) {
+      if (key === 'state') return stateKeys.every(function (field) { return equalNumber(raw.state[field], expected.state[field]); });
+      return mmNum(expected[key]) ? equalNumber(raw[key], expected[key]) : raw[key] === expected[key];
+    });
+    return valid ? expected : null;
+  }
+  function mmSelectedDescentStart(d) {
+    var retained = mmCleanDescentStart(d.descentStart);
+    var mode = d.descentMode === 'practice' ? 'practice' : 'approach';
+    return retained && retained.source === mode ? retained : mmDescentHandover(d);
+  }
+  function mmDescentStartText(raw) {
+    var start = mmCleanDescentStart(raw); if (!start) return 'Earlier landing: starting state was not recorded.';
+    return (start.source === 'approach' ? 'Computed handover (' + start.planDuration + ' s guidance)' : 'Landing practice (' + start.difficulty + ')') +
+      ': ' + start.state.alt.toFixed(1) + ' m altitude, ' + start.state.vVel.toFixed(2) + ' m/s vertical (up +), ' + start.state.hVel.toFixed(2) + ' m/s lateral (right +); ' +
+      start.mass.toFixed(1) + ' kg mass, ' + start.propellant.toFixed(1) + ' kg descent propellant, ' + start.state.fuel.toFixed(1) + ' s of ideal hover reserve. ' +
+      (start.source === 'approach' ? 'Starting engine throttle ' + (start.state.thrust * 100).toFixed(1) + '%, tilt ' + (start.state.tilt * 180 / Math.PI).toFixed(1) + ' degrees. ' : '') +
+      'Authored scenario adjustment applied once: ' + start.eventFuelApplied.toFixed(1) + ' s reserve and +' + start.eventDrift.toFixed(1) + ' m/s drift' + (start.boulders ? '; boulder site selected.' : '.') +
+      (start.source === 'approach' ? ' Powered segment: ' + start.priorTime.toFixed(1) + ' s and ' + (start.priorDownrange / 1000).toFixed(1) + ' km; local piloting starts at zero.' : '');
+  }
   function mmDrawApproachScene(ctx,W,H,sample,profile,opts) {
     opts=opts||{}; var local=opts.view==='local', anchor=local?sample.theta:profile.events.end.theta/2;
     var span=local?Math.max(2500,sample.altitude*3):Math.max(10000,profile.summary.downrange*1.12);
@@ -1316,7 +1411,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     var ruler=Math.pow(10,Math.floor(Math.log10(Math.max(1,span/5))));ctx.strokeStyle='#172b46';ctx.beginPath();ctx.moveTo(W-20-ruler*scale,H-38);ctx.lineTo(W-20,H-38);ctx.stroke();ctx.textAlign='right';ctx.fillText(ruler>=1000?(ruler/1000)+' km':ruler+' m',W-20,H-46);ctx.textAlign='left';
     return {scaleX:scale,scaleY:scale,craftX:p.x,craftY:p.y,moonRadius:MM_APPROACH.radius*scale,moonX:originX,moonY:originY+MM_APPROACH.radius*scale,pitch:pitch,plume:sample.throttle>0.005};
   }
-  try { window.MoonMissionPure=Object.assign(window.MoonMissionPure||{}, { approachPhysics:MM_APPROACH, approachPlan:mmApproachPlan, approachReference:mmApproachReference, approachControl:mmApproachControl, approachStep:mmApproachStep, approachProfile:mmApproachProfile, approachSample:mmApproachSample,cleanApproachPlayback:mmCleanApproachPlayback,drawApproachScene:mmDrawApproachScene }); } catch(e) {}
+  try { window.MoonMissionPure=Object.assign(window.MoonMissionPure||{}, { approachPhysics:MM_APPROACH, approachPlan:mmApproachPlan, approachReference:mmApproachReference, approachControl:mmApproachControl, approachStep:mmApproachStep, approachProfile:mmApproachProfile, approachSample:mmApproachSample,cleanApproachPlayback:mmCleanApproachPlayback,descentHandover:mmDescentHandover,cleanDescentStart:mmCleanDescentStart,drawApproachScene:mmDrawApproachScene }); } catch(e) {}
 
   function mmDrawLunarEnvironment(ctx,W,H,s,p) {
     var R=MM_LOI.radius,span=(R+p.orbit.apolune)*1.16,scale=Math.min(W-48,H-190)/(2*span);
@@ -1495,12 +1590,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         function resize(){W=cv.offsetWidth||W;H=cv.offsetHeight||H;cv.width=W*2;cv.height=H*2;ctx.setTransform(2,0,0,2,0,0);}
         resize();if(typeof ResizeObserver==='function'){observer=new ResizeObserver(resize);observer.observe(cv);}
         function persist(){
-          if(time>=p.summary.duration&&!recorded){recorded=true;upd('approachResult',Object.assign({},p.summary));if(typeof announceToSR==='function')announceToSR('Powered approach reviewed. '+p.summary.propellantUsed.toFixed(0)+' kilograms of descent propellant used. Landing practice resets its reserve.');}
+          if(time>=p.summary.duration&&!recorded){recorded=true;upd('approachResult',Object.assign({},p.summary));if(typeof announceToSR==='function')announceToSR('Powered approach reviewed. '+p.summary.propellantUsed.toFixed(0)+' kilograms of descent propellant used. Choose computed handover to keep this measured reserve, or choose landing practice.');}
           var next=p.plan.duration+':'+time+':'+recorded;if(next===stamp)return;stamp=next;upd('approachRun',{version:1,duration:p.plan.duration,time:time,recorded:recorded});
         }
         function visibility(){lastTs=null;persist();}document.addEventListener('visibilitychange',visibility);
         cv._approachAction=function(name,value){
-          if(name==='plan'){var next=mmApproachPlan({duration:Number(value)});if(next.duration!==p.plan.duration){p=mmApproachProfile(next);time=0;recorded=false;paused=true;upd('approachPlan',next);upd('approachResult',null);upd('approachPaused',true);}}
+          if(name==='plan'){var next=mmApproachPlan({duration:Number(value)});if(next.duration!==p.plan.duration){p=mmApproachProfile(next);time=0;recorded=false;paused=true;upd('approachPlan',next);upd('approachResult',null);upd('descentStart',null);upd('approachPaused',true);}}
           if(name==='seek'){time=Math.max(0,Math.min(p.summary.duration,Number(value)||0));paused=true;upd('approachPaused',true);}
           if(name==='end'){time=p.summary.duration;paused=true;view='local';upd('approachPaused',true);upd('approachView',view);}
           if(name==='milestone'){var e=p.events[value];if(e){time=e.time;paused=true;view='local';upd('approachPaused',true);upd('approachView',view);}}
@@ -1537,8 +1632,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       h('details',{'data-approach-model-note':true,style:{fontSize:'13px',lineHeight:1.6,color:'#cbd5e1',marginTop:'12px'}},h('summary',{style:{cursor:'pointer'}},'How this powered approach works'),
         h('p',null,'A 15 km circular lunar preset starts at 15,200 kg. The 46.7 kN descent engine has a 311 s specific impulse and a 0.11 s throttle response. Propellant flow is thrust divided by exhaust velocity. The computer tracks smooth altitude and sideways-speed targets; acceleration is produced by the capped engine force. Curvature, inverse-square gravity and radial/tangential coupling are integrated.'),
         h('p',null,'The Moon is spherical and does not rotate. Throttle is continuous and thrust direction follows guidance instantly. Earth gravity, uneven lunar gravity, RCS propellant, attitude dynamics, terrain and historical navigation errors are omitted. This is an educational preset rather than a reconstruction of Apollo flight data. Whole and local views use the same physical scale on both axes; only the spacecraft glyph is enlarged.'),
-        h('p',null,'Review awards no points. The later landing practice starts from rounded 300 m approach speeds and resets propellant according to difficulty and mission decisions. Changing this guidance duration changes the computed approach, without changing that practice reserve.'),
+        h('p',null,'Review awards no points. Computed handover continues into piloting with the measured motion, engine state and remaining descent propellant. A separate landing practice preset is also available. Authored scenario costs are applied once at the start of either choice.'),
         h('a',{href:'https://ntrs.nasa.gov/citations/19740044219',target:'_blank',rel:'noopener noreferrer',style:{color:'#7dd3fc',display:'inline-block',padding:'10px 0'}},'NASA Apollo lunar descent guidance')));
+  }
+
+  function mmRenderDescentHandover(h, d, upd) {
+    var receipt = mmSelectedDescentStart(d), st = receipt.state;
+    var verified = mmCleanApproachPlayback(d).approachResult;
+    var available = receipt.source === 'approach' || (!!verified && verified.outcome === 'handover');
+    var connected = receipt.source === 'approach';
+    var modeName = MM_MODE_NAMES[receipt.difficulty] || MM_MODE_NAMES.pilot;
+    var cardStyle = {padding:'14px',margin:'12px 0',border:'1px solid #475569',borderRadius:'12px',background:'#0b1729',color:'#e2e8f0',textAlign:'left',minWidth:0,overflowWrap:'anywhere'};
+    var options = [
+      {mode:'approach',name:'Computed handover',description:receipt.source === 'approach' && mmCleanDescentStart(d.descentStart)?'Retry the recorded '+receipt.planDuration+' s guidance handover. Change the approach plan above to create a new start.':available?'Carry your verified approach state into piloting.':'Review the 300 m handover above to enable this start.'},
+      {mode:'practice',name:'Landing practice',description:modeName+' difficulty preset with a separate starting reserve.'}
+    ];
+    var values = [
+      ['altitude','Starting altitude',st.alt.toFixed(1)+' m'],
+      ['mass','Starting mass',receipt.mass.toFixed(1)+' kg'],
+      ['propellant','Descent propellant',receipt.propellant.toFixed(1)+' kg'],
+      ['vertical','Vertical speed (up +)',st.vVel.toFixed(2)+' m/s'],
+      ['lateral','Lateral speed (right +)',st.hVel.toFixed(2)+' m/s'],
+      ['throttle','Engine throttle',(st.thrust*100).toFixed(1)+'%'],
+      ['tilt','Thrust tilt (right +)',(st.tilt*180/Math.PI).toFixed(1)+' degrees'],
+      ['reserve','Hover-equivalent reserve',st.fuel.toFixed(1)+' s']
+    ];
+    var hasScenario = receipt.requestedEventFuel > 0 || receipt.eventDrift > 0 || receipt.boulders;
+    return h('section',{'data-descent-start-card':true,'data-descent-start-source':receipt.source,'data-descent-start-available':available,style:cardStyle},
+      h('h4',{style:{fontSize:'17px',fontWeight:800,margin:'0 0 10px',color:'#f8fafc'}},'Take the controls at 300 m'),
+      h('fieldset',{style:{border:0,padding:0,margin:0,minWidth:0}},
+        h('legend',{style:{fontSize:'13px',fontWeight:700,padding:0,marginBottom:'8px'}},'Choose the landing start'),
+        h('div',{style:{display:'grid',gap:'8px'}},options.map(function(option){
+          var disabled = option.mode === 'approach' && !available;
+          var selected = receipt.source === option.mode;
+          return h('label',{key:option.mode,'data-descent-start-option':option.mode,'data-descent-start-selected':selected,style:{display:'grid',gridTemplateColumns:'44px minmax(0,1fr)',alignItems:'center',gap:'8px',minHeight:'44px',padding:'8px',border:'1px solid '+(selected?'#67e8f9':'#475569'),borderRadius:'8px',background:selected?'#123047':'#111e30',color:disabled?'#cbd5e1':'#f8fafc',cursor:disabled?'default':'pointer'}},
+            h('input',{type:'radio',name:'moon-descent-start-mode',value:option.mode,checked:selected,disabled:disabled,'aria-label':option.name,'data-descent-start-mode':option.mode,style:{width:'44px',height:'44px',margin:0,accentColor:'#67e8f9',cursor:disabled?'default':'pointer'},onChange:function(ev){if(ev.target.checked && !disabled){upd('descentStart',null);upd('descentMode',option.mode);}}}),
+            h('span',null,h('strong',{style:{display:'block',fontSize:'13px'}},option.name),h('span',{style:{display:'block',fontSize:'12px',lineHeight:1.55,color:'#cbd5e1'}},option.description)));
+        }))),
+      h('p',{'data-descent-start-connection':receipt.source,role:'status',style:{fontSize:'13px',lineHeight:1.65,color:'#a5f3fc',margin:'12px 0'}},connected?
+        'Connected handover: your measured motion, engine state and remaining descent propellant carry into piloting without refuelling.':
+        'Landing practice starts from a 300 m preset: 9 m/s downward, 4 m/s sideways and '+receipt.baseFuel.toFixed(1)+' s of ideal hover reserve before scenario changes. '+modeName+' difficulty sets this practice reserve.'),
+      connected && h('p',{'data-descent-start-prior':true,style:{fontSize:'12px',lineHeight:1.6,color:'#cbd5e1',margin:'0 0 12px'}},receipt.planDuration.toFixed(0)+' s guidance plan; handover after '+receipt.priorTime.toFixed(1)+' s and '+(receipt.priorDownrange/1000).toFixed(1)+' km of surface downrange. Local displacement and piloting time start at zero.'),
+      h('dl',{'data-descent-start-readouts':true,style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(112px,1fr))',gap:'10px 12px',margin:'12px 0'}},values.map(function(value){return h('div',{key:value[0],style:{minWidth:0}},h('dt',{style:{fontSize:'12px',lineHeight:1.5,color:'#cbd5e1'}},value[1]),h('dd',{'data-descent-start-value':value[0],style:{margin:'2px 0 0',fontSize:'15px',fontWeight:700,fontVariantNumeric:'tabular-nums',color:'#f8fafc'}},value[2]));})),
+      h('p',{'data-descent-start-reserve-note':true,style:{fontSize:'12px',lineHeight:1.65,color:'#cbd5e1',margin:'10px 0'}},'Reserve means seconds of ideal upright hover at lunar surface gravity. Throttle and attitude change actual fuel use.'),
+      h('p',{'data-descent-start-scenario':hasScenario?'applied':'none',style:{fontSize:'12px',lineHeight:1.65,padding:'10px',border:'1px solid #64748b',borderRadius:'8px',background:hasScenario?'#362816':'#172436',color:hasScenario?'#fde68a':'#cbd5e1',margin:'10px 0'}},
+        hasScenario?'Authored scenario changes are applied once when the landing starts: '+receipt.eventFuelApplied.toFixed(1)+' s of hover-equivalent reserve deducted'+(receipt.eventFuelApplied < receipt.requestedEventFuel?' ('+receipt.requestedEventFuel.toFixed(1)+' s requested)':'')+', '+receipt.eventDrift.toFixed(1)+' m/s added lateral drift'+(receipt.boulders?', with the boulder landing site selected.':'.'):'Authored scenario changes: no reserve deduction, added drift or boulder site in this start.'),
+      h('p',{'data-descent-start-model-note':true,style:{fontSize:'12px',lineHeight:1.65,color:'#cbd5e1',margin:'10px 0 0'}},'Below 300 m, the local model approximates a flat lunar surface and uses assisted attitude control. Terrain slopes are omitted.'));
   }
 
   // Score and its parts, so the breakdown under the score shows the points actually
@@ -1560,7 +1699,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     var grade = total >= 90 ? 'A+' : total >= 80 ? 'A' : total >= 70 ? 'B' : total >= 50 ? 'C' : 'D';
     return { total: total, grade: grade, parts: parts };
   }
-  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, { launchDisplay: mmLaunchDisplay, returnCoast: mmReturnCoast, returnView: mmReturnView, phaseLitAt: mmPhaseLitAt, entryPeakG: mmEntryPeakG, descent: MM_DESCENT, descentStep: mmDescentStep, lunarGravity: mmLunarGravity, descentMass: mmDescentMass, descentGuidance: mmDescentGuidance, landingScore: mmLandingScore, earthLandPaths: mmEarthLandPaths, earthClouds: mmEarthClouds, drawEarth: drawDetailedEarth, saturnV: mmDrawSaturnV, saturnVHeight: function () { return MM_SATURN_V_H; }, moonProject: mmMoonProject, moonMaria: mmMoonMariaPaths, moonSites: function () { return MM_MOON_SITES; }, terminatorLon: function () { return MM_TERMINATOR_LON; }, craftInShadow: mmCraftInShadow, splashPose: mmSplashPose, entryState: mmEntryState, coastAt: mmCoastAt, coastSpeed: mmCoastSpeed, soundSpeed: mmSoundSpeed, dynamicPressure: mmDynamicPressure, airAbove: mmAirAbove, skyAt: mmSkyAt, plumeGrow: mmPlumeGrow, equalPull: function () { return MM_EQUAL_PULL; } }); } catch (e) {}
+  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, { launchDisplay: mmLaunchDisplay, returnCoast: mmReturnCoast, returnView: mmReturnView, phaseLitAt: mmPhaseLitAt, entryPeakG: mmEntryPeakG, descent: MM_DESCENT, descentStep: mmDescentStep, descentFrame: mmDescentFrame, lunarGravity: mmLunarGravity, descentMass: mmDescentMass, descentGuidance: mmDescentGuidance, landingScore: mmLandingScore, earthLandPaths: mmEarthLandPaths, earthClouds: mmEarthClouds, drawEarth: drawDetailedEarth, saturnV: mmDrawSaturnV, saturnVHeight: function () { return MM_SATURN_V_H; }, moonProject: mmMoonProject, moonMaria: mmMoonMariaPaths, moonSites: function () { return MM_MOON_SITES; }, terminatorLon: function () { return MM_TERMINATOR_LON; }, craftInShadow: mmCraftInShadow, splashPose: mmSplashPose, entryState: mmEntryState, coastAt: mmCoastAt, coastSpeed: mmCoastSpeed, soundSpeed: mmSoundSpeed, dynamicPressure: mmDynamicPressure, airAbove: mmAirAbove, skyAt: mmSkyAt, plumeGrow: mmPlumeGrow, equalPull: function () { return MM_EQUAL_PULL; } }); } catch (e) {}
 
   function _seededRand(seed) {
     var s = (seed * 16807 + 1) % 2147483647;
@@ -5925,9 +6064,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         if (s.earnedBadges != null && !isObj(s.earnedBadges)) s.earnedBadges = {};
         if (s.quizIdx != null && !(isNum(s.quizIdx) && s.quizIdx >= 0 && s.quizIdx % 1 === 0)) s.quizIdx = 0;
         if (s.landingResult != null && !(isObj(s.landingResult) && isNum(s.landingResult.vVel) && isNum(s.landingResult.hVel))) s.landingResult = null;
-        if (s.landingResult) s.landingResult = Object.assign({}, s.landingResult, { recording: mmCleanDescentRecording(s.landingResult.recording) });
+        if (s.landingResult) s.landingResult = Object.assign({}, s.landingResult, { start: mmCleanDescentStart(s.landingResult.start), recording: mmCleanDescentRecording(s.landingResult.recording) });
         s.landingAttempts = (Array.isArray(s.landingAttempts) ? s.landingAttempts : []).slice(-5).filter(function(a) { return isObj(a) && isNum(a.vVel) && isNum(a.hVel); }).map(function(a) {
-          return Object.assign({}, a, { recording: mmCleanDescentRecording(a.recording) });
+          return Object.assign({}, a, { start: mmCleanDescentStart(a.start), recording: mmCleanDescentRecording(a.recording) });
         });
         Object.assign(s, mmCleanEntryState(s));
         Object.assign(s, mmCleanLaunchPlayback(s));
@@ -5935,6 +6074,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         Object.assign(s, mmCleanTransitPlayback(s));
         Object.assign(s, mmCleanReturnPlayback(s));
         Object.assign(s, mmCleanApproachPlayback(s));
+        s.descentStart = mmCleanDescentStart(s.descentStart);
+        s.descentMode = s.descentMode === 'practice' || (!s.descentMode && s.descentStart && s.descentStart.source === 'practice') ? 'practice' : 'approach';
         if (s.mccChoice !== 'corrected' && s.mccChoice !== 'skipped') s.mccChoice = null;
         Object.assign(s, mmCleanLoiPlayback(s));
         Object.assign(s, mmCleanLunarEnvironment(s));
@@ -5971,6 +6112,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       var _prefersReduce = false;
       try { _prefersReduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
       var animPaused = (d.animPaused != null) ? !!d.animPaused : _prefersReduce;
+      if (_mmAnimPaused !== animPaused) {
+        var pausedDescent = document.querySelector('[data-descent-canvas]');
+        if (pausedDescent && pausedDescent._descentClockReset) pausedDescent._descentClockReset();
+      }
       _mmAnimPaused = animPaused;
       _mmMoonLabels = !!d.moonLabels;
       _mmTrueScale = !!d.trueScale;
@@ -6135,6 +6280,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           ref: function(el) { if (el) { var cv = el.parentElement.querySelector('[data-descent-canvas]'); if (cv) cv._reviewFrame = index === lastIndex ? null : selected; } },
           style: { padding: '16px', background: '#081322', color: '#e2e8f0', borderTop: '1px solid #334155' } },
           h('h4', { style: { margin: '0 0 6px', fontSize: '17px', fontWeight: '800' } }, t('stem.moonmission.landing_recorder', 'Landing flight recorder')),
+          h('p', {'data-landing-start-record':true,style:{fontSize:'13px',lineHeight:1.6,color:'#a5f3fc'}}, mmDescentStartText(result.start)),
           h('p', { style: { fontSize: '12px', lineHeight: '1.5', color: '#cbd5e1', margin: '0 0 12px' } }, t('stem.moonmission.recorder_explain', 'Inspect the recorded approach, compare attempts, and change one control strategy on your next flight. Scrubbing changes the scene only; your landing result stays recorded.')),
           h('p', { 'data-landing-feedback': 'true', style: { padding: '10px', borderLeft: '3px solid ' + (result.crashed ? '#fbbf24' : '#34d399'), background: '#132237', fontSize: '13px', lineHeight: '1.6' } },
             result.crashed ? [result.vVel >= MM_DESCENT.landV ? 'Vertical impact reached or exceeded 3 m/s. Start braking at a greater height.' : '', result.hVel >= MM_DESCENT.landH ? 'Lateral impact reached or exceeded 5 m/s. Tilt against the drift while applying thrust.' : ''].filter(Boolean).join(' ')
@@ -8514,7 +8660,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           !d.descentStarted && h('div', { className: 'bg-gradient-to-b from-slate-900 to-indigo-950 rounded-xl p-5 border border-slate-700 text-white text-center' },
             h('div', { className: 'text-4xl mb-3' }, '\u2B07\uFE0F'),
             h('h4', { className: 'text-lg font-black mb-2' }, t('stem.moonmission.powered_descent_2', 'Powered Descent')),
-            h('p', { className: 'text-xs text-slate-200 mb-4' }, 'Explore the computed powered approach above, then take the controls for a separate 300 m landing practice. Its rounded starting speeds are 9 m/s downward and 4 m/s sideways. Difficulty and mission decisions set your practice fuel reserve, counted in seconds of ideal hover.'),
+            h('p', { className: 'text-xs text-slate-200 mb-4' }, 'Review the computed approach above, then continue from its measured 300 m state or choose a separate landing practice preset. Check your starting mass, speeds, throttle and reserve before taking control. Reserve is counted in seconds of ideal upright hover.'),
             h('div', { className: 'grid grid-cols-3 gap-3 mb-4 max-w-sm mx-auto' },
               h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
                 h('div', { className: 'text-2xl mb-1' }, '\u2B06\uFE0F'),
@@ -8535,7 +8681,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('p', { className: 'text-[0.6875rem] text-sky-300 mb-4' },
               t('stem.moonmission.descent_touch_hint', '\uD83D\uDC46 No keyboard? The same three controls sit along the bottom of the flight view \u2014 hold them with a finger or the mouse.')),
             h('div', { className: 'rounded-lg p-3 border mb-4 max-w-sm mx-auto bg-sky-500/10 border-sky-500/30', 'data-moonmission-separate-propulsion': true },
-              h('p', { className: 'text-xs text-sky-200' }, 'Eagle has its own descent engine and fuel tank. This landing starts from a separate approach preset; Service Module correction burns do not subtract Lunar Module hover fuel.')),
+              h('p', { className: 'text-xs text-sky-200' }, 'The powered approach and landing share Eagle’s descent engine and fuel tank. Service Module correction burns use a separate propulsion system. Authored descent decisions are shown below as scenario adjustments.')),
             (function() {
               var ec = mmEventCosts(d.decisionLog);
               if (!ec.items.length) return null;
@@ -8555,14 +8701,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 h('li', null, t('stem.moonmission.the_real_apollo_11_landed_with_only_25', 'Apollo 11 touched down just after Houston called "30 seconds" of fuel left.'))
               )
             ),
+            mmRenderDescentHandover(h, d, upd),
             h('button', {
+              'data-descent-begin': true,
               title: t('stem.moonmission.begin_powered_descent_piloting', 'Begin powered descent piloting'),
-              onClick: function() { upd('descentStarted', true); },
+              onClick: function() { var start = mmSelectedDescentStart(d); upd('descentStart', start); upd('descentMode', start.source === 'practice' ? 'practice' : 'approach'); upd('descentStarted', true); },
               className: 'px-8 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-amber-700 to-orange-700 hover:from-amber-700 hover:to-orange-700 shadow-lg transition-all hover:scale-[1.02]'
             }, t('stem.moonmission.begin_descent_take_the_controls', '\uD83D\uDE80 Begin Descent \u2014 Take the Controls!'))
           ),
           // Game canvas (after onboarding)
-          d.descentStarted && h('div', { 'data-descent-session': 'true', className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
+          d.descentStarted && h('div', { 'data-descent-session': 'true', 'data-descent-start-source': (mmCleanDescentStart(d.landingResult && d.landingResult.start) || mmCleanDescentStart(d.descentStart) || {source:'practice'}).source, className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
             h('div', { className: 'relative', style: { height: '420px' } },
               h('canvas', { 
                 'data-descent-canvas': 'true',
@@ -8581,17 +8729,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   // time step from speed (alt += vVel * 0.5 per 1/60 s step), so "down 3 m/s" had nothing
                   // to do with how fast the ground came up: 100 m at 3 m/s was followed by
                   // touchdown 1.1 s later. Now the whole approach runs at real speed.
-                  var alt = MM_DESCENT.handoverAlt;
-                  var vVel = MM_DESCENT.handoverVv;   // negative = descending
-                  // This independent LM approach retains genuine descent-event costs.
-                  // Earlier Service Module burns use a different propulsion system.
-                  var _evCost = mmEventCosts(d.decisionLog);
-                  var hVel = MM_DESCENT.handoverHv + _evCost.drift;
-                  var fuel = Math.max(10, ((diffSettings && diffSettings.fuel) || MM_DESCENT.pilotFuel) - _evCost.fuel);   // seconds of hover
+                  // A saved receipt freezes the start across reloads and retries. Older
+                  // flights without one retain the separate practice preset.
+                  var descentStart = mmCleanDescentStart(d.landingResult && d.landingResult.start) || mmCleanDescentStart(d.descentStart) ||
+                    mmDescentHandover(Object.assign({}, d, {descentMode:'practice'}));
+                  var initialFlight = descentStart.state;
+                  var alt = initialFlight.alt, vVel = initialFlight.vVel;
+                  var _evCost = {boulders:descentStart.boulders};
+                  var hVel = initialFlight.hVel, fuel = initialFlight.fuel;
                   var _calloutBandIdx = 0;
                   var _fuelCallIdx = 0;
                   while (_fuelCallIdx < MM_FUEL_CALLS.length && MM_FUEL_CALLS[_fuelCallIdx] >= fuel) _fuelCallIdx++;
-                  var thrust = 0;
+                  var thrust = initialFlight.thrust;
                   var landed = false;
                   var crashed = false;
                   var landingRecorded = false;   // outcome is written to state exactly once
@@ -8599,13 +8748,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   // points its main engine, so the same burn that holds you up also pushes
                   // you across. The LM used to slide laterally bolt upright, like a lift,
                   // which hides the one idea the descent is actually teaching.
-                  var tilt = 0;
+                  var tilt = initialFlight.tilt;
                   // Ground track. The physics only ever knew a horizontal SPEED;
                   // nothing integrated it into a position, because a fixed side-on
                   // view had nowhere to put one. The 3D ground needs it to slide.
                   var groundX = 0, groundZ = 0;
-                  var flightTime = 0, flightPaused = false, throttleSetting = 0, dustSettlingTime = 0;
+                  var flightTime = 0, flightPaused = !!_mmAnimPaused, throttleSetting = thrust, dustSettlingTime = 0;
                   var flightState = { alt: alt, vVel: vVel, hVel: hVel, fuel: fuel, thrust: thrust, tilt: tilt, x: 0, elapsed: 0 };
+                  cvEl._descentState = function() { return Object.assign({}, flightState); };
                   // Restore a completed approach without starting another fall or awarding it again.
                   var savedLanding = d.landingResult;
                   var savedTrace = savedLanding && mmCleanDescentRecording(savedLanding.recording);
@@ -8621,6 +8771,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     tilt = savedEnd ? savedEnd.tilt : 0;
                     flightTime = savedEnd ? savedEnd.t : 0; groundX = savedEnd ? savedEnd.x * 0.6 : 0;
                     crashed = !!savedLanding.crashed; landed = !crashed; landingRecorded = true;
+                    thrust = 0; throttleSetting = 0;
                     flightState = { alt: 0, vVel: vVel, hVel: hVel, fuel: fuel, thrust: 0, tilt: tilt, x: groundX / 0.6, elapsed: flightTime, contact: true };
                   }
                   var flightRecording = mmNewDescentRecording();
@@ -8631,10 +8782,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   // step per FRAME, which tied a graded piloting task to the refresh
                   // rate: the same flight scored differently on a fast machine than a
                   // slow one, and adding the 3D world was enough to change the outcome.
-                  var _physLast = 0;            // ms timestamp of the last integration
-                  var _physAcc = 0;             // unspent milliseconds
-                  var PHYS_STEP_MS = 1000 / 60; // one step = the old per-frame step
-                  var PHYS_MAX_STEPS = 6;       // cap catch-up after a stall or a hidden tab
+                  var descentClock = {last:null,acc:0,held:false};
+                  var PHYS_STEP_MS = 1000 / 60;
+                  function resetDescentClock() { descentClock.last = null; descentClock.acc = 0; descentClock.held = true; }
+                  cvEl._descentClockReset = resetDescentClock;
+                  document.addEventListener('visibilitychange', resetDescentClock);
                   // The 3D scene, when it is available. Null means WebGL was refused
                   // or Three never loaded, and the 2D world below keeps painting.
                   var d3 = null;
@@ -8685,7 +8837,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     if (calloutEl) calloutEl.textContent = text;
                   }
                   callout(savedLanding ? (savedTrace ? 'Completed approach restored. Inspect the flight recorder or retry the descent.' : 'Completed landing restored. This older save has no flight recording. Retry the descent to record a new approach.') : 'You have control: ' + Math.round(alt) + ' m up, down ' + Math.abs(vVel).toFixed(1) + ' m/s, drifting '
-                    + Math.abs(hVel).toFixed(1) + ' m/s, ' + Math.round(fuel) + ' s of fuel. The computer flew the braking phase from 15 km, through program alarms 1202 and 1201.');
+                    + Math.abs(hVel).toFixed(1) + ' m/s, ' + Math.round(fuel) + ' s of fuel. ' + (descentStart.source === 'approach' ? 'Measured powered approach continued.' : 'Separate landing practice preset.'));
 
                   // ── On-screen flight controls ──
                   // Shown to everyone, not just touch devices: the landing was the one
@@ -8712,7 +8864,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     // After touchdown the loop only ticks on a timer and writes nothing to
                     // the DOM, so the parent-watching MutationObserver never fired and Retry
                     // Landing / Begin EVA left the WebGL context behind.
-                    if (!document.contains(cvEl)) { if (d3) { try { d3.dispose(); } catch (_goneErr) {} d3 = null; } return; }
+                    if (!document.contains(cvEl)) { document.removeEventListener('visibilitychange', resetDescentClock); cvEl._descentClockReset = null; if (d3) { try { d3.dispose(); } catch (_goneErr) {} d3 = null; } return; }
                     if (!flightPanel) {
                       flightPanel = cvEl.parentElement.parentElement.querySelector('[data-descent-instruments]');
                       if (flightPanel) {
@@ -8720,6 +8872,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         var cameraSelect = flightPanel.querySelector('[data-descent-camera]');
                         cameraSelect.addEventListener('change', function() { cameraMode = cameraSelect.value; });
                         var lever = flightPanel.querySelector('[data-descent-throttle]');
+                        lever.value = String(Math.round(throttleSetting * 100));
+                        flightPanel.querySelector('[data-throttle-setting]').textContent = Math.round(throttleSetting * 100) + '%';
                         lever.addEventListener('input', function() {
                           throttleSetting = Math.max(0, Math.min(1, Number(lever.value) / 100));
                           flightPanel.querySelector('[data-throttle-setting]').textContent = Math.round(throttleSetting * 100) + '%';
@@ -8727,7 +8881,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         var pauseFlight = flightPanel.querySelector('[data-descent-pause]');
                         pauseFlight.addEventListener('click', function() {
                           if (landed || crashed) return;
-                          flightPaused = !flightPaused;
+                          resetDescentClock();
+                          flightPaused = !(flightPaused || _mmAnimPaused);
+                          if (!flightPaused) upd('animPaused', false);
                           pauseFlight.setAttribute('aria-pressed', String(flightPaused));
                           keys = {}; padCtl.thrust = padCtl.left = padCtl.right = false;
                           cvEl.parentElement.querySelectorAll('[data-descent-pad] button').forEach(function(b) { b.setAttribute('aria-pressed', 'false'); });
@@ -8746,17 +8902,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     // How many fixed steps does the elapsed wall-clock time buy?
                     var _now = (typeof performance !== 'undefined' && performance.now)
                       ? performance.now() : Date.now();
-                    if (!_physLast) _physLast = _now;
-                    var _elapsed = _now - _physLast;
-                    _physLast = _now;
-                    // A hidden tab or a long stall must not return and fly the whole
-                    // descent in one frame.
-                    if (_elapsed > 250) _elapsed = PHYS_STEP_MS;
-                    _physAcc += _elapsed;
-                    var _steps = Math.floor(_physAcc / PHYS_STEP_MS);
-                    if (_steps > PHYS_MAX_STEPS) _steps = PHYS_MAX_STEPS;
-                    _physAcc -= _steps * PHYS_STEP_MS;
-                    if (flightPaused || document.hidden) { _steps = 0; _physAcc = 0; }
+                    var _elapsed = mmNum(descentClock.last) ? Math.min(1000, Math.max(0, _now - descentClock.last)) : 0;
+                    var _steps = mmDescentFrame(descentClock, _now, flightPaused || _mmAnimPaused || document.hidden);
 
                     for (var _ps = 0; _ps < _steps && !landed && !crashed; _ps++) {
                       // Controls: up arrow = thrust, left/right = horizontal adjust
@@ -8863,17 +9010,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         brake: isFinite(guidance.brakingAltitude) ? guidance.brakingAltitude.toFixed(1) + ' m' : 'No thrust available',
                         time: flightTime.toFixed(1) + ' s',
                         track: Math.abs(flightState.x).toFixed(1) + ' m ' + (flightState.x < 0 ? 'left' : 'right'),
-                        margin: guidance.brakingMargin.toFixed(1) + ' m'
+                        margin: guidance.brakingMargin.toFixed(1) + ' m',
+                        descentTime: (descentStart.priorTime + flightTime).toFixed(1) + ' s',
+                        downrange: ((descentStart.priorDownrange + flightState.x) / 1000).toFixed(3) + ' km'
                       };
                       if (legacyFuel) {
                         ['propellant', 'mass', 'hover', 'deltaV', 'brake', 'margin'].forEach(function(key) { flightValues[key] = 'Not recorded'; });
                       }
-                      if (savedLanding && !savedTrace) { flightValues.time = 'Not recorded'; flightValues.track = 'Not recorded'; }
+                      if (savedLanding && !savedTrace) { flightValues.time = 'Not recorded'; flightValues.track = 'Not recorded'; flightValues.descentTime = 'Not recorded'; flightValues.downrange = 'Not recorded'; }
                       Object.keys(flightValues).forEach(function(key) { if (instrumentNodes[key]) instrumentNodes[key].textContent = flightValues[key]; });
                       var guidanceNode = flightPanel.querySelector('[data-descent-guidance]');
                       var guidanceText = legacyFuel ? 'This older save contains landing speeds, grade and fuel percentage only. Propellant, mass, braking height, flight time and ground displacement were not recorded.'
                         : finishedFlight ? (landed ? 'Touchdown recorded. Review the final flight instruments.' : 'Impact recorded. Review your descent rate and braking height before retrying.')
-                        : flightPaused ? 'Paused — flight time, propellant and motion are held.'
+                        : flightPaused || _mmAnimPaused ? 'Paused — flight time, propellant and motion are held.'
                         : fuel <= 0 ? 'Engine unavailable — propellant exhausted.'
                         : !guidance.canBrake && vVel < -1 ? 'Fuel margin critical — estimated propellant is insufficient to stop this descent.'
                         : guidance.brakingMargin <= 5 && vVel < -1 ? 'Brake now — little height remains above the estimated stopping height.'
@@ -8890,7 +9039,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       cvEl.dataset.descentFuelUnit = legacyFuel ? '%' : 's';
                       cvEl.dataset.descentFuelPercent = savedFuelPercent == null ? '' : String(savedFuelPercent);
                       cvEl.dataset.descentThrust = thrust.toFixed(2);
-                      cvEl.dataset.descentPaused = String(flightPaused);
+                      cvEl.dataset.descentPaused = String(flightPaused || _mmAnimPaused || document.hidden);
+                      flightPanel.querySelector('[data-descent-pause]').setAttribute('aria-pressed', String(flightPaused || _mmAnimPaused));
                       cvEl.dataset.descentMass = legacyFuel ? '' : guidance.massKg.toFixed(2);
                       cvEl.dataset.descentBrakeAltitude = legacyFuel ? '' : String(guidance.brakingAltitude);
                       cvEl.dataset.descentX = savedLanding && !savedTrace ? '' : flightState.x.toFixed(3);
@@ -9162,7 +9312,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       // actually flew the landing, the one piloting task in the whole mission.
                       if (!landingRecorded) {
                         landingRecorded = true;
-                        var _lr = { crashed: false, score: _score.total, grade: _score.grade, vVel: Math.abs(vVel), hVel: Math.abs(hVel), fuel: Math.round(fuel), fuelUnit: 's', recording: mmCleanDescentRecording(flightRecording) };
+                        var _lr = { crashed: false, score: _score.total, grade: _score.grade, vVel: Math.abs(vVel), hVel: Math.abs(hVel), fuel: Math.round(fuel), fuelUnit: 's', start: mmCleanDescentStart(descentStart), recording: mmCleanDescentRecording(flightRecording) };
                         upd('landingResult', _lr);
                         upd('landingReviewIndex', null);
                         upd('landingAttempts', function(cur) { return (Array.isArray(cur) ? cur : []).concat([_lr]).slice(-5); });
@@ -9182,7 +9332,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     if (crashed) {
                       if (!landingRecorded) {
                         landingRecorded = true;
-                        var _cr = { crashed: true, score: 0, grade: '\u2014', vVel: Math.abs(vVel), hVel: Math.abs(hVel), fuel: Math.round(fuel), fuelUnit: 's', recording: mmCleanDescentRecording(flightRecording) };
+                        var _cr = { crashed: true, score: 0, grade: '\u2014', vVel: Math.abs(vVel), hVel: Math.abs(hVel), fuel: Math.round(fuel), fuelUnit: 's', start: mmCleanDescentStart(descentStart), recording: mmCleanDescentRecording(flightRecording) };
                         upd('landingResult', _cr);
                         upd('landingReviewIndex', null);
                         upd('landingAttempts', function(cur) { return (Array.isArray(cur) ? cur : []).concat([_cr]).slice(-5); });
@@ -9295,6 +9445,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 }
               })
             ),
+            h('p', {'data-descent-start-record':true,style:{margin:0,padding:'14px',fontSize:'13px',lineHeight:1.65,color:'#a5f3fc',background:'#0b1729'}}, mmDescentStartText(d.landingResult ? d.landingResult.start : d.descentStart)),
             h('section', { 'data-descent-instruments': 'true', 'aria-label': t('stem.moonmission.flight_instruments', 'Flight instruments'), style: { padding: '14px', background: '#081322', color: '#e2e8f0', borderTop: '1px solid #334155' } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '12px' } },
                 h('h4', { style: { fontWeight: '800', fontSize: '14px', margin: 0 } }, t('stem.moonmission.flight_dynamics', 'Flight dynamics')),
@@ -9319,7 +9470,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   ['mass', t('stem.moonmission.instrument_mass', 'Vehicle mass')],
                   ['deltaV', t('stem.moonmission.instrument_deltav', 'Remaining delta-v')],
                   ['time', t('stem.moonmission.instrument_time', 'Flight time')],
-                  ['track', t('stem.moonmission.instrument_track', 'Ground displacement')]
+                  ['track', t('stem.moonmission.instrument_track', 'Ground displacement')],
+                  ['descentTime', 'Powered + piloted time'],
+                  ['downrange', 'Downrange from descent start']
                 ].map(function(item) {
                   return h('div', { key: item[0], style: { padding: '8px 10px', background: '#111f33', border: '1px solid #293b53', borderRadius: '8px' } },
                     h('dt', { style: { fontSize: '11px', color: '#cbd5e1', marginBottom: '4px' } }, item[1]),
@@ -9337,7 +9490,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 h('p', null, t('stem.moonmission.brake_model_explanation', 'Braking height estimates a full-thrust stop at the current tilt, with an engine-response allowance. It assumes continued thrust and enough fuel, and does not guarantee a safe landing. Begin braking above that height.')),
                 h('p', null, t('stem.moonmission.scene_model_explanation', 'The scene compresses altitude to keep the lander visible. Cyan marks the ground below the lander; amber shows five seconds of drift at the current speed. The terrain is illustrative and is not a landing hazard map.')),
                 h('p', null, t('stem.moonmission.engine_model_explanation', 'Educational final-approach model: 46.7 kN maximum engine thrust, 311 s specific impulse, and an assumed 7,000 kg mass without remaining descent propellant. The throttle range and landing limits are simplified for practice.')),
-                h('a', { href: 'https://aviationsystems.arc.nasa.gov/publications/2008/AF2008100.pdf', target: '_blank', rel: 'noopener noreferrer', style: { display: 'inline-block', padding: '10px 0', color: '#7dd3fc', textDecoration: 'underline' } }, t('stem.moonmission.engine_reference', 'NASA lunar lander simulation reference (PDF)'))
+                h('a', { href: 'https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-rocket-equation/', target: '_blank', rel: 'noopener noreferrer', style: { display: 'inline-block', padding: '10px 0', color: '#7dd3fc', textDecoration: 'underline' } }, 'NASA ideal rocket equation')
               )
             ),
             h('div', { className: 'p-3 border-t border-slate-700 flex justify-between items-center gap-2 flex-wrap', 'data-descent-footer': 'true' },
@@ -9354,6 +9507,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   if (!d.landingRewarded && !d.landingResult.crashed && mmNum(d.landingResult.score) && d.landingResult.score >= 80) upd('landingRewarded', true);
                   // Legacy saves kept only the latest result; retain it before clearing it.
                   upd('landingAttempts', function(cur) { return Array.isArray(cur) && cur.length ? cur : [d.landingResult]; });
+                  var retryStart = mmCleanDescentStart(d.landingResult.start) || mmDescentHandover(Object.assign({}, d, {descentMode:'practice'}));
+                  upd('descentStart', retryStart); upd('descentMode', retryStart.source === 'practice' ? 'practice' : 'approach');
                   upd('landingResult', null);
                   upd('landingReviewIndex', null);
                   upd('descentStarted', false);
@@ -13625,7 +13780,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 h('p',{className:'text-xs text-slate-200'},(d.lunarEnvironmentResult.duration/60).toFixed(1)+' min in the achieved insertion orbit; radio blocked '+(d.lunarEnvironmentResult.radioBlockedSeconds/60).toFixed(1)+' min; total eclipse '+(d.lunarEnvironmentResult.totalEclipseSeconds/60).toFixed(1)+' min; partial eclipse '+d.lunarEnvironmentResult.partialEclipseSeconds.toFixed(1)+' s. Sun comparison: '+d.lunarEnvironmentResult.sunAngle+MM_DEG_SIGN+'.')),
               d.approachResult && h('div', { className: 'bg-white/5 rounded-lg p-2 border border-white/10 mb-2', 'data-powered-approach-record': true },
                 h('p', { className: 'text-xs font-bold text-sky-200' }, 'POWERED LUNAR APPROACH: ' + d.approachResult.duration.toFixed(1) + ' s'),
-                h('p', { className: 'text-xs text-slate-200' }, 'DPS propellant used: ' + d.approachResult.propellantUsed.toFixed(0) + ' kg. Handover: ' + Math.abs(d.approachResult.radialSpeed).toFixed(2) + ' m/s downward and ' + Math.abs(d.approachResult.tangentialSpeed).toFixed(2) + ' m/s sideways. Final landing practice resets its fuel reserve.')),
+                h('p', { className: 'text-xs text-slate-200' }, 'DPS propellant used: ' + d.approachResult.propellantUsed.toFixed(0) + ' kg. Handover: ' + Math.abs(d.approachResult.radialSpeed).toFixed(2) + ' m/s downward and ' + Math.abs(d.approachResult.tangentialSpeed).toFixed(2) + ' m/s sideways. Computed handover can carry this measured state into piloting.')),
+              d.landingResult && h('p', {'data-descent-start-record':true,className:'text-xs text-slate-200 mb-2'}, mmDescentStartText(d.landingResult.start)),
               // Landing performance \u2014 computed inside the descent canvas and, until now,
               // thrown away with it. The one piloting task in the mission deserves a line
               // in the debrief alongside samples and quiz.
@@ -13883,6 +14039,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 upd('crewMorale', 75);          // 75 is the first-flight default — replay used to start 25 points richer
                 upd('landingResult', null);
                 upd('landingAttempts', []);
+                upd('descentStart', null); upd('descentMode', 'approach');
                 upd('landingReviewIndex', null);
                 upd('landingRewarded', false);
                 upd('tliWindow', null);

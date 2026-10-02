@@ -3,7 +3,7 @@ import { mkdir, readFile } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 import { GlHarness } from './helpers/stem_gl_harness';
 
-const REPORT = resolve('reports/moon-mission-enhancement-pass2-2026-09-27/review');
+const REPORT = resolve(process.env.MM_REPORT_DIR ? join(process.env.MM_REPORT_DIR, 'review') : 'reports/moon-mission-enhancement-pass2-2026-09-27/review');
 const harness = new GlHarness({
   toolFile: 'stem_lab/stem_tool_moonmission.js', toolId: 'moonMission',
   width: 1100, height: 1000, layout: 'document', appStyles: true,

@@ -2,7 +2,7 @@ import { test, expect, type Page, type TestInfo } from '@playwright/test';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 import { GlHarness } from './helpers/stem_gl_harness';
-const REPORT=resolve('reports/moon-mission-enhancement-pass9-2026-09-29/browser');
+const REPORT = resolve(process.env.MM_REPORT_DIR ? join(process.env.MM_REPORT_DIR, 'approach') : 'reports/moon-mission-enhancement-pass9-2026-09-29/browser');
 const harness=new GlHarness({toolFile:'stem_lab/stem_tool_moonmission.js',toolId:'moonMission',width:1100,height:1000,layout:'document',appStyles:true});
 const seed=(extra:Record<string,unknown>={})=>({moonMission:{missionPhase:5,missionXP:0,missionLog:[],animPaused:true,soundOff:true,difficulty:'pilot',earnedBadges:{first_step:true,mission_complete:true},...extra}});
 async function mount(page:Page,data=seed()) {await page.goto(harness.url+'/__harness');await page.waitForFunction(()=>!!(window as any).StemLab?._registry?.moonMission);await page.evaluate(value=>{document.getElementById('wrap')!.style.width='100%';Math.random=()=>0.999;(window as any).__mount(value);},data);await expect(page.locator('[data-approach-canvas]')).toBeVisible();await expect.poll(()=>page.locator('[data-approach-canvas]').getAttribute('data-approach-time')).not.toBeNull();}
@@ -26,7 +26,7 @@ test('review, rewind, reload and plan changes retain only matching computed evid
 });
 test('corrupt terminal save restarts unverified and manual landing keeps its practice reserve',async({page})=>{
   await mount(page);await page.locator('[data-approach-review]').click();const raw=await saved(page);raw.approachResult.mass+=10;await mount(page,seed(raw));expect((await live(page)).time).toBe(0);expect((await saved(page)).approachResult).toBeNull();await page.waitForTimeout(250);expect((await saved(page)).approachRun.recorded).toBe(false);
-  await page.locator('[data-approach-plan]').selectOption('900');await page.locator('[data-approach-review]').click();await page.getByRole('button',{name:/Begin Descent/}).click();await expect(page.locator('[data-descent-canvas]')).toBeVisible();await page.locator('[data-descent-pause]').click();expect(Number(await page.locator('[data-descent-canvas]').getAttribute('data-descent-fuel'))).toBeCloseTo(110,1);expect((await saved(page)).missionXP).toBe(0);await expect(page.locator('[data-approach-canvas]')).toHaveCount(0);
+  await page.locator('[data-approach-plan]').selectOption('900');await page.locator('[data-approach-review]').click();await page.locator('[data-descent-start-mode][value="practice"]').check();await page.getByRole('button',{name:/Begin Descent/}).click();await expect(page.locator('[data-descent-canvas]')).toBeVisible();await page.locator('[data-descent-pause]').click();expect(Number(await page.locator('[data-descent-canvas]').getAttribute('data-descent-fuel'))).toBeCloseTo(110,1);expect((await saved(page)).missionXP).toBe(0);await expect(page.locator('[data-approach-canvas]')).toHaveCount(0);
 });
 test('approach clock freezes while hidden and resumes without catch-up',async({page})=>{
   await mount(page);await page.locator('[data-approach-rate]').selectOption('10');await page.locator('[data-approach-pause]').click();await expect.poll(async()=>(await live(page)).time).toBeGreaterThan(1);
