@@ -313,8 +313,6 @@
   "sr_rotated_part_by_degrees": "Rotated part {value1} by {value2} degrees.",
   "sr_created_a_mirrored_copy_of_part_on_the_axis": "Created a mirrored copy of part {value1} on the {value2} axis.",
   "sr_deleted_form_profile": "Deleted form profile {value1}.",
-  "sr_created_particle_burst_at_x_y": "Created particle burst at x {value1}, y {value2}.",
-  "sr_added_paint_at_x_y": "Added paint at x {value1}, y {value2}.",
   "sr_selected_tile_of": "Selected tile {value1} of {value2}.",
   "sr_fractal_view_zoomed_to_times_at_horizontal_pan": "Fractal view zoomed to {value1} times at horizontal pan {value2} and vertical pan {value3}.",
   "sr_fractal_zoom_times": "Fractal zoom {value1} times.",
@@ -324,9 +322,7 @@
   "sr_keyframe_removed": "Keyframe {value1} removed.",
   "sr_color_wheel_palette_added_to_the_thread_kit": "Color Wheel palette added to the Thread Kit.",
   "sr_thread_kit_palette_loaded_in_pixel_art": "Thread Kit palette loaded in Pixel Art.",
-  "sr_nothing_to_undo": "Nothing to undo.",
   "sr_undid_the_last_symmetry_change": "Undid the last symmetry change.",
-  "sr_nothing_to_redo": "Nothing to redo.",
   "sr_redid_the_symmetry_change": "Redid the symmetry change.",
   "sr_cleared_the_symmetry_artwork": "Cleared the symmetry artwork.",
   "sr_watercolor_touch_mode_set_to_scroll_page": "Watercolor touch mode set to scroll page.",
@@ -1983,5 +1979,12 @@
   "process_compare_view": "View comparison",
   "process_search_empty": "No studies match this search.",
   "process_search_empty_help": "Try another word, clear the search, or choose another view.",
-  "process_scope_picker": "View"
+  "process_scope_picker": "View",
+  "pixel_layer_opacity": "Layer opacity",
+  "pixel_layer_blend": "Layer blend",
+  "pixel_layer_blend_normal": "Normal",
+  "pixel_layer_blend_multiply": "Multiply",
+  "pixel_layer_blend_screen": "Screen",
+  "pixel_layer_reset_appearance": "Reset appearance",
+  "pixel_layer_appearance_help": "Opacity fades a layer without changing its paint. Multiply darkens overlaps; Screen lightens them. Empty cells stay clear. Merge is available when both layers use Normal and bakes their opacity into the merged pixels."
 }

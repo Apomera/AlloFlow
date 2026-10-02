@@ -23617,7 +23617,14 @@
       "part_hidden_controls_off": "This part is hidden, so the move controls stay off. Choose Show to use them again.",
       "my_vase_form": "My vase form",
       "duplicate": "Duplicate",
-      "remove_part": "Remove part"
+      "remove_part": "Remove part",
+      "pixel_layer_opacity": "Layer opacity",
+      "pixel_layer_blend": "Layer blend",
+      "pixel_layer_blend_normal": "Normal",
+      "pixel_layer_blend_multiply": "Multiply",
+      "pixel_layer_blend_screen": "Screen",
+      "pixel_layer_reset_appearance": "Reset appearance",
+      "pixel_layer_appearance_help": "Opacity fades a layer without changing its paint. Multiply darkens overlaps; Screen lightens them. Empty cells stay clear. Merge is available when both layers use Normal and bakes their opacity into the merged pixels."
     },
     "assessment": {
       "volume_explorer": "Volume Explorer",

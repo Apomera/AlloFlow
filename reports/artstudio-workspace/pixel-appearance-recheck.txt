@@ -1,0 +1,98 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/artstudio_artwork_roundtrip.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/artstudio_artwork_roundtrip.test.js > Art Studio artwork checkpoints > saves a full pixel layer stack, keeps the study immutable, and forks every layer and active selection
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_artwork_roundtrip.test.js > Art Studio artwork checkpoints > opens an old flat pixel study through the real fork path without inheriting newer layers
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_artwork_roundtrip.test.js > Art Studio artwork checkpoints > preserves Spin Art paint and live drips through navigation and a same-lab study fork
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_artwork_roundtrip.test.js > Art Studio artwork checkpoints > preserves transparent Symmetry paint through navigation and restores a study without current strokes
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_artwork_roundtrip.test.js > Art Studio artwork checkpoints > replaces a mounted watercolor simulation and keeps the saved study immutable after editing and clearing
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_artwork_roundtrip.test.js > Art Studio artwork checkpoints > clears current watercolor pigment when a saved checkpoint has only a portable PNG
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_artwork_roundtrip.test.js > Art Studio artwork checkpoints > waits for delayed symmetry paint before exporting or saving a paper-colored preview
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_artwork_roundtrip.test.js > Art Studio artwork checkpoints > waits for delayed spinArt paint before exporting or saving a paper-colored preview
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_artwork_roundtrip.test.js > Art Studio artwork checkpoints > keeps pending watercolor metadata intact and cancels a queued save after navigation
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_artwork_roundtrip.test.js > Art Studio artwork checkpoints > settles watercolor readiness after an image decode error
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+ ✓ tests/artstudio_artwork_roundtrip.test.js (10 tests) 3450ms
+     ✓ saves a full pixel layer stack, keeps the study immutable, and forks every layer and active selection  839ms
+     ✓ replaces a mounted watercolor simulation and keeps the saved study immutable after editing and clearing  735ms
+     ✓ clears current watercolor pigment when a saved checkpoint has only a portable PNG  393ms
+     ✓ keeps pending watercolor metadata intact and cancels a queued save after navigation  409ms
+     ✓ settles watercolor readiness after an image decode error  306ms
+stdout | tests/artstudio_pixel_layer_workflows.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/artstudio_pixel_layer_workflows.test.js > Pixel layer editing through real controls > adds a drawing layer, paints over a legacy background, and erases to reveal it with gesture Undo
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_layer_workflows.test.js > Pixel layer editing through real controls > blocks keyboard and pointer edits on a locked layer with brush
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_layer_workflows.test.js > Pixel layer editing through real controls > blocks keyboard and pointer edits on a locked layer with eraser
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_layer_workflows.test.js > Pixel layer editing through real controls > blocks keyboard and pointer edits on a locked layer with fill
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_layer_workflows.test.js > Pixel layer editing through real controls > blocks keyboard and pointer edits on a locked layer with line
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_layer_workflows.test.js > Pixel layer editing through real controls > blocks keyboard and pointer edits on a locked layer with rectangle
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_layer_workflows.test.js > Pixel layer editing through real controls > blocks keyboard and pointer edits on a locked layer with ellipse
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_layer_workflows.test.js > Pixel layer editing through real controls > protects hidden paint, preserves it in checkpoints, and reveals it again when shown
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_layer_workflows.test.js > Pixel layer editing through real controls > copies pixels from a locked layer into a new layer without sharing or modifying source data
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_layer_workflows.test.js > Pixel layer editing through real controls > recolors only the active layer and keeps identical colors on other layers untouched
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_layer_workflows.test.js > Pixel layer editing through real controls > duplicates independent pixels, changes stacking, merges, deletes, and restores the exact stack with Undo
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_layer_workflows.test.js > Pixel layer editing through real controls > resamples every hidden/locked layer and undoes resolution and all original cells together
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_layer_workflows.test.js > Pixel layer editing through real controls > renames in one Undo step on blur, handles literal markup safely, and keeps Escape recoverable
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_layer_workflows.test.js > Pixel layer editing through real controls > cancels unfinished shapes when changing layers and keeps the internal clipboard scoped to the artwork
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_layer_workflows.test.js > Pixel layer editing through real controls > limits the stack and disables the final layer removal through actual controls
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+ ✓ tests/artstudio_pixel_layer_workflows.test.js (15 tests) 2646ms
+     ✓ adds a drawing layer, paints over a legacy background, and erases to reveal it with gesture Undo  670ms
+
+ Test Files  2 passed (2)
+      Tests  25 passed (25)
+   Start at  00:06:14
+   Duration  35.82s (transform 836ms, setup 361ms, import 3.34s, tests 6.10s, environment 24.33s)
+
