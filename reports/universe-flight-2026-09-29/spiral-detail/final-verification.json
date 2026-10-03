@@ -1,0 +1,761 @@
+{
+  "completed": true,
+  "verifiedAt": "2026-10-03T18:47:07.684Z",
+  "sourceHash": "1633bc6ef42094656572094488ffea6c7c33b756ad83e1b11a6244e907b0526d",
+  "uiHash": "25c11847e69de8808090feda135315f467cd02ae5042cdbbeade2e393b8fd717",
+  "testHash": "730453b7c528714b0a14aaa6eaffaea32dd311299ae2f14a34cdf45e3aa85463",
+  "baselineHash": "590b24b9215e612de9d45b1b6b524ac78ac838f333534c72738c95a7a7752b3e",
+  "reportHash": "1a9c20537899b9fd5daa8092ae3040106ba38bd425c296b681555c0903d6ce42",
+  "readmeSectionHash": "c84a8d66a7177939b33f1f6c3c2f3b974e8e1ce37d8e4dce3bf7ad6d9be3d2d3",
+  "focusedTests": 176,
+  "focusedTestFiles": 11,
+  "focusedTestExitCode": 0,
+  "focusedTestDurationSeconds": 157.17,
+  "baselineBrowser": {
+    "completed": true,
+    "workflowGroups": 6,
+    "actualCaptures": 24,
+    "pausedStableCaptures": 24,
+    "pageErrors": 0,
+    "graphicsErrors": 0
+  },
+  "refinedBrowser": {
+    "completed": true,
+    "workflowGroups": 9,
+    "actualCaptures": 24,
+    "pausedStableCaptures": 24,
+    "pageErrors": 0,
+    "graphicsErrors": 0
+  },
+  "flightBrowser": {
+    "completed": true,
+    "workflowGroups": 10,
+    "accessibilityScopes": 9,
+    "actualCaptures": 13,
+    "pageErrors": 0,
+    "graphicsErrors": 0
+  },
+  "rendererAudit": {
+    "completed": true,
+    "generatedPointCounts": [
+      19203,
+      36400,
+      41470
+    ],
+    "changedAtlasTile": 0,
+    "preservedRouteSamples": 1704,
+    "mirrorsMatch": true
+  },
+  "contextualHighlights": [
+    {
+      "routeId": "halo",
+      "highlightId": "arm",
+      "id": "arm",
+      "name": "Spiral arm",
+      "seconds": 12,
+      "description": "Look across the tilted disk as the cluster comes into view.",
+      "targetId": "galactic-center"
+    },
+    {
+      "routeId": "halo",
+      "highlightId": "cluster",
+      "id": "cluster",
+      "name": "Cluster pass",
+      "seconds": 18,
+      "description": "Compare the nearby warm stars with the distant spiral.",
+      "targetId": "halo-cluster-2"
+    },
+    {
+      "routeId": "halo",
+      "highlightId": "panorama",
+      "id": "panorama",
+      "name": "Galaxy panorama",
+      "seconds": 32,
+      "description": "Look back across the spiral from the halo.",
+      "targetId": "galactic-center"
+    },
+    {
+      "routeId": "nebula",
+      "highlightId": "approach",
+      "id": "approach",
+      "name": "Blue cloud approach",
+      "seconds": 8,
+      "description": "See the blue glow against the distant stellar field.",
+      "targetId": "blue-nebula"
+    },
+    {
+      "routeId": "nebula",
+      "highlightId": "filaments",
+      "id": "filaments",
+      "name": "Among the filaments",
+      "seconds": 12,
+      "description": "Look around the layered blue emission region.",
+      "targetId": "blue-nebula"
+    },
+    {
+      "routeId": "nebula",
+      "highlightId": "violet",
+      "id": "violet",
+      "name": "Violet cloud reveal",
+      "seconds": 36,
+      "description": "Look toward the violet cloud after the curved passage.",
+      "targetId": "violet-nebula"
+    },
+    {
+      "routeId": "group",
+      "highlightId": "spiral",
+      "id": "spiral",
+      "name": "Spiral skim",
+      "seconds": 12,
+      "description": "Look across the tilted arms of the nearby spiral.",
+      "targetId": "near-galaxy"
+    },
+    {
+      "routeId": "group",
+      "highlightId": "elliptical",
+      "id": "elliptical",
+      "name": "Golden elliptical pass",
+      "seconds": 30,
+      "description": "Compare the smooth warm halo with the nearby spiral.",
+      "targetId": "golden-elliptical"
+    },
+    {
+      "routeId": "group",
+      "highlightId": "panorama",
+      "id": "panorama",
+      "name": "Galaxy group panorama",
+      "seconds": 44,
+      "description": "Look back across the spiral and elliptical together.",
+      "targetId": "golden-elliptical"
+    },
+    {
+      "routeId": "stellar",
+      "highlightId": "amber",
+      "id": "amber",
+      "name": "Amber photosphere",
+      "seconds": 10,
+      "description": "Pause beside the warm star to inspect its illustrative surface.",
+      "targetId": "amber-star"
+    },
+    {
+      "routeId": "stellar",
+      "highlightId": "blue",
+      "id": "blue",
+      "name": "Blue star pass",
+      "seconds": 24,
+      "description": "Compare the blue-white surface and the moving stellar background.",
+      "targetId": "blue-star"
+    },
+    {
+      "routeId": "stellar",
+      "highlightId": "pale",
+      "id": "pale",
+      "name": "Pale star reveal",
+      "seconds": 38,
+      "description": "Look across the pale star with the blue emission region beyond.",
+      "targetId": "pale-star"
+    }
+  ],
+  "spiralComparisons": [
+    {
+      "name": "neighborhood",
+      "meanAbsolute": 0,
+      "maximumChannelDifference": 0,
+      "changedFraction": 0,
+      "before": {
+        "mean": 10.617940915951213,
+        "max": 255,
+        "clippedWhiteFraction": 0.00006382978723404255,
+        "visibleFraction": 0.2354840425531915
+      },
+      "after": {
+        "mean": 10.617940915951213,
+        "max": 255,
+        "clippedWhiteFraction": 0.00006382978723404255,
+        "visibleFraction": 0.2354840425531915
+      }
+    },
+    {
+      "name": "relativity",
+      "meanAbsolute": 0,
+      "maximumChannelDifference": 0,
+      "changedFraction": 0,
+      "before": {
+        "mean": 7.974164115949131,
+        "max": 255,
+        "clippedWhiteFraction": 0.0031382978723404256,
+        "visibleFraction": 0.08368085106382979
+      },
+      "after": {
+        "mean": 7.974164115949131,
+        "max": 255,
+        "clippedWhiteFraction": 0.0031382978723404256,
+        "visibleFraction": 0.08368085106382979
+      }
+    },
+    {
+      "name": "galaxy-front",
+      "meanAbsolute": 0.4890886524822695,
+      "maximumChannelDifference": 90,
+      "changedFraction": 0.03221276595744681,
+      "before": {
+        "mean": 10.014367179782074,
+        "max": 255,
+        "clippedWhiteFraction": 0.000031914893617021275,
+        "visibleFraction": 0.23850531914893616
+      },
+      "after": {
+        "mean": 9.873352082973668,
+        "max": 255,
+        "clippedWhiteFraction": 0.000031914893617021275,
+        "visibleFraction": 0.23195212765957446
+      }
+    },
+    {
+      "name": "galaxy-reverse",
+      "meanAbsolute": 0.4892641843971631,
+      "maximumChannelDifference": 88,
+      "changedFraction": 0.032356382978723404,
+      "before": {
+        "mean": 10.018847626590592,
+        "max": 255,
+        "clippedWhiteFraction": 0.000042553191489361704,
+        "visibleFraction": 0.2385159574468085
+      },
+      "after": {
+        "mean": 9.878197722335313,
+        "max": 255,
+        "clippedWhiteFraction": 0.000042553191489361704,
+        "visibleFraction": 0.23189893617021276
+      }
+    },
+    {
+      "name": "galaxy-edge",
+      "meanAbsolute": 0.016400709219858155,
+      "maximumChannelDifference": 30,
+      "changedFraction": 0.00043617021276595746,
+      "before": {
+        "mean": 3.64347137552309,
+        "max": 255,
+        "clippedWhiteFraction": 0.00010106382978723405,
+        "visibleFraction": 0.019882978723404256
+      },
+      "after": {
+        "mean": 3.63630749254436,
+        "max": 255,
+        "clippedWhiteFraction": 0.00010106382978723405,
+        "visibleFraction": 0.019856382978723403
+      }
+    },
+    {
+      "name": "galaxy-arm",
+      "meanAbsolute": 1.7718120567375886,
+      "maximumChannelDifference": 72,
+      "changedFraction": 0.12920212765957448,
+      "before": {
+        "mean": 39.34662325530442,
+        "max": 255,
+        "clippedWhiteFraction": 0.000005319148936170213,
+        "visibleFraction": 0.9783404255319149
+      },
+      "after": {
+        "mean": 38.78170279360296,
+        "max": 255,
+        "clippedWhiteFraction": 0.000005319148936170213,
+        "visibleFraction": 0.9750053191489362
+      }
+    },
+    {
+      "name": "galaxy-dim",
+      "meanAbsolute": 0.26811879432624114,
+      "maximumChannelDifference": 50,
+      "changedFraction": 0.010324468085106384,
+      "before": {
+        "mean": 6.706719598931498,
+        "max": 217,
+        "clippedWhiteFraction": 0,
+        "visibleFraction": 0.1734468085106383
+      },
+      "after": {
+        "mean": 6.6298405648889105,
+        "max": 217,
+        "clippedWhiteFraction": 0,
+        "visibleFraction": 0.1673031914893617
+      }
+    },
+    {
+      "name": "galaxy-wide",
+      "meanAbsolute": 0.044175531914893616,
+      "maximumChannelDifference": 72,
+      "changedFraction": 0.002856382978723404,
+      "before": {
+        "mean": 3.5114037680763293,
+        "max": 255,
+        "clippedWhiteFraction": 0.000026595744680851064,
+        "visibleFraction": 0.02298404255319149
+      },
+      "after": {
+        "mean": 3.4979220627571928,
+        "max": 255,
+        "clippedWhiteFraction": 0.000026595744680851064,
+        "visibleFraction": 0.02231914893617021
+      }
+    },
+    {
+      "name": "cosmic-front",
+      "meanAbsolute": 0.5219237588652482,
+      "maximumChannelDifference": 99,
+      "changedFraction": 0.03595744680851064,
+      "before": {
+        "mean": 9.805701793611627,
+        "max": 254,
+        "clippedWhiteFraction": 0,
+        "visibleFraction": 0.2124148936170213
+      },
+      "after": {
+        "mean": 9.65457793084577,
+        "max": 254,
+        "clippedWhiteFraction": 0,
+        "visibleFraction": 0.2048936170212766
+      }
+    },
+    {
+      "name": "cosmic-reverse",
+      "meanAbsolute": 0.5229131205673759,
+      "maximumChannelDifference": 98,
+      "changedFraction": 0.035984042553191486,
+      "before": {
+        "mean": 10.882515001058346,
+        "max": 255,
+        "clippedWhiteFraction": 0,
+        "visibleFraction": 0.23550531914893616
+      },
+      "after": {
+        "mean": 10.730877899994544,
+        "max": 255,
+        "clippedWhiteFraction": 0,
+        "visibleFraction": 0.22825
+      }
+    },
+    {
+      "name": "cosmic-edge",
+      "meanAbsolute": 0.012427304964539008,
+      "maximumChannelDifference": 34,
+      "changedFraction": 0.000324468085106383,
+      "before": {
+        "mean": 3.4277109808423285,
+        "max": 238,
+        "clippedWhiteFraction": 0,
+        "visibleFraction": 0.018664893617021276
+      },
+      "after": {
+        "mean": 3.422147905310411,
+        "max": 238,
+        "clippedWhiteFraction": 0,
+        "visibleFraction": 0.01851595744680851
+      }
+    },
+    {
+      "name": "cosmic-group",
+      "meanAbsolute": 0.0661258865248227,
+      "maximumChannelDifference": 71,
+      "changedFraction": 0.004175531914893617,
+      "before": {
+        "mean": 4.799128044672689,
+        "max": 253,
+        "clippedWhiteFraction": 0,
+        "visibleFraction": 0.058382978723404255
+      },
+      "after": {
+        "mean": 4.776965629779072,
+        "max": 253,
+        "clippedWhiteFraction": 0,
+        "visibleFraction": 0.057382978723404254
+      }
+    },
+    {
+      "name": "two-arm",
+      "meanAbsolute": 0.013090425531914893,
+      "maximumChannelDifference": 46,
+      "changedFraction": 0.0007234042553191489,
+      "before": {
+        "mean": 12.246121939350115,
+        "max": 255,
+        "clippedWhiteFraction": 0,
+        "visibleFraction": 0.2863031914893617
+      },
+      "after": {
+        "mean": 12.24138852339268,
+        "max": 255,
+        "clippedWhiteFraction": 0,
+        "visibleFraction": 0.2862446808510638
+      }
+    },
+    {
+      "name": "barred",
+      "meanAbsolute": 0,
+      "maximumChannelDifference": 0,
+      "changedFraction": 0,
+      "before": {
+        "mean": 10.064223776591843,
+        "max": 255,
+        "clippedWhiteFraction": 0.00003723404255319149,
+        "visibleFraction": 0.23147340425531915
+      },
+      "after": {
+        "mean": 10.064223776591843,
+        "max": 255,
+        "clippedWhiteFraction": 0.00003723404255319149,
+        "visibleFraction": 0.23147340425531915
+      }
+    },
+    {
+      "name": "elliptical",
+      "meanAbsolute": 0.010696808510638298,
+      "maximumChannelDifference": 34,
+      "changedFraction": 0.0006063829787234042,
+      "before": {
+        "mean": 7.625318381906249,
+        "max": 255,
+        "clippedWhiteFraction": 0,
+        "visibleFraction": 0.12468617021276596
+      },
+      "after": {
+        "mean": 7.620862585097728,
+        "max": 255,
+        "clippedWhiteFraction": 0,
+        "visibleFraction": 0.12450531914893617
+      }
+    },
+    {
+      "name": "cosmic-dim",
+      "meanAbsolute": 0.28625886524822697,
+      "maximumChannelDifference": 54,
+      "changedFraction": 0.012489361702127659,
+      "before": {
+        "mean": 6.6608021212716775,
+        "max": 140,
+        "clippedWhiteFraction": 0,
+        "visibleFraction": 0.16325531914893618
+      },
+      "after": {
+        "mean": 6.578519692548042,
+        "max": 140,
+        "clippedWhiteFraction": 0,
+        "visibleFraction": 0.15670212765957447
+      }
+    },
+    {
+      "name": "halo-arm",
+      "meanAbsolute": 1.9285886524822695,
+      "maximumChannelDifference": 77,
+      "changedFraction": 0.12842553191489361,
+      "before": {
+        "mean": 20.83504719360742,
+        "max": 255,
+        "clippedWhiteFraction": 0.000010638297872340426,
+        "visibleFraction": 0.7677606382978723
+      },
+      "after": {
+        "mean": 20.61932245637289,
+        "max": 255,
+        "clippedWhiteFraction": 0.000010638297872340426,
+        "visibleFraction": 0.7617021276595745
+      }
+    },
+    {
+      "name": "halo-cluster",
+      "meanAbsolute": 1.1904397163120568,
+      "maximumChannelDifference": 88,
+      "changedFraction": 0.10322872340425532,
+      "before": {
+        "mean": 33.617431233113635,
+        "max": 255,
+        "clippedWhiteFraction": 0.00038829787234042555,
+        "visibleFraction": 0.6222553191489362
+      },
+      "after": {
+        "mean": 33.20038239162565,
+        "max": 255,
+        "clippedWhiteFraction": 0.00038829787234042555,
+        "visibleFraction": 0.6213776595744681
+      }
+    },
+    {
+      "name": "halo-panorama",
+      "meanAbsolute": 1.05752304964539,
+      "maximumChannelDifference": 88,
+      "changedFraction": 0.06846276595744681,
+      "before": {
+        "mean": 17.36976174467367,
+        "max": 255,
+        "clippedWhiteFraction": 0.00004787234042553191,
+        "visibleFraction": 0.5350372340425532
+      },
+      "after": {
+        "mean": 17.04510261488672,
+        "max": 255,
+        "clippedWhiteFraction": 0.00004787234042553191,
+        "visibleFraction": 0.5222021276595745
+      }
+    },
+    {
+      "name": "group-spiral",
+      "meanAbsolute": 0.48000709219858156,
+      "maximumChannelDifference": 96,
+      "changedFraction": 0.030845744680851064,
+      "before": {
+        "mean": 8.781809648932526,
+        "max": 246,
+        "clippedWhiteFraction": 0,
+        "visibleFraction": 0.19627659574468084
+      },
+      "after": {
+        "mean": 8.638347553187847,
+        "max": 246,
+        "clippedWhiteFraction": 0,
+        "visibleFraction": 0.18795744680851065
+      }
+    },
+    {
+      "name": "group-elliptical",
+      "meanAbsolute": 0.006203900709219858,
+      "maximumChannelDifference": 34,
+      "changedFraction": 0.00025,
+      "before": {
+        "mean": 6.079337320206275,
+        "max": 255,
+        "clippedWhiteFraction": 0,
+        "visibleFraction": 0.08412765957446809
+      },
+      "after": {
+        "mean": 6.07677964041904,
+        "max": 255,
+        "clippedWhiteFraction": 0,
+        "visibleFraction": 0.0840531914893617
+      }
+    },
+    {
+      "name": "group-panorama",
+      "meanAbsolute": 0.009040780141843972,
+      "maximumChannelDifference": 28,
+      "changedFraction": 0.00019680851063829787,
+      "before": {
+        "mean": 3.705917180841683,
+        "max": 255,
+        "clippedWhiteFraction": 0.000010638297872340426,
+        "visibleFraction": 0.025643617021276596
+      },
+      "after": {
+        "mean": 3.7015604989267885,
+        "max": 255,
+        "clippedWhiteFraction": 0.000010638297872340426,
+        "visibleFraction": 0.02550531914893617
+      }
+    }
+  ],
+  "nativeOrbits": {
+    "baseline": {
+      "before": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            16685.430485280096,
+            74615.30117537656,
+            92488.66546787632
+          ],
+          "yaw": 3.3200779878571374,
+          "pitch": -0.6710315100641399,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "galactic-center"
+      },
+      "after": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            33106.060122143346,
+            74615.30117537656,
+            87957.63533484102
+          ],
+          "yaw": -2.7816070397490567,
+          "pitch": -0.6710315100641402,
+          "distanceLy": 17057.70182714445,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "galactic-center"
+      },
+      "comparison": {
+        "meanAbsolute": 2.0691117021276595,
+        "maximumChannelDifference": 250,
+        "changedFraction": 0.1281436170212766
+      },
+      "resourcesStable": true
+    },
+    "refined": {
+      "before": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            16685.430485280096,
+            74615.30117537656,
+            92488.66546787632
+          ],
+          "yaw": 3.3200779878571374,
+          "pitch": -0.6710315100641399,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "galactic-center"
+      },
+      "after": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            34940.84514720522,
+            74615.30117537656,
+            87245.02376013705
+          ],
+          "yaw": -2.760663088725125,
+          "pitch": -0.6710315100641399,
+          "distanceLy": 19026.049603182368,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "galactic-center"
+      },
+      "comparison": {
+        "meanAbsolute": 2.445925531914894,
+        "maximumChannelDifference": 250,
+        "changedFraction": 0.13301063829787235
+      },
+      "resourcesStable": true
+    }
+  },
+  "pointData": {
+    "count": 41470,
+    "hash": "156c66d7c6805406f2d231fb18affab8e613952ec32b5fdf9e9e805104966b85"
+  },
+  "spiralDetail": {
+    "tile": 0,
+    "changedPixels": 104867,
+    "coreBytes": 16768,
+    "gutterBytes": 64512,
+    "nearWhiteChannels": 0,
+    "emissionRatio": 0.9965365615832984,
+    "outerEmissionRatio": 0.9918048302787059,
+    "coreMatchesBaseline": true,
+    "guttersMatchBaseline": true,
+    "otherTilesMatchBaseline": true,
+    "tiles": [
+      {
+        "tile": 0,
+        "hash": "1daa2df71ba119a61dcd4b4d3f83828f5a005f8c562012bff5db78ba02f37df8",
+        "baselineHash": "60458319e79536c603dd275db077bcdb33cc40e76a6987824f6249b90a3c8b79",
+        "matchesBaseline": false
+      },
+      {
+        "tile": 1,
+        "hash": "8a4f1ef140edfc925a3005767207d6f5077bf7cd9d9744b6ed5ce6f65741e642",
+        "baselineHash": "8a4f1ef140edfc925a3005767207d6f5077bf7cd9d9744b6ed5ce6f65741e642",
+        "matchesBaseline": true
+      },
+      {
+        "tile": 2,
+        "hash": "b4d05f4c47a17ecb92f55fd0aeac4133c239e127689ce7a84a9334b372cdaa26",
+        "baselineHash": "b4d05f4c47a17ecb92f55fd0aeac4133c239e127689ce7a84a9334b372cdaa26",
+        "matchesBaseline": true
+      },
+      {
+        "tile": 3,
+        "hash": "08f244e4ef3ad6f71eb240e7e9e67410fe82f16a69f1992f27c2f857dcd15d38",
+        "baselineHash": "08f244e4ef3ad6f71eb240e7e9e67410fe82f16a69f1992f27c2f857dcd15d38",
+        "matchesBaseline": true
+      }
+    ],
+    "cached": true
+  },
+  "evidenceHashes": {
+    "reports/universe-flight-2026-09-29/spiral-detail/spiral-baseline.json": "634bf9ff0cb37f9a5c69045c40d9e05d9485892c5010977c98ebf76e5a5063de",
+    "reports/universe-flight-2026-09-29/spiral-detail/spiral-refined.json": "eb7035dfc82c19284b050667a5086868d1d22fb7d2ea7ca51440421d79a33444",
+    "reports/universe-flight-2026-09-29/spiral-detail/flight/check.json": "caebac817e1346478aa89701479dd08a9db9fd0d8259f281cf5a4516928d7191",
+    "reports/universe-flight-2026-09-29/spiral-detail/renderer-audit.json": "2ca53ea928437bbfb0dbfceacb2b69271e39f58fe9db57e0b0c65b4c252c1f97",
+    "reports/universe-flight-2026-09-29/spiral-detail/baseline-renderer.js": "590b24b9215e612de9d45b1b6b524ac78ac838f333534c72738c95a7a7752b3e",
+    "reports/universe-flight-2026-09-29/spiral-detail/focused-tests.txt": "e0420ffa58b8926d80d52999cca76556c4d45091b3fddcbe7aabe11ebd64d29a"
+  },
+  "harnessHashes": {
+    "dev-tools/universe_flight_spiral_detail_check.cjs": "54269f35a3b32ea956cf2950f87998737f12915ad076388f275cc7cdbebed489",
+    "dev-tools/universe_flight_spiral_detail_audit.cjs": "71dac6aa06107f79bc46bc75348c8c8464d74ef9278926103719528d83cdc5ab",
+    "dev-tools/universe_flight_stellar_flyby_check.cjs": "810e85d4873b806f2284d73adb77f1a352f3b12101a05991b45ceaa6ae7d230c"
+  },
+  "selectedCaptureHashes": {
+    "reports/universe-flight-2026-09-29/spiral-detail/spiral-baseline-galaxy-front.png": "c07a076a88724d9f07d02da80e0f94aa3fff33d5c761e7413efaad1142d89fd3",
+    "reports/universe-flight-2026-09-29/spiral-detail/spiral-baseline-galaxy-arm.png": "4448f728fe926d8de40bf848ae097f208a6bba2c7402ee42ba62de4276a9b87d",
+    "reports/universe-flight-2026-09-29/spiral-detail/spiral-refined-galaxy-front.png": "57b01de8da37be51f248b5d7ad31602faaa86f6011ac752a940c72520b4f43bd",
+    "reports/universe-flight-2026-09-29/spiral-detail/spiral-refined-galaxy-arm.png": "5cf65d91d1ea5f4ac04b4e627382eeed198205276d693f09384cd7e6e5c8c77a",
+    "reports/universe-flight-2026-09-29/spiral-detail/spiral-refined-cosmic-front.png": "197cd508e3fcf0c4c30397912b82b61e85b37db2b5a3df54160ed0baf94f46da",
+    "reports/universe-flight-2026-09-29/spiral-detail/spiral-refined-cosmic-group.png": "0ffe995f31ee7d60919286d1b8c5c8c9fda27ab4f3c3f598d2c361fd70ba4b07",
+    "reports/universe-flight-2026-09-29/spiral-detail/spiral-refined-group-spiral.png": "e7c7cf606d51b173acf36c13bd7919474a175de166dfa39edbedd413c89b7d59",
+    "reports/universe-flight-2026-09-29/spiral-detail/spiral-refined-orbit-after.png": "09e63904084a3d3b0c926e16fad91bbcdb5be8316a389e66e75ab9aa811d5339",
+    "reports/universe-flight-2026-09-29/spiral-detail/flight/stellar-current-320.png": "a5c2d22e3c9ed095602f3adcfc42e74ec3964250ab7504b0bfdb3c8b76a4b52b",
+    "reports/universe-flight-2026-09-29/spiral-detail/flight/stellar-current-568.png": "1f649b3a017a7ee66a659e00f36d758619609f3b3c20f85a3940b8139683a45b"
+  },
+  "mirrorsMatch": true,
+  "syntaxChecks": 9,
+  "served": [
+    {
+      "file": "universe_flight_scene.js",
+      "status": 200,
+      "hash": "1633bc6ef42094656572094488ffea6c7c33b756ad83e1b11a6244e907b0526d"
+    },
+    {
+      "file": "stem_tool_universe.js",
+      "status": 200,
+      "hash": "25c11847e69de8808090feda135315f467cd02ae5042cdbbeade2e393b8fd717"
+    }
+  ],
+  "preview": {
+    "url": "http://127.0.0.1:3187/reports/universe-flight-2026-09-29/preview.html?enhanced=37#universe-flight"
+  },
+  "limitations": "Procedural teaching scenery with illustrative shapes, colors, scale and brightness. The generated spiral tile adds emission structure; dim lanes reduce its own emission without computing dust extinction. It does not reconstruct measured M51 or calculate gas or stellar dynamics. Baked RGB luminance times alpha estimates do not establish equal brightness in camera views. Existing finite-star appearance and scene occlusion limits still apply. Functional and scoped accessibility checks do not measure frame rate or provide a complete accessibility audit."
+}

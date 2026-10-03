@@ -890,6 +890,47 @@
         var structure = (0.09 + arms * (0.35 + grain * 0.85)) * disk * attenuation;
         var bulge = Math.exp(-r * r * 52) * 0.76 + Math.exp(-r * r * 8) * 0.085;
         var knots = Math.pow(Math.max(0, (grain - 0.58) / 0.42), 2) * arms * disk * 0.65;
+        if (style === 'spiral' && r >= 0.18) {
+          // Galaxy's nested luminosity ridges and short spurs, baked into the
+          // existing four-arm tile. The shared centerline still aligns with
+          // the 3D stars. Dim lanes style this map; they do not obscure stars.
+          var detailFade = clamp((r - 0.18) / 0.10, 0, 1);
+          detailFade = detailFade * detailFade * (3 - 2 * detailFade);
+          var rawPhase = a - spiralAngle(style, 0, r);
+          var nearestArm = ((Math.round(rawPhase / (Math.PI / 2)) % 4) + 4) % 4;
+          var armOffset = Math.atan2(Math.sin(rawPhase * 4), Math.cos(rawPhase * 4)) / 4 + perturb;
+          var ridges = 0, spurs = 0, pinkKnots = 0;
+          for (var strand = 0; strand < 3; strand++) {
+            var ridgeBend = Math.sin(r * (23 + strand * 3) + nearestArm * 1.7 + strand) * 0.018;
+            var ridgeOffset = (strand - 1) * (0.077 + r * 0.024) + ridgeBend;
+            var ridgeWidth = 0.037 + r * 0.022;
+            var breaks = clamp(0.58 + Math.sin(r * (22 + strand * 4) + nearestArm * 1.63 + strand) * 0.28 + (grain - 0.5) * 0.4, 0, 1);
+            ridges += Math.exp(-Math.pow((armOffset - ridgeOffset) / ridgeWidth, 2)) * breaks;
+          }
+          for (var branch = 0; branch < 2; branch++) {
+            var spurBase = 0.31 + branch * 0.30 + nearestArm * 0.035;
+            var spurLength = 0.075 + ((nearestArm + branch) % 3) * 0.016;
+            var spurT = (r - spurBase) / spurLength;
+            if (spurT > 0 && spurT < 1) {
+              var spurOffset = -0.018 + spurT * (0.15 + branch * 0.025) + Math.sin(spurT * Math.PI) * 0.016;
+              spurs += Math.exp(-Math.pow((armOffset - spurOffset) / (0.033 + r * 0.012), 2)) * Math.sin(spurT * Math.PI);
+            }
+            var knotRadius = 0.29 + branch * 0.31 + nearestArm * 0.045;
+            var knotOffset = (branch ? 0.08 : -0.055) + Math.sin(nearestArm * 1.8) * 0.025;
+            pinkKnots += Math.exp(-Math.pow((r - knotRadius) / 0.032, 2) - Math.pow((armOffset - knotOffset) / 0.072, 2));
+          }
+          var outerKnotRadius = 0.82 + nearestArm * 0.022;
+          var outerKnotOffset = 0.045 + Math.sin(nearestArm * 1.6) * 0.035;
+          pinkKnots += Math.exp(-Math.pow((r - outerKnotRadius) / 0.033, 2) - Math.pow((armOffset - outerKnotOffset) / 0.074, 2)) * 0.80;
+          var laneOffset = -0.115 + Math.sin(r * 17 + nearestArm * 1.3) * 0.02;
+          var lane = Math.exp(-Math.pow((armOffset - laneOffset) / (0.037 + r * 0.026), 2));
+          lane *= 0.62 + 0.38 * Math.sin(r * 14 + nearestArm) * Math.sin(r * 14 + nearestArm);
+          var detailedStructure = (0.09 + arms * (0.30 + grain * 0.65) + ridges * 0.38 + spurs * 0.20) * disk * attenuation * (1 - lane * 0.45);
+          structure += (detailedStructure - structure) * detailFade;
+          // Sparse warm emission is illustrative, rather than a simulation
+          // of star formation. Existing common RGB rolloff retains its hue.
+          knots += pinkKnots * disk * 0.75 * detailFade;
+        }
         write(tile, x, y, [bulge + structure * 0.53 + knots, bulge * 0.80 + structure * 0.74 + knots * 0.22, bulge * 0.56 + structure + knots * 0.49],
           Math.min(0.93, bulge + structure * 0.7), 1.85);
       }
