@@ -984,6 +984,7 @@
     'uniform vec3 u_position; uniform vec3 u_right; uniform vec3 u_up; uniform vec3 u_forward;',
     'uniform float u_aspect; uniform float u_height; uniform float u_dpr; uniform float u_beta; uniform float u_gamma; uniform float u_exposure; uniform float u_lens; uniform float u_pointMax;',
     'uniform vec3 u_stellarCenters[3]; uniform float u_stellarCount,u_quadMax; uniform mediump float u_stellarQuad;',
+    'uniform float u_galacticBand;',
     'varying vec3 v_color; varying float v_light; varying float v_cloud; varying vec3 v_cloudProfile;',
     'varying vec4 v_stellarDetail; varying vec2 v_quadCoord;',
     'void main() {',
@@ -1032,15 +1033,37 @@
     // component carries a size-based detail blend without another varying.
     '  float cloudDetail = step(5.0, a_cloud) * smoothstep(12.0, 30.0, gl_PointSize / u_dpr);',
     '  v_stellarDetail = vec4(resolved, mix(seed, cloudDetail, isCloud), 2.0 / spriteSize, quadBlend);',
+    // A fixed field on the generated distant band: solar-neighborhood views
+    // reveal a broad warm concentration, cooler lobes and branching lanes.
+    // Lanes reduce emitted light; they do not model dust extinction.
+    '  vec3 sourceColor = a_color; float bandGain = 1.0;',
+    '  if (u_galacticBand > 0.5 && isCloud > 0.5 && a_size > 600.0 && a_size < 1600.0) {',
+    '    float sourceRadius = length(a_position);',
+    '    if (sourceRadius > 16000.0 && sourceRadius < 50000.0) {',
+    '      vec3 bandSource = vec3(a_position.x,(0.91*a_position.y+0.42*a_position.z)/1.0045,(-0.42*a_position.y+0.91*a_position.z)/1.0045);',
+    '      float longitude = atan(bandSource.z,bandSource.x);',
+    '      float latitude = atan(bandSource.y,max(length(bandSource.xz),0.00001));',
+    '      float warm = smoothstep(0.55,0.985,cos(longitude-1.57079632679))*(1.0-smoothstep(0.05,0.16,abs(latitude-0.01*sin(longitude*2.0))));',
+    '      float cool = max(smoothstep(0.78,0.99,cos(longitude-0.68)),smoothstep(0.78,0.99,cos(longitude-2.46)));',
+    '      float laneA = 1.0-smoothstep(0.011,0.034,abs(latitude-(0.014*sin(longitude*2.0-0.7)+0.009*sin(longitude*4.0+0.4))));',
+    '      float laneB = 1.0-smoothstep(0.012,0.031,abs(latitude-(0.058+0.018*sin(longitude*3.0+0.9))));',
+    '      float laneC = 1.0-smoothstep(0.013,0.035,abs(latitude-(-0.056+0.021*sin(longitude*2.0-1.3))));',
+    '      float lanes = clamp(1.0-0.57*laneA-0.30*laneB-0.24*laneC,0.30,1.0);',
+    '      float broad = 0.5+0.5*cos(longitude*4.0+latitude*17.0+0.5)*sin(longitude*2.0-0.4);',
+    '      bandGain = clamp(1.420536728*(0.82+0.78*warm+0.18*cool+0.15*broad)*lanes,0.30,2.30);',
+    '      sourceColor = mix(sourceColor,vec3(0.84,0.58,0.36),0.50*warm);',
+    '      sourceColor = mix(sourceColor,vec3(0.37,0.52,0.77),0.35*cool*(1.0-0.7*warm));',
+    '    }',
+    '  }',
     '  float shift = clamp(log(max(D, 0.0001)) * 0.42, -0.85, 0.85);',
     '  vec3 tint = shift >= 0.0 ? vec3(0.51, 0.73, 1.0) : vec3(1.0, 0.35, 0.15);',
-    '  v_color = mix(a_color, tint, abs(shift));',
+    '  v_color = mix(sourceColor, tint, abs(shift));',
     // RGB and tone mapping are deliberate visual approximations, not a spectral camera.
     '  float exposure = clamp(pow(D, 1.5), 0.012, 4.0);',
     // Subpixel clouds fade with projected area instead of becoming a bright
     // minimum-size dot. The diffuse surface carries their collective light.
     '  float coverage = min(1.0, pow(projectedSize / minimumSize, 2.0));',
-    '  v_light = a_light * u_exposure * exposure * mix(1.0, coverage, isCloud) * mix(1.0 - quadBlend, quadBlend, u_stellarQuad);',
+    '  v_light = a_light * bandGain * u_exposure * exposure * mix(1.0, coverage, isCloud) * mix(1.0 - quadBlend, quadBlend, u_stellarQuad);',
     '  v_cloud = isCloud;',
     '  float rotation = fract(a_cloud) * 6.28318530718;',
     '  v_cloudProfile = vec3(mod(max(0.0, floor(a_cloud) - 1.0), 4.0), cos(rotation), sin(rotation));',
@@ -1426,6 +1449,7 @@
       gl.uniform1f(uniforms.height, canvas.height);
       gl.uniform1f(uniforms.dpr, pixelRatio());
       gl.uniform1f(uniforms.pointMax, pointMax);
+      gl.uniform1f(uniforms.galacticBand, settings.region === 'neighborhood' ? 1 : 0);
       gl.uniform3fv(uniforms.stellarCenters, stellarCenters);
       gl.uniform1f(uniforms.stellarCount, stellarRecords.length);
       gl.uniform1f(uniforms.stellarQuad, 0);
@@ -1962,7 +1986,7 @@
       gl.disableVertexAttribArray(cornerAttribute);
       gl.vertexAttrib2f(cornerAttribute,0,0);
       uniforms.stellarCenters = gl.getUniformLocation(program, 'u_stellarCenters[0]');
-      ['position', 'right', 'up', 'forward', 'aspect', 'height', 'dpr', 'beta', 'gamma', 'exposure', 'lens', 'pointMax', 'cloudTexture', 'stellarCount', 'stellarQuad', 'quadMax', 'stellarRight', 'stellarUp', 'stellarToward', 'stellarStructure', 'stellarLoops'].forEach(function (name) {
+      ['position', 'right', 'up', 'forward', 'aspect', 'height', 'dpr', 'beta', 'gamma', 'exposure', 'lens', 'pointMax', 'cloudTexture', 'stellarCount', 'stellarQuad', 'quadMax', 'stellarRight', 'stellarUp', 'stellarToward', 'stellarStructure', 'stellarLoops', 'galacticBand'].forEach(function (name) {
         uniforms[name] = gl.getUniformLocation(program, 'u_' + name);
       });
       galaxyProgram = gl.createProgram();
