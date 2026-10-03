@@ -10,7 +10,7 @@ let programAttributes, pointProgram, pointBuffer, surfaceBuffer, range;
 // expected result from the new rendering code. Only six static quad corners
 // may be appended to the surface buffer.
 const WORLD = {
-  neighborhood: { count: 19203, points: 'd918319e8229e8005107e8535f7fcb2f1b092f070f42395fcffa739d0905c3e4', surfaceFloats: 0, surface: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855' },
+  neighborhood: { count: 19203, points: '27d9edcd364f92ad91ee5e481ca55778f545458ac2dab980f30ca6d61acbbb5f', surfaceFloats: 0, surface: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855' },
   galaxy: { count: 36400, points: 'f5dbc73e3ae0b2751dcf15f6fffce2753ae4994b089c62d020975e414889b2ab', surfaceFloats: 1920, surface: 'e97a5ba4db3d27acd2bda8ba417e84c696c7ba32f3b5fd0817d8ba58810890fa' },
   cosmic: { count: 41470, points: '156c66d7c6805406f2d231fb18affab8e613952ec32b5fdf9e9e805104966b85', surfaceFloats: 257280, surface: '102e9fa5c941b24e52de513ac8fb058e749a000ce8ee631740113809bc21253b' },
 };

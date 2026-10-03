@@ -547,6 +547,40 @@
     }
     return arm * Math.PI / 2 + Math.log(1 + radius * 9) * 2.15;
   }
+  // Reuse the blue cloud's existing points for a fixed, open emission shell.
+  // Its own RNG runs after the original clouds, so every color, sprite profile,
+  // size, light value and the rest of the scene keep their original samples.
+  // Curved lips and flanks surround a viewing aperture; no gas motion or
+  // extinction is modeled. The wall is illustrative generated scenery.
+  function shapeEmissionShell(points, start, nebula) {
+    var random = randomGenerator(nebula.shellSeed);
+    // The aperture faces the entrance of the existing nebula camera passage.
+    var axisLength = Math.hypot(-9, 5, -12);
+    var axis = [-9 / axisLength, 5 / axisLength, -12 / axisLength];
+    var right = [-0.8, 0, 0.6];
+    var up = [axis[1] * right[2], axis[2] * right[0] - axis[0] * right[2], -axis[1] * right[0]];
+    var ct = Math.cos(nebula.turn), st = Math.sin(nebula.turn);
+    for (var point = 0; point < nebula.count; point++) {
+      var offset = (start + point) * 9;
+      var warmKnot = points[offset + 3] > 0.8;
+      // A missing side arc breaks the shell outline. Preserved warm knots
+      // sit along two rim arcs instead of filling the low-emission opening.
+      var angle = warmKnot ? (point % 2 ? 0.34 : 3.4) + random() * 0.65 : 1.64 + random() * (TAU - 0.52);
+      var axial = warmKnot ? 0.50 + 0.055 * Math.sin(angle * 2) + (random() - 0.5) * 0.06 :
+        point % 5 < 2 ? 0.53 + 0.065 * Math.sin(angle * 2) + (random() - 0.5) * 0.08 :
+        point % 5 === 2 ? -0.43 + 0.07 * Math.cos(angle * 3) + (random() - 0.5) * 0.06 : -0.43 + random() * 0.93;
+      angle += axial * 0.19 + 0.06 * Math.sin(angle * 3);
+      var wall = 0.92 + 0.08 * Math.sin(angle * 3 + 0.3) + 0.055 * Math.cos(angle * 5 - 0.7) + (random() - 0.5) * 0.05;
+      var transverse = Math.sqrt(1 - axial * axial) * wall;
+      var x = Math.cos(angle) * transverse * nebula.extent;
+      var y = Math.sin(angle) * transverse * nebula.extent * 0.8;
+      var z = axial * wall * nebula.extent * 0.72;
+      var rotatedX = x * ct - y * st, rotatedY = x * st + y * ct;
+      for (var component = 0; component < 3; component++) {
+        points[offset + component] = nebula.center[component] + rotatedX * right[component] + rotatedY * up[component] + z * axis[component];
+      }
+    }
+  }
   function makeRegion(name) {
     var random = randomGenerator(REGIONS[name].seed);
     var points = [], galaxies = [];
@@ -632,10 +666,12 @@
             starColor(), 0.02 + Math.pow(random(), 4) * 0.1, 0.48 + random() * 0.52, 0);
         }
       });
+      var emissionShapes = [];
       [
-        { center: [9, -2, 34], extent: 11.5, turn: -0.35, count: 570, color: [0.30, 0.64, 0.90] },
+        { center: [9, -2, 34], extent: 11.5, turn: -0.35, count: 570, color: [0.30, 0.64, 0.90], morphology: 'shell', shellSeed: 0x4b1d6e29 },
         { center: [-22, 11, 83], extent: 21, turn: 0.48, count: 430, color: [0.65, 0.36, 0.72] }
       ].forEach(function (nebula) {
+        var start = points.length / 9;
         var ct = Math.cos(nebula.turn), st = Math.sin(nebula.turn);
         for (var e = 0; e < nebula.count; e++) {
           var branch = e % 3, phase = branch * TAU / 3;
@@ -654,7 +690,9 @@
           var light = 2.4 * (knot ? 0.095 : 0.062) * (0.65 + random() * 0.7);
           add(nebula.center[0] + x * ct - y * st, nebula.center[1] + x * st + y * ct, nebula.center[2] + z, color, size, light, 1, true);
         }
+        if (nebula.morphology === 'shell') emissionShapes.push({ start: start, nebula: nebula });
       });
+      emissionShapes.forEach(function (shape) { shapeEmissionShell(points, shape.start, shape.nebula); });
       for (var b = 0; b < 8000; b++) {
         var bandAngle = random() * TAU, bandR = 18000 + 24000 * random();
         var bandX = Math.cos(bandAngle) * bandR;
