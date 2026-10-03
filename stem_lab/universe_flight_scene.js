@@ -581,6 +581,49 @@
       }
     }
   }
+  // Three bent ridges reuse the violet cloud's existing samples. A separate
+  // seed preserves their six non-position attributes and the scene RNG stream.
+  // Tapered forks, separated tips and depth give this region a distinct shape;
+  // these fixed emission ridges do not simulate gas flow or dust extinction.
+  function shapeEmissionRidges(points, start, nebula) {
+    var random = randomGenerator(nebula.ridgeSeed), warmIndex = 0;
+    // This viewing plane faces the violet reveal on the existing camera tour.
+    var axisLength = Math.hypot(0.515, -0.857);
+    var front = [0, 0.515 / axisLength, -0.857 / axisLength];
+    var up = [0, -front[2], front[1]];
+    var controls = [[-16, -1], [-2, 8], [12, -3]];
+    var tips = [[-13, 14], [3, 18], [16, 9]];
+    for (var point = 0; point < nebula.count; point++) {
+      var offset = (start + point) * 9, warmKnot = points[offset + 3] > 0.8;
+      var knot = warmIndex, branch = warmKnot ? warmIndex++ % 3 : point % 3;
+      // The preserved warm knots alternate between fork arcs and tip arcs.
+      var u = warmKnot ? (Math.floor(knot / 3) % 2 ? 0.34 : 0.80) + random() * 0.14 : random();
+      var x, y, depth;
+      if (u < 0.38) {
+        var stem = u / 0.38;
+        x = -9 + 6 * stem + 2 * Math.sin(Math.PI * stem);
+        y = -16 + 13 * stem;
+        depth = (branch - 1) * 1.4 + 2 * Math.sin(stem * 3);
+      } else {
+        var t = (u - 0.38) / 0.62, remaining = 1 - t;
+        x = -3 * remaining * remaining + 2 * remaining * t * controls[branch][0] + t * t * tips[branch][0];
+        y = -3 * remaining * remaining + 2 * remaining * t * controls[branch][1] + t * t * tips[branch][1];
+        var spread = t * t * (3 - 2 * t);
+        depth = (branch - 1) * (1.4 + 5.2 * spread) + 2 * Math.sin(3 + t * 4 + branch);
+        x += 0.8 * Math.sin(t * 7 + branch) * Math.sin(Math.PI * t);
+      }
+      // Restrained, bounded variations keep the ridges irregular and thin at
+      // their ends. Empty intervals between their upper branches stay visible.
+      var width = warmKnot ? 0.55 : 0.65 + 1.65 * Math.sin(Math.PI * u);
+      var angle = random() * TAU, radius = Math.sqrt(random()) * width;
+      x += Math.cos(angle) * radius;
+      y += Math.sin(angle) * radius * 0.72 + 0.35 * Math.sin(u * 17 + branch);
+      depth += (random() - 0.5) * width * 2.6;
+      points[offset] = nebula.center[0] + x;
+      points[offset + 1] = nebula.center[1] + y * up[1] + depth * front[1];
+      points[offset + 2] = nebula.center[2] + y * up[2] + depth * front[2];
+    }
+  }
   function makeRegion(name) {
     var random = randomGenerator(REGIONS[name].seed);
     var points = [], galaxies = [];
@@ -669,7 +712,7 @@
       var emissionShapes = [];
       [
         { center: [9, -2, 34], extent: 11.5, turn: -0.35, count: 570, color: [0.30, 0.64, 0.90], morphology: 'shell', shellSeed: 0x4b1d6e29 },
-        { center: [-22, 11, 83], extent: 21, turn: 0.48, count: 430, color: [0.65, 0.36, 0.72] }
+        { center: [-22, 11, 83], extent: 21, turn: 0.48, count: 430, color: [0.65, 0.36, 0.72], morphology: 'ridges', ridgeSeed: 0x73a9d142 }
       ].forEach(function (nebula) {
         var start = points.length / 9;
         var ct = Math.cos(nebula.turn), st = Math.sin(nebula.turn);
@@ -690,9 +733,12 @@
           var light = 2.4 * (knot ? 0.095 : 0.062) * (0.65 + random() * 0.7);
           add(nebula.center[0] + x * ct - y * st, nebula.center[1] + x * st + y * ct, nebula.center[2] + z, color, size, light, 1, true);
         }
-        if (nebula.morphology === 'shell') emissionShapes.push({ start: start, nebula: nebula });
+        if (nebula.morphology) emissionShapes.push({ start: start, nebula: nebula });
       });
-      emissionShapes.forEach(function (shape) { shapeEmissionShell(points, shape.start, shape.nebula); });
+      emissionShapes.forEach(function (shape) {
+        if (shape.nebula.morphology === 'shell') shapeEmissionShell(points, shape.start, shape.nebula);
+        else shapeEmissionRidges(points, shape.start, shape.nebula);
+      });
       for (var b = 0; b < 8000; b++) {
         var bandAngle = random() * TAU, bandR = 18000 + 24000 * random();
         var bandX = Math.cos(bandAngle) * bandR;

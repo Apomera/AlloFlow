@@ -1,0 +1,255 @@
+{
+  "completed": true,
+  "sourceHash": "590b24b9215e612de9d45b1b6b524ac78ac838f333534c72738c95a7a7752b3e",
+  "sourceNormalizedHash": "13d09e339945e9d3cc5fbe75a77e62e90373d9e685c4a9d49d026274c33dc5ce",
+  "baselineHash": "53efb8f8015fbfa22c92af1a698f3af261ba25056b841f73b976c84544caa03f",
+  "baselineNormalizedHash": "950b4622aef2c29eae76c01093458ccc5ef831aa6c52838b7f77be5d99c19a9b",
+  "mirrorsMatch": true,
+  "regions": {
+    "neighborhood": {
+      "pointCount": 19203,
+      "pointBytes": 691308,
+      "pointBytesHash": "f0933322797366fbee8bbdc9ce8d2263700b1c07a71caa1bcfa1224d68edc2a3",
+      "galaxyModelCount": 0,
+      "galaxyModelsHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "galaxyGeometryFloats": 0,
+      "galaxyGeometryHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matchesBaseline": false,
+      "nonPositionAttributesMatchBaseline": true
+    },
+    "galaxy": {
+      "pointCount": 36400,
+      "pointBytes": 1310400,
+      "pointBytesHash": "f5dbc73e3ae0b2751dcf15f6fffce2753ae4994b089c62d020975e414889b2ab",
+      "galaxyModelCount": 1,
+      "galaxyModelsHash": "d0d5262b91be8e7e85fac1146d6b8207455abc2d839adf4c183bef7a1776150e",
+      "galaxyGeometryFloats": 1920,
+      "galaxyGeometryHash": "e97a5ba4db3d27acd2bda8ba417e84c696c7ba32f3b5fd0817d8ba58810890fa",
+      "matchesBaseline": true,
+      "nonPositionAttributesMatchBaseline": true
+    },
+    "cosmic": {
+      "pointCount": 41470,
+      "pointBytes": 1492920,
+      "pointBytesHash": "156c66d7c6805406f2d231fb18affab8e613952ec32b5fdf9e9e805104966b85",
+      "galaxyModelCount": 134,
+      "galaxyModelsHash": "67b9ad1a02437e9b4577d9db8b5ebf749d968abfe8eefb8e4453e3cec66d6572",
+      "galaxyGeometryFloats": 257280,
+      "galaxyGeometryHash": "102e9fa5c941b24e52de513ac8fb058e749a000ce8ee631740113809bc21253b",
+      "matchesBaseline": true,
+      "nonPositionAttributesMatchBaseline": true
+    }
+  },
+  "helpers": {
+    "galaxyGeometry": {
+      "sourceHash": "e87ac162dc8747d53c7e79e982dcbca736f453fd66f14e42f7c8ffaf4cc8a603",
+      "matchesBaseline": true
+    },
+    "ellipticalView": {
+      "sourceHash": "46b37973fa8e32e2e717ac4d4811a8a3ab9cd44a200163e333c650e559feccbd",
+      "matchesBaseline": true
+    },
+    "writeEllipticalSurface": {
+      "sourceHash": "98f101bd6ff895f771ad42ffde2ad432f7a41085c0fb24bd4eb6e134bf38ef48",
+      "matchesBaseline": true
+    }
+  },
+  "atlases": {
+    "galaxyPixels": {
+      "bytes": 4194304,
+      "hash": "3135bffe25b58c296e91078ab00b7218322ba89fd9d80f4d998e65cbe4579d71",
+      "matchesBaseline": true
+    },
+    "cloudPixels": {
+      "bytes": 262144,
+      "hash": "b57c6fd38bbb173b026084c3f7977e0a27c8a91bb5446e045cef067a043b2c88",
+      "matchesBaseline": true
+    }
+  },
+  "shaders": {
+    "pointVertex": {
+      "hash": "69cb71531e689fab007c31a6b8e076af656b1c3a7d58cbe80bdc17eab91de70d",
+      "baselineHash": "69cb71531e689fab007c31a6b8e076af656b1c3a7d58cbe80bdc17eab91de70d",
+      "matchesBaseline": true,
+      "intentionallyChanged": false
+    },
+    "pointFragment": {
+      "hash": "a8f7b66b92c2de32cf3441644ac1710a1f783587eae571bfe51a02405ccabd22",
+      "baselineHash": "a8f7b66b92c2de32cf3441644ac1710a1f783587eae571bfe51a02405ccabd22",
+      "matchesBaseline": true,
+      "intentionallyChanged": false
+    },
+    "galaxyVertex": {
+      "hash": "55e5cf38ffe0ff8a79c2c6cc935ea75ad82a9221303ee757ab3b4751afb90346",
+      "baselineHash": "55e5cf38ffe0ff8a79c2c6cc935ea75ad82a9221303ee757ab3b4751afb90346",
+      "matchesBaseline": true,
+      "intentionallyChanged": false
+    },
+    "galaxyFragment": {
+      "hash": "36d12e8617d9e4485bfa4d644385301466e007fa77cdfd469fcaf79e402fe702",
+      "baselineHash": "36d12e8617d9e4485bfa4d644385301466e007fa77cdfd469fcaf79e402fe702",
+      "matchesBaseline": true,
+      "intentionallyChanged": false
+    }
+  },
+  "publicMath": {
+    "gamma": {
+      "sourceHash": "92243e609aef05b28661ca2f01e25be9722275973b449ff5bd88f4e94f346c3d",
+      "matchesBaseline": true
+    },
+    "aberrate": {
+      "sourceHash": "3fcca3fcb54e784ad9a327ed04b0e261746a6e49794b8449c935a25bc8313efb",
+      "matchesBaseline": true
+    },
+    "doppler": {
+      "sourceHash": "7d3c2c147185a7008d2fa346ad93722411a0ec3b1e66ba1957527563d69e769c",
+      "matchesBaseline": true
+    },
+    "stepFlight": {
+      "sourceHash": "460b07ecc5082dde5f2b995f771db90cff5f7160ad3a6d6d65e6ffde6b1bf611",
+      "matchesBaseline": true
+    },
+    "viewSpectrum": {
+      "sourceHash": "d4bca10db94074f1b6df818beda233c2ba698bf33674223ac71491f7cc824829",
+      "matchesBaseline": true
+    },
+    "lightClock": {
+      "sourceHash": "6aaaccd7e651f0935079e2353b6def3b47618cd9e600bb1c153b1fd4be895651",
+      "matchesBaseline": true
+    },
+    "chartView": {
+      "sourceHash": "e2d1fd1b7d94120955d2f6029f809c326a5fc73c76b464e3503df65b152d1f59",
+      "matchesBaseline": true
+    },
+    "approachPlan": {
+      "sourceHash": "6c32c5ba028ffef61ab499b141e6dd0133ca3d58fbf336e4b631857e23cf8bc7",
+      "matchesBaseline": true
+    },
+    "targetView": {
+      "sourceHash": "06b036bb6618982282aed2500db7e4e5476ad299c083babfd37377d76afee0a9",
+      "matchesBaseline": true
+    },
+    "targetFrame": {
+      "sourceHash": "d825af6b6b6044e3f760dace6b9c7621aa5b23418c10ca99cfc1a4ebb6aaf3a4",
+      "matchesBaseline": true
+    },
+    "easePace": {
+      "sourceHash": "580922dcddf6d2b6d42b9eeeb6c1b078f9fd551c06310f2e4e7bdb82c1f2f72f",
+      "matchesBaseline": true
+    }
+  },
+  "landmarks": {
+    "neighborhood": {
+      "count": 5,
+      "catalogHash": "a9c3274d9cc928d292777a728d00248ab05521c26315f7c1af77ea5ddfc8bbc9",
+      "matchesBaseline": true
+    },
+    "galaxy": {
+      "count": 9,
+      "catalogHash": "b661885c8a05874b41729fd6df8f6278f08bfadbc2987dcbed3a4de39fc86024",
+      "matchesBaseline": true
+    },
+    "cosmic": {
+      "count": 4,
+      "catalogHash": "73c1dbe0db66a620b7b40c9d221d31240ebf9f0a45ad28e10557b9467469eea3",
+      "matchesBaseline": true
+    }
+  },
+  "flybyCatalogs": {
+    "neighborhood": {
+      "count": 2,
+      "catalogHash": "c7ad2db9f118c91a2615116d666bc44ec4d8934518d9a79a79876962929df73b",
+      "matchesBaseline": true
+    },
+    "galaxy": {
+      "count": 1,
+      "catalogHash": "9875be5172d577d80b21ff2c2e80e5a082c63030a374635322c786be6633f7d7",
+      "matchesBaseline": true
+    },
+    "cosmic": {
+      "count": 1,
+      "catalogHash": "e2e13d89ccb10a9d83f78c3ed10c32ac1134cafbb74b29d7155578ae68466516",
+      "matchesBaseline": true
+    }
+  },
+  "routes": {
+    "halo": {
+      "durationSeconds": 36,
+      "sampleIntervalSeconds": 0.1,
+      "sampleCount": 361,
+      "metadataHash": "8cce72d075b95338a4db3da2d2380ce5f8d50ec54c4d701bdc0cde36c59ef5ef",
+      "atTimeSourceHash": "37283a92c965301f0da59dfbd0c72a86e7b7b6f4d174e2c28709f3a8fb29607d",
+      "sampleHash": "eff5ea963068c232b4ca3bb7e56a70c2df9cb3a55cd15a7ae018387ae9bcd0d6",
+      "matchesBaseline": true
+    },
+    "nebula": {
+      "durationSeconds": 40,
+      "sampleIntervalSeconds": 0.1,
+      "sampleCount": 401,
+      "metadataHash": "dea1a0c0768aaab994033056da699ae60984a5c149f2b684c80d7a3937ff4c90",
+      "atTimeSourceHash": "ca61eaca9914a58f27155caa9f7bbca3f098a17c5bfc38d0b2d589f47746900a",
+      "sampleHash": "799b6d80ab6e990f5897238d60e4e7d48ccd5676498765dc30411137de20e9ca",
+      "matchesBaseline": true
+    },
+    "group": {
+      "durationSeconds": 48,
+      "sampleIntervalSeconds": 0.1,
+      "sampleCount": 481,
+      "metadataHash": "ebbc86732ca7dbd7b5ed2b0f8c383ef0fb01851fa2b95951407e84b5d787ba48",
+      "atTimeSourceHash": "199e1003a2414007fff56a6b7c07296a4fa955ad27dd8d4d759ee503a700baf8",
+      "sampleHash": "035b555073850cc8af3622caff4223f94d36444c9a0863d869639970a62065cb",
+      "matchesBaseline": true
+    },
+    "stellar": {
+      "durationSeconds": 46,
+      "sampleIntervalSeconds": 0.1,
+      "sampleCount": 461,
+      "metadataHash": "b1dc98838f933d06e68af1870f064e56431e9db92a02a1bb45d0fc083b7e330e",
+      "atTimeSourceHash": "e421ad2ed5df89aaad0594632d6ad0fcaac5d752988d0b06f3ec191bfce8dad2",
+      "sampleHash": "67f5274ee40a47448a1b63364664e12db94cba42d9ca4ff0e7e90194b4922779",
+      "matchesBaseline": true
+    }
+  },
+  "checks": [
+    "Only 430 violet-nebula position triplets change; all other point fields and models retain exact baseline bytes.",
+    "Galaxy geometry, elliptical projection and surface writer preserve source and outputs.",
+    "Both procedural atlases and both galaxy shaders preserve exact bytes.",
+    "All public math functions and landmark/flyby catalogs preserve their contracts.",
+    "All four authored routes preserve every camera sample at 100 ms intervals.",
+    "All four shaders and both atlases retain their accepted bytes."
+  ],
+  "limits": [
+    "Star surface sizes, colors and brightness remain illustrative teaching visuals.",
+    "Only the existing violet cloud position triplets change to fixed branched emission ridges.",
+    "Scene data, atlas, helper, catalog and camera samples are compared with the preserved renderer; this audit does not measure browser rasterization."
+  ],
+  "violetRidges": {
+    "selectedCount": 430,
+    "selectedIndexRange": [
+      9070,
+      9499
+    ],
+    "changedPositionRecords": 430,
+    "center": [
+      -22,
+      11,
+      83
+    ],
+    "minRadius": 1.6554315737600909,
+    "maxRadius": 19.952569970520834,
+    "maxEnvelope": 23.726561099608055,
+    "extents": [
+      31.68453025817871,
+      30.446423292160034,
+      22.36139678955078
+    ],
+    "warmKnots": 52,
+    "frontAxisDepthExtent": 17.26885995737381,
+    "attributesHash": "b70c4fe9cfd66efe9cce93b3a77d42f24eb0ee3efdc68395a1adbfe84927c603",
+    "attributesMatchBaseline": true,
+    "allOtherPointsMatchBaseline": true,
+    "blueShellHash": "3987f23b4ff4b19676e630c58d053384f9c4e310e0036a056f46fce6065a0443",
+    "blueShellMatchesBaseline": true
+  },
+  "totalRouteSamples": 1704
+}

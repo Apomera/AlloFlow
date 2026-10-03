@@ -9,7 +9,7 @@ const BLUE = { first: 8500, count: 570, center: [9, -2, 34] };
 // intentionally replaced position floats of the 570 blue emission records.
 const BASELINE = {
   before: '9183389c90a3a74cd4d58778f0a13615dd0c7c8d9d20b8d90dad2272ee801e79',
-  after: '9f86101b392e560fab03009e3d9465df4251bfeaa706bfad40b1bbdc8796f574',
+  after: '0a518bf2642c14944f0bbc60a39aa8bd2fc40210e2a434737738f5e9271692b3',
   attributes: '6d0adac86a0586962e078a0936db66bc9a43af7f9d1c11e96d1156a5c7cc15a3',
   galaxy: 'f5dbc73e3ae0b2751dcf15f6fffce2753ae4994b089c62d020975e414889b2ab',
   cosmic: '156c66d7c6805406f2d231fb18affab8e613952ec32b5fdf9e9e805104966b85',

@@ -1,0 +1,763 @@
+{
+  "completed": true,
+  "verifiedAt": "2026-10-03T15:59:38.931Z",
+  "sourceHash": "590b24b9215e612de9d45b1b6b524ac78ac838f333534c72738c95a7a7752b3e",
+  "uiHash": "25c11847e69de8808090feda135315f467cd02ae5042cdbbeade2e393b8fd717",
+  "testHash": "a78b74880bf46d11a769b70781530b08ff5a024ad4bdcf34dea8ee0a007568eb",
+  "updatedSurfaceTestHash": "25496e93bdc725e01a612ed4a6c9a4ea9484e324d330fcdf51f592c6caa2669a",
+  "updatedBlueTestHash": "a8031ddbdbbad66f528cd258e5fa94afd99a2ffa8be96c54bedbb83d791239a1",
+  "testHashes": {
+    "tests/universe_flight_violet_ridges.test.js": "a78b74880bf46d11a769b70781530b08ff5a024ad4bdcf34dea8ee0a007568eb",
+    "tests/universe_flight_stellar_surfaces.test.js": "25496e93bdc725e01a612ed4a6c9a4ea9484e324d330fcdf51f592c6caa2669a",
+    "tests/universe_flight_blue_shell.test.js": "a8031ddbdbbad66f528cd258e5fa94afd99a2ffa8be96c54bedbb83d791239a1"
+  },
+  "baselineHash": "53efb8f8015fbfa22c92af1a698f3af261ba25056b841f73b976c84544caa03f",
+  "reportHash": "44380d5a0fd3f40dd007920bb03107cdc689877a56ecd4b0fd90d199143178a0",
+  "readmeSectionHash": "b051f3b4d8523f09243c5cea6db8e3df216b091548b0ae7816e147600456e763",
+  "focusedTests": 171,
+  "focusedTestFiles": 10,
+  "focusedTestExitCode": 0,
+  "focusedTestDurationSeconds": 47.82,
+  "baselineBrowser": {
+    "completed": true,
+    "workflowGroups": 6,
+    "actualCaptures": 24,
+    "pausedStableCaptures": 24,
+    "pageErrors": 0,
+    "graphicsErrors": 0
+  },
+  "refinedBrowser": {
+    "completed": true,
+    "workflowGroups": 9,
+    "actualCaptures": 24,
+    "pausedStableCaptures": 24,
+    "pageErrors": 0,
+    "graphicsErrors": 0
+  },
+  "flightBrowser": {
+    "completed": true,
+    "workflowGroups": 10,
+    "accessibilityScopes": 9,
+    "actualCaptures": 13,
+    "pageErrors": 0,
+    "graphicsErrors": 0
+  },
+  "rendererAudit": {
+    "completed": true,
+    "generatedPointCounts": [
+      19203,
+      36400,
+      41470
+    ],
+    "changedVioletPositionRecords": 430,
+    "preservedRouteSamples": 1704,
+    "mirrorsMatch": true
+  },
+  "contextualHighlights": [
+    {
+      "routeId": "halo",
+      "highlightId": "arm",
+      "id": "arm",
+      "name": "Spiral arm",
+      "seconds": 12,
+      "description": "Look across the tilted disk as the cluster comes into view.",
+      "targetId": "galactic-center"
+    },
+    {
+      "routeId": "halo",
+      "highlightId": "cluster",
+      "id": "cluster",
+      "name": "Cluster pass",
+      "seconds": 18,
+      "description": "Compare the nearby warm stars with the distant spiral.",
+      "targetId": "halo-cluster-2"
+    },
+    {
+      "routeId": "halo",
+      "highlightId": "panorama",
+      "id": "panorama",
+      "name": "Galaxy panorama",
+      "seconds": 32,
+      "description": "Look back across the spiral from the halo.",
+      "targetId": "galactic-center"
+    },
+    {
+      "routeId": "nebula",
+      "highlightId": "approach",
+      "id": "approach",
+      "name": "Blue cloud approach",
+      "seconds": 8,
+      "description": "See the blue glow against the distant stellar field.",
+      "targetId": "blue-nebula"
+    },
+    {
+      "routeId": "nebula",
+      "highlightId": "filaments",
+      "id": "filaments",
+      "name": "Among the filaments",
+      "seconds": 12,
+      "description": "Look around the layered blue emission region.",
+      "targetId": "blue-nebula"
+    },
+    {
+      "routeId": "nebula",
+      "highlightId": "violet",
+      "id": "violet",
+      "name": "Violet cloud reveal",
+      "seconds": 36,
+      "description": "Look toward the violet cloud after the curved passage.",
+      "targetId": "violet-nebula"
+    },
+    {
+      "routeId": "group",
+      "highlightId": "spiral",
+      "id": "spiral",
+      "name": "Spiral skim",
+      "seconds": 12,
+      "description": "Look across the tilted arms of the nearby spiral.",
+      "targetId": "near-galaxy"
+    },
+    {
+      "routeId": "group",
+      "highlightId": "elliptical",
+      "id": "elliptical",
+      "name": "Golden elliptical pass",
+      "seconds": 30,
+      "description": "Compare the smooth warm halo with the nearby spiral.",
+      "targetId": "golden-elliptical"
+    },
+    {
+      "routeId": "group",
+      "highlightId": "panorama",
+      "id": "panorama",
+      "name": "Galaxy group panorama",
+      "seconds": 44,
+      "description": "Look back across the spiral and elliptical together.",
+      "targetId": "golden-elliptical"
+    },
+    {
+      "routeId": "stellar",
+      "highlightId": "amber",
+      "id": "amber",
+      "name": "Amber photosphere",
+      "seconds": 10,
+      "description": "Pause beside the warm star to inspect its illustrative surface.",
+      "targetId": "amber-star"
+    },
+    {
+      "routeId": "stellar",
+      "highlightId": "blue",
+      "id": "blue",
+      "name": "Blue star pass",
+      "seconds": 24,
+      "description": "Compare the blue-white surface and the moving stellar background.",
+      "targetId": "blue-star"
+    },
+    {
+      "routeId": "stellar",
+      "highlightId": "pale",
+      "id": "pale",
+      "name": "Pale star reveal",
+      "seconds": 38,
+      "description": "Look across the pale star with the blue emission region beyond.",
+      "targetId": "pale-star"
+    }
+  ],
+  "ridgeComparisons": [
+    {
+      "name": "opening",
+      "meanAbsolute": 1.9704716312056738,
+      "maximumChannelDifference": 242,
+      "changedFraction": 0.060909574468085106,
+      "before": {
+        "mean": 10.60611980424958,
+        "max": 255,
+        "clippedWhiteFraction": 0.00005319148936170213,
+        "visibleFraction": 0.26352659574468085
+      },
+      "after": {
+        "mean": 10.617940915951213,
+        "max": 255,
+        "clippedWhiteFraction": 0.00006382978723404255,
+        "visibleFraction": 0.2354840425531915
+      }
+    },
+    {
+      "name": "approach",
+      "meanAbsolute": 4.5373262411347515,
+      "maximumChannelDifference": 180,
+      "changedFraction": 0.29998936170212764,
+      "before": {
+        "mean": 8.095258048931578,
+        "max": 255,
+        "clippedWhiteFraction": 0.000005319148936170213,
+        "visibleFraction": 0.27415425531914894
+      },
+      "after": {
+        "mean": 8.00844335531234,
+        "max": 255,
+        "clippedWhiteFraction": 0.000005319148936170213,
+        "visibleFraction": 0.22033510638297873
+      }
+    },
+    {
+      "name": "reveal",
+      "meanAbsolute": 5.976455673758865,
+      "maximumChannelDifference": 145,
+      "changedFraction": 0.35953723404255317,
+      "before": {
+        "mean": 8.467316170211076,
+        "max": 255,
+        "clippedWhiteFraction": 0.000010638297872340426,
+        "visibleFraction": 0.29219148936170214
+      },
+      "after": {
+        "mean": 8.599193324462346,
+        "max": 255,
+        "clippedWhiteFraction": 0.000010638297872340426,
+        "visibleFraction": 0.22859574468085106
+      }
+    },
+    {
+      "name": "end",
+      "meanAbsolute": 6.066914893617021,
+      "maximumChannelDifference": 153,
+      "changedFraction": 0.33763297872340425,
+      "before": {
+        "mean": 8.532747619146674,
+        "max": 255,
+        "clippedWhiteFraction": 0.000010638297872340426,
+        "visibleFraction": 0.29132978723404257
+      },
+      "after": {
+        "mean": 8.67307907552581,
+        "max": 255,
+        "clippedWhiteFraction": 0.000010638297872340426,
+        "visibleFraction": 0.22629255319148936
+      }
+    },
+    {
+      "name": "front",
+      "meanAbsolute": 5.582225177304965,
+      "maximumChannelDifference": 190,
+      "changedFraction": 0.25372872340425534,
+      "before": {
+        "mean": 8.517460941485641,
+        "max": 255,
+        "clippedWhiteFraction": 0.000015957446808510637,
+        "visibleFraction": 0.2885159574468085
+      },
+      "after": {
+        "mean": 8.553330117015127,
+        "max": 255,
+        "clippedWhiteFraction": 0.000015957446808510637,
+        "visibleFraction": 0.20538829787234042
+      }
+    },
+    {
+      "name": "inside",
+      "meanAbsolute": 4.493507092198581,
+      "maximumChannelDifference": 131,
+      "changedFraction": 0.32720744680851066,
+      "before": {
+        "mean": 7.86113148297562,
+        "max": 255,
+        "clippedWhiteFraction": 0.000031914893617021275,
+        "visibleFraction": 0.2599468085106383
+      },
+      "after": {
+        "mean": 7.866767053186271,
+        "max": 255,
+        "clippedWhiteFraction": 0.00003723404255319149,
+        "visibleFraction": 0.24475
+      }
+    },
+    {
+      "name": "side",
+      "meanAbsolute": 4.287221631205674,
+      "maximumChannelDifference": 211,
+      "changedFraction": 0.1970372340425532,
+      "before": {
+        "mean": 7.249397315952449,
+        "max": 255,
+        "clippedWhiteFraction": 0.000021276595744680852,
+        "visibleFraction": 0.2230744680851064
+      },
+      "after": {
+        "mean": 7.240554712759596,
+        "max": 255,
+        "clippedWhiteFraction": 0.000031914893617021275,
+        "visibleFraction": 0.17739893617021277
+      }
+    },
+    {
+      "name": "rear",
+      "meanAbsolute": 5.054641843971631,
+      "maximumChannelDifference": 244,
+      "changedFraction": 0.2244308510638298,
+      "before": {
+        "mean": 8.040934836165516,
+        "max": 255,
+        "clippedWhiteFraction": 0.00009574468085106382,
+        "visibleFraction": 0.29562765957446807
+      },
+      "after": {
+        "mean": 8.004333151056802,
+        "max": 255,
+        "clippedWhiteFraction": 0.00011702127659574468,
+        "visibleFraction": 0.22273404255319149
+      }
+    },
+    {
+      "name": "violet-front",
+      "meanAbsolute": 5.582354609929078,
+      "maximumChannelDifference": 190,
+      "changedFraction": 0.2537340425531915,
+      "before": {
+        "mean": 5.70466799786721,
+        "max": 107,
+        "clippedWhiteFraction": 0,
+        "visibleFraction": 0.17590425531914894
+      },
+      "after": {
+        "mean": 5.740594017013724,
+        "max": 206,
+        "clippedWhiteFraction": 0,
+        "visibleFraction": 0.09864893617021277
+      }
+    },
+    {
+      "name": "violet-side",
+      "meanAbsolute": 4.2880656028368795,
+      "maximumChannelDifference": 212,
+      "changedFraction": 0.19704787234042553,
+      "before": {
+        "mean": 5.577919540418942,
+        "max": 121,
+        "clippedWhiteFraction": 0,
+        "visibleFraction": 0.14802659574468086
+      },
+      "after": {
+        "mean": 5.569223467012938,
+        "max": 255,
+        "clippedWhiteFraction": 0,
+        "visibleFraction": 0.0896436170212766
+      }
+    },
+    {
+      "name": "violet-rear",
+      "meanAbsolute": 5.058274822695036,
+      "maximumChannelDifference": 244,
+      "changedFraction": 0.22447340425531914,
+      "before": {
+        "mean": 5.679166218079071,
+        "max": 141,
+        "clippedWhiteFraction": 0,
+        "visibleFraction": 0.16589361702127658
+      },
+      "after": {
+        "mean": 5.643698665949424,
+        "max": 255,
+        "clippedWhiteFraction": 0,
+        "visibleFraction": 0.09571808510638298
+      }
+    },
+    {
+      "name": "without-violet",
+      "meanAbsolute": 0,
+      "maximumChannelDifference": 0,
+      "changedFraction": 0,
+      "before": {
+        "mean": 9.28698554361031,
+        "max": 255,
+        "clippedWhiteFraction": 0.00005319148936170213,
+        "visibleFraction": 0.2086436170212766
+      },
+      "after": {
+        "mean": 9.28698554361031,
+        "max": 255,
+        "clippedWhiteFraction": 0.00005319148936170213,
+        "visibleFraction": 0.2086436170212766
+      }
+    },
+    {
+      "name": "galaxy",
+      "meanAbsolute": 0,
+      "maximumChannelDifference": 0,
+      "changedFraction": 0,
+      "before": {
+        "mean": 9.46690738935639,
+        "max": 255,
+        "clippedWhiteFraction": 0.00004787234042553191,
+        "visibleFraction": 0.22932446808510637
+      },
+      "after": {
+        "mean": 9.46690738935639,
+        "max": 255,
+        "clippedWhiteFraction": 0.00004787234042553191,
+        "visibleFraction": 0.22932446808510637
+      }
+    },
+    {
+      "name": "cosmic",
+      "meanAbsolute": 0,
+      "maximumChannelDifference": 0,
+      "changedFraction": 0,
+      "before": {
+        "mean": 4.799128044672689,
+        "max": 253,
+        "clippedWhiteFraction": 0,
+        "visibleFraction": 0.058382978723404255
+      },
+      "after": {
+        "mean": 4.799128044672689,
+        "max": 253,
+        "clippedWhiteFraction": 0,
+        "visibleFraction": 0.058382978723404255
+      }
+    },
+    {
+      "name": "relativity",
+      "meanAbsolute": 0.24678191489361703,
+      "maximumChannelDifference": 254,
+      "changedFraction": 0.0031648936170212767,
+      "before": {
+        "mean": 8.08542694786406,
+        "max": 255,
+        "clippedWhiteFraction": 0.0029574468085106385,
+        "visibleFraction": 0.0848936170212766
+      },
+      "after": {
+        "mean": 7.974164115949131,
+        "max": 255,
+        "clippedWhiteFraction": 0.0031382978723404256,
+        "visibleFraction": 0.08368085106382979
+      }
+    },
+    {
+      "name": "dim",
+      "meanAbsolute": 3.042147163120567,
+      "maximumChannelDifference": 105,
+      "changedFraction": 0.19544148936170214,
+      "before": {
+        "mean": 5.774928860634829,
+        "max": 207,
+        "clippedWhiteFraction": 0,
+        "visibleFraction": 0.19677659574468084
+      },
+      "after": {
+        "mean": 5.7943482436112195,
+        "max": 209,
+        "clippedWhiteFraction": 0,
+        "visibleFraction": 0.16285106382978723
+      }
+    },
+    {
+      "name": "nebula-approach",
+      "meanAbsolute": 0,
+      "maximumChannelDifference": 0,
+      "changedFraction": 0,
+      "before": {
+        "mean": 10.496077180846818,
+        "max": 255,
+        "clippedWhiteFraction": 0.000031914893617021275,
+        "visibleFraction": 0.3600265957446809
+      },
+      "after": {
+        "mean": 10.496077180846818,
+        "max": 255,
+        "clippedWhiteFraction": 0.000031914893617021275,
+        "visibleFraction": 0.3600265957446809
+      }
+    },
+    {
+      "name": "nebula-filaments",
+      "meanAbsolute": 0.0627677304964539,
+      "maximumChannelDifference": 37,
+      "changedFraction": 0.005526595744680851,
+      "before": {
+        "mean": 6.974464792548124,
+        "max": 255,
+        "clippedWhiteFraction": 0.000015957446808510637,
+        "visibleFraction": 0.21736170212765957
+      },
+      "after": {
+        "mean": 6.925549417016333,
+        "max": 255,
+        "clippedWhiteFraction": 0.000015957446808510637,
+        "visibleFraction": 0.21377127659574469
+      }
+    },
+    {
+      "name": "nebula-violet",
+      "meanAbsolute": 6.035822695035461,
+      "maximumChannelDifference": 155,
+      "changedFraction": 0.34064893617021275,
+      "before": {
+        "mean": 8.48603612021039,
+        "max": 255,
+        "clippedWhiteFraction": 0.000005319148936170213,
+        "visibleFraction": 0.2884255319148936
+      },
+      "after": {
+        "mean": 8.667891981908939,
+        "max": 255,
+        "clippedWhiteFraction": 0.000005319148936170213,
+        "visibleFraction": 0.22088829787234043
+      }
+    },
+    {
+      "name": "stellar-amber",
+      "meanAbsolute": 0,
+      "maximumChannelDifference": 0,
+      "changedFraction": 0,
+      "before": {
+        "mean": 4.840657047863016,
+        "max": 255,
+        "clippedWhiteFraction": 0.000005319148936170213,
+        "visibleFraction": 0.09555851063829787
+      },
+      "after": {
+        "mean": 4.840657047863016,
+        "max": 255,
+        "clippedWhiteFraction": 0.000005319148936170213,
+        "visibleFraction": 0.09555851063829787
+      }
+    },
+    {
+      "name": "stellar-blue",
+      "meanAbsolute": 0,
+      "maximumChannelDifference": 0,
+      "changedFraction": 0,
+      "before": {
+        "mean": 5.132599801055757,
+        "max": 255,
+        "clippedWhiteFraction": 0.000021276595744680852,
+        "visibleFraction": 0.12582978723404256
+      },
+      "after": {
+        "mean": 5.132599801055757,
+        "max": 255,
+        "clippedWhiteFraction": 0.000021276595744680852,
+        "visibleFraction": 0.12582978723404256
+      }
+    },
+    {
+      "name": "stellar-pale",
+      "meanAbsolute": 0,
+      "maximumChannelDifference": 0,
+      "changedFraction": 0,
+      "before": {
+        "mean": 10.363134840421706,
+        "max": 255,
+        "clippedWhiteFraction": 0.000005319148936170213,
+        "visibleFraction": 0.36572340425531913
+      },
+      "after": {
+        "mean": 10.363134840421706,
+        "max": 255,
+        "clippedWhiteFraction": 0.000005319148936170213,
+        "visibleFraction": 0.36572340425531913
+      }
+    }
+  ],
+  "nativeOrbits": {
+    "baseline": {
+      "before": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -22,
+            11,
+            41
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "violet-nebula"
+      },
+      "after": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -33.43605251247684,
+            11,
+            42.58692410949311
+          ],
+          "yaw": 0.2757690031321116,
+          "pitch": 0,
+          "distanceLy": 11.582298131548672,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "violet-nebula"
+      },
+      "comparison": {
+        "meanAbsolute": 5.22336524822695,
+        "maximumChannelDifference": 254,
+        "changedFraction": 0.3257765957446809
+      },
+      "resourcesStable": true
+    },
+    "refined": {
+      "before": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -22,
+            11,
+            41
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "violet-nebula"
+      },
+      "after": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -31.87482877105705,
+            11,
+            42.17736220254378
+          ],
+          "yaw": 0.23733685300319926,
+          "pitch": 0,
+          "distanceLy": 9.968147826134373,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "violet-nebula"
+      },
+      "comparison": {
+        "meanAbsolute": 5.650485815602837,
+        "maximumChannelDifference": 254,
+        "changedFraction": 0.24399468085106382
+      },
+      "resourcesStable": true
+    }
+  },
+  "pointData": {
+    "baseline": {
+      "count": 19203,
+      "hash": "27d9edcd364f92ad91ee5e481ca55778f545458ac2dab980f30ca6d61acbbb5f"
+    },
+    "refined": {
+      "count": 19203,
+      "hash": "f0933322797366fbee8bbdc9ce8d2263700b1c07a71caa1bcfa1224d68edc2a3"
+    }
+  },
+  "violetRidges": {
+    "selectedCount": 430,
+    "selectedIndexRange": [
+      9070,
+      9499
+    ],
+    "changedPositionRecords": 430,
+    "center": [
+      -22,
+      11,
+      83
+    ],
+    "minRadius": 1.6554315737600909,
+    "maxRadius": 19.952569970520834,
+    "maxEnvelope": 23.726561099608055,
+    "extents": [
+      31.68453025817871,
+      30.446423292160034,
+      22.36139678955078
+    ],
+    "warmKnots": 52,
+    "frontAxisDepthExtent": 17.26885995737381,
+    "attributesHash": "b70c4fe9cfd66efe9cce93b3a77d42f24eb0ee3efdc68395a1adbfe84927c603",
+    "attributesMatchBaseline": true,
+    "allOtherPointsMatchBaseline": true,
+    "blueShellHash": "3987f23b4ff4b19676e630c58d053384f9c4e310e0036a056f46fce6065a0443",
+    "blueShellMatchesBaseline": true
+  },
+  "evidenceHashes": {
+    "reports/universe-flight-2026-09-29/violet-ridges/ridges-baseline.json": "c926d4851ee841ebc24433fc2f27c6deed208428b5717ec4c6be3918c28aa0a5",
+    "reports/universe-flight-2026-09-29/violet-ridges/ridges-refined.json": "e31f48627d1c22381f48ada7565d5ca1a6ea32a483c00fbd321e83a2f22f7623",
+    "reports/universe-flight-2026-09-29/violet-ridges/flight/check.json": "703f8c1def4619ef66fb5eb719c790d05dcacce480764f52a8a5726c151f2901",
+    "reports/universe-flight-2026-09-29/violet-ridges/renderer-audit.json": "510c1442be4c0f6710364d475ce02d7138480de44e4189d285840a71b19de4d6",
+    "reports/universe-flight-2026-09-29/violet-ridges/baseline-renderer.js": "53efb8f8015fbfa22c92af1a698f3af261ba25056b841f73b976c84544caa03f",
+    "reports/universe-flight-2026-09-29/violet-ridges/focused-tests.txt": "a0a2f4b346d166bf3fa600d0a0b784cfe85db856c6f59a9a66b3c43ff0450da0"
+  },
+  "harnessHashes": {
+    "dev-tools/universe_flight_violet_ridges_check.cjs": "69133394255f220e2eaac1ac17f3010e7236e1892e875b47eb0956681b926a64",
+    "dev-tools/universe_flight_violet_ridges_audit.cjs": "f56180228adda29a704be1265b6be0ef76daec9d1a8c9858bff0c178b09da179",
+    "dev-tools/universe_flight_stellar_flyby_check.cjs": "810e85d4873b806f2284d73adb77f1a352f3b12101a05991b45ceaa6ae7d230c"
+  },
+  "selectedCaptureHashes": {
+    "reports/universe-flight-2026-09-29/violet-ridges/ridges-baseline-front.png": "627d68dc106d42be7976d177b1b85b969fa12b84e0b5a889c8ecce2e0165d99f",
+    "reports/universe-flight-2026-09-29/violet-ridges/ridges-baseline-reveal.png": "f484ee91db0342bf296df96a166fe6000288a0b9ae50fed103a1eea2e3b0dd07",
+    "reports/universe-flight-2026-09-29/violet-ridges/ridges-refined-front.png": "dcd12c1b59c7b54bc7052d4aa6bf1ffb9ef4b921ddf860f8e35fe62e9e1bb83c",
+    "reports/universe-flight-2026-09-29/violet-ridges/ridges-refined-reveal.png": "d8b8aad9010e075702dcd7f34b12f678ff798bb25dd4584b8cfaa6d791a75b88",
+    "reports/universe-flight-2026-09-29/violet-ridges/ridges-refined-violet-side.png": "124714a5229e926300a6d9c039378ea39d273f7381b8b037df46e1e3bfe69db3",
+    "reports/universe-flight-2026-09-29/violet-ridges/ridges-refined-violet-rear.png": "157b8cce87b02319fc1088b9a35b587c27b1b00555ffcf37e22b7f20f0377f58",
+    "reports/universe-flight-2026-09-29/violet-ridges/ridges-refined-inside.png": "ba9745b1d28f97b7d488646bd9075821c41d3c292281c47759634cd5fed94823",
+    "reports/universe-flight-2026-09-29/violet-ridges/ridges-refined-orbit-after.png": "5226e03df8b5cbdcb90518d80e1cce51f83303829d6dbedab8c0b339090ec9fd",
+    "reports/universe-flight-2026-09-29/violet-ridges/flight/stellar-current-320.png": "a5c2d22e3c9ed095602f3adcfc42e74ec3964250ab7504b0bfdb3c8b76a4b52b",
+    "reports/universe-flight-2026-09-29/violet-ridges/flight/stellar-current-568.png": "1f649b3a017a7ee66a659e00f36d758619609f3b3c20f85a3940b8139683a45b"
+  },
+  "mirrorsMatch": true,
+  "syntaxChecks": 11,
+  "served": [
+    {
+      "file": "universe_flight_scene.js",
+      "status": 200,
+      "hash": "590b24b9215e612de9d45b1b6b524ac78ac838f333534c72738c95a7a7752b3e"
+    },
+    {
+      "file": "stem_tool_universe.js",
+      "status": 200,
+      "hash": "25c11847e69de8808090feda135315f467cd02ae5042cdbbeade2e393b8fd717"
+    }
+  ],
+  "preview": {
+    "url": "http://127.0.0.1:3187/reports/universe-flight-2026-09-29/preview.html?enhanced=36#universe-flight"
+  },
+  "limitations": "Procedural teaching scenery with illustrative shapes, colors, scale and brightness. The violet emission region uses fixed branched ridges and finite overlapping sprites. It does not reconstruct an observed nebula or calculate gas motion, forces, extinction or scattering. Existing finite-star appearance and scene occlusion limits still apply. Functional and scoped accessibility checks do not measure frame rate or provide a complete accessibility audit."
+}
