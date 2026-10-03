@@ -1049,6 +1049,8 @@
   var FRAGMENT = [
     'precision mediump float;',
     'uniform sampler2D u_cloudTexture; uniform mediump float u_stellarQuad;',
+    // Fragment-only frames avoid sharing camera uniforms at a different precision.
+    'uniform vec3 u_stellarRight,u_stellarUp,u_stellarToward; uniform float u_stellarStructure,u_stellarLoops;',
     'varying vec3 v_color; varying float v_light; varying float v_cloud; varying vec3 v_cloudProfile;',
     'varying vec4 v_stellarDetail; varying vec2 v_quadCoord;',
     'float stellarHash(vec2 cell, float seed) { return fract(sin(dot(cell, vec2(12.9898, 78.233)) + seed * 6.28318530718) * 127.1); }',
@@ -1057,6 +1059,43 @@
     '  float a = stellarHash(cell, seed), b = stellarHash(cell + vec2(1.0, 0.0), seed);',
     '  float c = stellarHash(cell + vec2(0.0, 1.0), seed), d = stellarHash(cell + vec2(1.0, 1.0), seed);',
     '  return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);',
+    '}',
+    // A seamless, fixed field on the source sphere: a camera orbit reveals
+    // another side instead of rotating a screen-space decal.
+    'float stellarHash3(vec3 cell, float seed) { return fract(sin(dot(cell, vec3(12.9898, 78.233, 37.719)) + seed * 6.28318530718) * 127.1); }',
+    'float stellarNoise3(vec3 point, float seed) {',
+    '  vec3 cell = floor(point), f = fract(point); f = f * f * (3.0 - 2.0 * f);',
+    '  float a = mix(stellarHash3(cell,seed),stellarHash3(cell+vec3(1.0,0.0,0.0),seed),f.x);',
+    '  float b = mix(stellarHash3(cell+vec3(0.0,1.0,0.0),seed),stellarHash3(cell+vec3(1.0,1.0,0.0),seed),f.x);',
+    '  float c = mix(stellarHash3(cell+vec3(0.0,0.0,1.0),seed),stellarHash3(cell+vec3(1.0,0.0,1.0),seed),f.x);',
+    '  float d = mix(stellarHash3(cell+vec3(0.0,1.0,1.0),seed),stellarHash3(cell+vec3(1.0,1.0,1.0),seed),f.x);',
+    '  return mix(mix(a,b,f.y),mix(c,d,f.y),f.z);',
+    '}',
+    // Two short, source-fixed curves approximate a prominence shape. These
+    // are static appearance studies, not magnetic-field or gas simulations.
+    'float stellarArch(vec2 p,vec3 anchor,vec3 tangent,float width,float height) {',
+    '  float base = sqrt(1.0-width*width), glow = 0.0;',
+    '  vec3 previous = anchor*base+tangent*width;',
+    '  vec2 a = vec2(dot(previous,u_stellarRight),-dot(previous,u_stellarUp))*0.35;',
+    '  float tube = max(0.0035,v_stellarDetail.z*0.85);',
+    '  float impact2 = dot(p,p)/0.1225;',
+    '  float front = sqrt(max(0.0,1.0-impact2));',
+    '  for (int i=1;i<=8;i++) {',
+    '    float angle = float(i)*0.3926990817;',
+    '    vec3 current = anchor*(base+height*sin(angle))+tangent*(width*cos(angle));',
+    '    vec2 b = vec2(dot(current,u_stellarRight),-dot(current,u_stellarUp))*0.35;',
+    '    vec2 segment = b-a;',
+    '    float t = clamp(dot(p-a,segment)/max(dot(segment,segment),0.000001),0.0,1.0);',
+    '    float separation = length(p-mix(a,b,t));',
+    '    if (separation < tube*5.0) {',
+    '      float depth = dot(mix(previous,current,t),u_stellarToward);',
+    '      float visible = impact2>=1.0 ? 1.0 : smoothstep(front-0.012,front+0.012,depth);',
+    '      float emission = 0.10*(1.0-smoothstep(tube*0.5,tube*2.0,separation))+0.025*exp(-separation*separation/(tube*tube*12.0));',
+    '      glow = max(glow,emission*visible);',
+    '    }',
+    '    previous = current; a = b;',
+    '  }',
+    '  return glow;',
     '}',
     'void main() {',
     '  vec2 p = u_stellarQuad > 0.5 ? v_quadCoord : gl_PointCoord * 2.0 - 1.0;',
@@ -1092,6 +1131,21 @@
     '  float cells = 1.0;',
     '  if (broadDetail > 0.0) cells += 0.018 * broadDetail * (stellarNoise(surface * 4.5, v_stellarDetail.y) * 2.0 - 1.0);',
     '  if (fineDetail > 0.0) cells += 0.009 * fineDetail * (stellarNoise(surface * 9.0, v_stellarDetail.y + 0.37) * 2.0 - 1.0);',
+    // Large named surfaces gain fixed 3D granules and localized dark regions.
+    // Fade after the point/quad handoff; small unresolved output stays exact.
+    '  if (u_stellarStructure > 0.0 && disk > 0.0) {',
+    '    vec3 body = u_stellarRight*surface.x-u_stellarUp*surface.y+u_stellarToward*mu;',
+    '    body = normalize(body);',
+    '    vec3 spotA = normalize(vec3(cos(phase+1.1),sin(phase*0.7+0.4)*0.65,sin(phase+1.1)));',
+    '    vec3 spotB = normalize(vec3(cos(phase+3.0),-0.35,sin(phase+3.0)));',
+    '    float patchA = dot(body,spotA), patchB = dot(body,spotB);',
+    '    float coarse = stellarNoise3(body*3.2,v_stellarDetail.y);',
+    '    float granules = stellarNoise3(body*16.0,v_stellarDetail.y+0.37);',
+    '    float structure = 1.0+0.085*(granules*2.0-1.0)+0.028*(coarse*2.0-1.0);',
+    '    structure -= 0.21*smoothstep(0.88,0.988,patchA)+0.13*smoothstep(0.90,0.992,patchB);',
+    '    structure += 0.045*(smoothstep(0.79,0.90,patchA)-smoothstep(0.90,0.98,patchA));',
+    '    cells = mix(cells,structure,u_stellarStructure);',
+    '  }',
     // A lower surface peak spreads roughly the old Gaussian's integrated light
     // over the disk, retaining color instead of producing a white glare patch.
     '  float photosphere = disk * 1.08 * (0.6 + 0.4 * mu) * cells;',
@@ -1100,9 +1154,19 @@
     '    float angle = atan(p.y, p.x);',
     '    corona = (1.0 - disk) * 0.16 * exp(-max(0.0, radius - 0.35) * 6.0) * (0.88 + 0.12 * cos(angle * 6.0 + phase));',
     '  }',
+    '  float arches = 0.0;',
+    // Detail stays near the limb; the closest curve depth is compared with
+    // the front photosphere, so far-side segments cannot shine through it.
+    '  if (u_stellarLoops > 0.0 && radius > 0.25 && radius < 0.52) {',
+    '    vec3 anchorA = normalize(vec3(cos(phase+1.1),sin(phase*0.7+0.4)*0.65,sin(phase+1.1)));',
+    '    vec3 anchorB = normalize(vec3(cos(phase+3.0),-0.35,sin(phase+3.0)));',
+    '    vec3 tangentA = normalize(cross(anchorA,vec3(0.0,1.0,0.0)));',
+    '    vec3 tangentB = normalize(cross(anchorB,vec3(0.0,1.0,0.0)));',
+    '    arches = u_stellarLoops*smoothstep(0.25,0.28,radius)*(stellarArch(p,anchorA,tangentA,0.22,0.24)+stellarArch(p,anchorB,tangentB,0.19,0.29));',
+    '  }',
     '  float feather = 1.0 - smoothstep(0.72, 1.0, radius2);',
-    '  vec3 resolvedColor = (v_color * photosphere + mix(v_color, vec3(1.0), 0.08) * corona) * v_light * feather;',
-    '  float resolvedLight = (photosphere + corona) * v_light * feather;',
+    '  vec3 resolvedColor = (v_color * photosphere + mix(v_color, vec3(1.0), 0.08) * corona + mix(v_color,vec3(1.0,0.64,0.43),0.16)*arches) * v_light * feather;',
+    '  float resolvedLight = (photosphere + corona + arches) * v_light * feather;',
     '  vec3 color = mix(v_color * light, resolvedColor, v_stellarDetail.x);',
     '  float alpha = mix(light, resolvedLight, v_stellarDetail.x);',
     // Only enlarged stellar disks obscure background light. Compensate their
@@ -1365,6 +1429,8 @@
       gl.uniform3fv(uniforms.stellarCenters, stellarCenters);
       gl.uniform1f(uniforms.stellarCount, stellarRecords.length);
       gl.uniform1f(uniforms.stellarQuad, 0);
+      gl.uniform1f(uniforms.stellarStructure,0); gl.uniform1f(uniforms.stellarLoops,0);
+      gl.uniform3f(uniforms.stellarRight,1,0,0); gl.uniform3f(uniforms.stellarUp,0,1,0); gl.uniform3f(uniforms.stellarToward,0,0,-1);
       var quadMaximum = Math.min(768 * pixelRatio(), 2 * Math.max(canvas.width, canvas.height));
       gl.uniform1f(uniforms.quadMax, quadMaximum);
       gl.uniform1f(uniforms.beta, b);
@@ -1400,6 +1466,16 @@
           gl.vertexAttribPointer(cornerAttribute,2,gl.FLOAT,false,20,12);
           gl.uniform1f(uniforms.stellarQuad,1);
           selected.forEach(function(record){
+            var frame=stellarSurfaceFrame(record,[cy,0,-sy],[-sy*sp,cp,-cy*sp]);
+            gl.uniform3fv(uniforms.stellarRight,frame.right); gl.uniform3fv(uniforms.stellarUp,frame.up); gl.uniform3fv(uniforms.stellarToward,frame.toward);
+            var dx=record[0]-state.position[0],dy=record[1]-state.position[1],dz=record[2]-state.position[2];
+            var distance=Math.max(Math.hypot(dx,dy,dz),0.00001),nz=dz/distance,D=g*(1+b*nz);
+            var ax=dx/distance/D,ay=dy/distance/D,az=(nz+b)/(1+b*nz);
+            var depth=ax*sy*cp+ay*sp+az*cy*cp;
+            var cssSize=record[6]/distance/D*canvas.height*lens/Math.max(depth,0.03)/pixelRatio();
+            cssSize=Math.min(cssSize,Math.max(maximum,quadMaximum)/pixelRatio());
+            function detail(low,high) { var t=clamp((cssSize-low)/(high-low),0,1); return t*t*(3-2*t); }
+            gl.uniform1f(uniforms.stellarStructure,detail(132,240)); gl.uniform1f(uniforms.stellarLoops,detail(240,360));
             gl.vertexAttrib3f(pointAttributes[0][0],record[0],record[1],record[2]);
             gl.vertexAttrib3f(pointAttributes[1][0],record[3],record[4],record[5]);
             gl.vertexAttrib1f(pointAttributes[2][0],record[6]);
@@ -1410,9 +1486,30 @@
           gl.blendFunc(gl.ONE,gl.ONE);
           gl.disableVertexAttribArray(cornerAttribute);
           gl.uniform1f(uniforms.stellarQuad,0);
+          gl.uniform1f(uniforms.stellarStructure,0); gl.uniform1f(uniforms.stellarLoops,0);
           attributes(pointAttributes,buffer,36);
         }
       }
+    }
+    // The sphere remains in source/world coordinates. Camera axes only choose
+    // its current screen tangent frame; apparent relativistic size is separate.
+    function stellarSurfaceFrame(record, cameraRight, cameraUp) {
+      var toward = [state.position[0]-record[0],state.position[1]-record[1],state.position[2]-record[2]];
+      var distance = Math.hypot(toward[0],toward[1],toward[2]);
+      if (!(distance>0.00001) || !isFinite(distance)) return {right:[1,0,0],up:[0,1,0],toward:[0,0,-1]};
+      toward = toward.map(function(value){return value/distance;});
+      function dot(a,b) { return a[0]*b[0]+a[1]*b[1]+a[2]*b[2]; }
+      function cross(a,b) { return [a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]]; }
+      function tangent(axis) { var along=dot(axis,toward); return axis.map(function(value,i){return value-toward[i]*along;}); }
+      function unit(vector) { var length=Math.hypot(vector[0],vector[1],vector[2]); return vector.map(function(value){return value/length;}); }
+      var right = tangent(cameraRight), length = Math.hypot(right[0],right[1],right[2]);
+      if (length>0.000001) right=unit(right);
+      else {
+        var up=tangent(cameraUp);
+        if (Math.hypot(up[0],up[1],up[2])<=0.000001) up=tangent(Math.abs(toward[1])<0.9?[0,1,0]:[1,0,0]);
+        right=unit(cross(toward,unit(up)));
+      }
+      return {right:right,up:unit(cross(right,toward)),toward:toward};
     }
     function limitToRegion(previous) {
       var limit = REGIONS[settings.region].boundary;
@@ -1865,7 +1962,7 @@
       gl.disableVertexAttribArray(cornerAttribute);
       gl.vertexAttrib2f(cornerAttribute,0,0);
       uniforms.stellarCenters = gl.getUniformLocation(program, 'u_stellarCenters[0]');
-      ['position', 'right', 'up', 'forward', 'aspect', 'height', 'dpr', 'beta', 'gamma', 'exposure', 'lens', 'pointMax', 'cloudTexture', 'stellarCount', 'stellarQuad', 'quadMax'].forEach(function (name) {
+      ['position', 'right', 'up', 'forward', 'aspect', 'height', 'dpr', 'beta', 'gamma', 'exposure', 'lens', 'pointMax', 'cloudTexture', 'stellarCount', 'stellarQuad', 'quadMax', 'stellarRight', 'stellarUp', 'stellarToward', 'stellarStructure', 'stellarLoops'].forEach(function (name) {
         uniforms[name] = gl.getUniformLocation(program, 'u_' + name);
       });
       galaxyProgram = gl.createProgram();
