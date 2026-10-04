@@ -1,0 +1,439 @@
+{
+  "version": 1,
+  "rendererHash": "ad33daca7123ff080ad0478e7653f3e2ad51fdf1e2041b42284735c95f29ee4a",
+  "description": "Generated views of the authored Universe flight highlights at their launch lens and exposure. Procedural teaching scenery.",
+  "views": [
+    {
+      "routeId": "halo",
+      "highlightId": "arm",
+      "name": "Spiral arm",
+      "seconds": 12,
+      "file": "halo-arm.webp",
+      "width": 480,
+      "height": 300,
+      "bytes": 6326,
+      "hash": "c72de3610d5ac6357568ceda4029354ff1ad1e29b41e2e6ad590565f6ebaa883",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            22724.818661805766,
+            764.2975448371061,
+            -23731.190602363153
+          ],
+          "yaw": 0.3971716750079444,
+          "pitch": -0.1340432388598812,
+          "distanceLy": 33228.50056033181,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "galactic-center"
+      }
+    },
+    {
+      "routeId": "halo",
+      "highlightId": "cluster",
+      "name": "Cluster pass",
+      "seconds": 18,
+      "file": "halo-cluster.webp",
+      "width": 480,
+      "height": 300,
+      "bytes": 10220,
+      "hash": "34745137430f98aa2f34df29e263aed3e2d4ab433c4aab39d82a058044e4e927",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            24275.830893203198,
+            616.3122834547021,
+            -22155.11210475688
+          ],
+          "yaw": -0.7411254211463322,
+          "pitch": -0.19657409909881018,
+          "distanceLy": 35468.93970130353,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "halo-cluster-2"
+      }
+    },
+    {
+      "routeId": "halo",
+      "highlightId": "panorama",
+      "name": "Galaxy panorama",
+      "seconds": 32,
+      "file": "halo-panorama.webp",
+      "width": 480,
+      "height": 300,
+      "bytes": 9700,
+      "hash": "ab08b9c073a3feb368aafc857299cda67d6c9eaee480db76b3748806d5fde3d5",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            57537.37470667912,
+            28979.93440151232,
+            22193.098330829456
+          ],
+          "yaw": -1.9389287766079062,
+          "pitch": -0.4393002888319791,
+          "distanceLy": 103341.01252584036,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "galactic-center"
+      }
+    },
+    {
+      "routeId": "nebula",
+      "highlightId": "approach",
+      "name": "Blue cloud approach",
+      "seconds": 8,
+      "file": "nebula-approach.webp",
+      "width": 480,
+      "height": 300,
+      "bytes": 12194,
+      "hash": "776f2c3f76d87b2c4f2c365bb267a8f430aa4aaa1f42b5e61add3ffaf79cbc06",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0,
+            3,
+            22
+          ],
+          "yaw": 0.6435011087932844,
+          "pitch": -0.3217505543966422,
+          "distanceLy": 23.913401320764855,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      }
+    },
+    {
+      "routeId": "nebula",
+      "highlightId": "filaments",
+      "name": "Among the filaments",
+      "seconds": 12,
+      "file": "nebula-filaments.webp",
+      "width": 480,
+      "height": 300,
+      "bytes": 11062,
+      "hash": "c3b7609ae25ee330e4e39cf88539eb2bdce41020fa02e19ada9d5df24f258334",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            6.73258751546719,
+            2.7454985975874995,
+            25.541291740103556
+          ],
+          "yaw": 0.2618995875860214,
+          "pitch": -0.49659423354569576,
+          "distanceLy": 31.56416830318879,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      }
+    },
+    {
+      "routeId": "nebula",
+      "highlightId": "violet",
+      "name": "Violet cloud reveal",
+      "seconds": 36,
+      "file": "nebula-violet.webp",
+      "width": 480,
+      "height": 300,
+      "bytes": 8912,
+      "hash": "dd2dee3584aea3e9ad6f3a5c840d1c547d8bd9c57fc829358fd376f88894112f",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -22.38725712952419,
+            25.70579394327133,
+            58.62722092594534
+          ],
+          "yaw": 0.01588758280673589,
+          "pitch": -0.542837637181226,
+          "distanceLy": 104.16154108867093,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "violet-nebula"
+      }
+    },
+    {
+      "routeId": "group",
+      "highlightId": "spiral",
+      "name": "Spiral skim",
+      "seconds": 12,
+      "file": "group-spiral.webp",
+      "width": 480,
+      "height": 300,
+      "bytes": 3722,
+      "hash": "5715e177d752a1e7c7ef9fcf81eafbd82d09ac1714ba2e07023db9f3aa54f877",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            3800.993548201688,
+            204667.20352500066,
+            -21799.8971191808
+          ],
+          "yaw": -0.17262299110657067,
+          "pitch": -1.4630939016137092,
+          "distanceLy": 1194256.9640433749,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "near-galaxy"
+      }
+    },
+    {
+      "routeId": "group",
+      "highlightId": "elliptical",
+      "name": "Golden elliptical pass",
+      "seconds": 30,
+      "file": "group-elliptical.webp",
+      "width": 480,
+      "height": 300,
+      "bytes": 2694,
+      "hash": "39c0df7ce16f1ff0c169654be2e0275688565b5268233c7edb8a4264073038bf",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            720000,
+            410000,
+            565000
+          ],
+          "yaw": 0.2736593210820904,
+          "pitch": 0.4417733155472801,
+          "distanceLy": 2160583.4405737584,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "golden-elliptical"
+      }
+    },
+    {
+      "routeId": "group",
+      "highlightId": "panorama",
+      "name": "Galaxy group panorama",
+      "seconds": 44,
+      "file": "group-panorama.webp",
+      "width": 480,
+      "height": 300,
+      "bytes": 3094,
+      "hash": "a5feae6dfbf82b9792557aa1af88db3517b9669f2f86e5a0a5c992554126b322",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            1220075.2125317845,
+            1101203.4267783898,
+            -482445.2588986326
+          ],
+          "yaw": -0.7787208485114655,
+          "pitch": -0.6026017328474189,
+          "distanceLy": 3713467.250913006,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "golden-elliptical"
+      }
+    },
+    {
+      "routeId": "stellar",
+      "highlightId": "amber",
+      "name": "Amber photosphere",
+      "seconds": 10,
+      "file": "stellar-amber.webp",
+      "width": 480,
+      "height": 300,
+      "bytes": 6274,
+      "hash": "b9dd5c00603e4287f3f05c406f9f098334526c929fb1e9e34e92638887f937f9",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 62,
+          "exposure": 0.86,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.78,
+            1.2,
+            8.65
+          ],
+          "yaw": 1.7879076415298025,
+          "pitch": -0.27968459767612264,
+          "distanceLy": 11.50742869127847,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      }
+    },
+    {
+      "routeId": "stellar",
+      "highlightId": "blue",
+      "name": "Blue star pass",
+      "seconds": 24,
+      "file": "stellar-blue.webp",
+      "width": 480,
+      "height": 300,
+      "bytes": 6510,
+      "hash": "ea9400fc71a91bd5a909a2462b1379c2557994251ce77cc77c8b7180020e921e",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 62,
+          "exposure": 0.86,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            5.16,
+            -1.96,
+            15.86
+          ],
+          "yaw": -1.4094212163742044,
+          "pitch": -0.2687788443866794,
+          "distanceLy": 25.082842742047433,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-star"
+      }
+    },
+    {
+      "routeId": "stellar",
+      "highlightId": "pale",
+      "name": "Pale star reveal",
+      "seconds": 38,
+      "file": "stellar-pale.webp",
+      "width": 480,
+      "height": 300,
+      "bytes": 11840,
+      "hash": "dc90e19e74459453f763cbd01ec5e4b5d586eb3eb6cdb0aaf09718416f318adf",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 62,
+          "exposure": 0.86,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -0.007,
+            2.747,
+            23.214
+          ],
+          "yaw": 0.6962380875955602,
+          "pitch": -0.32659684684871687,
+          "distanceLy": 39.689500667423516,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "pale-star"
+      }
+    }
+  ]
+}

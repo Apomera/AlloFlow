@@ -67,6 +67,16 @@ The sightline instrument uses the observer-frame relation D = 1/[γ(1−βμ′)
 
 ## Verification
 
+### Visual flyby previews pass
+
+The twelve named highlights now have preview images rendered from their authored camera positions, with route times and a visible current-stop border. The cards work in normal controls and fullscreen Explore. Choosing one pauses at the pictured moment while retaining the current lens, exposure and playback pace. The images use each route's launch lens and exposure. Their names, descriptions and times remain available if an image cannot load.
+
+The twelve 480 × 300 WebP previews total **92,548 bytes** and load lazily. They are bundled beside the tool and in the desktop mirror. The resource resolver supports CDN version queries, nested app paths and desktop file URLs. The local preview server serves only the twelve named images in addition to its existing fixture and modules. Rebuild with `node dev-tools/build_universe_flight_previews.cjs --build`, or verify the packaged files with `--check`.
+
+All **12 focused tests across three files** pass in 20.87 seconds. Browser verification covers **18 preview selections**, all twelve served image hashes, keyboard and touch input, retained lens settings, fullscreen focus, image failure and recovery, and ten accessibility scopes. The timeline regression also passes all seven groups, 26 seeks and nine accessibility scopes, including graphics cleanup. The renderer retains its accepted bytes.
+
+Review the [twelve rendered views](storyboard/contact-sheet.png), [preview cards](storyboard/storyboard-normal.png), [phone layout](storyboard/storyboard-320.png), and [short landscape layout](storyboard/storyboard-568.png).
+
 ### Scenic route timeline pass
 
 All four scenic flybys now include a **Route time** slider in normal controls and fullscreen Explore. Drag or tap to inspect any route moment, use arrow keys for 0.1-second steps, or use Home and End for the route endpoints. Gold marks locate the existing named highlights. **Continue flyby** resumes from the chosen moment and returns focus to the view. Seeking keeps fullscreen controls open and pauses immediately.

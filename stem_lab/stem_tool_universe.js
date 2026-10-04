@@ -68,20 +68,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
   // Loaded only when a learner opens the flight explorer; resolve beside this tool.
   var universeFlightScript = document.currentScript && document.currentScript.src;
   var universeFlightLoad = null;
+  function universeFlightResource(file) {
+    var sibling = universeFlightScript;
+    if (!sibling) {
+      var scripts = document.querySelectorAll('script[src]');
+      for (var i = 0; i < scripts.length; i++) {
+        if (/\/stem_lab\/stem_tool_universe\.js(?:[?#]|$)/.test(scripts[i].src)) sibling = scripts[i].src;
+      }
+    }
+    var resource = sibling ? new URL(file, sibling) : new URL('stem_lab/'+file, document.baseURI);
+    if (sibling) resource.search = new URL(sibling).search;
+    return resource.href;
+  }
   function loadUniverseFlight() {
     if (window.UniverseFlight) return Promise.resolve(window.UniverseFlight);
     if (universeFlightLoad) return universeFlightLoad;
     universeFlightLoad = new Promise(function(resolve, reject) {
-      var sibling = universeFlightScript;
-      if (!sibling) {
-        var scripts = document.querySelectorAll('script[src]');
-        for (var i = 0; i < scripts.length; i++) {
-          if (/\/stem_lab\/stem_tool_universe\.js(?:[?#]|$)/.test(scripts[i].src)) sibling = scripts[i].src;
-        }
-      }
-      var resource = sibling ? new URL('universe_flight_scene.js', sibling) : new URL('stem_lab/universe_flight_scene.js', document.baseURI);
-      if (sibling) resource.search = new URL(sibling).search;
-      var url = resource.href;
+      var url = universeFlightResource('universe_flight_scene.js');
       var script = document.createElement('script');
       var timer = setTimeout(function() { finish(new Error('The 3D explorer took too long to load. Please retry.')); }, 15000);
       function finish(error) {
@@ -309,9 +312,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
       !completed&&h('p',{className:'uf-flyby-view'},flyby.autoLook?label('flyby_view_following','Following the route view'):label('flyby_view_free','Free look · your direction is retained')),
       props.highlights&&props.highlights.length>0&&h('div',{className:'uf-flyby-highlights',role:'group','aria-labelledby':prefix+'-flyby-highlights-title'},
         h('h5',{id:prefix+'-flyby-highlights-title'},label('flyby_highlights_title','Jump to a paused highlight')),
-        h('p',{className:'uf-note'},label('flyby_highlights_help','Jump pauses travel and moves route progress to that moment. Start travel continues from there.')),
-        props.highlights.map(function(item){var current=!props.running&&flyby.active&&Math.abs(flyby.elapsedSeconds-item.seconds)<0.000001;return h('button',{key:item.id,type:'button','data-flyby-highlight':item.id,'aria-current':current?'true':undefined,disabled:!props.ready,onClick:function(){props.onHighlight(item.id);}},
-          h('strong',null,label('flyby_'+flyby.id+'_highlight_'+item.id,item.name)),h('small',null,current&&h('span',{className:'uf-flyby-current'},label('flyby_highlight_current','Paused here')+' · '),label('flyby_'+flyby.id+'_highlight_'+item.id+'_detail',item.description)));})));
+        h('p',{className:'uf-note'},label('flyby_preview_help','Choose a preview to pause there, then continue the flyby. Previews use the route’s starting lens.')),
+        props.highlights.map(function(item){var current=!props.running&&flyby.active&&Math.abs(flyby.elapsedSeconds-item.seconds)<0.000001,title=label('flyby_'+flyby.id+'_highlight_'+item.id,item.name),description=label('flyby_'+flyby.id+'_highlight_'+item.id+'_detail',item.description);return h('button',{key:item.id,type:'button','data-flyby-highlight':item.id,'aria-current':current?'true':undefined,'aria-label':title+'. '+item.seconds+' '+label('flyby_route_seconds','seconds at Standard pace')+'. '+description,disabled:!props.ready,onClick:function(){props.onHighlight(item.id);}},
+          h('span',{className:'uf-highlight-preview','aria-hidden':'true'},
+            h('img',{src:universeFlightResource('assets/universe-flight/highlights/'+encodeURIComponent(flyby.id)+'-'+encodeURIComponent(item.id)+'.webp'),alt:'',width:480,height:300,loading:'lazy',decoding:'async',onError:function(e){e.currentTarget.style.visibility='hidden';},onLoad:function(e){e.currentTarget.style.visibility='';}}),
+            h('span',{className:'uf-highlight-time'},routeClock(item.seconds).replace(/\.0$/,''))),
+          h('span',{className:'uf-highlight-copy'},h('strong',null,title),h('small',null,current&&h('span',{className:'uf-flyby-current'},label('flyby_highlight_current','Paused here')+' · '),description)));})));
   }
 
   function UniverseFlightJourneyCheckpoint(props) {
@@ -1266,7 +1272,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
   [data-universe-tool] .uf-flyby-highlights{display:grid;gap:7px;margin-top:14px;padding-top:12px;border-top:1px solid #546778;}
   [data-universe-tool] .uf-flyby-highlights h5{margin:0;color:#e3eef6;font-size:12px;line-height:1.5;}
   [data-universe-tool] .uf-flyby-highlights .uf-note{margin:0 0 3px;}
-  [data-universe-tool] .uf-flyby-highlights button{display:flex;flex-direction:column;gap:4px;min-height:44px;text-align:start;white-space:normal;min-width:0;}
+  [data-universe-tool] .uf-flyby-highlights button{display:grid;grid-template-columns:minmax(60px,32%) minmax(0,1fr);align-items:center;gap:10px;min-height:64px;text-align:start;white-space:normal;min-width:0;}
+  [data-universe-tool] .uf-highlight-preview{position:relative;display:block;width:100%;aspect-ratio:8/5;overflow:hidden;border-radius:7px;background:radial-gradient(ellipse at 30% 40%,#315269,#111e30 70%);box-shadow:0 0 0 1px #ffffff1c;}
+  [data-universe-tool] .uf-highlight-preview img{display:block;width:100%;height:100%;object-fit:contain;}
+  [data-universe-tool] .uf-highlight-time{position:absolute;bottom:3px;left:3px;padding:2px 4px;border-radius:3px;background:#030b18d9;color:#e5f9ff;font:9px ui-monospace,monospace;font-variant-numeric:tabular-nums;}
+  [data-universe-tool] .uf-highlight-copy{display:grid;gap:4px;min-width:0;}
+  [data-universe-tool] .uf-flyby-highlights button[aria-current="true"] .uf-highlight-preview{box-shadow:0 0 0 2px #84e1d5;}
   [data-universe-tool] .uf-flyby-highlights button[aria-current="true"]{border-color:#84e1d5;background:#1a3c48;box-shadow:inset 3px 0 0 #84e1d5;}
   [data-universe-tool] .uf-flyby-current{color:#99eade;font-weight:700;}
   [data-universe-tool] .uf-flyby-highlights strong{font-size:11px;}

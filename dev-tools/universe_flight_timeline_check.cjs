@@ -1,6 +1,6 @@
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),crypto=require('node:crypto'),vm=require('node:vm'),{execFileSync}=require('node:child_process');
-const repo=path.resolve(__dirname,'..'),report=path.join(repo,'reports/universe-flight-2026-09-29/timeline');
+const repo=path.resolve(__dirname,'..'),report=process.env.UNIVERSE_TIMELINE_REPORT||path.join(repo,'reports/universe-flight-2026-09-29/timeline');
 const hash=b=>crypto.createHash('sha256').update(b).digest('hex');
 const files=['stem_lab/universe_flight_scene.js','stem_lab/stem_tool_universe.js'];
 const pins=Object.fromEntries(files.map(f=>[f,hash(fs.readFileSync(path.join(repo,f)))]));

@@ -1,4 +1,4 @@
-// Local-only preview; serves just the fixture and its two runtime modules.
+// Local-only preview; serves the fixture, its two modules and named previews.
 const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -11,6 +11,9 @@ const routes = new Map([
   ['/stem_lab/stem_tool_universe.js', 'text/javascript; charset=utf-8'],
   ['/stem_lab/universe_flight_scene.js', 'text/javascript; charset=utf-8'],
 ]);
+for (const name of ['halo-arm','halo-cluster','halo-panorama','nebula-approach','nebula-filaments','nebula-violet','group-spiral','group-elliptical','group-panorama','stellar-amber','stellar-blue','stellar-pale']) {
+  routes.set('/stem_lab/assets/universe-flight/highlights/' + name + '.webp', 'image/webp');
+}
 if (!fs.existsSync(path.join(root, preview))) throw new Error('Build the preview first: node dev-tools/universe_flight_browser.cjs');
 const server = http.createServer((request, response) => {
   const pathname = new URL(request.url, 'http://localhost').pathname;

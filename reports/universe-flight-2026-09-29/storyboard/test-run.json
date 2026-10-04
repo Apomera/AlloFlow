@@ -1,0 +1,24 @@
+{
+  "completed": true,
+  "exitCode": 0,
+  "error": null,
+  "args": [
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "tests/universe_flight_preview_urls.test.js",
+    "tests/universe_content_invariants.test.js",
+    "tests/universe_accessibility.test.js",
+    "--pool=threads",
+    "--isolate=false",
+    "--maxWorkers=1",
+    "--testTimeout=30000",
+    "--hookTimeout=60000"
+  ],
+  "pins": {
+    "tests/universe_flight_preview_urls.test.js": "34a4ad55d40bca7618f85ac3b9f8aed20b89d1b41b51c58c46f00dd35e29f3b0",
+    "tests/universe_content_invariants.test.js": "a0610f4e8fed10d9583325bedc900b467e0e80e8b6009a46abbf284f7bcfccdd",
+    "tests/universe_accessibility.test.js": "5e8118a00e6b095e378e3a87e520ad3dcca543081dde460186fdb1075cf45536",
+    "stem_lab/universe_flight_scene.js": "ad33daca7123ff080ad0478e7653f3e2ad51fdf1e2041b42284735c95f29ee4a",
+    "stem_lab/stem_tool_universe.js": "ca0aee236d88bcc149b7711d273c23f31674da19483abab538a09db6d2f2a60a"
+  }
+}
