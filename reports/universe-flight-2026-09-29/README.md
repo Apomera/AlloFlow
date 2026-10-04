@@ -43,7 +43,7 @@ The scene starts paused. Full screen includes a pause control. Leaving the page 
 - The stellar neighborhood now puts more of its existing population nearby, with three loose clusters at several depths and two structured emission clouds. Their stars, filaments, and knots occupy fixed world positions, producing perspective and parallax during travel. The scene still uses 19,203 points and the same GPU resources and drawing passes. Cloud gaps show reduced illustrative emission; they do not calculate gas extinction or scattering.
 - Galaxies now combine a locally generated diffuse emission texture, irregular spiral arms, dark lanes, a warm central bulge, and resolved 3D stars. The textured disk shares the tilt and position of its star population. Dust lanes reduce the illustrative disk emission; this is not a volumetric light-transport calculation.
 - The local sky includes a broader, softly lit galactic band. Star point profiles are more restrained to preserve the surrounding structure.
-- Twelve scenic viewpoints offer paused perspectives across the three exploration scales. These jumps reset journey counters and set their own field of view and exposure.
+- Thirteen scenic viewpoints offer paused perspectives across the three exploration scales. These jumps reset journey counters and set their own field of view and exposure.
 - Hide overlay removes the scene labels, reticle, and target marker while keeping fullscreen and travel controls available. Save image downloads a PNG at the current render resolution.
 - This pass adds no runtime dependencies. Static emission atlases are generated locally, cached across renderer lifetimes, and shared across the corresponding cloud or galaxy surfaces.
 
@@ -51,7 +51,7 @@ The scene starts paused. Full screen includes a pause control. Leaving the page 
 
 - Free exploration can now orbit a selected destination with fixed distance and height, keeping the destination centered. The camera pace ranges from 0.25 to 12 degrees per playback second and can be reversed. These camera moves do not model gravity or advance the physical journey clocks.
 - Pause retains an orbit for resuming. Manual look, direction buttons, or changing the destination end it and pause. Approaching a destination, resetting, restoring a saved view, and switching modes clear the orbit. Model boundaries still stop travel.
-- Scenic viewpoints select a relevant landmark when available, making orbit controls immediately available. There are twelve viewpoints, including the Golden elliptical galaxy in the group scene and Halo star cluster in the spiral scene. The halo viewpoint clears destination selection and retains independent free look.
+- Scenic viewpoints select a relevant landmark when available, making orbit controls immediately available. There are thirteen viewpoints, including the Golden elliptical galaxy in the group scene and Halo star cluster in the spiral scene. The halo viewpoint clears destination selection and retains independent free look.
 - Warm elliptical galaxies use a smooth generated emission map and a thicker stellar population. Spirals and ellipticals share a single texture atlas. Subpixel cloud brightness fades with projected area to reduce distant sparkle.
 - The target diamond is centered independently of its label. Resuming travel clears old status notices.
 
@@ -66,6 +66,17 @@ Sources: [Real Time Relativity](https://arxiv.org/abs/physics/0701200), [Einstei
 The sightline instrument uses the observer-frame relation D = 1/[γ(1−βμ′)], where μ′ is the cosine of the angle from forward in the traveler's view. This distinguishes a source that appears sideways aboard from one that is sideways in the stationary-star frame. Wavelength changes as λ′ = λ/D. Spectrum boundaries are conventional and approximate: [NASA electromagnetic spectrum overview](https://imagine.gsfc.nasa.gov/science/toolbox/emspectrum1.html), [NIST visible-radiation definition](https://www.nist.gov/glossary-term/46496).
 
 ## Verification
+
+### Sculpted barred spirals pass
+
+- The barred galaxy tile gains warmer bar shoulders, separated cool arm ridges, compact pink knots and softened lanes. The bar and its branches remain aligned with the existing generated stars.
+- The appearance draws on the older orange stars, arm clusters and bar lanes described in [NASA's NGC 1300 overview](https://science.nasa.gov/asset/hubble/spiral-galaxy-ngc-1300/). Colors, scale and brightness are illustrative. Dim lanes reduce this tile's own emission; the model does not calculate dust extinction, gas motion or stellar dynamics, or reconstruct measured NGC 1300.
+- **Barred spiral overlook** adds a paused view in normal and fullscreen controls. It faces the existing Distant spiral from 360,000 light-years above its local disk, with a 58° field of view. The prior 12 viewpoints and their indices remain exact; removing this sole appended entry restores the previous UI bytes.
+- Only atlas tile two changes. Its core and gutters, the other three galaxy tiles, cloud atlas, every source point and model, shaders, geometry helpers, public physics calculations, catalogs and 1,704 route samples remain exact. Baked RGB luminance multiplied by alpha has an estimated ratio of **1.0021** to the prior barred tile and **1.0069** outside the core. These texture estimates do not establish equal brightness from every camera view.
+- All **182 focused tests in 13 files** pass in **33.45 seconds**. Three new cases cover atlas preservation, native destination controls, and saved views with resource cleanup. Browser checks verify the shared overlook in normal and fullscreen layouts. The earlier atlas tests transfer only this tile's preservation coverage. Workers received extra startup time; test and hook limits remained 30 and 60 seconds.
+- The baseline passes **9 browser groups and 39 captures**; the refinement passes **12 groups and 39 captures**, with **35 comparisons from matching camera poses**. Every capture repeats exactly while paused. Native overlook visits reset journey counters and preserve source uploads and GPU objects; fullscreen controls close and return focus to the canvas. Native approach reaches the existing 300,000 light-year survey standoff, and orbit changes the view with fixed physical clocks. Presentation buffers may update with the camera.
+- Stellar flight regression passes **10 groups, 9 scoped accessibility checks and 13 captures**, including compact controls. All resources release with no page or GL errors. These checks do not measure frame rate or provide a complete accessibility audit.
+- Reproduce with `node dev-tools/universe_flight_barred_detail_check.cjs baseline`, then `refined`, and `node dev-tools/universe_flight_barred_detail_audit.cjs` after starting the preview. `barred-detail/final-verification.json` records runtime, tests, startup limits, baseline UI, atlas checks, native controls and selected capture hashes.
 
 ### Sweeping two-arm spirals pass
 

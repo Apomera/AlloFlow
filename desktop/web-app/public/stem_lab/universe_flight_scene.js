@@ -970,6 +970,48 @@
           // The existing shared RGB rolloff keeps these sparse knots warm.
           knots += warmKnots * disk * 0.85 * ribbonFade;
         }
+        if (style === 'barred' && r >= 0.18) {
+          // A warm elongated bar feeds the existing split arm centerlines.
+          // Paired ridges and curved dim lanes are fixed emission styling;
+          // this texture does not model stellar dynamics or dust extinction.
+          var barFade = clamp((r - 0.18) / 0.095, 0, 1);
+          barFade = barFade * barFade * (3 - 2 * barFade);
+          var oldBarBody = Math.exp(-Math.pow(bz / 0.065, 2) - Math.pow(bx / 0.36, 6));
+          var warmBarBody = Math.exp(-Math.pow(bz / 0.055, 2) - Math.pow(bx / 0.39, 6));
+          var blueBarArms = Math.max(0, arms - oldBarBody * 0.88);
+          var barRidges = 0, barLanes = 0, attachmentKnots = 0;
+          var splitFade = clamp((r - 0.46) / 0.20, 0, 1);
+          splitFade = splitFade * splitFade * (3 - 2 * splitFade);
+          for (var barArm = 0; barArm < 4; barArm++) {
+            var barDifference = a - spiralAngle(style, barArm, r);
+            var barOffset = Math.atan2(Math.sin(barDifference), Math.cos(barDifference)) + perturb;
+            var barWeight = barArm < 2 ? 1 : splitFade;
+            var pairedRidges = 0;
+            for (var barStrand = 0; barStrand < 2; barStrand++) {
+              var strandBend = Math.sin(r * (17 + barStrand * 3) + barArm * 1.7 + barStrand) * 0.019;
+              var strandCenter = (barStrand ? 0.072 : -0.045) + strandBend;
+              var strandWidth = 0.038 + r * 0.029;
+              var strandBreaks = clamp(0.68 + Math.sin(r * (20 + barStrand * 3) + barArm * 1.3) * 0.22 + (grain - 0.5) * 0.25, 0, 1);
+              pairedRidges += Math.exp(-Math.pow((barOffset - strandCenter) / strandWidth, 2)) * strandBreaks;
+            }
+            // Maxima keep the emerging fork from doubling its parent's glow.
+            barRidges = Math.max(barRidges, pairedRidges * barWeight);
+            var curvedLane = -0.12 + Math.sin(r * 13 + barArm * 1.4) * 0.024;
+            var laneFeather = 0.68 + 0.32 * Math.sin(r * 10 + barArm) * Math.sin(r * 10 + barArm);
+            barLanes = Math.max(barLanes, Math.exp(-Math.pow((barOffset - curvedLane) / (0.037 + r * 0.023), 2)) * laneFeather * barWeight);
+            var attachmentRadius = (barArm < 2 ? 0.355 : 0.67) + (barArm % 2) * 0.025;
+            var attachmentOffset = barArm < 2 ? 0.025 : 0.065;
+            attachmentKnots += Math.exp(-Math.pow((r - attachmentRadius) / 0.031, 2) - Math.pow((barOffset - attachmentOffset) / 0.074, 2)) * barWeight;
+          }
+          var connectedArms = clamp((r - 0.28) / 0.12, 0, 1);
+          connectedArms = connectedArms * connectedArms * (3 - 2 * connectedArms);
+          var barStructure = (0.09 + blueBarArms * (0.30 + grain * 0.64) + barRidges * connectedArms * 0.50 + oldBarBody * 0.14) * disk * attenuation * (1 - barLanes * connectedArms * 0.38);
+          structure += (barStructure - structure) * barFade;
+          // Rebalance the bar toward the existing warm bulge color, with the
+          // shared RGB rolloff retaining hue rather than whitening channels.
+          bulge += warmBarBody * disk * (0.46 * (0.82 + grain * 0.18)) * barFade;
+          knots += attachmentKnots * disk * 0.68 * connectedArms * barFade;
+        }
         write(tile, x, y, [bulge + structure * 0.53 + knots, bulge * 0.80 + structure * 0.74 + knots * 0.22, bulge * 0.56 + structure + knots * 0.49],
           Math.min(0.93, bulge + structure * 0.7), 1.85);
       }

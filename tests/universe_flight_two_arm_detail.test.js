@@ -7,7 +7,8 @@ let buffers, uploads, updates, textureUploads, draws, uniforms, constants, attri
 let pointBuffer, surfaceBuffer, pointProgram;
 
 // Independently captured from accepted enhancement37 before the two-arm pass.
-// Only the companion spiral map changes; all preserved hashes stay exact.
+// The four-arm and elliptical maps, companion core and cloud atlas stay exact.
+// Barred refinement is covered by universe_flight_barred_detail.test.js.
 const ATLAS = {
   tiles: [
     '1daa2df71ba119a61dcd4b4d3f83828f5a005f8c562012bff5db78ba02f37df8',
@@ -135,13 +136,13 @@ function expectReleased() {
 }
 
 describe('Universe companion spiral atlas detail', () => {
-  it('uploads a changed two-arm map while preserving the accepted four-arm map, two other maps, companion core, gutters and cloud atlas', () => {
+  it('uploads a changed two-arm map while preserving the accepted four-arm map, elliptical map, companion core, gutters and cloud atlas', () => {
     expect(textureUploads).toHaveLength(2);
     const map = atlas(), data = map.data;
     expect(map).toMatchObject({ width: 2048, height: 512, level: 0, border: 0 });
     expect(data).toHaveLength(4194304);
     expect(hash(tile(data, 1))).not.toBe(ATLAS.tiles[1]);
-    for (const index of [0, 2, 3]) expect(hash(tile(data, index))).toBe(ATLAS.tiles[index]);
+    for (const index of [0, 3]) expect(hash(tile(data, index))).toBe(ATLAS.tiles[index]);
     const companion = tile(data, 1), core = [], gutter = [];
     for (let y = 0; y < 512; y++) for (let x = 0; x < 512; x++) {
       const px = ((x - 8) / 495 * 2 - 1) * 1.22, pz = ((y - 8) / 495 * 2 - 1) * 1.22;

@@ -7,8 +7,8 @@ let buffers, uploads, updates, textureUploads, draws, uniforms, constants, attri
 let pointBuffer, surfaceBuffer, pointProgram;
 
 // Independently captured from the accepted renderer before the spiral atlas
-// detail pass. Barred/elliptical maps, central bulge and cloud atlas stay exact.
-// Two-arm refinement is covered by universe_flight_two_arm_detail.test.js.
+// detail pass. The elliptical map, central bulge and cloud atlas stay exact.
+// Two-arm and barred refinements have their own accepted-baseline tests.
 const ATLAS = {
   tiles: [
     '60458319e79536c603dd275db077bcdb33cc40e76a6987824f6249b90a3c8b79',
@@ -136,13 +136,13 @@ function expectReleased() {
 }
 
 describe('Universe static spiral atlas detail', () => {
-  it('uploads a refined spiral map while preserving the original bulge, gutters, two other maps and cloud atlas', () => {
+  it('uploads a refined spiral map while preserving the original bulge, gutters, the elliptical map and cloud atlas', () => {
     expect(textureUploads).toHaveLength(2);
     const map = atlas(), data = map.data;
     expect(map).toMatchObject({ width: 2048, height: 512, level: 0, border: 0 });
     expect(data).toHaveLength(4194304);
     expect(hash(tile(data, 0))).not.toBe(ATLAS.tiles[0]);
-    for (let index = 2; index < 4; index++) expect(hash(tile(data, index))).toBe(ATLAS.tiles[index]);
+    for (let index = 3; index < 4; index++) expect(hash(tile(data, index))).toBe(ATLAS.tiles[index]);
     const core = [], gutter = [];
     for (let y = 0; y < 512; y++) for (let x = 0; x < 512; x++) {
       const px = ((x - 8) / 495 * 2 - 1) * 1.22, pz = ((y - 8) / 495 * 2 - 1) * 1.22;
