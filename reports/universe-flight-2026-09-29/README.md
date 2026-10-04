@@ -67,6 +67,16 @@ The sightline instrument uses the observer-frame relation D = 1/[γ(1−βμ′)
 
 ## Verification
 
+### Resolved cloud surfaces pass
+
+Close blue and violet clouds now grow beyond the former 60 CSS-pixel sprite plateau. Their existing wisps blend into larger, textured surfaces as you approach or zoom, and a visible rim remains drawn when its center moves outside the view. Use **Blue cloud overlook** or **Violet cloud overlook**, then narrow the lens or choose a viewing distance and orbit the destination.
+
+The renderer reuses all 570 blue and 430 violet source records. One additive batch contains 6,000 vertices and adds 264,000 static bytes to the existing surface buffer. The cloud envelope is bounded at 384 CSS pixels at high quality. Source positions, colors, sizes, light values, both texture atlases, the stellar surfaces, public physics, route poses and the 13 existing viewpoints retain their accepted data and contracts. This is textured billboard emission with source parallax; colors, brightness and shapes remain illustrative. It does not simulate gas flow, volumetric scattering or extinction.
+
+Verification covers 187 tests across 14 files in 56.31 seconds. Five new cases exercise the static source suffix, draw-state restoration, cap and observer limits, native controls and cleanup. Browser checks pass 12 baseline and 15 refined groups, with 58 stable captures per phase and 56 paired views. They verify exact unresolved and isolated stellar pixels, smooth handoffs, DPR and hardware-cap agreement, overlapping offscreen rims, extreme observer poses, native approach/orbit controls and complete resource release. The renderer audit preserves all 1,704 authored route samples. The stellar flight regression retains 10 groups, nine scoped accessibility checks and 13 captures. Workers received extra startup time; test and hook limits remained 30 and 60 seconds.
+
+Blue cloud: [before](cloud-surfaces/cloud-baseline-blue-close.png) · [after](cloud-surfaces/cloud-refined-blue-close.png). Violet cloud: [before](cloud-surfaces/cloud-baseline-violet-close.png) · [after](cloud-surfaces/cloud-refined-violet-close.png). These checks validate rendering and controls; they do not measure frame rate or establish physically calibrated nebula appearance.
+
 ### Sculpted barred spirals pass
 
 - The barred galaxy tile gains warmer bar shoulders, separated cool arm ridges, compact pink knots and softened lanes. The bar and its branches remain aligned with the existing generated stars.

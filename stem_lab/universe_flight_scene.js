@@ -1190,6 +1190,7 @@
     'uniform vec3 u_position; uniform vec3 u_right; uniform vec3 u_up; uniform vec3 u_forward;',
     'uniform float u_aspect; uniform float u_height; uniform float u_dpr; uniform float u_beta; uniform float u_gamma; uniform float u_exposure; uniform float u_lens; uniform float u_pointMax;',
     'uniform vec3 u_stellarCenters[3]; uniform float u_stellarCount,u_quadMax; uniform mediump float u_stellarQuad;',
+    'uniform mediump float u_cloudQuad; uniform float u_cloudQuadMax;',
     'uniform float u_galacticBand;',
     'varying vec3 v_color; varying float v_light; varying float v_cloud; varying vec3 v_cloudProfile;',
     'varying vec4 v_stellarDetail; varying vec2 v_quadCoord;',
@@ -1210,13 +1211,19 @@
     '  float projectedSize = angularSize * u_height * lens / max(camera.z, 0.03);',
     '  float maximumSize = min(mix(120.0, 60.0, isCloud) * u_dpr, u_pointMax);',
     '  gl_PointSize = clamp(projectedSize, min(minimumSize, maximumSize), maximumSize);',
-    // Only the three authored nearby stars can cross into the projected-quad
-    // path. Exact Float32 source centers keep other stars and clouds unchanged.
+    // Only the three authored nearby stars enter the stellar quad path.
+    // Exact Float32 centers keep all other stellar sprites unchanged.
     '  float quadBlend = 0.0;',
     '  if (isCloud < 0.5 && distance > 0.00001 && projectedSize > maximumSize * 0.8) {',
     '    for (int i = 0; i < 3; i++) {',
     '      if (float(i) < u_stellarCount && all(equal(a_position, u_stellarCenters[i]))) quadBlend = smoothstep(maximumSize * 0.8, maximumSize, projectedSize);',
     '    }',
+    '  }',
+    // The existing 1,000 nearby emission records gain projected surfaces only
+    // when their point sprites approach the hardware/display cap. Distant
+    // clouds and the unresolved point path keep their existing output.
+    '  if (isCloud > 0.5 && a_cloud >= 5.0 && distance > 0.00001 && projectedSize > maximumSize * 0.8) {',
+    '    quadBlend = smoothstep(maximumSize * 0.8, maximumSize, projectedSize);',
     '  }',
     // A point whose center leaves the clip volume vanishes as a whole. Its
     // projected quad then carries all the light so a visible rim cannot dim.
@@ -1226,10 +1233,17 @@
     '    spriteSize = clamp(projectedSize, min(minimumSize, maximumSize), max(maximumSize, u_quadMax));',
     '    gl_Position.xy += a_corner * spriteSize / vec2(u_height * u_aspect, u_height) * gl_Position.w;',
     '  }',
+    '  if (u_cloudQuad > 0.5) {',
+    '    spriteSize = clamp(projectedSize, min(minimumSize, maximumSize), max(maximumSize, u_cloudQuadMax));',
+    '    gl_Position.xy += a_corner * spriteSize / vec2(u_height * u_aspect, u_height) * gl_Position.w;',
+    '  }',
     // gl_PointCoord runs top to bottom in GLES; match that orientation exactly
     // when the same static surface is drawn through interpolated quad corners.
     '  v_quadCoord = vec2(a_corner.x, -a_corner.y);',
     '  if (camera.z <= 0.001) { gl_Position = vec4(2.0, 2.0, 2.0, 1.0); gl_PointSize = 1.0; quadBlend = 0.0; }',
+    // Zero-weight cloud quads collapse outside the clip volume, so a distant
+    // batch adds vertex work without rasterizing transparent cloud surfaces.
+    '  if (u_cloudQuad > 0.5 && quadBlend <= 0.0) { gl_Position = vec4(2.0, 2.0, 2.0, 1.0); }',
     // Only resolved stars get a surface. The displayed envelope's CSS size
     // keeps the threshold consistent across quality levels and device scales.
     '  float resolved = (1.0 - isCloud) * smoothstep(12.0, 26.0, spriteSize / u_dpr);',
@@ -1237,7 +1251,7 @@
     '  if (resolved > 0.0) seed = fract(sin(dot(a_position, vec3(0.173, 0.317, 0.619))) * 137.631);',
     // Cloud sprites never enter the stellar surface branch, so their seed
     // component carries a size-based detail blend without another varying.
-    '  float cloudDetail = step(5.0, a_cloud) * smoothstep(12.0, 30.0, gl_PointSize / u_dpr);',
+    '  float cloudDetail = step(5.0, a_cloud) * smoothstep(12.0, 30.0, (u_cloudQuad > 0.5 ? spriteSize : gl_PointSize) / u_dpr);',
     '  v_stellarDetail = vec4(resolved, mix(seed, cloudDetail, isCloud), 2.0 / spriteSize, quadBlend);',
     // A fixed field on the generated distant band: solar-neighborhood views
     // reveal a broad warm concentration, cooler lobes and branching lanes.
@@ -1269,7 +1283,7 @@
     // Subpixel clouds fade with projected area instead of becoming a bright
     // minimum-size dot. The diffuse surface carries their collective light.
     '  float coverage = min(1.0, pow(projectedSize / minimumSize, 2.0));',
-    '  v_light = a_light * bandGain * u_exposure * exposure * mix(1.0, coverage, isCloud) * mix(1.0 - quadBlend, quadBlend, u_stellarQuad);',
+    '  v_light = a_light * bandGain * u_exposure * exposure * mix(1.0, coverage, isCloud) * mix(1.0 - quadBlend, quadBlend, max(u_stellarQuad, u_cloudQuad));',
     '  v_cloud = isCloud;',
     '  float rotation = fract(a_cloud) * 6.28318530718;',
     '  v_cloudProfile = vec3(mod(max(0.0, floor(a_cloud) - 1.0), 4.0), cos(rotation), sin(rotation));',
@@ -1277,7 +1291,7 @@
   ].join('\n');
   var FRAGMENT = [
     'precision mediump float;',
-    'uniform sampler2D u_cloudTexture; uniform mediump float u_stellarQuad;',
+    'uniform sampler2D u_cloudTexture; uniform mediump float u_stellarQuad,u_cloudQuad;',
     // Fragment-only frames avoid sharing camera uniforms at a different precision.
     'uniform vec3 u_stellarRight,u_stellarUp,u_stellarToward; uniform float u_stellarStructure,u_stellarLoops;',
     'varying vec3 v_color; varying float v_light; varying float v_cloud; varying vec3 v_cloudProfile;',
@@ -1327,7 +1341,7 @@
     '  return glow;',
     '}',
     'void main() {',
-    '  vec2 p = u_stellarQuad > 0.5 ? v_quadCoord : gl_PointCoord * 2.0 - 1.0;',
+    '  vec2 p = max(u_stellarQuad, u_cloudQuad) > 0.5 ? v_quadCoord : gl_PointCoord * 2.0 - 1.0;',
     '  float radius2 = dot(p,p);',
     '  if (radius2 > 1.0) discard;',
     '  float star = exp(-radius2 * 17.0) * 1.45 + exp(-radius2 * 3.5) * 0.18;',
@@ -1417,6 +1431,7 @@
     var galaxyProgram, galaxyBuffer, galaxyTexture, cloudTexture, galaxyCount = 0, galaxyUniforms = {};
     var galaxySurfaces = null, galaxyObserver = null;
     var stellarRecords = [], stellarCenters = new Float32Array(9), cornerAttribute, stellarQuadFirst = 0;
+    var cloudQuadByteOffset = 0, cloudQuadCount = 0;
     var pointAttributes = [], galaxyAttributes = [];
     var pointMax = 512;
     var raf = 0, lastFrame = 0, lastTelemetry = -Infinity, inView = true;
@@ -1567,11 +1582,29 @@
       gl.bufferData(gl.ARRAY_BUFFER, data.points, gl.STATIC_DRAW);
       galaxySurfaces = galaxyGeometry(data.galaxies); galaxyObserver = null;
       galaxyCount = galaxySurfaces.points.length / 5; stellarQuadFirst = galaxyCount;
-      // Reuse this buffer's five-float layout for one static corner quad. Its
-      // tail stays outside every galaxy draw and elliptical update range.
-      var surfaces = new Float32Array(galaxySurfaces.points.length + 30);
+      // Keep the galaxy prefix and the stellar corner quad exact. Append one
+      // static six-vertex surface for each authored nearby emission source;
+      // its nine source fields stay identical to the canonical point buffer.
+      var cloudOffsets = [];
+      if (settings.region === 'neighborhood') {
+        for (var cloudOffset = 0; cloudOffset < data.points.length; cloudOffset += 9) {
+          if (data.points[cloudOffset + 8] >= 5) cloudOffsets.push(cloudOffset);
+        }
+      }
+      cloudQuadCount = cloudOffsets.length * 6;
+      cloudQuadByteOffset = (galaxySurfaces.points.length + 30) * 4;
+      var surfaces = new Float32Array(galaxySurfaces.points.length + 30 + cloudQuadCount * 11);
       surfaces.set(galaxySurfaces.points);
       surfaces.set([0,0,0,-1,-1, 0,0,0,1,-1, 0,0,0,1,1, 0,0,0,-1,-1, 0,0,0,1,1, 0,0,0,-1,1], galaxySurfaces.points.length);
+      var cloudWrite = cloudQuadByteOffset / 4;
+      var cloudCorners = [[-1,-1],[1,-1],[1,1],[-1,-1],[1,1],[-1,1]];
+      cloudOffsets.forEach(function(offset) {
+        cloudCorners.forEach(function(corner) {
+          surfaces.set(data.points.subarray(offset, offset + 9), cloudWrite);
+          surfaces[cloudWrite + 9] = corner[0]; surfaces[cloudWrite + 10] = corner[1];
+          cloudWrite += 11;
+        });
+      });
       galaxySurfaces.points = surfaces;
       stellarRecords = []; stellarCenters.fill(0);
       if (settings.region === 'neighborhood') {
@@ -1659,6 +1692,10 @@
       gl.uniform3fv(uniforms.stellarCenters, stellarCenters);
       gl.uniform1f(uniforms.stellarCount, stellarRecords.length);
       gl.uniform1f(uniforms.stellarQuad, 0);
+      gl.uniform1f(uniforms.cloudQuad, 0);
+      var cloudMaximum = Math.min(60 * pixelRatio(), pointMax);
+      var cloudQuadMaximum = Math.max(cloudMaximum, Math.min(384 * pixelRatio(), 2 * Math.max(canvas.width, canvas.height)));
+      gl.uniform1f(uniforms.cloudQuadMax, cloudQuadMaximum);
       gl.uniform1f(uniforms.stellarStructure,0); gl.uniform1f(uniforms.stellarLoops,0);
       gl.uniform3f(uniforms.stellarRight,1,0,0); gl.uniform3f(uniforms.stellarUp,0,1,0); gl.uniform3f(uniforms.stellarToward,0,0,-1);
       var quadMaximum = Math.min(768 * pixelRatio(), 2 * Math.max(canvas.width, canvas.height));
@@ -1670,6 +1707,24 @@
       gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, cloudTexture);
       gl.uniform1i(uniforms.cloudTexture, 0);
       gl.drawArrays(gl.POINTS, 0, pointCount);
+      if (cloudQuadCount) {
+        // One additive batch reuses the existing program, atlas and buffer.
+        // The shader clips unresolved and behind-camera surfaces; there are
+        // no per-source draw calls or camera-time vertex/texture uploads.
+        gl.blendFunc(gl.ONE, gl.ONE);
+        gl.bindBuffer(gl.ARRAY_BUFFER, galaxyBuffer);
+        pointAttributes.forEach(function(a) {
+          gl.enableVertexAttribArray(a[0]);
+          gl.vertexAttribPointer(a[0], a[1], gl.FLOAT, false, 44, cloudQuadByteOffset + a[2]);
+        });
+        gl.enableVertexAttribArray(cornerAttribute);
+        gl.vertexAttribPointer(cornerAttribute, 2, gl.FLOAT, false, 44, cloudQuadByteOffset + 36);
+        gl.uniform1f(uniforms.cloudQuad, 1);
+        gl.drawArrays(gl.TRIANGLES, 0, cloudQuadCount);
+        gl.uniform1f(uniforms.cloudQuad, 0);
+        gl.disableVertexAttribArray(cornerAttribute);
+        attributes(pointAttributes, buffer, 36);
+      }
       if (stellarRecords.length) {
         var maximum = Math.min(120 * pixelRatio(), pointMax), g = gamma(b);
         var lens = 1 / Math.tan(settings.fov * Math.PI / 360);
@@ -1869,6 +1924,7 @@
       }
       galaxySurfaces = null; galaxyObserver = null; galaxyCount = 0;
       stellarRecords = []; stellarCenters = null; stellarQuadFirst = 0;
+      cloudQuadCount = 0; cloudQuadByteOffset = 0;
       options = {};
     }
     function snapshot() {
@@ -2192,7 +2248,7 @@
       gl.disableVertexAttribArray(cornerAttribute);
       gl.vertexAttrib2f(cornerAttribute,0,0);
       uniforms.stellarCenters = gl.getUniformLocation(program, 'u_stellarCenters[0]');
-      ['position', 'right', 'up', 'forward', 'aspect', 'height', 'dpr', 'beta', 'gamma', 'exposure', 'lens', 'pointMax', 'cloudTexture', 'stellarCount', 'stellarQuad', 'quadMax', 'stellarRight', 'stellarUp', 'stellarToward', 'stellarStructure', 'stellarLoops', 'galacticBand'].forEach(function (name) {
+      ['position', 'right', 'up', 'forward', 'aspect', 'height', 'dpr', 'beta', 'gamma', 'exposure', 'lens', 'pointMax', 'cloudTexture', 'stellarCount', 'stellarQuad', 'quadMax', 'stellarRight', 'stellarUp', 'stellarToward', 'stellarStructure', 'stellarLoops', 'galacticBand', 'cloudQuad', 'cloudQuadMax'].forEach(function (name) {
         uniforms[name] = gl.getUniformLocation(program, 'u_' + name);
       });
       galaxyProgram = gl.createProgram();

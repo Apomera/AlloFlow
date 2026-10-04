@@ -7,8 +7,8 @@ let buffers, uploads, updates, draws, attributes, uniforms, constants, created, 
 let programAttributes, pointProgram, pointBuffer, surfaceBuffer, range;
 
 // These byte hashes pin the existing generated world, rather than deriving an
-// expected result from the new rendering code. Only six static quad corners
-// may be appended to the surface buffer.
+// expected result from the new rendering code. The six static stellar corners
+// remain exact; cloud suffix coverage belongs to universe_flight_cloud_surfaces.test.js.
 const WORLD = {
   neighborhood: { count: 19203, points: 'f0933322797366fbee8bbdc9ce8d2263700b1c07a71caa1bcfa1224d68edc2a3', surfaceFloats: 0, surface: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855' },
   galaxy: { count: 36400, points: 'f5dbc73e3ae0b2751dcf15f6fffce2753ae4994b089c62d020975e414889b2ab', surfaceFloats: 1920, surface: 'e97a5ba4db3d27acd2bda8ba417e84c696c7ba32f3b5fd0817d8ba58810890fa' },
@@ -116,7 +116,7 @@ function advance(milliseconds = 16) {
 
 function draw() { const start = draws.length; scene.capture(); return draws.slice(start); }
 function pointDraw(calls) { return calls.find(item => item.mode === constants.get('POINTS')); }
-function quadDraws(calls) { return calls.filter(item => item.program === pointProgram && item.mode === constants.get('TRIANGLES')); }
+function quadDraws(calls) { return calls.filter(item => item.program === pointProgram && item.mode === constants.get('TRIANGLES') && item.uniforms.u_cloudQuad !== 1); }
 function pose(star = STARS[0], overrides = {}) {
   const saved = scene.snapshot();
   saved.settings = { ...saved.settings, mode: 'explore', region: 'neighborhood', ...overrides.settings };
@@ -143,15 +143,15 @@ function assertPointArrays(call) {
 }
 
 describe('Universe projected stellar surfaces', () => {
-  it('preserves all generated point and initial surface bytes and appends only six static corners', () => {
+  it('preserves all generated point and initial surface bytes and its six static stellar corners', () => {
     for (const [region, expected] of Object.entries(WORLD)) {
       scene.set({ region, running: false }); advance();
       const points = uploads.findLast(item => item.buffer === pointBuffer).data;
       const surfaces = uploads.findLast(item => item.buffer === surfaceBuffer).data;
       expect(points).toHaveLength(expected.count * 9); expect(hash(points)).toBe(expected.points);
-      expect(surfaces).toHaveLength(expected.surfaceFloats + 30);
+      expect(surfaces).toHaveLength(expected.surfaceFloats + 30 + (region === 'neighborhood' ? 66000 : 0));
       expect(hash(surfaces.subarray(0, expected.surfaceFloats))).toBe(expected.surface);
-      const tail = surfaces.subarray(expected.surfaceFloats), corners = [];
+      const tail = surfaces.subarray(expected.surfaceFloats, expected.surfaceFloats + 30), corners = [];
       for (let index = 0; index < tail.length; index += 5) {
         expect(Array.from(tail.subarray(index, index + 3))).toEqual([0, 0, 0]);
         const corner = Array.from(tail.subarray(index + 3, index + 5));

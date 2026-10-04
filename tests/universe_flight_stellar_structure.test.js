@@ -89,7 +89,7 @@ function advance(milliseconds = 16) {
   const callbacks = [...frames.values()]; frames.clear(); callbacks.forEach(callback => callback(now));
 }
 function draw() { const start = draws.length; scene.capture(); return draws.slice(start); }
-function quads(calls) { return calls.filter(item => item.program === pointProgram && item.mode === constants.get('TRIANGLES')); }
+function quads(calls) { return calls.filter(item => item.program === pointProgram && item.mode === constants.get('TRIANGLES') && item.uniforms.u_stellarQuad === 1); }
 function starQuad(calls, star = STARS[0]) {
   return quads(calls).find(item => star.center.every((value, axis) => item.attributes.a_position.constant[axis] === value));
 }

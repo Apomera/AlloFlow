@@ -214,7 +214,8 @@ describe('Universe companion spiral atlas detail', () => {
       scene.set({ region, running: false }); advance(); capture();
       expect(hash(buffers.get(pointBuffer))).toBe(expected.points);
       const surfaces = uploads.findLast(item => item.buffer === surfaceBuffer).data;
-      expect(surfaces).toHaveLength(expected.surfaceFloats + 30);
+      // The cloud-surface test owns the appended neighborhood record batch.
+      expect(surfaces).toHaveLength(expected.surfaceFloats + 30 + (region === 'neighborhood' ? 66000 : 0));
       expect(hash(surfaces.subarray(0, expected.surfaceFloats))).toBe(expected.surface);
       expect(scene.restore(saved)).toBe(true); advance();
       expect(scene.snapshot()).toEqual(saved); expect(capture()).toEqual(reference);

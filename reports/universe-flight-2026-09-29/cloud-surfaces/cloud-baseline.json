@@ -1,0 +1,6024 @@
+{
+  "phase": "baseline",
+  "completed": true,
+  "sourceHash": "a178720362fe3772f2a6578657194f9414eec3e8e2369db381e6409893c1cf39",
+  "sourceNormalizedHash": "4289f5586ca9083be97d42e1c0b273eb9d6f65703362c6cd05b9c89729ca0117",
+  "candidateHash": "07b3e2c8020223f7c547215b97ef56ba8712224e7ca13319022b01b48d23e8f8",
+  "baselineHash": "a178720362fe3772f2a6578657194f9414eec3e8e2369db381e6409893c1cf39",
+  "uiHash": "5cc081214178bbbbe2f57528a13047911d1a26615e7163630a0ca29e36c53458",
+  "checks": [
+    "sixteen fixed scene and isolated stellar views retain exact repeated paused pixels and snapshots",
+    "two authored cloud records remain stable across six angular sizes without rewriting uploaded buffers",
+    "real WebGL cloud draws remain bounded at coincidence and epsilon distance and hide behind-camera emission",
+    "cloud centers outside the viewport and both point-to-quad handoffs are sampled",
+    "blue native overlook, zoom, viewing distance, approach and orbit preserve physical clocks, source records and GPU uploads",
+    "violet native overlook, zoom, viewing distance, approach and orbit preserve physical clocks, source records and GPU uploads",
+    "closing releases every GPU object and reopening reproduces the exact close cloud view",
+    "DPR2 repeats both close clouds and both unresolved angular sizes",
+    "both clouds are rendered with a simulated 32-device-pixel cap, including overlapping offscreen rims",
+    "every context releases exactly two buffers, textures and programs without GL errors",
+    "authored clouds use one bounded static draw batch and other scales retain their draw path",
+    "served renderer and unchanged UI modules retain exact accepted bytes and mirrors"
+  ],
+  "captures": [
+    {
+      "name": "opening",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "39280383900ee2cbe49e41078771c9e274227b00c4f3c9d1d7fb707e50dc3f3f",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 9.619339314371155,
+        "max": 255,
+        "clippedWhiteFraction": 0.000052734375,
+        "flux": 6991809.857800251,
+        "luminousBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1280,
+          "height": 800
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "far-neighborhood",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "864a310610b330c067d07a8091f7dab87771a3648bcffd5ab8ff48a518aeda1f",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0,
+            0,
+            -200
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 5.899814221696787,
+        "max": 255,
+        "clippedWhiteFraction": 0.0000712890625,
+        "flux": 3183016.1630007373,
+        "luminousBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1280,
+          "height": 800
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "relativity",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "ebecf98205077e0f67a5ec8460aa8401f3099d5ffabb79840f46f65452af21e5",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "relativity",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 7.666077600390011,
+        "max": 255,
+        "clippedWhiteFraction": 0.0026572265625,
+        "flux": 4991669.862600042,
+        "luminousBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1280,
+          "height": 800
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "galaxy",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "798eddec686ff27f30f16ed97cce043612fc583db99e38f67d6c6bc991ab8af1",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 3.1881676960924024,
+        "max": 255,
+        "clippedWhiteFraction": 0.000001953125,
+        "flux": 406290.1208010908,
+        "luminousBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1276,
+          "height": 800
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "cosmic",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "9ad3c4560d5d3ed618ba41131783103d9ea3f5ffa45d5284d47f3fd7cfbfb067",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 4.283570756072225,
+        "max": 237,
+        "clippedWhiteFraction": 0,
+        "flux": 1527982.8541996214,
+        "luminousBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1280,
+          "height": 800
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "amber-close",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "c0782054951793fffd7c38057f12325aa1c15aa455e4a67baa184571c379e900",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 30,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            7.9
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 5.882777599012038,
+        "max": 255,
+        "clippedWhiteFraction": 0,
+        "flux": 3165570.6612021024,
+        "luminousBounds": {
+          "x": 481,
+          "y": 243,
+          "width": 318,
+          "height": 314
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "blue-star-close",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "94444a0f7ba57a0bc06e1a33fff2ab8932a848bf8f1b9b90030a332778532eff",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 30,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.3,
+            -2.2,
+            15.2
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 5.4386406148233135,
+        "max": 255,
+        "clippedWhiteFraction": 0,
+        "flux": 2710774.3893980063,
+        "luminousBounds": {
+          "x": 491,
+          "y": 258,
+          "width": 298,
+          "height": 284
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "pale-close",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "2b1bdb3bbf410bcd422124e66a8a626e8c365baac4dfe668967ae8d6891dd726",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 30,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.65,
+            2.4,
+            23
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 4.816061513195487,
+        "max": 255,
+        "clippedWhiteFraction": 0,
+        "flux": 2073253.3893993755,
+        "luminousBounds": {
+          "x": 521,
+          "y": 286,
+          "width": 238,
+          "height": 228
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "blue-overlook",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "57f6d3096cd103a93b999d09991246ebbea1b6df0865e4dc0bfb4825e35d0d7b",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -12,
+            12,
+            14
+          ],
+          "yaw": 0.8097835725701668,
+          "pitch": -0.4497596130698391,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "stats": {
+        "mean": 8.300397638665801,
+        "max": 255,
+        "clippedWhiteFraction": 0.0000625,
+        "flux": 5641213.581800576,
+        "luminousBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1280,
+          "height": 799
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "blue-close",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "14d433380497e599cb013da9ddf129928758ebad6009d7435773485ffe4b3f00",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 30,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            9,
+            -2,
+            14
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "stats": {
+        "mean": 4.80412071390442,
+        "max": 255,
+        "clippedWhiteFraction": 0.0000224609375,
+        "flux": 1062042.859599388,
+        "luminousBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1277,
+          "height": 800
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "blue-side",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "2f31780b3468c0a25b0122d5f225a68525fd51fde53fd369e79374a2dad24e04",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 45,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -11,
+            2,
+            34
+          ],
+          "yaw": 1.5707963267948966,
+          "pitch": -0.19739555984988075,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "stats": {
+        "mean": 7.66038497923728,
+        "max": 255,
+        "clippedWhiteFraction": 0.00001171875,
+        "flux": 4985840.618596662,
+        "luminousBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1280,
+          "height": 800
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "blue-dim",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "cf04bd61b6c5c87db3d1c76fe07525ae26339f4691be488f56154ef4c07922dc",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 30,
+          "exposure": 0.55,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            9,
+            -2,
+            14
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "stats": {
+        "mean": 3.886471022838692,
+        "max": 218,
+        "clippedWhiteFraction": 0,
+        "flux": 567087.4105998977,
+        "luminousBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1275,
+          "height": 800
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "violet-overlook",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "e1d00f34ac863fe13a676ea6957677731eaa06f89021339bf6c9afe3e92211ae",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -36,
+            29,
+            52
+          ],
+          "yaw": 0.4241944079037667,
+          "pitch": -0.48672047552790526,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "violet-nebula"
+      },
+      "stats": {
+        "mean": 7.38139189295721,
+        "max": 255,
+        "clippedWhiteFraction": 0.0000166015625,
+        "flux": 4700151.698200359,
+        "luminousBounds": {
+          "x": 0,
+          "y": 3,
+          "width": 1280,
+          "height": 797
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "violet-close",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "2a706a562b271adfb9cc5c076eeca1396fecc8c97e47a314fc858482a909026a",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 30,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -22,
+            11,
+            51
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "violet-nebula"
+      },
+      "stats": {
+        "mean": 4.292843728139897,
+        "max": 255,
+        "clippedWhiteFraction": 0.00001171875,
+        "flux": 1537478.3776011844,
+        "luminousBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1280,
+          "height": 800
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "violet-side",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "98682b7fcf018bc05832d9b200f4be544c6feb9acfb7bacc26a6b2e320671596",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 45,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -54,
+            17.4,
+            83
+          ],
+          "yaw": 1.5707963267948966,
+          "pitch": -0.19739555984988072,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "violet-nebula"
+      },
+      "stats": {
+        "mean": 6.382751182529378,
+        "max": 255,
+        "clippedWhiteFraction": 0.0000107421875,
+        "flux": 3677543.610797522,
+        "luminousBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1280,
+          "height": 800
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "violet-dim",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "1f38f42d2f309535cfd5c1dad76ae24e17a1ea62bc13d57b89c456ff285896c4",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 30,
+          "exposure": 0.55,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -22,
+            11,
+            51
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "violet-nebula"
+      },
+      "stats": {
+        "mean": 3.604698933584775,
+        "max": 212,
+        "clippedWhiteFraction": 0,
+        "flux": 832818.1080007121,
+        "luminousBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1280,
+          "height": 800
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "blue-isolated-css6",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "0ad6b995b606a86b7a3a78ebfc73d21ea3137b530b46da2e095648b2343b38f0",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            12.453123092651367,
+            -8.411067008972168,
+            -144.79837881756944
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 2.791513642370784,
+        "max": 26,
+        "clippedWhiteFraction": 0,
+        "flux": 116.36980000000001,
+        "luminousBounds": {
+          "x": 638,
+          "y": 398,
+          "width": 4,
+          "height": 4
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "blue-isolated-css10",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "58c6504e191f58c7814627f5ad370d2ebe85efb6f91131a1ebc72722c4db4560",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            12.453123092651367,
+            -8.411067008972168,
+            -75.17668430348112
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 2.791725069909847,
+        "max": 31,
+        "clippedWhiteFraction": 0,
+        "flux": 332.87159999999983,
+        "luminousBounds": {
+          "x": 636,
+          "y": 396,
+          "width": 8,
+          "height": 8
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "blue-isolated-css40",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "b071aa5cc27b4ba2717b85708ce450b71c153fd59e90e0208c2865b2fd5cc643",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            12.453123092651367,
+            -8.411067008972168,
+            3.1477220248682443
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 2.7966468533082933,
+        "max": 32,
+        "clippedWhiteFraction": 0,
+        "flux": 5372.777799999976,
+        "luminousBounds": {
+          "x": 624,
+          "y": 385,
+          "width": 31,
+          "height": 30
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "blue-isolated-css96",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "cc4a1c23978bd94db99be0fc14439a7bf380b41f0062c807b35c79a1d1076285",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            12.453123092651367,
+            -8.411067008972168,
+            18.37746769982507
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 2.803199148816116,
+        "max": 33,
+        "clippedWhiteFraction": 0,
+        "flux": 12082.328400000039,
+        "luminousBounds": {
+          "x": 615,
+          "y": 378,
+          "width": 47,
+          "height": 45
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "blue-isolated-css180",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "cc4a1c23978bd94db99be0fc14439a7bf380b41f0062c807b35c79a1d1076285",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            12.453123092651367,
+            -8.411067008972168,
+            23.45404959147734
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 2.803199148816116,
+        "max": 33,
+        "clippedWhiteFraction": 0,
+        "flux": 12082.328400000039,
+        "luminousBounds": {
+          "x": 615,
+          "y": 378,
+          "width": 47,
+          "height": 45
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "blue-isolated-css360",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "cc4a1c23978bd94db99be0fc14439a7bf380b41f0062c807b35c79a1d1076285",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            12.453123092651367,
+            -8.411067008972168,
+            26.354953529564355
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 2.803199148816116,
+        "max": 33,
+        "clippedWhiteFraction": 0,
+        "flux": 12082.328400000039,
+        "luminousBounds": {
+          "x": 615,
+          "y": 378,
+          "width": 47,
+          "height": 45
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "violet-isolated-css6",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "50fac3b86b21945114597dcc0aa08b490ae3171ffacbe61655e35a1e4eced87d",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -19.920345306396484,
+            24.8289737701416,
+            -251.3838304931018
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 2.7914980374879703,
+        "max": 22,
+        "clippedWhiteFraction": 0,
+        "flux": 100.39040000000001,
+        "luminousBounds": {
+          "x": 638,
+          "y": 398,
+          "width": 4,
+          "height": 4
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "violet-isolated-css10",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "399da0d32acd3478c38b8d7dee76b3abc1e4fe9b79957b89c259ed91be33bd07",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -19.920345306396484,
+            24.8289737701416,
+            -115.17359968746266
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 2.791668040222344,
+        "max": 27,
+        "clippedWhiteFraction": 0,
+        "flux": 274.4732,
+        "luminousBounds": {
+          "x": 636,
+          "y": 396,
+          "width": 8,
+          "height": 8
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "violet-isolated-css40",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "9002a58248063d0d1b284fc6dd204ef76073163da0e97079a11a7fb30828b12f",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -19.920345306396484,
+            24.8289737701416,
+            38.06290996888141
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 2.795746216980154,
+        "max": 29,
+        "clippedWhiteFraction": 0,
+        "flux": 4450.526199999987,
+        "luminousBounds": {
+          "x": 624,
+          "y": 385,
+          "width": 31,
+          "height": 31
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "violet-isolated-css96",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "bcfe8e17df3dc353c9ee59733ae699dfadd79b8625221fe2a07b413935fb5f15",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -19.920345306396484,
+            24.8289737701416,
+            67.85889795761497
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 2.8011773974489,
+        "max": 29,
+        "clippedWhiteFraction": 0,
+        "flux": 10012.055000000053,
+        "luminousBounds": {
+          "x": 616,
+          "y": 378,
+          "width": 46,
+          "height": 45
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "violet-isolated-css180",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "bcfe8e17df3dc353c9ee59733ae699dfadd79b8625221fe2a07b413935fb5f15",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -19.920345306396484,
+            24.8289737701416,
+            77.7908939538595
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 2.8011773974489,
+        "max": 29,
+        "clippedWhiteFraction": 0,
+        "flux": 10012.055000000053,
+        "luminousBounds": {
+          "x": 616,
+          "y": 378,
+          "width": 46,
+          "height": 45
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "violet-isolated-css360",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "bcfe8e17df3dc353c9ee59733ae699dfadd79b8625221fe2a07b413935fb5f15",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -19.920345306396484,
+            24.8289737701416,
+            83.4663202374278
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 2.8011773974489,
+        "max": 29,
+        "clippedWhiteFraction": 0,
+        "flux": 10012.055000000053,
+        "luminousBounds": {
+          "x": 616,
+          "y": 378,
+          "width": 46,
+          "height": 45
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "blue-coincident",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "57ef654f4fff2f3f9d9c21d683db1a72948059e0cfc62c30943669edc5a0399f",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "relativity",
+          "region": "neighborhood",
+          "beta": 0.9999,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            12.453123092651367,
+            -8.411067008972168,
+            29.255857467651367
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 2.846762656433322,
+        "max": 122,
+        "clippedWhiteFraction": 0,
+        "flux": 56691.3602000004,
+        "luminousBounds": {
+          "x": 614,
+          "y": 375,
+          "width": 51,
+          "height": 51
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "blue-forward-epsilon",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "e54739aed242005fc1600fff86252214638d10cd4c1c559f928612d9b836e282",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "relativity",
+          "region": "neighborhood",
+          "beta": 0.9999,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            12.453123092651367,
+            -8.411067008972168,
+            29.254857467651366
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 2.846762726941134,
+        "max": 122,
+        "clippedWhiteFraction": 0,
+        "flux": 56691.432400000405,
+        "luminousBounds": {
+          "x": 614,
+          "y": 375,
+          "width": 51,
+          "height": 51
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "blue-behind-camera",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "3dcaf34b593e51102100705e5881d7be9e2e1095661be4660ffd2800409f7ba0",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            12.453123092651367,
+            -8.411067008972168,
+            23.45404959147734
+          ],
+          "yaw": 3.141592653589793,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 2.7913999999879704,
+        "max": 6,
+        "clippedWhiteFraction": 0,
+        "flux": 0,
+        "luminousBounds": null
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "violet-coincident",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "8c13d3c4942ce381b800cb0fffb2b9a3d631eb5d7aa0924638e66108234465bd",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "relativity",
+          "region": "neighborhood",
+          "beta": 0.9999,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -19.920345306396484,
+            24.8289737701416,
+            89.1417465209961
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 2.8455319083864357,
+        "max": 115,
+        "clippedWhiteFraction": 0,
+        "flux": 55431.07420000035,
+        "luminousBounds": {
+          "x": 614,
+          "y": 375,
+          "width": 51,
+          "height": 50
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "violet-forward-epsilon",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "a0f8d35c48ce3eae0d003d276148b4037a835a2ccf41c474ef447e32e4855770",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "relativity",
+          "region": "neighborhood",
+          "beta": 0.9999,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -19.920345306396484,
+            24.8289737701416,
+            89.14074652099609
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 2.8455326068239355,
+        "max": 115,
+        "clippedWhiteFraction": 0,
+        "flux": 55431.78940000035,
+        "luminousBounds": {
+          "x": 614,
+          "y": 375,
+          "width": 51,
+          "height": 50
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "violet-behind-camera",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "3dcaf34b593e51102100705e5881d7be9e2e1095661be4660ffd2800409f7ba0",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -19.920345306396484,
+            24.8289737701416,
+            77.7908939538595
+          ],
+          "yaw": 3.141592653589793,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 2.7913999999879704,
+        "max": 6,
+        "clippedWhiteFraction": 0,
+        "flux": 0,
+        "luminousBounds": null
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "blue-offscreen-center",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "e03c63a63dcc04c7921659f9161b3d8f922eaadebc827e7d84cd3ff2405e1cc8",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            12.453123092651367,
+            -8.411067008972168,
+            23.45404959147734
+          ],
+          "yaw": 5.480781967162915,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 2.793976531237982,
+        "max": 28,
+        "clippedWhiteFraction": 0,
+        "flux": 2638.3680000000004,
+        "luminousBounds": {
+          "x": 1265,
+          "y": 380,
+          "width": 15,
+          "height": 41
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "violet-offscreen-center",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "00769044bec49cebb54cf58d71ec5b110111bc529bff2e96586367cc3312b3e5",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -19.920345306396484,
+            24.8289737701416,
+            77.7908939538595
+          ],
+          "yaw": 5.480781967162915,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 2.7935461910035895,
+        "max": 24,
+        "clippedWhiteFraction": 0,
+        "flux": 2197.6995999999986,
+        "luminousBounds": {
+          "x": 1265,
+          "y": 380,
+          "width": 15,
+          "height": 42
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "blue-native-overlook",
+      "width": 940,
+      "height": 440,
+      "pixelHash": "b93de777915aed54f55b7ea0621a0f93741b662c798b43d2c16573ff40df77e8",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -12,
+            12,
+            14
+          ],
+          "yaw": 0.8097835725701668,
+          "pitch": -0.4497596130698391,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "stats": {
+        "mean": 9.440903933260396,
+        "max": 255,
+        "clippedWhiteFraction": 0.00015715667311411993,
+        "flux": 2750234.826800201,
+        "luminousBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 940,
+          "height": 440
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "blue-native-zoom",
+      "width": 940,
+      "height": 440,
+      "pixelHash": "e5029ccb71e01051398efcc2d135d21b7b13f81f14b3fdace6b934c23b5795f1",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 58,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -12,
+            12,
+            14
+          ],
+          "yaw": 0.8097835725701668,
+          "pitch": -0.4497596130698391,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "stats": {
+        "mean": 10.583998485069715,
+        "max": 255,
+        "clippedWhiteFraction": 0.00013056092843326885,
+        "flux": 1842741.9213998402,
+        "luminousBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 940,
+          "height": 439
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "blue-native-arrival",
+      "width": 940,
+      "height": 440,
+      "pixelHash": "5f51b5bc9194a8b538afcf435825385f8598e616ce52dfd5f67dec572ea2e9f0",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 58,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            9,
+            -2,
+            13.999999999999998
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 40,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "stats": {
+        "mean": 16.252745439551553,
+        "max": 255,
+        "clippedWhiteFraction": 0.0000725338491295938,
+        "flux": 5567612.473799381,
+        "luminousBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 940,
+          "height": 440
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "blue-orbit-before",
+      "width": 940,
+      "height": 440,
+      "pixelHash": "5f51b5bc9194a8b538afcf435825385f8598e616ce52dfd5f67dec572ea2e9f0",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 58,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            9,
+            -2,
+            13.999999999999998
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 40,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "stats": {
+        "mean": 16.252745439551553,
+        "max": 255,
+        "clippedWhiteFraction": 0.0000725338491295938,
+        "flux": 5567612.473799381,
+        "luminousBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 940,
+          "height": 440
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "blue-orbit-after",
+      "width": 940,
+      "height": 440,
+      "pixelHash": "a0a27b2d43b173520e02870d4a2cfe1030b7cde073b257d283a1f453cf50bfd8",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 58,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            5.940421257105934,
+            -2,
+            14.235411010698204
+          ],
+          "yaw": 0.15358199285849372,
+          "pitch": 0,
+          "distanceLy": 43.07163985716983,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "stats": {
+        "mean": 16.472076639271133,
+        "max": 255,
+        "clippedWhiteFraction": 0.00006769825918762088,
+        "flux": 5658327.857999459,
+        "luminousBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 940,
+          "height": 440
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": false
+    },
+    {
+      "name": "violet-native-overlook",
+      "width": 940,
+      "height": 440,
+      "pixelHash": "1d80da893aa4c775d5dacd207c9372c1e7006d43d3c1e6f808b32bd59e0e1146",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -36,
+            29,
+            52
+          ],
+          "yaw": 0.4241944079037667,
+          "pitch": -0.48672047552790526,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "violet-nebula"
+      },
+      "stats": {
+        "mean": 9.788891570108694,
+        "max": 255,
+        "clippedWhiteFraction": 0.00005319148936170213,
+        "flux": 2894162.513400226,
+        "luminousBounds": {
+          "x": 0,
+          "y": 1,
+          "width": 940,
+          "height": 439
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "violet-native-zoom",
+      "width": 940,
+      "height": 440,
+      "pixelHash": "4b601c487a3657f3fa107761a35fb95a0f55e2e83131eda9cb8b004267629d48",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 58,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -36,
+            29,
+            52
+          ],
+          "yaw": 0.4241944079037667,
+          "pitch": -0.48672047552790526,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "violet-nebula"
+      },
+      "stats": {
+        "mean": 10.755797323061746,
+        "max": 255,
+        "clippedWhiteFraction": 0.000048355899419729206,
+        "flux": 3294074.73280029,
+        "luminousBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 940,
+          "height": 440
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "violet-native-arrival",
+      "width": 940,
+      "height": 440,
+      "pixelHash": "362757deee20b43cbaaabe828d9ff7928b2a80e6494113a8c712f59475b7f467",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 58,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -22,
+            11,
+            51
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 63.99999999999999,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "violet-nebula"
+      },
+      "stats": {
+        "mean": 11.533562498543674,
+        "max": 255,
+        "clippedWhiteFraction": 0.00001692456479690522,
+        "flux": 3615758.409400676,
+        "luminousBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 940,
+          "height": 440
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "violet-orbit-before",
+      "width": 940,
+      "height": 440,
+      "pixelHash": "362757deee20b43cbaaabe828d9ff7928b2a80e6494113a8c712f59475b7f467",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 58,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -22,
+            11,
+            51
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 63.99999999999999,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "violet-nebula"
+      },
+      "stats": {
+        "mean": 11.533562498543674,
+        "max": 255,
+        "clippedWhiteFraction": 0.00001692456479690522,
+        "flux": 3615758.409400676,
+        "luminousBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 940,
+          "height": 440
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "violet-orbit-after",
+      "width": 940,
+      "height": 440,
+      "pixelHash": "043aba8f2a333d6fb573e7cfea3ecc312d3d15f270551f919a12b5d66403aa40",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 58,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -26.120577353864142,
+            11,
+            51.266408298605356
+          ],
+          "yaw": 0.12912657900588853,
+          "pitch": 0,
+          "distanceLy": 68.1320505281885,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "violet-nebula"
+      },
+      "stats": {
+        "mean": 11.319881744675058,
+        "max": 255,
+        "clippedWhiteFraction": 0.00001934235976789168,
+        "flux": 3527380.0496006142,
+        "luminousBounds": {
+          "x": 0,
+          "y": 1,
+          "width": 940,
+          "height": 439
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": false
+    },
+    {
+      "name": "reopen-reference",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "14d433380497e599cb013da9ddf129928758ebad6009d7435773485ffe4b3f00",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 30,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            9,
+            -2,
+            14
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "stats": {
+        "mean": 4.80412071390442,
+        "max": 255,
+        "clippedWhiteFraction": 0.0000224609375,
+        "flux": 1062042.859599388,
+        "luminousBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1277,
+          "height": 800
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "reopened",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "14d433380497e599cb013da9ddf129928758ebad6009d7435773485ffe4b3f00",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 30,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            9,
+            -2,
+            14
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "stats": {
+        "mean": 4.80412071390442,
+        "max": 255,
+        "clippedWhiteFraction": 0.0000224609375,
+        "flux": 1062042.859599388,
+        "luminousBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1277,
+          "height": 800
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "blue-DPR2-css180",
+      "width": 2560,
+      "height": 1600,
+      "pixelHash": "3a5880194545fea45c6d23fb09f006c057a2424f769c7fdb2a49d933439aee37",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            12.453123092651367,
+            -8.411067008972168,
+            23.45404959147734
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 2.8032026867559825,
+        "max": 33,
+        "clippedWhiteFraction": 0,
+        "flux": 48343.80380000111,
+        "luminousBounds": {
+          "x": 1231,
+          "y": 756,
+          "width": 94,
+          "height": 90
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "blue-DPR2-css6",
+      "width": 2560,
+      "height": 1600,
+      "pixelHash": "2867aa439e8d239c11b5fb38190b0e96864ebcd9b101e06567f0cb4a51dccbc6",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            12.453123092651367,
+            -8.411067008972168,
+            -144.79837881756944
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 2.7915175345108354,
+        "max": 31,
+        "clippedWhiteFraction": 0,
+        "flux": 481.42019999999985,
+        "luminousBounds": {
+          "x": 1275,
+          "y": 795,
+          "width": 10,
+          "height": 9
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "blue-DPR2-css10",
+      "width": 2560,
+      "height": 1600,
+      "pixelHash": "e0a548c95ad63bbbe01484947962d772df7e829783fee9d374ccffae2229ab96",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            12.453123092651367,
+            -8.411067008972168,
+            -75.17668430348112
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 2.7917268658584735,
+        "max": 34,
+        "clippedWhiteFraction": 0,
+        "flux": 1338.841400000001,
+        "luminousBounds": {
+          "x": 1272,
+          "y": 792,
+          "width": 16,
+          "height": 15
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "violet-DPR2-css180",
+      "width": 2560,
+      "height": 1600,
+      "pixelHash": "a582503e4e22feadc24361c823b43913d9c18a890fe7d576251220bb9353583d",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -19.920345306396484,
+            24.8289737701416,
+            77.7908939538595
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 2.8011747604376525,
+        "max": 29,
+        "clippedWhiteFraction": 0,
+        "flux": 40037.41759999776,
+        "luminousBounds": {
+          "x": 1231,
+          "y": 756,
+          "width": 94,
+          "height": 90
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "violet-DPR2-css6",
+      "width": 2560,
+      "height": 1600,
+      "pixelHash": "6682b6d966eb22f146a8b3394bc0e4d1879c8cb7052dc10fdbe066b7c120c573",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -19.920345306396484,
+            24.8289737701416,
+            -251.3838304931018
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 2.7914965138077115,
+        "max": 28,
+        "clippedWhiteFraction": 0,
+        "flux": 395.31940000000014,
+        "luminousBounds": {
+          "x": 1275,
+          "y": 795,
+          "width": 10,
+          "height": 9
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "violet-DPR2-css10",
+      "width": 2560,
+      "height": 1600,
+      "pixelHash": "e20c4c85f83d8fdf0a1549257d94d042a7ac7edebf874798d75e6ba161b0943d",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -19.920345306396484,
+            24.8289737701416,
+            -115.17359968746266
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 2.7916710910537867,
+        "max": 31,
+        "clippedWhiteFraction": 0,
+        "flux": 1110.3878000000013,
+        "luminousBounds": {
+          "x": 1273,
+          "y": 792,
+          "width": 15,
+          "height": 15
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "blue-DPR2-limit32",
+      "width": 2560,
+      "height": 1600,
+      "pixelHash": "697280498bd019392ac8748dcf64d99f1b2f6249813cd1fa94e0b79d4d222af0",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            12.453123092651367,
+            -8.411067008972168,
+            23.45404959147734
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 2.7922376150283554,
+        "max": 35,
+        "clippedWhiteFraction": 0,
+        "flux": 3430.870000000003,
+        "luminousBounds": {
+          "x": 1268,
+          "y": 788,
+          "width": 24,
+          "height": 24
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "blue-DPR2-limit32-edge",
+      "width": 2560,
+      "height": 1600,
+      "pixelHash": "d46e1b15c47da6d5f624305821b3b88c3ee2397135f6d88470665e2e8fc6410f",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            12.453123092651367,
+            -8.411067008972168,
+            23.45404959147734
+          ],
+          "yaw": 5.480781967162915,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 2.7914000002823305,
+        "max": 6,
+        "clippedWhiteFraction": 0,
+        "flux": 0,
+        "luminousBounds": null
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "violet-DPR2-limit32",
+      "width": 2560,
+      "height": 1600,
+      "pixelHash": "8ffc8de25234a16858cd0904cd24dc2550177d69ba95804f53174111626c47b7",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -19.920345306396484,
+            24.8289737701416,
+            77.7908939538595
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 2.792094554383826,
+        "max": 31,
+        "clippedWhiteFraction": 0,
+        "flux": 2844.893599999999,
+        "luminousBounds": {
+          "x": 1268,
+          "y": 788,
+          "width": 24,
+          "height": 24
+        }
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    },
+    {
+      "name": "violet-DPR2-limit32-edge",
+      "width": 2560,
+      "height": 1600,
+      "pixelHash": "d46e1b15c47da6d5f624305821b3b88c3ee2397135f6d88470665e2e8fc6410f",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -19.920345306396484,
+            24.8289737701416,
+            77.7908939538595
+          ],
+          "yaw": 5.480781967162915,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 2.7914000002823305,
+        "max": 6,
+        "clippedWhiteFraction": 0,
+        "flux": 0,
+        "luminousBounds": null
+      },
+      "pausedPixelsStable": true,
+      "compare": true
+    }
+  ],
+  "comparisons": [],
+  "pairedPoseDeltas": [],
+  "errors": [],
+  "graphics": [
+    {
+      "name": "opening",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "far-neighborhood",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "relativity",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0.9,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "galaxy",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 4,
+              "first": 0,
+              "count": 384,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 20,
+                "offset": 0,
+                "buffer": 1
+              }
+            },
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 36400,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "cosmic",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 4,
+              "first": 0,
+              "count": 51456,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 20,
+                "offset": 0,
+                "buffer": 1
+              }
+            },
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 41470,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "amber-close",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            },
+            {
+              "mode": 4,
+              "first": 0,
+              "count": 6,
+              "cloud": false,
+              "stellar": true,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "blue-star-close",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            },
+            {
+              "mode": 4,
+              "first": 0,
+              "count": 6,
+              "cloud": false,
+              "stellar": true,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "pale-close",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            },
+            {
+              "mode": 4,
+              "first": 0,
+              "count": 6,
+              "cloud": false,
+              "stellar": true,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "blue-overlook",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "blue-close",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            },
+            {
+              "mode": 4,
+              "first": 0,
+              "count": 6,
+              "cloud": false,
+              "stellar": true,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "blue-side",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "blue-dim",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            },
+            {
+              "mode": 4,
+              "first": 0,
+              "count": 6,
+              "cloud": false,
+              "stellar": true,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "violet-overlook",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "violet-close",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "violet-side",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "violet-dim",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "blue-isolated-css6",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "blue-isolated-css10",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "blue-isolated-css40",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "blue-isolated-css96",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "blue-isolated-css180",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            },
+            {
+              "mode": 4,
+              "first": 0,
+              "count": 6,
+              "cloud": false,
+              "stellar": true,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "blue-isolated-css360",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "violet-isolated-css6",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "violet-isolated-css10",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "violet-isolated-css40",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "violet-isolated-css96",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "violet-isolated-css180",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "violet-isolated-css360",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "blue-coincident",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0.9999,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "blue-forward-epsilon",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0.9999,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "blue-behind-camera",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "violet-coincident",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0.9999,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "violet-forward-epsilon",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0.9999,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "violet-behind-camera",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "blue-offscreen-center",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            },
+            {
+              "mode": 4,
+              "first": 0,
+              "count": 6,
+              "cloud": false,
+              "stellar": true,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            },
+            {
+              "mode": 4,
+              "first": 0,
+              "count": 6,
+              "cloud": false,
+              "stellar": true,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "violet-offscreen-center",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "blue-native-overlook",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "blue-native-zoom",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "blue-native-arrival",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "blue-orbit-before",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "blue-orbit-after",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "violet-native-overlook",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "violet-native-zoom",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "violet-native-arrival",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "violet-orbit-before",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "violet-orbit-after",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "reopen-reference",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            },
+            {
+              "mode": 4,
+              "first": 0,
+              "count": 6,
+              "cloud": false,
+              "stellar": true,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "reopened",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 0.55
+        },
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            },
+            {
+              "mode": 4,
+              "first": 0,
+              "count": 6,
+              "cloud": false,
+              "stellar": true,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 1
+        }
+      ]
+    },
+    {
+      "name": "blue-DPR2-css180",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            },
+            {
+              "mode": 4,
+              "first": 0,
+              "count": 6,
+              "cloud": false,
+              "stellar": true,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 2
+        }
+      ]
+    },
+    {
+      "name": "blue-DPR2-css6",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 2
+        }
+      ]
+    },
+    {
+      "name": "blue-DPR2-css10",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 2
+        }
+      ]
+    },
+    {
+      "name": "violet-DPR2-css180",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 2
+        }
+      ]
+    },
+    {
+      "name": "violet-DPR2-css6",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 2
+        }
+      ]
+    },
+    {
+      "name": "violet-DPR2-css10",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            1023
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 2
+        }
+      ]
+    },
+    {
+      "name": "blue-DPR2-limit32",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            },
+            {
+              "mode": 4,
+              "first": 0,
+              "count": 6,
+              "cloud": false,
+              "stellar": true,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            32
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 2
+        }
+      ]
+    },
+    {
+      "name": "blue-DPR2-limit32-edge",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            },
+            {
+              "mode": 4,
+              "first": 0,
+              "count": 6,
+              "cloud": false,
+              "stellar": true,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            },
+            {
+              "mode": 4,
+              "first": 0,
+              "count": 6,
+              "cloud": false,
+              "stellar": true,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            },
+            {
+              "mode": 4,
+              "first": 0,
+              "count": 6,
+              "cloud": false,
+              "stellar": true,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            32
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 2
+        }
+      ]
+    },
+    {
+      "name": "violet-DPR2-limit32",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            32
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 2
+        }
+      ]
+    },
+    {
+      "name": "violet-DPR2-limit32-edge",
+      "records": [
+        {
+          "error": 0,
+          "draws": [
+            {
+              "mode": 0,
+              "first": 0,
+              "count": 19203,
+              "cloud": false,
+              "stellar": false,
+              "pointer": {
+                "stride": 36,
+                "offset": 0,
+                "buffer": 0
+              }
+            }
+          ],
+          "beta": 0,
+          "reportedPointRange": [
+            1,
+            32
+          ],
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "dpr": 2
+        }
+      ]
+    }
+  ],
+  "served": [
+    {
+      "url": "http://127.0.0.1:3187/stem_lab/stem_tool_universe.js",
+      "status": 200,
+      "hash": "5cc081214178bbbbe2f57528a13047911d1a26615e7163630a0ca29e36c53458"
+    },
+    {
+      "url": "http://127.0.0.1:3187/stem_lab/universe_flight_scene.js",
+      "status": 200,
+      "hash": "a178720362fe3772f2a6578657194f9414eec3e8e2369db381e6409893c1cf39"
+    },
+    {
+      "url": "http://127.0.0.1:3187/stem_lab/stem_tool_universe.js",
+      "status": 200,
+      "hash": "5cc081214178bbbbe2f57528a13047911d1a26615e7163630a0ca29e36c53458"
+    },
+    {
+      "url": "http://127.0.0.1:3187/stem_lab/universe_flight_scene.js",
+      "status": 200,
+      "hash": "a178720362fe3772f2a6578657194f9414eec3e8e2369db381e6409893c1cf39"
+    },
+    {
+      "url": "http://127.0.0.1:3187/stem_lab/stem_tool_universe.js",
+      "status": 200,
+      "hash": "5cc081214178bbbbe2f57528a13047911d1a26615e7163630a0ca29e36c53458"
+    },
+    {
+      "url": "http://127.0.0.1:3187/stem_lab/universe_flight_scene.js",
+      "status": 200,
+      "hash": "a178720362fe3772f2a6578657194f9414eec3e8e2369db381e6409893c1cf39"
+    }
+  ],
+  "handoff": [
+    {
+      "name": "blue-DPR1-cap60",
+      "profiles": [
+        {
+          "cssSize": 45,
+          "normalizedFlux": 3.3602604444444317
+        },
+        {
+          "cssSize": 48,
+          "normalizedFlux": 3.359177430555542
+        },
+        {
+          "cssSize": 51,
+          "normalizedFlux": 3.356192079969243
+        },
+        {
+          "cssSize": 54,
+          "normalizedFlux": 3.3579694101508966
+        },
+        {
+          "cssSize": 57,
+          "normalizedFlux": 3.360089504462924
+        },
+        {
+          "cssSize": 60,
+          "normalizedFlux": 3.356202333333344
+        },
+        {
+          "cssSize": 63,
+          "normalizedFlux": 3.044174452003033
+        }
+      ],
+      "maximumRelativeJump": 0.09297052154195014,
+      "rangeRatio": 1.1038330744262759
+    },
+    {
+      "name": "violet-DPR1-cap60",
+      "profiles": [
+        {
+          "cssSize": 45,
+          "normalizedFlux": 2.7760885925925773
+        },
+        {
+          "cssSize": 48,
+          "normalizedFlux": 2.7779753472222017
+        },
+        {
+          "cssSize": 51,
+          "normalizedFlux": 2.7790637447135516
+        },
+        {
+          "cssSize": 54,
+          "normalizedFlux": 2.7785740054869508
+        },
+        {
+          "cssSize": 57,
+          "normalizedFlux": 2.778935610957227
+        },
+        {
+          "cssSize": 60,
+          "normalizedFlux": 2.7811263888889037
+        },
+        {
+          "cssSize": 63,
+          "normalizedFlux": 2.522563618039822
+        }
+      ],
+      "maximumRelativeJump": 0.09297052154195015,
+      "rangeRatio": 1.1025
+    },
+    {
+      "name": "blue-DPR2-cap32-device",
+      "profiles": [
+        {
+          "cssSize": 12,
+          "normalizedFlux": 3.355307291666665
+        },
+        {
+          "cssSize": 12.8,
+          "normalizedFlux": 3.3740319824218776
+        },
+        {
+          "cssSize": 13.6,
+          "normalizedFlux": 3.345533628892736
+        },
+        {
+          "cssSize": 14.4,
+          "normalizedFlux": 3.3533651620370404
+        },
+        {
+          "cssSize": 15.2,
+          "normalizedFlux": 3.3539752856648235
+        },
+        {
+          "cssSize": 16,
+          "normalizedFlux": 3.350458984375003
+        },
+        {
+          "cssSize": 16.8,
+          "normalizedFlux": 3.0389650651927465
+        }
+      ],
+      "maximumRelativeJump": 0.09297052154195012,
+      "rangeRatio": 1.1102569164308178
+    },
+    {
+      "name": "violet-DPR2-cap32-device",
+      "profiles": [
+        {
+          "cssSize": 12,
+          "normalizedFlux": 2.7764482638888905
+        },
+        {
+          "cssSize": 12.8,
+          "normalizedFlux": 2.7708493041992197
+        },
+        {
+          "cssSize": 13.6,
+          "normalizedFlux": 2.789861321366782
+        },
+        {
+          "cssSize": 14.4,
+          "normalizedFlux": 2.774639756944441
+        },
+        {
+          "cssSize": 15.2,
+          "normalizedFlux": 2.7823069598337913
+        },
+        {
+          "cssSize": 16,
+          "normalizedFlux": 2.778216406249999
+        },
+        {
+          "cssSize": 16.8,
+          "normalizedFlux": 2.5199241780045343
+        }
+      ],
+      "maximumRelativeJump": 0.0929705215419501,
+      "rangeRatio": 1.1071211371034204
+    }
+  ],
+  "lifecycle": [
+    {
+      "released": [
+        {
+          "buffers": 2,
+          "deletedBuffers": 2,
+          "liveBuffers": 0,
+          "textures": 2,
+          "deletedTextures": 2,
+          "liveTextures": 0,
+          "programs": 2,
+          "deletedPrograms": 2,
+          "livePrograms": 0,
+          "error": 0,
+          "uploads": 8,
+          "updates": 46,
+          "textureUploads": 2,
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "reportedPointRange": [
+            1,
+            1023
+          ]
+        }
+      ],
+      "finalReleased": [
+        {
+          "buffers": 2,
+          "deletedBuffers": 2,
+          "liveBuffers": 0,
+          "textures": 2,
+          "deletedTextures": 2,
+          "liveTextures": 0,
+          "programs": 2,
+          "deletedPrograms": 2,
+          "livePrograms": 0,
+          "error": 0,
+          "uploads": 8,
+          "updates": 46,
+          "textureUploads": 2,
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "reportedPointRange": [
+            1,
+            1023
+          ]
+        },
+        {
+          "buffers": 2,
+          "deletedBuffers": 2,
+          "liveBuffers": 0,
+          "textures": 2,
+          "deletedTextures": 2,
+          "liveTextures": 0,
+          "programs": 2,
+          "deletedPrograms": 2,
+          "livePrograms": 0,
+          "error": 0,
+          "uploads": 2,
+          "updates": 0,
+          "textureUploads": 2,
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "reportedPointRange": [
+            1,
+            1023
+          ]
+        }
+      ]
+    }
+  ],
+  "native": [
+    {
+      "name": "blue",
+      "overview": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -12,
+            12,
+            14
+          ],
+          "yaw": 0.8097835725701668,
+          "pitch": -0.4497596130698391,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "zoom": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 58,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -12,
+            12,
+            14
+          ],
+          "yaw": 0.8097835725701668,
+          "pitch": -0.4497596130698391,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "approachBefore": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 58,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            9,
+            -2,
+            -26
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "arrived": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 58,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            9,
+            -2,
+            13.999999999999998
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 40,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "orbitBefore": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 58,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            9,
+            -2,
+            13.999999999999998
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 40,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "orbitAfter": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 58,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            5.940421257105934,
+            -2,
+            14.235411010698204
+          ],
+          "yaw": 0.15358199285849372,
+          "pitch": 0,
+          "distanceLy": 43.07163985716983,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "orbitDifference": {
+        "meanAbsolute": 11.52364281108962,
+        "maximumChannelDifference": 254,
+        "changedFraction": 0.5172461315280464
+      },
+      "pointData": {
+        "count": 19203,
+        "hash": "f0933322797366fbee8bbdc9ce8d2263700b1c07a71caa1bcfa1224d68edc2a3"
+      },
+      "resourcesBefore": [
+        {
+          "buffers": 2,
+          "textures": 2,
+          "programs": 2,
+          "uploads": 8,
+          "updates": 46,
+          "textureUploads": 2
+        }
+      ],
+      "resourcesAfter": [
+        {
+          "buffers": 2,
+          "textures": 2,
+          "programs": 2,
+          "uploads": 8,
+          "updates": 46,
+          "textureUploads": 2
+        }
+      ],
+      "resourcesStable": true
+    },
+    {
+      "name": "violet",
+      "overview": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -36,
+            29,
+            52
+          ],
+          "yaw": 0.4241944079037667,
+          "pitch": -0.48672047552790526,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "violet-nebula"
+      },
+      "zoom": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 58,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -36,
+            29,
+            52
+          ],
+          "yaw": 0.4241944079037667,
+          "pitch": -0.48672047552790526,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "violet-nebula"
+      },
+      "approachBefore": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 30,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -22,
+            11,
+            -13
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "violet-nebula"
+      },
+      "arrived": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 58,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -22,
+            11,
+            51
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 63.99999999999999,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "violet-nebula"
+      },
+      "orbitBefore": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 58,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -22,
+            11,
+            51
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 63.99999999999999,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "violet-nebula"
+      },
+      "orbitAfter": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 58,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -26.120577353864142,
+            11,
+            51.266408298605356
+          ],
+          "yaw": 0.12912657900588853,
+          "pitch": 0,
+          "distanceLy": 68.1320505281885,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "violet-nebula"
+      },
+      "orbitDifference": {
+        "meanAbsolute": 5.222149419729207,
+        "maximumChannelDifference": 254,
+        "changedFraction": 0.3510912314635719
+      },
+      "pointData": {
+        "count": 19203,
+        "hash": "f0933322797366fbee8bbdc9ce8d2263700b1c07a71caa1bcfa1224d68edc2a3"
+      },
+      "resourcesBefore": [
+        {
+          "buffers": 2,
+          "textures": 2,
+          "programs": 2,
+          "uploads": 8,
+          "updates": 46,
+          "textureUploads": 2
+        }
+      ],
+      "resourcesAfter": [
+        {
+          "buffers": 2,
+          "textures": 2,
+          "programs": 2,
+          "uploads": 8,
+          "updates": 46,
+          "textureUploads": 2
+        }
+      ],
+      "resourcesStable": true
+    }
+  ],
+  "contexts": [
+    {
+      "name": "DPR1",
+      "records": [
+        {
+          "buffers": 2,
+          "deletedBuffers": 2,
+          "liveBuffers": 0,
+          "textures": 2,
+          "deletedTextures": 2,
+          "liveTextures": 0,
+          "programs": 2,
+          "deletedPrograms": 2,
+          "livePrograms": 0,
+          "error": 0,
+          "uploads": 8,
+          "updates": 46,
+          "textureUploads": 2,
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "reportedPointRange": [
+            1,
+            1023
+          ]
+        },
+        {
+          "buffers": 2,
+          "deletedBuffers": 2,
+          "liveBuffers": 0,
+          "textures": 2,
+          "deletedTextures": 2,
+          "liveTextures": 0,
+          "programs": 2,
+          "deletedPrograms": 2,
+          "livePrograms": 0,
+          "error": 0,
+          "uploads": 2,
+          "updates": 0,
+          "textureUploads": 2,
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "reportedPointRange": [
+            1,
+            1023
+          ]
+        }
+      ]
+    },
+    {
+      "name": "DPR2",
+      "records": [
+        {
+          "buffers": 2,
+          "deletedBuffers": 2,
+          "liveBuffers": 0,
+          "textures": 2,
+          "deletedTextures": 2,
+          "liveTextures": 0,
+          "programs": 2,
+          "deletedPrograms": 2,
+          "livePrograms": 0,
+          "error": 0,
+          "uploads": 2,
+          "updates": 0,
+          "textureUploads": 2,
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "reportedPointRange": [
+            1,
+            1023
+          ]
+        }
+      ]
+    },
+    {
+      "name": "DPR2-limit32",
+      "records": [
+        {
+          "buffers": 2,
+          "deletedBuffers": 2,
+          "liveBuffers": 0,
+          "textures": 2,
+          "deletedTextures": 2,
+          "liveTextures": 0,
+          "programs": 2,
+          "deletedPrograms": 2,
+          "livePrograms": 0,
+          "error": 0,
+          "uploads": 2,
+          "updates": 0,
+          "textureUploads": 2,
+          "actualPointRange": [
+            1,
+            1023
+          ],
+          "reportedPointRange": [
+            1,
+            32
+          ]
+        }
+      ]
+    }
+  ],
+  "pointData": {
+    "count": 19203,
+    "hash": "f0933322797366fbee8bbdc9ce8d2263700b1c07a71caa1bcfa1224d68edc2a3"
+  },
+  "isolates": {
+    "blue": {
+      "index": 8583,
+      "record": [
+        12.453123092651367,
+        -8.411067008972168,
+        29.255857467651367,
+        0.30000001192092896,
+        0.6399999856948853,
+        0.8999999761581421,
+        0.8316358327865601,
+        0.3077307641506195,
+        8.574010848999023
+      ]
+    },
+    "violet": {
+      "index": 9227,
+      "record": [
+        -19.920345306396484,
+        24.8289737701416,
+        89.1417465209961,
+        0.949999988079071,
+        0.3499999940395355,
+        0.47999998927116394,
+        1.6270403861999512,
+        0.307453989982605,
+        8.587621688842773
+      ]
+    }
+  },
+  "extremes": [
+    {
+      "name": "blue",
+      "kind": "coincident",
+      "sourceIndex": 8583,
+      "beta": 0.9999,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "relativity",
+          "region": "neighborhood",
+          "beta": 0.9999,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            12.453123092651367,
+            -8.411067008972168,
+            29.255857467651367
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 2.846762656433322,
+        "max": 122,
+        "clippedWhiteFraction": 0,
+        "flux": 56691.3602000004,
+        "luminousBounds": {
+          "x": 614,
+          "y": 375,
+          "width": 51,
+          "height": 51
+        }
+      }
+    },
+    {
+      "name": "blue",
+      "kind": "forward-epsilon",
+      "sourceIndex": 8583,
+      "beta": 0.9999,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "relativity",
+          "region": "neighborhood",
+          "beta": 0.9999,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            12.453123092651367,
+            -8.411067008972168,
+            29.254857467651366
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 2.846762726941134,
+        "max": 122,
+        "clippedWhiteFraction": 0,
+        "flux": 56691.432400000405,
+        "luminousBounds": {
+          "x": 614,
+          "y": 375,
+          "width": 51,
+          "height": 51
+        }
+      }
+    },
+    {
+      "name": "blue",
+      "kind": "behind-camera",
+      "sourceIndex": 8583,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            12.453123092651367,
+            -8.411067008972168,
+            23.45404959147734
+          ],
+          "yaw": 3.141592653589793,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 2.7913999999879704,
+        "max": 6,
+        "clippedWhiteFraction": 0,
+        "flux": 0,
+        "luminousBounds": null
+      }
+    },
+    {
+      "name": "violet",
+      "kind": "coincident",
+      "sourceIndex": 9227,
+      "beta": 0.9999,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "relativity",
+          "region": "neighborhood",
+          "beta": 0.9999,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -19.920345306396484,
+            24.8289737701416,
+            89.1417465209961
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 2.8455319083864357,
+        "max": 115,
+        "clippedWhiteFraction": 0,
+        "flux": 55431.07420000035,
+        "luminousBounds": {
+          "x": 614,
+          "y": 375,
+          "width": 51,
+          "height": 50
+        }
+      }
+    },
+    {
+      "name": "violet",
+      "kind": "forward-epsilon",
+      "sourceIndex": 9227,
+      "beta": 0.9999,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "relativity",
+          "region": "neighborhood",
+          "beta": 0.9999,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -19.920345306396484,
+            24.8289737701416,
+            89.14074652099609
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 2.8455326068239355,
+        "max": 115,
+        "clippedWhiteFraction": 0,
+        "flux": 55431.78940000035,
+        "luminousBounds": {
+          "x": 614,
+          "y": 375,
+          "width": 51,
+          "height": 50
+        }
+      }
+    },
+    {
+      "name": "violet",
+      "kind": "behind-camera",
+      "sourceIndex": 9227,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -19.920345306396484,
+            24.8289737701416,
+            77.7908939538595
+          ],
+          "yaw": 3.141592653589793,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "mean": 2.7913999999879704,
+        "max": 6,
+        "clippedWhiteFraction": 0,
+        "flux": 0,
+        "luminousBounds": null
+      }
+    }
+  ],
+  "capAgreement": [
+    {
+      "name": "blue",
+      "meanAbsolute": 0.011497395833333333,
+      "maximumChannelDifference": 25,
+      "changedFraction": 0.0015658365885416667
+    },
+    {
+      "name": "violet",
+      "meanAbsolute": 0.011105550130208334,
+      "maximumChannelDifference": 27,
+      "changedFraction": 0.001559814453125
+    }
+  ],
+  "cloudDraws": [
+    {
+      "name": "opening",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "far-neighborhood",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "relativity",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "galaxy",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "cosmic",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "amber-close",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "blue-star-close",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "pale-close",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "blue-overlook",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "blue-close",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "blue-side",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "blue-dim",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "violet-overlook",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "violet-close",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "violet-side",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "violet-dim",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "blue-isolated-css6",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "blue-isolated-css10",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "blue-isolated-css40",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "blue-isolated-css96",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "blue-isolated-css180",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "blue-isolated-css360",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "violet-isolated-css6",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "violet-isolated-css10",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "violet-isolated-css40",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "violet-isolated-css96",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "violet-isolated-css180",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "violet-isolated-css360",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "blue-coincident",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "blue-forward-epsilon",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "blue-behind-camera",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "violet-coincident",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "violet-forward-epsilon",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "violet-behind-camera",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "blue-offscreen-center",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "violet-offscreen-center",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "blue-native-overlook",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "blue-native-zoom",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "blue-native-arrival",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "blue-orbit-before",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "blue-orbit-after",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "violet-native-overlook",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "violet-native-zoom",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "violet-native-arrival",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "violet-orbit-before",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "violet-orbit-after",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "reopen-reference",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "reopened",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "blue-DPR2-css180",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "blue-DPR2-css6",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "blue-DPR2-css10",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "violet-DPR2-css180",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "violet-DPR2-css6",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "violet-DPR2-css10",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "blue-DPR2-limit32",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "blue-DPR2-limit32-edge",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "violet-DPR2-limit32",
+      "batches": 0,
+      "sourceDraws": []
+    },
+    {
+      "name": "violet-DPR2-limit32-edge",
+      "batches": 0,
+      "sourceDraws": []
+    }
+  ],
+  "comparisonCaptureCount": 56
+}

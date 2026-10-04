@@ -167,7 +167,8 @@ describe('Universe static spiral atlas detail', () => {
       const points = uploads.findLast(item => item.buffer === pointBuffer).data;
       const surfaces = uploads.findLast(item => item.buffer === surfaceBuffer).data;
       expect(points).toHaveLength(expected.count * 9); expect(hash(points)).toBe(expected.points);
-      expect(surfaces).toHaveLength(expected.surfaceFloats + 30);
+      // The cloud-surface test owns the appended neighborhood record batch.
+      expect(surfaces).toHaveLength(expected.surfaceFloats + 30 + (region === 'neighborhood' ? 66000 : 0));
       expect(hash(surfaces.subarray(0, expected.surfaceFloats))).toBe(expected.surface);
       expect(capture().find(item => item.program === pointProgram && item.mode === constants.get('POINTS')).count).toBe(expected.count);
     }
