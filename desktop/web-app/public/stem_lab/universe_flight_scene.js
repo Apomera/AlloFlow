@@ -1448,6 +1448,28 @@
       return true;
     }
     function manualFlybyLook() { if (flyby.active) flyby.autoLook = false; }
+    function seekFlybyMoment(seconds, highlight) {
+      var route=flybyRoute(flyby.id);
+      if (disposed || lost || !gl || !program || settings.mode!=='explore' || !route || settings.region!==route.region || (!flyby.active&&!flyby.completed)) return false;
+      if (!Number.isFinite(seconds) || seconds<0 || seconds>route.durationSeconds) return false;
+      var completed=seconds===route.durationSeconds;
+      var nearest=route.highlights.reduce(function(best,item){return Math.abs(item.seconds-seconds)<Math.abs(best.seconds-seconds)?item:best;},route.highlights[0]);
+      var destination=getLandmark(highlight?highlight.targetId:completed?route.completionTargetId:seconds===0?route.targetId:nearest.targetId);
+      if (!destination) return false;
+      var sample=route.atTime(seconds);
+      if (!sample.position.every(Number.isFinite) || !Number.isFinite(sample.yaw) || !Number.isFinite(sample.pitch) || !Number.isFinite(sample.distance)) return false;
+      // Seeking is a paused camera jump along the authored route. Its route
+      // distance replaces the old progress; physical clocks do not advance.
+      cancelFrame();
+      state={position:sample.position.slice(),yaw:sample.yaw,pitch:sample.pitch,distanceLy:sample.distance,universeYears:0,travelerYears:0};
+      flyby={active:!completed,completed:completed,id:route.id,elapsedSeconds:seconds,autoLook:true}; flybyPace=0;
+      targetId=destination.id; navigation={active:false,targetId:null}; orbitId=null;
+      trail=[]; cameraMoves=[]; clearFraming();
+      var detail={kind:highlight?'flyby-highlight':'flyby-moment',routeId:route.id,routeName:route.name,seconds:seconds,position:state.position.slice(),targetId:targetId,targetName:destination.name};
+      if (highlight) { detail.highlightId=highlight.id; detail.highlightName=highlight.name; }
+      pauseWithMessage((highlight?highlight.name:route.name+' · '+seconds.toFixed(1)+' seconds')+'. Travel is paused; '+(completed?'revisit a route moment or replay the flyby.':'start travel to continue from this route moment.'),detail);
+      requestDraw(); return true;
+    }
     function flybyTelemetry() {
       var route = flybyRoute(flyby.id);
       var sample = route ? route.atTime(flyby.elapsedSeconds) : null;
@@ -2173,25 +2195,11 @@
         trail=[]; cameraMoves=[]; clearFraming(); settings.running=true; lastFrame=0; freePace=0;
         emitTelemetry(true); requestDraw(); return true;
       },
+      seekFlyby: function (seconds) { return seekFlybyMoment(seconds); },
       seekFlybyHighlight: function (id) {
         var route=flybyRoute(flyby.id);
-        if (disposed || lost || !gl || !program || settings.mode!=='explore' || !route || settings.region!==route.region || (!flyby.active&&!flyby.completed)) return false;
-        var highlight=route.highlights.filter(function(item){return item.id===id;})[0];
-        if (!highlight || !Number.isFinite(highlight.seconds) || highlight.seconds<0 || highlight.seconds>=route.durationSeconds) return false;
-        var destination=getLandmark(highlight.targetId);
-        if (!destination) return false;
-        var sample=route.atTime(highlight.seconds);
-        if (!sample.position.every(Number.isFinite) || !Number.isFinite(sample.yaw) || !Number.isFinite(sample.pitch) || !Number.isFinite(sample.distance)) return false;
-        // This is an explicit camera jump to route progress, not elapsed travel.
-        // Resume uses the existing path and physical clocks remain at zero.
-        cancelFrame();
-        state={position:sample.position.slice(),yaw:sample.yaw,pitch:sample.pitch,distanceLy:sample.distance,universeYears:0,travelerYears:0};
-        flyby={active:true,completed:false,id:route.id,elapsedSeconds:highlight.seconds,autoLook:true}; flybyPace=0;
-        targetId=destination.id; navigation={active:false,targetId:null}; orbitId=null;
-        trail=[]; cameraMoves=[]; clearFraming();
-        pauseWithMessage(highlight.name+'. Travel is paused; start travel to continue from this route moment.',
-          {kind:'flyby-highlight',routeId:route.id,routeName:route.name,highlightId:highlight.id,highlightName:highlight.name,seconds:highlight.seconds,position:state.position.slice(),targetId:targetId,targetName:destination.name});
-        requestDraw(); return true;
+        var highlight=route&&route.highlights.filter(function(item){return item.id===id;})[0];
+        return !!highlight&&seekFlybyMoment(highlight.seconds,highlight);
       },
       cancelFlyby: function () { if (disposed || lost || !gl || !program) return false; return endFlyby(); },
       followFlybyView: function () {

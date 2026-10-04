@@ -1,0 +1,33 @@
+{
+  "completed": true,
+  "verifiedAt": "2026-10-04T17:14:35.678Z",
+  "sourceHash": "ad33daca7123ff080ad0478e7653f3e2ad51fdf1e2041b42284735c95f29ee4a",
+  "uiHash": "707b795115b946ab0497509193ef3d8b6b537c9965aacc3293c799591d0aa6e0",
+  "focusedTests": 147,
+  "focusedTestFiles": 5,
+  "testDurationSeconds": 108.92,
+  "browserChecks": 7,
+  "verifiedSeeks": 26,
+  "accessibilityScopes": 9,
+  "flightRegressionChecks": 10,
+  "flightAccessibilityScopes": 9,
+  "flightCaptures": 13,
+  "fileHashes": {
+    "stem_lab/universe_flight_scene.js": "ad33daca7123ff080ad0478e7653f3e2ad51fdf1e2041b42284735c95f29ee4a",
+    "stem_lab/stem_tool_universe.js": "707b795115b946ab0497509193ef3d8b6b537c9965aacc3293c799591d0aa6e0",
+    "desktop/web-app/public/stem_lab/universe_flight_scene.js": "ad33daca7123ff080ad0478e7653f3e2ad51fdf1e2041b42284735c95f29ee4a",
+    "desktop/web-app/public/stem_lab/stem_tool_universe.js": "707b795115b946ab0497509193ef3d8b6b537c9965aacc3293c799591d0aa6e0",
+    "tests/universe_flight_navigation.test.js": "bf9c2c1e1a97ddeecb5c92bb36a5c4ec230e9544d681fe523b60fcad9c36908f",
+    "dev-tools/universe_flight_timeline_check.cjs": "625a3127d18819d4eb8af2894290cb047beee6742d12cafe2f25b4d1c11f9591",
+    "reports/universe-flight-2026-09-29/README.md": "a5ae6a7d386802d0efcaea671f20e1f110e078619355c7acc0a3d6cbbbb3f454",
+    "reports/universe-flight-2026-09-29/timeline/test-run.json": "806fd322bf008d2282969de4af19a3df2d39cbc379963ab2628d6571e1ed9e2f",
+    "reports/universe-flight-2026-09-29/timeline/focused-tests.txt": "ab073fd352d55699ba5e3840fb65d130f005c0073e13bf9542e9c1aa21278c5b",
+    "reports/universe-flight-2026-09-29/timeline/browser-check.json": "3926fe7988ea2c8c6a71a519b9e7f28038ce70edfe29d401fe33f3ac3603f24a",
+    "reports/universe-flight-2026-09-29/timeline/flight/check.json": "92d7151baa8d0aa6659a411805ab99c665082811f1177eb7ebf3c3f3800762ec",
+    "reports/universe-flight-2026-09-29/timeline/timeline-normal.png": "9a6c11a36e30e012fb52a1e49c7931d3b0523d8d18e5a366aada21fb48da0b42",
+    "reports/universe-flight-2026-09-29/timeline/timeline-fullscreen.png": "baa761af6d80bfe54695f715f1952ef51d6d582707ab5f40051d1890026190c4",
+    "reports/universe-flight-2026-09-29/timeline/timeline-320.png": "9a66807712cedb656df646b03fd7549760506ef00ac1b237c2d3238f08c4d6ec",
+    "reports/universe-flight-2026-09-29/timeline/timeline-568.png": "a0eeb54c5e1170008031b849a2da9c9188f45da575b00de145b9336895b8e059"
+  },
+  "preview": "http://127.0.0.1:3187/reports/universe-flight-2026-09-29/preview.html?enhanced=41#universe-flight"
+}

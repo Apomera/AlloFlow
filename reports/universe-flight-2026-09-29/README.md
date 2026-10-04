@@ -67,6 +67,16 @@ The sightline instrument uses the observer-frame relation D = 1/[γ(1−βμ′)
 
 ## Verification
 
+### Scenic route timeline pass
+
+All four scenic flybys now include a **Route time** slider in normal controls and fullscreen Explore. Drag or tap to inspect any route moment, use arrow keys for 0.1-second steps, or use Home and End for the route endpoints. Gold marks locate the existing named highlights. **Continue flyby** resumes from the chosen moment and returns focus to the view. Seeking keeps fullscreen controls open and pauses immediately.
+
+The time readout describes the authored route at Standard pace. The selected Slow, Standard or Fast pace applies when playback resumes. Seeking retains the lens, exposure and quality, restores the route's viewing direction, and selects the nearby authored highlight's destination. The route distance follows the selected position; the physical journey clocks remain zero for these camera tours. Completed routes can be revisited through the same slider.
+
+Verification passes **147 tests across five files**, including seven new timeline cases, in 108.92 seconds. Browser checks exercise **26 seeks**, four route types, keyboard and pointer input, touch at 320-pixel phone and 568-pixel landscape sizes, fullscreen focus, stable paused pixels, endpoint revisits and graphics cleanup. All nine scoped accessibility checks pass. The existing stellar flight regression also passes 10 groups, nine accessibility scopes and 13 captures. These checks cover functionality and selected accessibility rules, rather than measuring frame rate.
+
+Screenshots: [normal timeline](timeline/timeline-normal.png), [fullscreen](timeline/timeline-fullscreen.png), [phone](timeline/timeline-320.png), [landscape](timeline/timeline-568.png).
+
 ### Resolved cloud surfaces pass
 
 Close blue and violet clouds now grow beyond the former 60 CSS-pixel sprite plateau. Their existing wisps blend into larger, textured surfaces as you approach or zoom, and a visible rim remains drawn when its center moves outside the view. Use **Blue cloud overlook** or **Violet cloud overlook**, then narrow the lens or choose a viewing distance and orbit the destination.

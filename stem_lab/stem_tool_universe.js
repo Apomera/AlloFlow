@@ -284,10 +284,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
     var h=props.React.createElement,label=props.label,flyby=props.flyby,prefix=props.compact?'uf-inview':'uf';
     if(!flyby||(!flyby.active&&!flyby.completed))return null;
     var completed=!!flyby.completed,percent=Math.round(Math.max(0,Math.min(1,flyby.progress||0))*100);
+    var duration=flyby.durationSeconds||1,elapsed=Math.max(0,Math.min(duration,flyby.elapsedSeconds||0));
+    function routeClock(seconds) { var tenths=Math.round(seconds*10);return String(Math.floor(tenths/600)).padStart(2,'0')+':'+String(Math.floor(tenths/10)%60).padStart(2,'0')+'.'+tenths%10; }
     return h('section',{id:prefix+'-flyby-status',className:'uf-flyby-card','aria-labelledby':prefix+'-flyby-title','data-flyby-id':flyby.id,'data-flyby-state':completed?'completed':props.running?'running':'paused'},
       h('h4',{id:prefix+'-flyby-title'},label('flyby_'+flyby.id,flyby.name||'Scenic flyby')),
       h('div',{className:'uf-flyby-phase'},h('strong',null,flybyPhaseLabel(flyby,label)),h('span',null,percent+'%')),
-      h('progress',{id:prefix+'-flyby-progress',value:percent,max:100,'aria-label':label('flyby_progress','Flyby progress')}),
+      h('div',{className:'uf-flyby-timeline'},
+        h('div',{className:'uf-flyby-time'},h('label',{htmlFor:prefix+'-flyby-position'},label('flyby_position','Route time')),h('output',{htmlFor:prefix+'-flyby-position','aria-live':'off'},routeClock(elapsed)+' / '+routeClock(duration))),
+        h('div',{className:'uf-flyby-rail'},
+          h('input',{id:prefix+'-flyby-position',type:'range',min:0,max:duration,step:0.1,value:Math.round(elapsed*10)/10,disabled:!props.ready,
+            'aria-describedby':prefix+'-flyby-seek-help','aria-valuetext':elapsed.toFixed(1)+' / '+duration+' '+label('flyby_route_seconds','seconds at Standard pace')+' · '+flybyPhaseLabel(flyby,label),
+            onPointerDown:props.onPause,onKeyDown:function(e){if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','PageUp','PageDown'].indexOf(e.key)>=0)props.onPause();},onChange:function(e){props.onSeek(Number(e.target.value));}}),
+          h('div',{className:'uf-flyby-ticks','aria-hidden':'true'},(props.highlights||[]).map(function(item){return h('i',{key:item.id,style:{left:(item.seconds/duration*100)+'%'}});}))),
+        h('p',{id:prefix+'-flyby-seek-help',className:'uf-note'},label('flyby_seek_help','Scrub to pause at any moment. Route time is shown at Standard pace.')),
+        !completed&&h('button',{type:'button',className:'uf-flyby-play',disabled:!props.ready,onClick:props.onPlayback},props.running?label('flyby_pause','Pause flyby'):label('flyby_continue','Continue flyby'))),
       h('p',{className:'uf-note'},completed?(flyby.id==='stellar'?label('flyby_stellar_complete_help','The stellar panorama is ready. Travel is paused; revisit a close pass or save this viewpoint.'):flyby.id==='nebula'?label('flyby_nebula_complete_help','The violet cloud view is ready. Travel is paused; look around or save this viewpoint.'):flyby.id==='group'?label('flyby_group_complete_help','The galaxy group view is ready. Travel is paused; look around or save this viewpoint.'):label('flyby_complete_help','The galaxy view is ready. Travel is paused; look around or save this viewpoint.')):label('flyby_control_help','Pause any time. Looking around keeps the route moving and releases the guided view.')),
       h('label',{htmlFor:prefix+'-flyby-rate'},label('flyby_rate','Flyby pace')),
       h('select',{id:prefix+'-flyby-rate',value:props.rate,disabled:!props.ready||completed,onChange:function(e){props.onRate(Number(e.target.value));}},
@@ -330,7 +340,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
     function button(text,action,extra){return h('button',Object.assign({type:'button',onClick:action,disabled:!props.ready},extra||{}),text);}
     return h('section',{className:'uf-inview-destinations','aria-labelledby':'uf-inview-destinations-title'},
       h('h4',{id:'uf-inview-destinations-title'},label('inview_explore','Explore the scene')),
-      h(UniverseFlightFlybyControls,{React:props.React,label:label,ready:props.ready,compact:true,flyby:props.flyby,running:props.running,rate:props.flybyRate,onRate:props.onFlybyRate,onFollow:props.onFollowFlyby,onCancel:props.onEndFlyby,onLaunch:props.onScenicFlight,highlights:props.flybyHighlights,onHighlight:props.onFlybyHighlight}),
+      h(UniverseFlightFlybyControls,{React:props.React,label:label,ready:props.ready,compact:true,flyby:props.flyby,running:props.running,rate:props.flybyRate,onRate:props.onFlybyRate,onFollow:props.onFollowFlyby,onCancel:props.onEndFlyby,onLaunch:props.onScenicFlight,highlights:props.flybyHighlights,onHighlight:props.onFlybyHighlight,onSeek:props.onSeekFlyby,onPause:props.onPauseFlyby,onPlayback:props.onFlybyPlayback}),
       h(UniverseFlightScenicFlights,{React:props.React,label:label,ready:props.ready,compact:true,mode:props.mode,onLaunch:props.onScenicFlight}),
       h('label',{htmlFor:'uf-inview-mode'},label('mode','Flight mode')),
       h('select',{id:'uf-inview-mode',value:props.mode,disabled:!props.ready,onChange:function(e){props.onMode(e.target.value);}},
@@ -699,6 +709,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
       setTargetId(scene.current.snapshot().targetId||'');
       inspectScene();return true;
     }
+    function seekFlybyMoment(seconds) {
+      if(!scene.current||!ready||!scene.current.seekFlyby||!scene.current.seekFlyby(seconds))return false;
+      setRunning(false);setJourney(null);setTour(null);setNotice(label('flyby_seek_paused','Route moment paused. Continue the flyby or choose another moment.'));
+      setTargetId(scene.current.snapshot().targetId||'');
+      return true;
+    }
+    function toggleFlybyPlayback() {
+      if(!ready||!flyby||!flyby.active)return;
+      if(running)stop();else{setNotice('');setJourney(null);setRunning(true);inspectScene();}
+    }
     function endFlyby() { if(scene.current&&scene.current.cancelFlyby&&scene.current.cancelFlyby()){setJourney(null);inspectScene();} }
     function launchScenicFlight(launchRegion) {
       if(api&&api.flybys&&api.flybys().some(function(item){return item.id===launchRegion;}))return launchFlyby(launchRegion);
@@ -1036,7 +1056,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 React:React,label:label,number:number,ready:ready,mode:mode,region:flightRegion,section:inViewSection,onSection:setInViewSection,travelSpeed:travelSpeed,speedLevel:speedLevel,smoothTravel:smoothTravel,motion:info.motion,beta:beta,timeScale:timeScale,compareRest:compareRest,running:running,route:route,orbit:!!(info.orbit&&info.orbit.active),orbitRate:orbitRate,orbitDirection:orbitDirection,fov:fov,exposure:exposure,quality:quality,
                 destinations:destinations,targetId:targetId,selected:selected,target:activeTarget,approach:approach,arrivalScale:arrivalScale,vistas:vistas[flightRegion],playbackTime:playbackTime,notice:notice,
                 views:views,viewName:viewName,viewNote:viewNote,onViewName:setViewName,onViewNote:setViewNote,onPause:stop,onSaveView:saveInView,onRestoreView:restoreInView,
-                checkpoint:checkpoint,journeyActions:journeyActions,onResetJourney:resetJourney,onScenicFlight:launchScenicFlight,flyby:flyby,flybyRate:flybyRate,onFlybyRate:chooseFlybyRate,onFollowFlyby:followFlyby,onEndFlyby:endFlyby,flybyHighlights:flybyHighlights,onFlybyHighlight:visitFlybyHighlight,
+                checkpoint:checkpoint,journeyActions:journeyActions,onResetJourney:resetJourney,onScenicFlight:launchScenicFlight,flyby:flyby,flybyRate:flybyRate,onFlybyRate:chooseFlybyRate,onFollowFlyby:followFlyby,onEndFlyby:endFlyby,flybyHighlights:flybyHighlights,onFlybyHighlight:visitFlybyHighlight,onSeekFlyby:seekFlybyMoment,onPauseFlyby:stop,onFlybyPlayback:toggleFlybyPlayback,
                 targetName:selected&&selected.name,coincident:activeTarget&&activeTarget.coincident,framing:info.framing,grid:compositionGrid,onGrid:function(){setCompositionGrid(!compositionGrid);},onFrame:frameSelected,onUndoFrame:undoFraming,onClose:closeInViewControls,
                 onMode:changeMode,onRegion:chooseRegion,onTarget:chooseTarget,onArrival:function(value){setArrivalScale(value);setNotice('');},onMatchPace:matchTravelPace,onCenter:function(){frameSelected(0.5);},onApproach:approachInView,onOrbit:orbitInView,onEndApproach:function(){if(endApproach())inspectScene();},onVista:vistaInView,onSaveImage:captureInView,onFov:setLens,onExposure:setExposure,onQuality:setQuality,onResetDisplay:resetDisplay,
                 onSpeed:setSpeedLevel,onSmooth:chooseSmoothTravel,onBeta:chooseBeta,onTime:setTimeScale,onCompare:function(){setCompareRest(!compareRest);},onOrbitRate:setOrbitRate,onReverseOrbit:function(){setOrbitDirection(-orbitDirection);},onTravel:toggleTravel}),
@@ -1140,7 +1160,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
           ),
           h('aside',{className:'uf-controls','aria-label':label('settings','Flight settings')},
             h('p',{className:'uf-eyebrow'},label('navigation','NAVIGATION')),
-            h(UniverseFlightFlybyControls,{React:React,label:label,ready:ready,flyby:flyby,running:running,rate:flybyRate,onRate:chooseFlybyRate,onFollow:followFlyby,onCancel:endFlyby,onLaunch:launchScenicFlight,highlights:flybyHighlights,onHighlight:visitFlybyHighlight}),
+            h(UniverseFlightFlybyControls,{React:React,label:label,ready:ready,flyby:flyby,running:running,rate:flybyRate,onRate:chooseFlybyRate,onFollow:followFlyby,onCancel:endFlyby,onLaunch:launchScenicFlight,highlights:flybyHighlights,onHighlight:visitFlybyHighlight,onSeek:seekFlybyMoment,onPause:stop,onPlayback:toggleFlybyPlayback}),
             mode==='explore' ? h(React.Fragment,null,
               h('label',{htmlFor:'uf-region'},label('scale','Explore a scale')),
               h('select',{id:'uf-region',value:region,onChange:function(e){chooseRegion(e.target.value);}},
@@ -1229,9 +1249,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
   [data-universe-tool] .uf-flyby-card h4{margin:0 0 8px;color:#ffe0a6;font-size:14px;}
   [data-universe-tool] .uf-flyby-phase{display:flex;justify-content:space-between;gap:8px;color:#d8e8f4;font-size:11px;line-height:1.5;}
   [data-universe-tool] .uf-flyby-phase span{color:#ffe0a6;flex-shrink:0;}
-  [data-universe-tool] .uf-flyby-card progress{display:block;width:100%;height:7px;margin:10px 0;accent-color:#e3bc7c;}
-  [data-universe-tool] .uf-flyby-card progress::-webkit-progress-bar{background:#344655;border-radius:8px;}
-  [data-universe-tool] .uf-flyby-card progress::-webkit-progress-value{background:#e3bc7c;border-radius:8px;}
+  [data-universe-tool] .uf-flyby-timeline{margin:12px 0;padding:12px;border:1px solid #496476;border-radius:12px;background:linear-gradient(145deg,#142937,#0a1928);}
+  [data-universe-tool] .uf-flyby-time{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;}
+  [data-universe-tool] .uf-flyby-card .uf-flyby-time label{margin:0;color:#cde2ee;font-size:11px;}
+  [data-universe-tool] .uf-flyby-time output{color:#a7eee0;font:11px ui-monospace,monospace;font-variant-numeric:tabular-nums;white-space:nowrap;}
+  [data-universe-tool] .uf-flyby-rail{position:relative;margin:2px 0 6px;}
+  [data-universe-tool] .uf-flyby-card .uf-flyby-rail input[type="range"]{display:block;width:100%;min-width:0;height:44px;margin:0;accent-color:#91e4d3;cursor:ew-resize;}
+  [data-universe-tool] .uf-flyby-ticks{position:absolute;left:8px;right:8px;bottom:1px;height:5px;pointer-events:none;}
+  [data-universe-tool] .uf-flyby-ticks i{position:absolute;width:2px;height:5px;background:#e3bc7c;transform:translateX(-1px);}
+  [data-universe-tool] .uf-flyby-card .uf-flyby-play{width:100%;min-height:44px;margin-top:3px;border-color:#669b99;background:#183e47;color:#ddfff8;font-size:12px;}
   [data-universe-tool] .uf-flyby-card .uf-note{font-size:11px;line-height:1.6;margin:8px 0;}
   [data-universe-tool] .uf-flyby-card label{display:block;margin:10px 0 5px;font-size:11px;}
   [data-universe-tool] .uf-flyby-card select{width:100%;}

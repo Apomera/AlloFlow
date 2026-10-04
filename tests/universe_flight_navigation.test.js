@@ -2745,3 +2745,118 @@ describe('Universe flight scenic highlights', () => {
     }
   });
 });
+
+describe('Universe flight continuous route timeline', () => {
+  function launch(id, rate = 1) {
+    const route = flight.flybys().find(item => item.id === id);
+    scene.set({ mode: 'explore', region: route.region, flybyRate: rate });
+    expect(scene.startFlyby(id)).toBe(true);
+    advance();
+    return route;
+  }
+
+  function reject(value) {
+    const saved = scene.snapshot(), info = structuredClone(telemetry);
+    const scheduled = [...frames.keys()], events = pauseEvents.length;
+    expect(scene.seekFlyby(value)).toBe(false);
+    expect(scene.snapshot()).toEqual(saved);
+    expect(telemetry).toEqual(info);
+    expect([...frames.keys()]).toEqual(scheduled);
+    expect(pauseEvents).toHaveLength(events);
+  }
+
+  for (const id of ['halo', 'nebula', 'group', 'stellar']) {
+    it(`seeks forward and backward to arbitrary ${id} moments on the authored route`, () => {
+      const route = launch(id);
+      for (const seconds of [13.7, 3.2, route.durationSeconds - 0.1]) {
+        launch(id);
+        for (let tick = 0; tick < Math.round(seconds * 10); tick++) advance(100);
+        scene.set({ running: false });
+        scene.followFlybyView();
+        const expected = scene.snapshot().state;
+        scene.look(0.6, -0.2);
+        const eventCount = pauseEvents.length;
+        expect(scene.seekFlyby(seconds)).toBe(true);
+        const actual = scene.snapshot().state;
+        actual.position.forEach((value, index) => expect(value).toBeCloseTo(expected.position[index], 6));
+        expect(actual.distanceLy).toBeCloseTo(expected.distanceLy, 6);
+        expect(Math.sin(actual.yaw)).toBeCloseTo(Math.sin(expected.yaw), 10);
+        expect(Math.cos(actual.yaw)).toBeCloseTo(Math.cos(expected.yaw), 10);
+        expect(actual.pitch).toBeCloseTo(expected.pitch, 10);
+        expect([actual.universeYears, actual.travelerYears]).toEqual([0, 0]);
+        expect(telemetry).toMatchObject({ running: false, flyby: { id, active: true, completed: false, autoLook: true, elapsedSeconds: seconds } });
+        expect(pauseEvents).toHaveLength(eventCount + 1);
+        expect(pauseEvents.at(-1)[1]).toMatchObject({ kind: 'flyby-moment', routeId: id, seconds });
+        const paused = scene.snapshot();
+        advance(10000);
+        expect(scene.snapshot()).toEqual(paused);
+        expect(frames.size).toBe(0);
+      }
+    });
+  }
+
+  it('retains the lens and pace, reuses graphics, and resumes without counting a paused gap', () => {
+    const route = launch('nebula', 2);
+    scene.set({ fov: 43, exposure: 0.72, quality: 'low', speed: 17 });
+    const settings = scene.snapshot().settings, textures = createdTextures.slice();
+    const uploads = textureUploads.length, creates = { ...graphicsCreates };
+    for (const seconds of [7.4, 24.6, 12.8]) {
+      expect(scene.seekFlyby(seconds)).toBe(true);
+      advance();
+      expect(scene.snapshot().settings).toEqual(settings);
+      expect(telemetry.flyby.rate).toBe(2);
+      expect(telemetry.motion.paceLyPerSecond).toBe(0);
+      expect(createdTextures).toEqual(textures);
+      expect(textureUploads).toHaveLength(uploads);
+      expect(graphicsCreates).toEqual(creates);
+    }
+    advance(50000);
+    scene.set({ running: true }); advance(10000);
+    expect(telemetry.flyby.elapsedSeconds).toBe(12.8);
+    advance(100); scene.set({ running: false });
+    expect(telemetry.flyby.elapsedSeconds).toBeCloseTo(13, 12);
+    expect(telemetry.flyby.active).toBe(true);
+    for (const highlight of route.highlights) {
+      expect(scene.seekFlyby(highlight.seconds)).toBe(true);
+      const atTime = scene.snapshot();
+      expect(scene.seekFlybyHighlight(highlight.id)).toBe(true);
+      expect(scene.snapshot()).toEqual(atTime);
+    }
+  });
+
+  it('allows completed-route revisits and exact endpoints without accumulating false travel', () => {
+    for (const id of ['halo', 'nebula', 'group', 'stellar']) {
+      const route = launch(id);
+      expect(scene.seekFlyby(route.durationSeconds)).toBe(true);
+      const end = scene.snapshot();
+      expect(telemetry).toMatchObject({ running: false, flyby: { active: false, completed: true, progress: 1, phase: 'complete' } });
+      expect(end.targetId).toBe(route.highlights.at(-1).targetId);
+      expect(scene.seekFlyby(0)).toBe(true);
+      expect(scene.snapshot().state.position).toEqual(route.position);
+      expect(scene.snapshot().state.distanceLy).toBe(0);
+      expect(scene.snapshot().targetId).toBe(route.targetId);
+      expect(scene.seekFlyby(route.durationSeconds - 0.1)).toBe(true);
+      scene.set({ running: true }); advance(); advance(200);
+      expect(telemetry.flyby.completed).toBe(true);
+      expect(scene.snapshot().state.position).toEqual(end.state.position);
+      expect(scene.snapshot().state.distanceLy).toBe(end.state.distanceLy);
+      expect(scene.seekFlyby(8.3)).toBe(true);
+      const saved = scene.snapshot();
+      expect(scene.restore(saved)).toBe(true);
+      expect(telemetry.flyby.active).toBe(false);
+      reject(8.3);
+    }
+  });
+
+  it('rejects invalid or unavailable seeks without changing state, events or scheduled frames', () => {
+    reject(1);
+    const route = launch('nebula');
+    for (const value of [NaN, Infinity, -Infinity, -0.1, route.durationSeconds + 0.1, '10', null, undefined, {}, true]) reject(value);
+    scene.set({ mode: 'relativity' }); reject(1);
+    launch('halo'); scene.set({ region: 'cosmic' }); reject(1);
+    launch('stellar');
+    sceneCanvas.dispatchEvent(new Event('webglcontextlost', { cancelable: true }));
+    reject(1);
+    scene.dispose(); reject(1);
+  });
+});

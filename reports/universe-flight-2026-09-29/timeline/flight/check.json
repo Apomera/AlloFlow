@@ -1,0 +1,2490 @@
+{
+  "completed": true,
+  "sourceHash": "ad33daca7123ff080ad0478e7653f3e2ad51fdf1e2041b42284735c95f29ee4a",
+  "uiHash": "707b795115b946ab0497509193ef3d8b6b537c9965aacc3293c799591d0aa6e0",
+  "checks": [
+    "Native travel crosses between nearby stars with real curved camera movement and changing renderer pixels",
+    "Native Stellar launch and all three exact paused highlights preserve display settings and return canvas focus",
+    "Free look retains moving route progress and Follow restores its authored view",
+    "Natural completion pauses once at the authored endpoint and completed/backward highlights reopen a resumable route",
+    "Saved observations clear route motion; fullscreen native launch and End retain their focus handoff",
+    "Normal controls retain selected lens and Slow pace; Stellar phase honors clean view and fullscreen controls",
+    "Phone and short landscape highlights remain reachable with 44px targets and unobstructed phase cues",
+    "The blue-star highlight selects its matching destination for native inspection and a moving orbit",
+    "Fullscreen physical-mode launch explicitly switches into the generated exploration scene",
+    "Stellar route adds no graphics resources and closing disposes the existing textures, buffers, and programs"
+  ],
+  "captures": [
+    {
+      "name": "stellar-start",
+      "pixelHash": "bf25144c1cf342fc115b26b9c7f2e6bff45c1989e6354553147970c6f2635ac5",
+      "width": 1280,
+      "height": 800,
+      "stats": {
+        "mean": 9.354980973425112,
+        "clippedWhiteFraction": 0.000017542474716908313,
+        "luminousFraction": 0.205299581611978,
+        "colorFraction": 0.1342174740590655,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 62,
+          "exposure": 0.86,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -6.965040974398484,
+            3.9813838747821326,
+            -1.8780509893896737
+          ],
+          "yaw": 0.3559098377981744,
+          "pitch": -0.2621042410963054,
+          "distanceLy": 0.1282708239520271,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      }
+    },
+    {
+      "name": "stellar-crossing",
+      "pixelHash": "d4124caa9223241e8ed5cdc6b0686a2364bf7a641dc42bf9b25bdbb2e64e87a8",
+      "width": 1280,
+      "height": 800,
+      "stats": {
+        "mean": 2.854993512785803,
+        "clippedWhiteFraction": 0,
+        "luminousFraction": 0.0013244568411265778,
+        "colorFraction": 0.0005701304282995202,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 62,
+          "exposure": 0.86,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -0.7973977384716961,
+            0.5093414847674458,
+            10.86835291640547
+          ],
+          "yaw": 2.8417472858238426,
+          "pitch": -1.2439365686156703,
+          "distanceLy": 16.044697771999147,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      }
+    },
+    {
+      "name": "stellar-amber",
+      "pixelHash": "128f90021ea89acc30a5b5a1388ed977f241ca602840b507261bf611347862bc",
+      "width": 1280,
+      "height": 800,
+      "stats": {
+        "mean": 4.259544393855862,
+        "clippedWhiteFraction": 0,
+        "luminousFraction": 0.07939724056872703,
+        "colorFraction": 0.04091782227718864,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 62,
+          "exposure": 0.86,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -3.78,
+            1.2,
+            8.65
+          ],
+          "yaw": 1.7879076415298025,
+          "pitch": -0.27968459767612264,
+          "distanceLy": 11.50742869127847,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      }
+    },
+    {
+      "name": "stellar-blue",
+      "pixelHash": "50510f72840a9965df5e92088da7f7996df3dd56553aae65c183c6ba73d186f4",
+      "width": 1280,
+      "height": 800,
+      "stats": {
+        "mean": 4.737461463561562,
+        "clippedWhiteFraction": 0,
+        "luminousFraction": 0.11102632248331272,
+        "colorFraction": 0.04170723363944952,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 62,
+          "exposure": 0.86,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            5.16,
+            -1.96,
+            15.86
+          ],
+          "yaw": -1.4094212163742044,
+          "pitch": -0.2687788443866794,
+          "distanceLy": 25.082842742047433,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-star"
+      }
+    },
+    {
+      "name": "stellar-pale",
+      "pixelHash": "ab536710062793084d87ee320529d2907a15141d4b1e34e31718520fc9ac9b24",
+      "width": 1280,
+      "height": 800,
+      "stats": {
+        "mean": 24.750933008794266,
+        "clippedWhiteFraction": 0.000017542474716908313,
+        "luminousFraction": 0.638747818154707,
+        "colorFraction": 0.6200387688691243,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 62,
+          "exposure": 0.86,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -0.007,
+            2.747,
+            23.214
+          ],
+          "yaw": 0.6962380875955602,
+          "pitch": -0.32659684684871687,
+          "distanceLy": 39.689500667423516,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "pale-star"
+      }
+    },
+    {
+      "name": "stellar-completed",
+      "pixelHash": "c77b0fa6b8e8646d033d5a7115b90c227c27f5506e57d2a7c0f617c63cefe154",
+      "width": 1280,
+      "height": 800,
+      "stats": {
+        "mean": 15.171390283220383,
+        "clippedWhiteFraction": 0.000008771237358454156,
+        "luminousFraction": 0.40226648773342455,
+        "colorFraction": 0.43056249945179764,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 62,
+          "exposure": 0.86,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            7,
+            7,
+            48
+          ],
+          "yaw": 3.331559172750067,
+          "pitch": -0.3211387401276614,
+          "distanceLy": 66.43180361554967,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "pale-star"
+      }
+    },
+    {
+      "name": "stellar-revisited",
+      "pixelHash": "50510f72840a9965df5e92088da7f7996df3dd56553aae65c183c6ba73d186f4",
+      "width": 1280,
+      "height": 800,
+      "stats": {
+        "mean": 4.737461463561562,
+        "clippedWhiteFraction": 0,
+        "luminousFraction": 0.11102632248331272,
+        "colorFraction": 0.04170723363944952,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 62,
+          "exposure": 0.86,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            5.16,
+            -1.96,
+            15.86
+          ],
+          "yaw": -1.4094212163742044,
+          "pitch": -0.2687788443866794,
+          "distanceLy": 25.082842742047433,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-star"
+      }
+    },
+    {
+      "name": "stellar-backward",
+      "pixelHash": "128f90021ea89acc30a5b5a1388ed977f241ca602840b507261bf611347862bc",
+      "width": 1280,
+      "height": 800,
+      "stats": {
+        "mean": 4.259544393855862,
+        "clippedWhiteFraction": 0,
+        "luminousFraction": 0.07939724056872703,
+        "colorFraction": 0.04091782227718864,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 62,
+          "exposure": 0.86,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -3.78,
+            1.2,
+            8.65
+          ],
+          "yaw": 1.7879076415298025,
+          "pitch": -0.27968459767612264,
+          "distanceLy": 11.50742869127847,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      }
+    },
+    {
+      "name": "stellar-normal-composed",
+      "pixelHash": "9ea9d182c327ed408dabd8d426e557ac681f1874ffb53d02c61b2d3f902cb93e",
+      "width": 940,
+      "height": 440,
+      "stats": {
+        "mean": 5.498475596858469,
+        "clippedWhiteFraction": 0.000043329433684301746,
+        "luminousFraction": 0.14703843320767798,
+        "colorFraction": 0.053165215130638245,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 55,
+          "exposure": 0.86,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            5.16,
+            -1.96,
+            15.86
+          ],
+          "yaw": -1.4094212163742044,
+          "pitch": -0.2687788443866794,
+          "distanceLy": 25.082842742047433,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-star"
+      }
+    },
+    {
+      "name": "stellar-highlight-320",
+      "pixelHash": "22c99ba15406e08890f3df5898cd22ce1366d5af1e2eaafd8753460338b826b2",
+      "width": 320,
+      "height": 740,
+      "stats": {
+        "mean": 14.449215187860267,
+        "clippedWhiteFraction": 0,
+        "luminousFraction": 0.519467251882402,
+        "colorFraction": 0.43138219380226267,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 62,
+          "exposure": 0.86,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -0.007,
+            2.747,
+            23.214
+          ],
+          "yaw": 0.6962380875955602,
+          "pitch": -0.32659684684871687,
+          "distanceLy": 39.689500667423516,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "pale-star"
+      }
+    },
+    {
+      "name": "stellar-highlight-568",
+      "pixelHash": "cb0ce81a7fd677d6780be3999332f846f7669bee9741fd1ef7aada6e9fe8dbf7",
+      "width": 568,
+      "height": 320,
+      "stats": {
+        "mean": 24.02944395474497,
+        "clippedWhiteFraction": 0.00014756517461878997,
+        "luminousFraction": 0.6163797343826857,
+        "colorFraction": 0.5885882931628136,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 62,
+          "exposure": 0.86,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -0.007,
+            2.747,
+            23.214
+          ],
+          "yaw": 0.6962380875955602,
+          "pitch": -0.32659684684871687,
+          "distanceLy": 39.689500667423516,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "pale-star"
+      }
+    },
+    {
+      "name": "stellar-context-blue",
+      "pixelHash": "50510f72840a9965df5e92088da7f7996df3dd56553aae65c183c6ba73d186f4",
+      "width": 1280,
+      "height": 800,
+      "stats": {
+        "mean": 4.737461463561562,
+        "clippedWhiteFraction": 0,
+        "luminousFraction": 0.11102632248331272,
+        "colorFraction": 0.04170723363944952,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 62,
+          "exposure": 0.86,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            5.16,
+            -1.96,
+            15.86
+          ],
+          "yaw": -1.4094212163742044,
+          "pitch": -0.2687788443866794,
+          "distanceLy": 25.082842742047433,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-star"
+      }
+    },
+    {
+      "name": "stellar-blue-orbit",
+      "pixelHash": "37108981e0001a89f46885e49345a304d58648736c627ba9ca599801802b7536",
+      "width": 1280,
+      "height": 800,
+      "stats": {
+        "mean": 4.752473417003871,
+        "clippedWhiteFraction": 0.000017542474716908313,
+        "luminousFraction": 0.1115087405380277,
+        "colorFraction": 0.04150549518020507,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 62,
+          "exposure": 0.86,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            5.158356950702276,
+            -1.96,
+            15.850255734062749
+          ],
+          "yaw": -1.3980799621749904,
+          "pitch": -0.2687788443866798,
+          "distanceLy": 25.092724613142476,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-star"
+      }
+    }
+  ],
+  "accessibility": [
+    {
+      "name": "stellar-desktop-controls",
+      "violations": []
+    },
+    {
+      "name": "stellar-completed-checkpoint",
+      "violations": []
+    },
+    {
+      "name": "stellar-completed-controls",
+      "violations": []
+    },
+    {
+      "name": "stellar-320-normal",
+      "violations": []
+    },
+    {
+      "name": "stellar-320-fullscreen",
+      "violations": []
+    },
+    {
+      "name": "stellar-320-current-stop",
+      "violations": []
+    },
+    {
+      "name": "stellar-568-normal",
+      "violations": []
+    },
+    {
+      "name": "stellar-568-fullscreen",
+      "violations": []
+    },
+    {
+      "name": "stellar-568-current-stop",
+      "violations": []
+    }
+  ],
+  "errors": [],
+  "jumps": [
+    {
+      "route": "stellar",
+      "highlight": {
+        "id": "amber",
+        "name": "Amber photosphere",
+        "seconds": 10,
+        "description": "Pause beside the warm star to inspect its illustrative surface.",
+        "targetId": "amber-star"
+      },
+      "id": "amber",
+      "before": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 62,
+          "exposure": 0.86,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -0.7973977384716961,
+            0.5093414847674458,
+            10.86835291640547
+          ],
+          "yaw": 2.8417472858238426,
+          "pitch": -1.2439365686156703,
+          "distanceLy": 16.044697771999147,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      },
+      "eventCount": 1,
+      "accepted": true,
+      "after": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 62,
+          "exposure": 0.86,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -3.78,
+            1.2,
+            8.65
+          ],
+          "yaw": 1.7879076415298025,
+          "pitch": -0.27968459767612264,
+          "distanceLy": 11.50742869127847,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      },
+      "info": {
+        "distanceLy": 11.50742869127847,
+        "universeYears": 0,
+        "travelerYears": 0,
+        "position": [
+          -3.78,
+          1.2,
+          8.65
+        ],
+        "yaw": 1.7879076415298025,
+        "pitch": -0.27968459767612264,
+        "running": false,
+        "target": {
+          "id": "amber-star",
+          "name": "Amber star",
+          "distanceLy": 0.724499827467198,
+          "coincident": false,
+          "guide": {
+            "screen": [
+              0.4999999999999999,
+              0.5
+            ],
+            "inView": true,
+            "angleDeg": 9.996714717928183e-15,
+            "behind": false,
+            "sector": "left",
+            "arrowDeg": 162.6459753637387,
+            "edge": [
+              0.09999999999999998,
+              0.7
+            ]
+          },
+          "screen": [
+            0.4999999999999999,
+            0.5
+          ],
+          "inView": true,
+          "doppler": 1,
+          "restAngleDeg": 101.94890892700457,
+          "apparentAngleDeg": 101.94890892700457
+        },
+        "navigation": {
+          "active": false,
+          "targetId": null,
+          "completed": false,
+          "alreadyWithin": false,
+          "remainingLy": 0,
+          "arrivalRadiusLy": 0,
+          "estimatedSeconds": 0,
+          "progress": 0
+        },
+        "flyby": {
+          "active": true,
+          "completed": false,
+          "id": "stellar",
+          "name": "Stellar close pass",
+          "progress": 0.21739130434782608,
+          "elapsedSeconds": 10,
+          "durationSeconds": 46,
+          "autoLook": true,
+          "phase": "amber",
+          "rate": 1
+        },
+        "orbit": {
+          "active": false,
+          "targetId": null
+        },
+        "motion": {
+          "smoothTravel": true,
+          "paceLyPerSecond": 0,
+          "targetLyPerSecond": 0.24953778709369212,
+          "kind": "flyby"
+        },
+        "framing": {
+          "canLeft": true,
+          "canCenter": true,
+          "canRight": true,
+          "canUndo": false,
+          "placement": null
+        },
+        "trail": [
+          [
+            -3.78,
+            1.2,
+            8.65
+          ]
+        ],
+        "cameraMoves": 0
+      },
+      "events": [
+        {
+          "message": "Amber photosphere. Travel is paused; start travel to continue from this route moment.",
+          "detail": {
+            "kind": "flyby-highlight",
+            "routeId": "stellar",
+            "routeName": "Stellar close pass",
+            "seconds": 10,
+            "position": [
+              -3.78,
+              1.2,
+              8.65
+            ],
+            "targetId": "amber-star",
+            "targetName": "Amber star",
+            "highlightId": "amber",
+            "highlightName": "Amber photosphere"
+          }
+        }
+      ]
+    },
+    {
+      "route": "stellar",
+      "highlight": {
+        "id": "blue",
+        "name": "Blue star pass",
+        "seconds": 24,
+        "description": "Compare the blue-white surface and the moving stellar background.",
+        "targetId": "blue-star"
+      },
+      "id": "blue",
+      "before": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 62,
+          "exposure": 0.86,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -3.78,
+            1.2,
+            8.65
+          ],
+          "yaw": 1.7879076415298025,
+          "pitch": -0.27968459767612264,
+          "distanceLy": 11.50742869127847,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      },
+      "eventCount": 2,
+      "accepted": true,
+      "after": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 62,
+          "exposure": 0.86,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            5.16,
+            -1.96,
+            15.86
+          ],
+          "yaw": -1.4094212163742044,
+          "pitch": -0.2687788443866794,
+          "distanceLy": 25.082842742047433,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-star"
+      },
+      "info": {
+        "distanceLy": 25.082842742047433,
+        "universeYears": 0,
+        "travelerYears": 0,
+        "position": [
+          5.16,
+          -1.96,
+          15.86
+        ],
+        "yaw": -1.4094212163742044,
+        "pitch": -0.2687788443866794,
+        "running": false,
+        "target": {
+          "id": "blue-star",
+          "name": "Blue star",
+          "distanceLy": 0.9037698822156006,
+          "coincident": false,
+          "guide": {
+            "screen": [
+              0.4999999999999999,
+              0.4999999999999997
+            ],
+            "inView": true,
+            "angleDeg": 2.252349586542088e-14,
+            "behind": false,
+            "sector": "upper-left",
+            "arrowDeg": -119.61943917769467,
+            "edge": [
+              0.35786802030456855,
+              0.09999999999999998
+            ]
+          },
+          "screen": [
+            0.4999999999999999,
+            0.4999999999999997
+          ],
+          "inView": true,
+          "doppler": 1,
+          "restAngleDeg": 81.088615441644,
+          "apparentAngleDeg": 81.088615441644
+        },
+        "navigation": {
+          "active": false,
+          "targetId": null,
+          "completed": false,
+          "alreadyWithin": false,
+          "remainingLy": 0,
+          "arrivalRadiusLy": 0,
+          "estimatedSeconds": 0,
+          "progress": 0
+        },
+        "flyby": {
+          "active": true,
+          "completed": false,
+          "id": "stellar",
+          "name": "Stellar close pass",
+          "progress": 0.5217391304347826,
+          "elapsedSeconds": 24,
+          "durationSeconds": 46,
+          "autoLook": true,
+          "phase": "blue",
+          "rate": 1
+        },
+        "orbit": {
+          "active": false,
+          "targetId": null
+        },
+        "motion": {
+          "smoothTravel": true,
+          "paceLyPerSecond": 0,
+          "targetLyPerSecond": 0.5150339326676874,
+          "kind": "flyby"
+        },
+        "framing": {
+          "canLeft": true,
+          "canCenter": true,
+          "canRight": true,
+          "canUndo": false,
+          "placement": null
+        },
+        "trail": [
+          [
+            5.16,
+            -1.96,
+            15.86
+          ]
+        ],
+        "cameraMoves": 0
+      },
+      "events": [
+        {
+          "message": "Blue star pass. Travel is paused; start travel to continue from this route moment.",
+          "detail": {
+            "kind": "flyby-highlight",
+            "routeId": "stellar",
+            "routeName": "Stellar close pass",
+            "seconds": 24,
+            "position": [
+              5.16,
+              -1.96,
+              15.86
+            ],
+            "targetId": "blue-star",
+            "targetName": "Blue star",
+            "highlightId": "blue",
+            "highlightName": "Blue star pass"
+          }
+        }
+      ]
+    },
+    {
+      "route": "stellar",
+      "highlight": {
+        "id": "pale",
+        "name": "Pale star reveal",
+        "seconds": 38,
+        "description": "Look across the pale star with the blue emission region beyond.",
+        "targetId": "pale-star"
+      },
+      "id": "pale",
+      "before": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 62,
+          "exposure": 0.86,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            5.16,
+            -1.96,
+            15.86
+          ],
+          "yaw": -1.4094212163742044,
+          "pitch": -0.2687788443866794,
+          "distanceLy": 25.082842742047433,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-star"
+      },
+      "eventCount": 3,
+      "accepted": true,
+      "after": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 62,
+          "exposure": 0.86,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -0.007,
+            2.747,
+            23.214
+          ],
+          "yaw": 0.6962380875955602,
+          "pitch": -0.32659684684871687,
+          "distanceLy": 39.689500667423516,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "pale-star"
+      },
+      "info": {
+        "distanceLy": 39.689500667423516,
+        "universeYears": 0,
+        "travelerYears": 0,
+        "position": [
+          -0.007,
+          2.747,
+          23.214
+        ],
+        "yaw": 0.6962380875955602,
+        "pitch": -0.32659684684871687,
+        "running": false,
+        "target": {
+          "id": "pale-star",
+          "name": "Pale star",
+          "distanceLy": 1.081597892009781,
+          "coincident": false,
+          "guide": {
+            "screen": [
+              0.5,
+              0.4999999999999996
+            ],
+            "inView": true,
+            "angleDeg": 2.564245162451646e-14,
+            "behind": false,
+            "sector": "up",
+            "arrowDeg": -82.87498365109819,
+            "edge": [
+              0.53125,
+              0.09999999999999998
+            ]
+          },
+          "screen": [
+            0.5,
+            0.4999999999999996
+          ],
+          "inView": true,
+          "doppler": 1,
+          "restAngleDeg": 43.38933105264932,
+          "apparentAngleDeg": 43.38933105264932
+        },
+        "navigation": {
+          "active": false,
+          "targetId": null,
+          "completed": false,
+          "alreadyWithin": false,
+          "remainingLy": 0,
+          "arrivalRadiusLy": 0,
+          "estimatedSeconds": 0,
+          "progress": 0
+        },
+        "flyby": {
+          "active": true,
+          "completed": false,
+          "id": "stellar",
+          "name": "Stellar close pass",
+          "progress": 0.8260869565217391,
+          "elapsedSeconds": 38,
+          "durationSeconds": 46,
+          "autoLook": true,
+          "phase": "pale",
+          "rate": 1
+        },
+        "orbit": {
+          "active": false,
+          "targetId": null
+        },
+        "motion": {
+          "smoothTravel": true,
+          "paceLyPerSecond": 0,
+          "targetLyPerSecond": 0.885245726575904,
+          "kind": "flyby"
+        },
+        "framing": {
+          "canLeft": true,
+          "canCenter": true,
+          "canRight": true,
+          "canUndo": false,
+          "placement": null
+        },
+        "trail": [
+          [
+            -0.007,
+            2.747,
+            23.214
+          ]
+        ],
+        "cameraMoves": 0
+      },
+      "events": [
+        {
+          "message": "Pale star reveal. Travel is paused; start travel to continue from this route moment.",
+          "detail": {
+            "kind": "flyby-highlight",
+            "routeId": "stellar",
+            "routeName": "Stellar close pass",
+            "seconds": 38,
+            "position": [
+              -0.007,
+              2.747,
+              23.214
+            ],
+            "targetId": "pale-star",
+            "targetName": "Pale star",
+            "highlightId": "pale",
+            "highlightName": "Pale star reveal"
+          }
+        }
+      ]
+    },
+    {
+      "route": "stellar",
+      "highlight": {
+        "id": "blue",
+        "name": "Blue star pass",
+        "seconds": 24,
+        "description": "Compare the blue-white surface and the moving stellar background.",
+        "targetId": "blue-star"
+      },
+      "id": "blue",
+      "before": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 62,
+          "exposure": 0.86,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            7,
+            7,
+            48
+          ],
+          "yaw": 3.331559172750067,
+          "pitch": -0.3211387401276614,
+          "distanceLy": 66.43180361554967,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "pale-star"
+      },
+      "eventCount": 5,
+      "accepted": true,
+      "after": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 62,
+          "exposure": 0.86,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            5.16,
+            -1.96,
+            15.86
+          ],
+          "yaw": -1.4094212163742044,
+          "pitch": -0.2687788443866794,
+          "distanceLy": 25.082842742047433,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-star"
+      },
+      "info": {
+        "distanceLy": 25.082842742047433,
+        "universeYears": 0,
+        "travelerYears": 0,
+        "position": [
+          5.16,
+          -1.96,
+          15.86
+        ],
+        "yaw": -1.4094212163742044,
+        "pitch": -0.2687788443866794,
+        "running": false,
+        "target": {
+          "id": "blue-star",
+          "name": "Blue star",
+          "distanceLy": 0.9037698822156006,
+          "coincident": false,
+          "guide": {
+            "screen": [
+              0.4999999999999999,
+              0.4999999999999997
+            ],
+            "inView": true,
+            "angleDeg": 2.252349586542088e-14,
+            "behind": false,
+            "sector": "upper-left",
+            "arrowDeg": -119.61943917769467,
+            "edge": [
+              0.35786802030456855,
+              0.09999999999999998
+            ]
+          },
+          "screen": [
+            0.4999999999999999,
+            0.4999999999999997
+          ],
+          "inView": true,
+          "doppler": 1,
+          "restAngleDeg": 81.088615441644,
+          "apparentAngleDeg": 81.088615441644
+        },
+        "navigation": {
+          "active": false,
+          "targetId": null,
+          "completed": false,
+          "alreadyWithin": false,
+          "remainingLy": 0,
+          "arrivalRadiusLy": 0,
+          "estimatedSeconds": 0,
+          "progress": 0
+        },
+        "flyby": {
+          "active": true,
+          "completed": false,
+          "id": "stellar",
+          "name": "Stellar close pass",
+          "progress": 0.5217391304347826,
+          "elapsedSeconds": 24,
+          "durationSeconds": 46,
+          "autoLook": true,
+          "phase": "blue",
+          "rate": 2
+        },
+        "orbit": {
+          "active": false,
+          "targetId": null
+        },
+        "motion": {
+          "smoothTravel": true,
+          "paceLyPerSecond": 0,
+          "targetLyPerSecond": 1.0300678653353748,
+          "kind": "flyby"
+        },
+        "framing": {
+          "canLeft": true,
+          "canCenter": true,
+          "canRight": true,
+          "canUndo": false,
+          "placement": null
+        },
+        "trail": [
+          [
+            5.16,
+            -1.96,
+            15.86
+          ]
+        ],
+        "cameraMoves": 0
+      },
+      "events": [
+        {
+          "message": "Blue star pass. Travel is paused; start travel to continue from this route moment.",
+          "detail": {
+            "kind": "flyby-highlight",
+            "routeId": "stellar",
+            "routeName": "Stellar close pass",
+            "seconds": 24,
+            "position": [
+              5.16,
+              -1.96,
+              15.86
+            ],
+            "targetId": "blue-star",
+            "targetName": "Blue star",
+            "highlightId": "blue",
+            "highlightName": "Blue star pass"
+          }
+        }
+      ]
+    },
+    {
+      "route": "stellar",
+      "highlight": {
+        "id": "amber",
+        "name": "Amber photosphere",
+        "seconds": 10,
+        "description": "Pause beside the warm star to inspect its illustrative surface.",
+        "targetId": "amber-star"
+      },
+      "id": "amber",
+      "before": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 62,
+          "exposure": 0.86,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            5.16,
+            -1.96,
+            15.86
+          ],
+          "yaw": -1.4094212163742044,
+          "pitch": -0.2687788443866794,
+          "distanceLy": 25.082842742047433,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-star"
+      },
+      "eventCount": 6,
+      "accepted": true,
+      "after": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 62,
+          "exposure": 0.86,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -3.78,
+            1.2,
+            8.65
+          ],
+          "yaw": 1.7879076415298025,
+          "pitch": -0.27968459767612264,
+          "distanceLy": 11.50742869127847,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      },
+      "info": {
+        "distanceLy": 11.50742869127847,
+        "universeYears": 0,
+        "travelerYears": 0,
+        "position": [
+          -3.78,
+          1.2,
+          8.65
+        ],
+        "yaw": 1.7879076415298025,
+        "pitch": -0.27968459767612264,
+        "running": false,
+        "target": {
+          "id": "amber-star",
+          "name": "Amber star",
+          "distanceLy": 0.724499827467198,
+          "coincident": false,
+          "guide": {
+            "screen": [
+              0.4999999999999999,
+              0.5
+            ],
+            "inView": true,
+            "angleDeg": 9.996714717928183e-15,
+            "behind": false,
+            "sector": "left",
+            "arrowDeg": 162.6459753637387,
+            "edge": [
+              0.09999999999999998,
+              0.7
+            ]
+          },
+          "screen": [
+            0.4999999999999999,
+            0.5
+          ],
+          "inView": true,
+          "doppler": 1,
+          "restAngleDeg": 101.94890892700457,
+          "apparentAngleDeg": 101.94890892700457
+        },
+        "navigation": {
+          "active": false,
+          "targetId": null,
+          "completed": false,
+          "alreadyWithin": false,
+          "remainingLy": 0,
+          "arrivalRadiusLy": 0,
+          "estimatedSeconds": 0,
+          "progress": 0
+        },
+        "flyby": {
+          "active": true,
+          "completed": false,
+          "id": "stellar",
+          "name": "Stellar close pass",
+          "progress": 0.21739130434782608,
+          "elapsedSeconds": 10,
+          "durationSeconds": 46,
+          "autoLook": true,
+          "phase": "amber",
+          "rate": 2
+        },
+        "orbit": {
+          "active": false,
+          "targetId": null
+        },
+        "motion": {
+          "smoothTravel": true,
+          "paceLyPerSecond": 0,
+          "targetLyPerSecond": 0.49907557418738424,
+          "kind": "flyby"
+        },
+        "framing": {
+          "canLeft": true,
+          "canCenter": true,
+          "canRight": true,
+          "canUndo": false,
+          "placement": null
+        },
+        "trail": [
+          [
+            -3.78,
+            1.2,
+            8.65
+          ]
+        ],
+        "cameraMoves": 0
+      },
+      "events": [
+        {
+          "message": "Amber photosphere. Travel is paused; start travel to continue from this route moment.",
+          "detail": {
+            "kind": "flyby-highlight",
+            "routeId": "stellar",
+            "routeName": "Stellar close pass",
+            "seconds": 10,
+            "position": [
+              -3.78,
+              1.2,
+              8.65
+            ],
+            "targetId": "amber-star",
+            "targetName": "Amber star",
+            "highlightId": "amber",
+            "highlightName": "Amber photosphere"
+          }
+        }
+      ]
+    },
+    {
+      "route": "stellar",
+      "highlight": {
+        "id": "blue",
+        "name": "Blue star pass",
+        "seconds": 24,
+        "description": "Compare the blue-white surface and the moving stellar background.",
+        "targetId": "blue-star"
+      },
+      "id": "blue",
+      "before": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 55,
+          "exposure": 0.86,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -6.696563546392323,
+            3.793343739503485,
+            -0.9578835240458929
+          ],
+          "yaw": 0.3595825423404193,
+          "pitch": -0.2659648421119359,
+          "distanceLy": 1.1052180190558463,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      },
+      "eventCount": 11,
+      "accepted": true,
+      "after": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 55,
+          "exposure": 0.86,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            5.16,
+            -1.96,
+            15.86
+          ],
+          "yaw": -1.4094212163742044,
+          "pitch": -0.2687788443866794,
+          "distanceLy": 25.082842742047433,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-star"
+      },
+      "info": {
+        "distanceLy": 25.082842742047433,
+        "universeYears": 0,
+        "travelerYears": 0,
+        "position": [
+          5.16,
+          -1.96,
+          15.86
+        ],
+        "yaw": -1.4094212163742044,
+        "pitch": -0.2687788443866794,
+        "running": false,
+        "target": {
+          "id": "blue-star",
+          "name": "Blue star",
+          "distanceLy": 0.9037698822156006,
+          "coincident": false,
+          "guide": {
+            "screen": [
+              0.4999999999999999,
+              0.49999999999999967
+            ],
+            "inView": true,
+            "angleDeg": 2.252349586542088e-14,
+            "behind": false,
+            "sector": "upper-left",
+            "arrowDeg": -119.61943917769467,
+            "edge": [
+              0.3935522194621449,
+              0.09999999999999998
+            ]
+          },
+          "screen": [
+            0.4999999999999999,
+            0.49999999999999967
+          ],
+          "inView": true,
+          "doppler": 1,
+          "restAngleDeg": 81.088615441644,
+          "apparentAngleDeg": 81.088615441644
+        },
+        "navigation": {
+          "active": false,
+          "targetId": null,
+          "completed": false,
+          "alreadyWithin": false,
+          "remainingLy": 0,
+          "arrivalRadiusLy": 0,
+          "estimatedSeconds": 0,
+          "progress": 0
+        },
+        "flyby": {
+          "active": true,
+          "completed": false,
+          "id": "stellar",
+          "name": "Stellar close pass",
+          "progress": 0.5217391304347826,
+          "elapsedSeconds": 24,
+          "durationSeconds": 46,
+          "autoLook": true,
+          "phase": "blue",
+          "rate": 0.5
+        },
+        "orbit": {
+          "active": false,
+          "targetId": null
+        },
+        "motion": {
+          "smoothTravel": true,
+          "paceLyPerSecond": 0,
+          "targetLyPerSecond": 0.2575169663338437,
+          "kind": "flyby"
+        },
+        "framing": {
+          "canLeft": true,
+          "canCenter": true,
+          "canRight": true,
+          "canUndo": false,
+          "placement": null
+        },
+        "trail": [
+          [
+            5.16,
+            -1.96,
+            15.86
+          ]
+        ],
+        "cameraMoves": 0
+      },
+      "events": [
+        {
+          "message": "Blue star pass. Travel is paused; start travel to continue from this route moment.",
+          "detail": {
+            "kind": "flyby-highlight",
+            "routeId": "stellar",
+            "routeName": "Stellar close pass",
+            "seconds": 24,
+            "position": [
+              5.16,
+              -1.96,
+              15.86
+            ],
+            "targetId": "blue-star",
+            "targetName": "Blue star",
+            "highlightId": "blue",
+            "highlightName": "Blue star pass"
+          }
+        }
+      ]
+    },
+    {
+      "route": "stellar",
+      "highlight": {
+        "id": "pale",
+        "name": "Pale star reveal",
+        "seconds": 38,
+        "description": "Look across the pale star with the blue emission region beyond.",
+        "targetId": "pale-star"
+      },
+      "id": "pale",
+      "before": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 62,
+          "exposure": 0.86,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -6.999984560656787,
+            3.9999922800870507,
+            -1.9999459623851634
+          ],
+          "yaw": 0.3556359021872648,
+          "pitch": -0.2616936087709664,
+          "distanceLy": 0.00005719900526176439,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      },
+      "eventCount": 13,
+      "accepted": true,
+      "after": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 62,
+          "exposure": 0.86,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -0.007,
+            2.747,
+            23.214
+          ],
+          "yaw": 0.6962380875955602,
+          "pitch": -0.32659684684871687,
+          "distanceLy": 39.689500667423516,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "pale-star"
+      },
+      "info": {
+        "distanceLy": 39.689500667423516,
+        "universeYears": 0,
+        "travelerYears": 0,
+        "position": [
+          -0.007,
+          2.747,
+          23.214
+        ],
+        "yaw": 0.6962380875955602,
+        "pitch": -0.32659684684871687,
+        "running": false,
+        "target": {
+          "id": "pale-star",
+          "name": "Pale star",
+          "distanceLy": 1.081597892009781,
+          "coincident": false,
+          "guide": {
+            "screen": [
+              0.5000000000000001,
+              0.4999999999999996
+            ],
+            "inView": true,
+            "angleDeg": 2.564245162451646e-14,
+            "behind": false,
+            "sector": "up",
+            "arrowDeg": -82.87498365109819,
+            "edge": [
+              0.615625,
+              0.09999999999999998
+            ]
+          },
+          "screen": [
+            0.5000000000000001,
+            0.4999999999999996
+          ],
+          "inView": true,
+          "doppler": 1,
+          "restAngleDeg": 43.38933105264932,
+          "apparentAngleDeg": 43.38933105264932
+        },
+        "navigation": {
+          "active": false,
+          "targetId": null,
+          "completed": false,
+          "alreadyWithin": false,
+          "remainingLy": 0,
+          "arrivalRadiusLy": 0,
+          "estimatedSeconds": 0,
+          "progress": 0
+        },
+        "flyby": {
+          "active": true,
+          "completed": false,
+          "id": "stellar",
+          "name": "Stellar close pass",
+          "progress": 0.8260869565217391,
+          "elapsedSeconds": 38,
+          "durationSeconds": 46,
+          "autoLook": true,
+          "phase": "pale",
+          "rate": 0.5
+        },
+        "orbit": {
+          "active": false,
+          "targetId": null
+        },
+        "motion": {
+          "smoothTravel": true,
+          "paceLyPerSecond": 0,
+          "targetLyPerSecond": 0.442622863287952,
+          "kind": "flyby"
+        },
+        "framing": {
+          "canLeft": true,
+          "canCenter": true,
+          "canRight": true,
+          "canUndo": false,
+          "placement": null
+        },
+        "trail": [
+          [
+            -0.007,
+            2.747,
+            23.214
+          ]
+        ],
+        "cameraMoves": 0
+      },
+      "events": [
+        {
+          "message": "Pale star reveal. Travel is paused; start travel to continue from this route moment.",
+          "detail": {
+            "kind": "flyby-highlight",
+            "routeId": "stellar",
+            "routeName": "Stellar close pass",
+            "seconds": 38,
+            "position": [
+              -0.007,
+              2.747,
+              23.214
+            ],
+            "targetId": "pale-star",
+            "targetName": "Pale star",
+            "highlightId": "pale",
+            "highlightName": "Pale star reveal"
+          }
+        }
+      ]
+    },
+    {
+      "route": "stellar",
+      "highlight": {
+        "id": "pale",
+        "name": "Pale star reveal",
+        "seconds": 38,
+        "description": "Look across the pale star with the blue emission region beyond.",
+        "targetId": "pale-star"
+      },
+      "id": "pale",
+      "before": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 62,
+          "exposure": 0.86,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -6.969193101114186,
+            3.983705423180868,
+            -1.892495345464697
+          ],
+          "yaw": 0.35603185411190275,
+          "pitch": -0.2622883484324151,
+          "distanceLy": 0.11304842497222399,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      },
+      "eventCount": 15,
+      "accepted": true,
+      "after": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 62,
+          "exposure": 0.86,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -0.007,
+            2.747,
+            23.214
+          ],
+          "yaw": 0.6962380875955602,
+          "pitch": -0.32659684684871687,
+          "distanceLy": 39.689500667423516,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "pale-star"
+      },
+      "info": {
+        "distanceLy": 39.689500667423516,
+        "universeYears": 0,
+        "travelerYears": 0,
+        "position": [
+          -0.007,
+          2.747,
+          23.214
+        ],
+        "yaw": 0.6962380875955602,
+        "pitch": -0.32659684684871687,
+        "running": false,
+        "target": {
+          "id": "pale-star",
+          "name": "Pale star",
+          "distanceLy": 1.081597892009781,
+          "coincident": false,
+          "guide": {
+            "screen": [
+              0.5,
+              0.4999999999999996
+            ],
+            "inView": true,
+            "angleDeg": 2.564245162451646e-14,
+            "behind": false,
+            "sector": "up",
+            "arrowDeg": -82.87498365109819,
+            "edge": [
+              0.528169014084507,
+              0.09999999999999998
+            ]
+          },
+          "screen": [
+            0.5,
+            0.4999999999999996
+          ],
+          "inView": true,
+          "doppler": 1,
+          "restAngleDeg": 43.38933105264932,
+          "apparentAngleDeg": 43.38933105264932
+        },
+        "navigation": {
+          "active": false,
+          "targetId": null,
+          "completed": false,
+          "alreadyWithin": false,
+          "remainingLy": 0,
+          "arrivalRadiusLy": 0,
+          "estimatedSeconds": 0,
+          "progress": 0
+        },
+        "flyby": {
+          "active": true,
+          "completed": false,
+          "id": "stellar",
+          "name": "Stellar close pass",
+          "progress": 0.8260869565217391,
+          "elapsedSeconds": 38,
+          "durationSeconds": 46,
+          "autoLook": true,
+          "phase": "pale",
+          "rate": 0.5
+        },
+        "orbit": {
+          "active": false,
+          "targetId": null
+        },
+        "motion": {
+          "smoothTravel": true,
+          "paceLyPerSecond": 0,
+          "targetLyPerSecond": 0.442622863287952,
+          "kind": "flyby"
+        },
+        "framing": {
+          "canLeft": true,
+          "canCenter": true,
+          "canRight": true,
+          "canUndo": false,
+          "placement": null
+        },
+        "trail": [
+          [
+            -0.007,
+            2.747,
+            23.214
+          ]
+        ],
+        "cameraMoves": 0
+      },
+      "events": [
+        {
+          "message": "Pale star reveal. Travel is paused; start travel to continue from this route moment.",
+          "detail": {
+            "kind": "flyby-highlight",
+            "routeId": "stellar",
+            "routeName": "Stellar close pass",
+            "seconds": 38,
+            "position": [
+              -0.007,
+              2.747,
+              23.214
+            ],
+            "targetId": "pale-star",
+            "targetName": "Pale star",
+            "highlightId": "pale",
+            "highlightName": "Pale star reveal"
+          }
+        }
+      ]
+    },
+    {
+      "route": "stellar",
+      "highlight": {
+        "id": "blue",
+        "name": "Blue star pass",
+        "seconds": 24,
+        "description": "Compare the blue-white surface and the moving stellar background.",
+        "targetId": "blue-star"
+      },
+      "id": "blue",
+      "before": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 62,
+          "exposure": 0.86,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -6.970534240410212,
+            3.9844493486890213,
+            -1.897163015620939
+          ],
+          "yaw": 0.35610828584630916,
+          "pitch": -0.2624024056064372,
+          "distanceLy": 0.108152990094942,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      },
+      "eventCount": 17,
+      "accepted": true,
+      "after": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 62,
+          "exposure": 0.86,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            5.16,
+            -1.96,
+            15.86
+          ],
+          "yaw": -1.4094212163742044,
+          "pitch": -0.2687788443866794,
+          "distanceLy": 25.082842742047433,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-star"
+      },
+      "info": {
+        "distanceLy": 25.082842742047433,
+        "universeYears": 0,
+        "travelerYears": 0,
+        "position": [
+          5.16,
+          -1.96,
+          15.86
+        ],
+        "yaw": -1.4094212163742044,
+        "pitch": -0.2687788443866794,
+        "running": false,
+        "target": {
+          "id": "blue-star",
+          "name": "Blue star",
+          "distanceLy": 0.9037698822156006,
+          "coincident": false,
+          "guide": {
+            "screen": [
+              0.4999999999999999,
+              0.4999999999999997
+            ],
+            "inView": true,
+            "angleDeg": 2.252349586542088e-14,
+            "behind": false,
+            "sector": "upper-left",
+            "arrowDeg": -119.61943917769467,
+            "edge": [
+              0.35786802030456855,
+              0.09999999999999998
+            ]
+          },
+          "screen": [
+            0.4999999999999999,
+            0.4999999999999997
+          ],
+          "inView": true,
+          "doppler": 1,
+          "restAngleDeg": 81.088615441644,
+          "apparentAngleDeg": 81.088615441644
+        },
+        "navigation": {
+          "active": false,
+          "targetId": null,
+          "completed": false,
+          "alreadyWithin": false,
+          "remainingLy": 0,
+          "arrivalRadiusLy": 0,
+          "estimatedSeconds": 0,
+          "progress": 0
+        },
+        "flyby": {
+          "active": true,
+          "completed": false,
+          "id": "stellar",
+          "name": "Stellar close pass",
+          "progress": 0.5217391304347826,
+          "elapsedSeconds": 24,
+          "durationSeconds": 46,
+          "autoLook": true,
+          "phase": "blue",
+          "rate": 0.5
+        },
+        "orbit": {
+          "active": false,
+          "targetId": null
+        },
+        "motion": {
+          "smoothTravel": true,
+          "paceLyPerSecond": 0,
+          "targetLyPerSecond": 0.2575169663338437,
+          "kind": "flyby"
+        },
+        "framing": {
+          "canLeft": true,
+          "canCenter": true,
+          "canRight": true,
+          "canUndo": false,
+          "placement": null
+        },
+        "trail": [
+          [
+            5.16,
+            -1.96,
+            15.86
+          ]
+        ],
+        "cameraMoves": 0
+      },
+      "events": [
+        {
+          "message": "Blue star pass. Travel is paused; start travel to continue from this route moment.",
+          "detail": {
+            "kind": "flyby-highlight",
+            "routeId": "stellar",
+            "routeName": "Stellar close pass",
+            "seconds": 24,
+            "position": [
+              5.16,
+              -1.96,
+              15.86
+            ],
+            "targetId": "blue-star",
+            "targetName": "Blue star",
+            "highlightId": "blue",
+            "highlightName": "Blue star pass"
+          }
+        }
+      ]
+    }
+  ],
+  "layouts": [
+    {
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "button": {
+        "x": 57,
+        "y": 342.78125,
+        "width": 206,
+        "height": 69.390625
+      },
+      "panel": {
+        "x": 12,
+        "y": 60,
+        "width": 296,
+        "height": 530
+      },
+      "phase": {
+        "x": 16,
+        "y": 41,
+        "width": 130.296875,
+        "height": 14.5
+      },
+      "lens": {
+        "x": 166,
+        "y": 64,
+        "width": 142,
+        "height": 54
+      }
+    },
+    {
+      "viewport": {
+        "width": 568,
+        "height": 320
+      },
+      "button": {
+        "x": 271,
+        "y": 85.03125,
+        "width": 250,
+        "height": 69.390625
+      },
+      "panel": {
+        "x": 236,
+        "y": 12,
+        "width": 320,
+        "height": 164
+      },
+      "phase": {
+        "x": 16,
+        "y": 41,
+        "width": 130.296875,
+        "height": 14.5
+      },
+      "lens": {
+        "x": 414,
+        "y": 16,
+        "width": 142,
+        "height": 54
+      }
+    }
+  ],
+  "served": [
+    {
+      "url": "http://127.0.0.1:3187/stem_lab/stem_tool_universe.js",
+      "status": 200,
+      "hash": "707b795115b946ab0497509193ef3d8b6b537c9965aacc3293c799591d0aa6e0"
+    },
+    {
+      "url": "http://127.0.0.1:3187/stem_lab/universe_flight_scene.js",
+      "status": 200,
+      "hash": "ad33daca7123ff080ad0478e7653f3e2ad51fdf1e2041b42284735c95f29ee4a"
+    }
+  ],
+  "curationOnly": false,
+  "route": {
+    "id": "stellar",
+    "name": "Stellar close pass",
+    "region": "neighborhood",
+    "durationSeconds": 46,
+    "position": [
+      -7,
+      4,
+      -2
+    ],
+    "aim": [
+      -3.1,
+      1,
+      8.5
+    ],
+    "fov": 62,
+    "targetId": "amber-star",
+    "highlights": [
+      {
+        "id": "amber",
+        "name": "Amber photosphere",
+        "seconds": 10,
+        "description": "Pause beside the warm star to inspect its illustrative surface.",
+        "targetId": "amber-star"
+      },
+      {
+        "id": "blue",
+        "name": "Blue star pass",
+        "seconds": 24,
+        "description": "Compare the blue-white surface and the moving stellar background.",
+        "targetId": "blue-star"
+      },
+      {
+        "id": "pale",
+        "name": "Pale star reveal",
+        "seconds": 38,
+        "description": "Look across the pale star with the blue emission region beyond.",
+        "targetId": "pale-star"
+      }
+    ]
+  },
+  "crossing": {
+    "snapshot": {
+      "version": 1,
+      "settings": {
+        "mode": "explore",
+        "region": "neighborhood",
+        "beta": 0.9,
+        "compareRest": false,
+        "fov": 62,
+        "exposure": 0.86,
+        "quality": "auto"
+      },
+      "state": {
+        "position": [
+          -0.7973977384716961,
+          0.5093414847674458,
+          10.86835291640547
+        ],
+        "yaw": 2.8417472858238426,
+        "pitch": -1.2439365686156703,
+        "distanceLy": 16.044697771999147,
+        "universeYears": 0,
+        "travelerYears": 0
+      },
+      "targetId": "amber-star"
+    },
+    "info": {
+      "distanceLy": 16.044697771999147,
+      "universeYears": 0,
+      "travelerYears": 0,
+      "position": [
+        -0.7973977384716961,
+        0.5093414847674458,
+        10.86835291640547
+      ],
+      "yaw": 2.8417472858238426,
+      "pitch": -1.2439365686156703,
+      "running": false,
+      "target": {
+        "id": "amber-star",
+        "name": "Amber star",
+        "distanceLy": 3.339433857708784,
+        "coincident": false,
+        "guide": {
+          "screen": [
+            35.21988674594072,
+            -31.234283340923167
+          ],
+          "inView": false,
+          "angleDeg": 89.25480512876206,
+          "behind": false,
+          "sector": "upper-right",
+          "arrowDeg": -29.7374064299185,
+          "edge": [
+            0.9,
+            0.13439646479107964
+          ]
+        },
+        "screen": [
+          35.21988674594072,
+          -31.234283340923167
+        ],
+        "inView": false,
+        "doppler": 1,
+        "restAngleDeg": 135.17050543607203,
+        "apparentAngleDeg": 135.17050543607203
+      },
+      "navigation": {
+        "active": false,
+        "targetId": null,
+        "completed": false,
+        "alreadyWithin": false,
+        "remainingLy": 0,
+        "arrivalRadiusLy": 0,
+        "estimatedSeconds": 0,
+        "progress": 0
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "stellar",
+        "name": "Stellar close pass",
+        "progress": 0.3528840869565217,
+        "elapsedSeconds": 16.232667999999997,
+        "durationSeconds": 46,
+        "autoLook": true,
+        "phase": "to-blue",
+        "rate": 2
+      },
+      "orbit": {
+        "active": false,
+        "targetId": null
+      },
+      "motion": {
+        "smoothTravel": true,
+        "paceLyPerSecond": 0,
+        "targetLyPerSecond": 4.038032101882929,
+        "kind": "flyby"
+      },
+      "framing": {
+        "canLeft": true,
+        "canCenter": true,
+        "canRight": true,
+        "canUndo": false,
+        "placement": null
+      },
+      "trail": [
+        [
+          -7,
+          4,
+          -2
+        ],
+        [
+          -6.989551239587136,
+          3.9946679723174996,
+          -1.963467897546956
+        ],
+        [
+          -6.965040974398484,
+          3.9813838747821326,
+          -1.8780509893896737
+        ],
+        [
+          -6.820190988001023,
+          3.88717960649519,
+          -1.3789350092453725
+        ],
+        [
+          -6.210753273698347,
+          3.368540830198512,
+          0.675000686717917
+        ],
+        [
+          -5.658228700940831,
+          2.834615307001624,
+          2.509768513367316
+        ],
+        [
+          -4.945749225371872,
+          2.113964372160638,
+          4.85368910653177
+        ],
+        [
+          -4.487715249901907,
+          1.6473670532691713,
+          6.346919417853705
+        ],
+        [
+          -4.150041538753171,
+          1.3167883555295188,
+          7.434331866378968
+        ],
+        [
+          -3.9926173070370625,
+          1.1985352898488348,
+          7.920606580692942
+        ],
+        [
+          -3.920091278923423,
+          1.1865253286356632,
+          8.113943631244434
+        ],
+        [
+          -3.8727141666999256,
+          1.1887507935145776,
+          8.23879144969708
+        ],
+        [
+          -3.8432953889938077,
+          1.1960013145260013,
+          8.360988773353979
+        ],
+        [
+          -3.8156549248499783,
+          1.1990019811519002,
+          8.487411698082717
+        ],
+        [
+          -3.7710822225099947,
+          1.2012579847990965,
+          8.698902861168
+        ],
+        [
+          -3.798642016307839,
+          1.2506379936694043,
+          8.897211083369108
+        ],
+        [
+          -3.94851403840906,
+          1.3838097974555323,
+          9.0153529807872
+        ],
+        [
+          -3.974454795880775,
+          1.5095157552080218,
+          9.204358191808847
+        ],
+        [
+          -3.737786912457871,
+          1.4591286266776669,
+          9.439388426985676
+        ],
+        [
+          -3.3136809233133127,
+          1.3222481927910168,
+          9.759634028574519
+        ],
+        [
+          -2.4064889202804802,
+          1.0282372791008112,
+          10.203502048225177
+        ],
+        [
+          -0.7973977384716961,
+          0.5093414847674458,
+          10.86835291640547
+        ]
+      ],
+      "cameraMoves": 0
+    }
+  },
+  "guidedGaze": [
+    {
+      "name": "crossing",
+      "angleDegrees": 15.671183583581277
+    },
+    {
+      "name": "completed",
+      "angleDegrees": 0.2853180298810647
+    }
+  ],
+  "guidedFrameCheck": {
+    "frames": 46,
+    "easingSeconds": 0.35,
+    "maximumYawError": 3.2751579226442118e-15,
+    "maximumPitchError": 1.2212453270876722e-15
+  },
+  "travelDifference": {
+    "meanAbsolute": 7.281609346630749,
+    "changedFraction": 0.2255611399100071
+  },
+  "contextActions": [
+    {
+      "highlight": {
+        "id": "blue",
+        "name": "Blue star pass",
+        "seconds": 24,
+        "description": "Compare the blue-white surface and the moving stellar background.",
+        "targetId": "blue-star"
+      },
+      "targetId": "blue-star",
+      "orbit": {
+        "active": true,
+        "targetId": "blue-star"
+      },
+      "pixelHash": "37108981e0001a89f46885e49345a304d58648736c627ba9ca599801802b7536"
+    }
+  ],
+  "resources": [
+    {
+      "textures": 2,
+      "deletedTextures": 2,
+      "liveTextures": 0,
+      "buffers": 2,
+      "deletedBuffers": 2,
+      "liveBuffers": 0,
+      "programs": 2,
+      "deletedPrograms": 2,
+      "livePrograms": 0,
+      "error": 0
+    }
+  ]
+}
