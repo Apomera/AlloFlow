@@ -931,6 +931,45 @@
           // of star formation. Existing common RGB rolloff retains its hue.
           knots += pinkKnots * disk * 0.75 * detailFade;
         }
+        if (style === 'two-arm' && r >= 0.18) {
+          // Broad, nested ribbons give this slower-winding two-arm map its
+          // own shape. Short spurs and warm knots are fixed emission styling;
+          // dim lanes do not obscure stars or simulate dust extinction.
+          var ribbonFade = clamp((r - 0.18) / 0.12, 0, 1);
+          ribbonFade = ribbonFade * ribbonFade * (3 - 2 * ribbonFade);
+          var ribbonPhase = a - spiralAngle(style, 0, r);
+          var ribbonArm = ((Math.round(ribbonPhase / Math.PI) % 2) + 2) % 2;
+          var ribbonOffset = Math.atan2(Math.sin(ribbonPhase * 2), Math.cos(ribbonPhase * 2)) / 2 + perturb;
+          var ribbons = 0, feathers = 0, warmKnots = 0;
+          for (var ribbon = 0; ribbon < 3; ribbon++) {
+            var ribbonBend = Math.sin(r * (14 + ribbon * 2) + ribbonArm * 2.1 + ribbon) * 0.026;
+            var ribbonCenter = (ribbon - 1) * (0.13 + r * 0.035) + ribbonBend;
+            var ribbonTaper = 1 - clamp((r - 0.55) / 0.5, 0, 1) * 0.28;
+            var ribbonWidth = (0.055 + r * 0.025) * ribbonTaper;
+            var ribbonBreaks = clamp(0.74 + Math.sin(r * (17 + ribbon * 3) + ribbonArm * 1.9 + ribbon) * 0.18 + (grain - 0.5) * 0.30, 0, 1);
+            ribbons += Math.exp(-Math.pow((ribbonOffset - ribbonCenter) / ribbonWidth, 2)) * ribbonBreaks;
+          }
+          for (var feather = 0; feather < 2; feather++) {
+            var featherBase = 0.34 + feather * 0.31 + ribbonArm * 0.05;
+            var featherLength = 0.105 + ((ribbonArm + feather) % 2) * 0.024;
+            var featherT = (r - featherBase) / featherLength;
+            if (featherT > 0 && featherT < 1) {
+              var featherOffset = 0.045 + featherT * (0.21 + feather * 0.035) + Math.sin(featherT * Math.PI) * 0.028;
+              var featherWidth = (0.047 + r * 0.012) * (1 - featherT * 0.36);
+              feathers += Math.exp(-Math.pow((ribbonOffset - featherOffset) / featherWidth, 2)) * Math.sin(featherT * Math.PI);
+            }
+            var warmRadius = 0.35 + feather * 0.34 + ribbonArm * 0.045;
+            var warmOffset = (feather ? 0.11 : -0.075) + Math.sin(ribbonArm * 2.3) * 0.028;
+            warmKnots += Math.exp(-Math.pow((r - warmRadius) / 0.040, 2) - Math.pow((ribbonOffset - warmOffset) / 0.095, 2));
+          }
+          var ribbonLaneOffset = -0.17 + Math.sin(r * 12 + ribbonArm * 1.8) * 0.035;
+          var ribbonLane = Math.exp(-Math.pow((ribbonOffset - ribbonLaneOffset) / (0.055 + r * 0.025), 2));
+          ribbonLane *= 0.70 + 0.30 * Math.sin(r * 11 + ribbonArm) * Math.sin(r * 11 + ribbonArm);
+          var ribbonStructure = (0.09 + arms * (0.31 + grain * 0.63) + ribbons * 0.50 + feathers * 0.24) * disk * attenuation * (1 - ribbonLane * 0.40);
+          structure += (ribbonStructure - structure) * ribbonFade;
+          // The existing shared RGB rolloff keeps these sparse knots warm.
+          knots += warmKnots * disk * 0.85 * ribbonFade;
+        }
         write(tile, x, y, [bulge + structure * 0.53 + knots, bulge * 0.80 + structure * 0.74 + knots * 0.22, bulge * 0.56 + structure + knots * 0.49],
           Math.min(0.93, bulge + structure * 0.7), 1.85);
       }

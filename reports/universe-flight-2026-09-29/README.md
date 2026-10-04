@@ -67,6 +67,16 @@ The sightline instrument uses the observer-frame relation D = 1/[γ(1−βμ′)
 
 ## Verification
 
+### Sweeping two-arm spirals pass
+
+- The two-arm galaxy emission tile gains broad strands, tapered spurs, four warm knots and softly feathered dim lanes. The fixed pattern gives the Companion spiral a more distinct appearance while keeping its generated stars and galaxy geometry fixed.
+- The design draws on the blue clusters, pink regions and dusty arms described in [NASA's M51 overview](https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-51/). Colors and scale remain illustrative. Dim lanes reduce the tile's own emission; dust extinction, gas motion and stellar dynamics are outside this model.
+- Only atlas tile one changes. Its warm core and texture gutters remain exact, together with the four-arm, barred and elliptical tiles, cloud atlas, all source points and models, shaders, geometry helpers, physics calculations, catalogs and 1,704 route samples. GPU resources remain two textures, two buffers and two programs.
+- Baked RGB luminance multiplied by alpha has an estimated ratio of **1.0004** to the prior two-arm tile and **1.0009** outside its preserved core. These texture estimates remain bounded; each camera view still depends on projection and exposure.
+- All **179 focused tests in 12 files** pass in **291.09 seconds**. Three new cases own the two-arm tile checks. The earlier spiral test moves that tile's coverage to those cases while preserving its other assertions. The frozen baseline passes **7 browser groups and 31 captures**; the new tile passes **10 groups and 31 captures**, including **27 comparisons from matching camera poses**. Every capture repeats exactly while paused. Workers received extra startup time; test and hook limits remained 30 and 60 seconds.
+- Native controls fly to the Companion spiral's 330,000 light-year survey standoff and orbit it with fixed physical clocks and GPU object counts. Elliptical presentation buffers may update with the view; source-buffer and texture uploads stay fixed. Stellar flight regression passes **10 groups, 9 scoped accessibility checks and 13 captures**, including phone and short-landscape controls. Disposal releases all resources with no page or GL errors. These checks do not measure frame rate or provide a complete accessibility audit.
+- Reproduce with `node dev-tools/universe_flight_two_arm_detail_check.cjs baseline`, then `refined`, and `node dev-tools/universe_flight_two_arm_detail_audit.cjs` after starting the local preview. `two-arm-detail/final-verification.json` records accepted runtime, both test files, harnesses, report, atlas checks and selected capture hashes.
+
 ### Refined spiral arms pass
 
 - Four-arm galaxies now show nested broken ridges, short spurs, compact pink knots and softer lanes of reduced emission. The new composition adapts Galaxy Tool's nested arm detail and Solar System Tool's soft highlight rolloff to the existing cached emission texture.
