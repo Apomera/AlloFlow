@@ -44,6 +44,10 @@ jobs:
     name: Documentation + promotion integrity
     runs-on: windows-latest
     steps:
+      - name: Enable Git long paths
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: git config --global core.longpaths true
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
@@ -62,6 +66,10 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 20
     steps:
+      - name: Enable Git long paths
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: git config --global core.longpaths true
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
@@ -86,6 +94,10 @@ jobs:
     name: Static gate (crash + load classes)
     runs-on: windows-latest
     steps:
+      - name: Enable Git long paths
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: git config --global core.longpaths true
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
@@ -111,6 +123,10 @@ jobs:
     name: Adventure journey (choice + free response + debate)
     runs-on: windows-latest
     steps:
+      - name: Enable Git long paths
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: git config --global core.longpaths true
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
@@ -160,6 +176,10 @@ jobs:
       matrix:
         shard: [1, 2, 3, 4, 5, 6, 7, 8]
     steps:
+      - name: Enable Git long paths
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: git config --global core.longpaths true
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
@@ -207,6 +227,10 @@ jobs:
     runs-on: windows-latest
     continue-on-error: true
     steps:
+      - name: Enable Git long paths
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: git config --global core.longpaths true
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
@@ -222,6 +246,10 @@ jobs:
     name: Research integration contracts + accessibility
     runs-on: windows-latest
     steps:
+      - name: Enable Git long paths
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: git config --global core.longpaths true
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
@@ -237,6 +265,10 @@ jobs:
     runs-on: windows-latest
     continue-on-error: true
     steps:
+      - name: Enable Git long paths
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: git config --global core.longpaths true
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
@@ -259,6 +291,10 @@ jobs:
     runs-on: windows-latest
     continue-on-error: true
     steps:
+      - name: Enable Git long paths
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: git config --global core.longpaths true
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
@@ -274,6 +310,10 @@ jobs:
     name: STEM plugin failure recovery (BLOCKING)
     runs-on: windows-latest
     steps:
+      - name: Enable Git long paths
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: git config --global core.longpaths true
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
@@ -302,6 +342,10 @@ jobs:
     # network flake must not mask a real structure regression here.
     runs-on: windows-latest
     steps:
+      - name: Enable Git long paths
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: git config --global core.longpaths true
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
@@ -434,6 +478,10 @@ jobs:
     runs-on: windows-latest
     continue-on-error: true
     steps:
+      - name: Enable Git long paths
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: git config --global core.longpaths true
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:

@@ -4,9 +4,10 @@ const assert = require('node:assert/strict');
 const { chromium } = require('playwright');
 const { ORIGIN, sha256, options, snapshot, getAsset, writeReport } = require('./live-release-lib.cjs');
 const report = { at: new Date().toISOString(), ok: false, boots: [], resources: [], pageErrors: [], fatalConsole: [],
-  consoleErrors: [], requestFailures: [], blockedWrites: [], unmappedOfficialResources: [], limitations: [
+  consoleErrors: [], requestFailures: [], workerNetwork: [], blockedWrites: [], unmappedOfficialResources: [], limitations: [
     'Disposable unauthenticated context: boot and two reloads only; no saved user profile or feature journey.',
-    'Verifies observed official-origin resources and the expected service-worker precache against explicit committed blobs.',
+    'Verifies page-consumed official-origin response bodies and service-worker precache against explicit committed blobs.',
+    'Worker-internal network requests are recorded separately; their cached results are checked through CacheStorage.',
     'No deployment, cloud write, storage-state import/export, button click, force worker activation or application data modification.',
     'Browser and service worker write only their disposable local cache/storage; optional non-GET/HEAD network requests are blocked.',
     'Normal boot may GET third-party public dependencies; those bodies are outside this repository-byte comparison.',
@@ -40,6 +41,14 @@ let browser, context, state;
     return route.continue();
   });
   const page = await context.newPage();
+  // A page-scoped CDP session avoids treating duplicate worker-internal fetches
+  // as page response bodies. Preserve large translation scripts in its own
+  // inspector buffer; Playwright's default buffer evicts the 11 MB UI pack.
+  const capture = await context.newCDPSession(page);
+  await capture.send('Network.enable', {
+    maxTotalBufferSize: 256 * 1024 * 1024,
+    maxResourceBufferSize: 32 * 1024 * 1024,
+  });
   page.on('pageerror', error => report.pageErrors.push(error.message));
   page.on('console', message => {
     if (message.type() !== 'error') return;
@@ -52,23 +61,35 @@ let browser, context, state;
     const url = new URL(request.url());
     report.requestFailures.push({ method: request.method(), url: url.origin + url.pathname, failure: request.failure()?.errorText });
   });
-  const pending = new Set();
+  const pending = new Set(), requests = new Map(), responses = new Map();
   context.on('response', response => {
-    if (response.request().method() !== 'GET' || response.status() >= 300 && response.status() < 400) return;
+    if (!response.request().serviceWorker()) return;
     const url = new URL(response.url());
-    if (url.origin !== ORIGIN) return;
+    if (url.origin === ORIGIN) report.workerNetwork.push({ url: url.href, status: response.status() });
+  });
+  capture.on('Network.requestWillBeSent', event => requests.set(event.requestId, event.request.method));
+  capture.on('Network.responseReceived', event => {
+    const response = event.response, url = new URL(response.url);
+    if (requests.get(event.requestId) !== 'GET' || url.origin !== ORIGIN || response.status >= 300 && response.status < 400) return;
     const file = state.fileForUrl(url.href);
-    if (!file) { report.unmappedOfficialResources.push({ url: url.href, status: response.status() }); return; }
+    if (!file) { report.unmappedOfficialResources.push({ url: url.href, status: response.status }); return; }
+    const expected = state.expected(file);
+    const result = { url: url.href, file, status: response.status, expectedSha256: expected.sha256,
+      expectedBytes: expected.bytes, fromServiceWorker: !!response.fromServiceWorker,
+      capture: 'page-CDP', matches: false };
+    report.resources.push(result); responses.set(event.requestId, result);
+  });
+  capture.on('Network.loadingFinished', event => {
+    const result = responses.get(event.requestId);
+    if (!result) return;
+    responses.delete(event.requestId); requests.delete(event.requestId);
     const task = (async () => {
-      const expected = state.expected(file);
-      const result = { url: url.href, file, status: response.status(), expectedSha256: expected.sha256,
-        expectedBytes: expected.bytes, fromServiceWorker: response.fromServiceWorker(), matches: false };
-      report.resources.push(result);
       try {
-        const body = await response.body();
+        const response = await capture.send('Network.getResponseBody', { requestId: event.requestId });
+        const body = Buffer.from(response.body, response.base64Encoded ? 'base64' : 'utf8');
         result.bytes = body.length; result.sha256 = sha256(body);
-        result.matches = response.status() === 200 && body.length === expected.bytes && result.sha256 === expected.sha256;
-        if (!result.matches) result.error = 'Observed resource differs from final committed blob';
+        result.matches = result.status === 200 && body.length === result.expectedBytes && result.sha256 === result.expectedSha256;
+        if (!result.matches) result.error = 'Page-consumed response differs from committed blob';
       } catch (error) { result.error = error.message; }
     })();
     pending.add(task); task.finally(() => pending.delete(task));
@@ -87,6 +108,7 @@ let browser, context, state;
     assert.match(await page.title(), /Adaptive UDL Platform/);
     // Let immediate lazy boot/render errors appear; this is not a performance measurement.
     await page.waitForTimeout(3000);
+    await Promise.all([...pending]);
     report.boots.push(await page.evaluate(() => ({
       url: location.href, title: document.title, rootChildren: document.getElementById('root')?.children.length,
       serviceWorkerController: navigator.serviceWorker.controller?.scriptURL || null,

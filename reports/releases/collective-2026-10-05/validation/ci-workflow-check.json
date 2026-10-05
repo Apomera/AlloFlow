@@ -1,0 +1,23 @@
+{
+  "validYaml": true,
+  "windowsJobs": 12,
+  "names": [
+    "docs-integrity",
+    "remediation-preservation",
+    "gate",
+    "adventure-journey",
+    "unit",
+    "quarantine",
+    "research-integrations",
+    "verify-full",
+    "smoke",
+    "stem-plugin-recovery",
+    "tag-tree",
+    "cdn-goldens"
+  ],
+  "onlySetupStepsAdded": true,
+  "file": ".github/workflows/verify.yml",
+  "sha256": "8aee7c55727be4de77b2d76f98cc5ae33915046afd10bf5aecaa59ad99d4c5d1",
+  "sourceCiCommit": "6a0c487492cb5512eb5198caf90c78bb62355175",
+  "limitation": "Local workflow validation only; CI success after this prepared fix is not established."
+}

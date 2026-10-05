@@ -1,0 +1,180 @@
+{
+  "createdAt": "2026-10-05T12:44:00.734Z",
+  "status": "deployed-live-verified-backup-incomplete",
+  "sourceCommit": "6a0c487492cb5512eb5198caf90c78bb62355175",
+  "generatedReleaseCommit": "d1b93de1ecd8fff1023c2b28159f3e16e46afe7a",
+  "initialRemoteCommit": "407f36e2dbb1b7c0990d5365c96731e34378756d",
+  "liveUrl": "https://alloflow-cdn.pages.dev/app/",
+  "deploy": {
+    "script": "deploy.sh",
+    "originalExit": 1,
+    "outcome": "GitHub and Pages are published and live-verified. The original backup push and first retry failed HTTP 504. The ancestor checkpoint succeeded, but the final backup push failed curl 18; Codeberg remains at that checkpoint. Normal Step 10 verification then passed independently.",
+    "normalGatesAndHooks": true,
+    "skipFlagsUsed": false,
+    "hostedWebBuild": "passed",
+    "isolatedDesktopWebBuild": "passed and verified",
+    "firebase": "Skipped: placeholder project",
+    "desktopInstallerPublished": false,
+    "changedUnitTestGate": "Automatically deferred to CI because the changed-file count exceeded 120.",
+    "initialAttempt": {
+      "order": 1,
+      "log": "deploy-attempt-1.log",
+      "exit": 1,
+      "failedStep": "8: Mirror to Codeberg backup",
+      "error": "RPC failed; HTTP 504",
+      "sourceAndGeneratedCommitsPushedToGitHub": true,
+      "logSha256": "c0b470d4073d2e5eafeed3d57d83c39dff1531d069b57e5f9c3843adf37998e9"
+    },
+    "firstContinuation": {
+      "order": 2,
+      "script": "deploy-recovery.sh",
+      "log": "deploy-recovery.log",
+      "scope": "Existing deploy.sh Step 8 through EOF",
+      "exit": 1,
+      "failedStep": "8: Mirror to Codeberg backup",
+      "error": "RPC failed; HTTP 504",
+      "logSha256": "a9f8f84da46374f54a5f57385cf33635efb65733c23e41562b6f84fbd36f8c38",
+      "scriptSha256": "c7216f16024976de58a41e3cd81cbc728d54733d0f67411529d0e667cc8fb9f6"
+    },
+    "checkpoint": {
+      "order": 3,
+      "remote": "backup",
+      "ref": "refs/heads/main",
+      "from": "407f36e2dbb1b7c0990d5365c96731e34378756d",
+      "to": "d88e655911b1ed0947e3216cefa0d0b445e2fca8",
+      "existingAncestor": true,
+      "exit": 0,
+      "log": "backup-checkpoint.log",
+      "logSha256": "26662492b1ee21290a0dffa7788f34232fd001c20a6effd5d0fd250910d92dec"
+    },
+    "continuation": {
+      "order": 4,
+      "script": "deploy-recovery-2.sh",
+      "log": "deploy-recovery-2.log",
+      "scope": "Existing deploy.sh Step 8 through EOF; only --progress was added to the backup push. Execution stopped in Step 8; Steps 9 and 10 did not run.",
+      "exit": 1,
+      "failedStep": "8: Mirror final release to Codeberg backup",
+      "error": "curl 18 transfer closed with outstanding read data remaining",
+      "lastReportedDeltaProgress": "95%",
+      "buildHash": "6a0c48749",
+      "firebaseDeployed": 0,
+      "logSha256": "27e7916a66d0b6e89c36395bc3b0f6bb075915fd92f61df6bb633798da2f8a11",
+      "scriptSha256": "f471dfc1466fba66ccdf6722957bbe8c633b8b9b9b9efa818813618ecf3b1547"
+    },
+    "independentPostVerification": {
+      "order": 5,
+      "script": "deploy-post-verify.sh",
+      "log": "deploy-post-verify.log",
+      "exit": 0,
+      "scope": "Normal Step 10 through EOF unchanged, run independently after the backup failure. Its final success marker establishes post-verification only.",
+      "logSha256": "be05bef5f1d30d62767e55acf74b0d0d263c8b884a4b06b3c0e1530f6b06cff9",
+      "scriptSha256": "cd568787b87538c134e562648faf7881e456fd73772ee853ecb5d1ef8d692979"
+    },
+    "backup": {
+      "finalReleaseMirrored": false,
+      "currentMain": "d88e655911b1ed0947e3216cefa0d0b445e2fca8",
+      "intendedFinalMain": "d1b93de1ecd8fff1023c2b28159f3e16e46afe7a",
+      "step8": "incomplete",
+      "step9Tags": "not run"
+    },
+    "followUp": {
+      "status": "planned",
+      "destination": "origin main only",
+      "scope": "Workflow repair and release evidence; final Codeberg mirror remains pending."
+    }
+  },
+  "focusedValidation": {
+    "unitCasesPassed": 318,
+    "nativeBrowserWorkflowsPassed": 8,
+    "skipped": 0,
+    "retries": 0
+  },
+  "liveAssets": {
+    "report": "live-assets.json",
+    "sha256": "be7baa3841791a5cdad7dab9719bef408366425db3837bed1f79a6664b7d6613",
+    "assets": 167,
+    "requests": 334,
+    "matched": 334,
+    "mismatched": 0,
+    "observedAt": "2026-10-05T12:01:17.281Z"
+  },
+  "combinedLiveAssets": {
+    "mainAssets": 167,
+    "supplementalAssets": 1,
+    "assets": 168,
+    "mainRequests": 334,
+    "supplementalRequests": 2,
+    "requests": 336,
+    "matched": 336,
+    "mismatched": 0
+  },
+  "liveBrowser": {
+    "report": "live-browser.json",
+    "sha256": "adfa5753eb3254e617f7234878063d8cda2773fe760717e6bfcc0b9db96f1382",
+    "boots": 3,
+    "resources": 123,
+    "precacheEntries": 4,
+    "pageErrors": 0,
+    "fatalConsole": 0,
+    "observedAt": "2026-10-05T12:06:03.414Z"
+  },
+  "firstBrowserAttempt": {
+    "report": "live-browser-first-attempt.json",
+    "ok": false,
+    "sha256": "a82e42322d73ee0a5c118c410bf15f42abcae3052bcc2c02c3a892fc02b892cf",
+    "error": "AssertionError [ERR_ASSERTION]: Stale or unreadable official-origin resources observed",
+    "validator": "live-browser.cjs",
+    "originalValidatorCommit": "d1b93de1ecd8fff1023c2b28159f3e16e46afe7a",
+    "originalValidatorSha256": "f39d70ba89d8f9695a8b43446e309cc3da58bfb40f209f4a66add8b4f66d855b",
+    "revisedValidatorSha256": "ef6aabaeefddf8628ec4208b9430db3290bbe1d1e182e051a9bb58c51fba810a",
+    "outcome": "Original failed evidence retained; the updated validator later passed with 123 observed response bodies."
+  },
+  "supplementalLiveEvidence": [
+    {
+      "file": "reports/releases/collective-2026-10-05/supplemental-runtime-verification.json",
+      "sha256": "b5c84eb3e3351b72e62d2613b279a6dbed620575f599c6572a31560697447052",
+      "observedAt": "2026-10-05T12:12:15.740Z",
+      "assets": 1,
+      "requests": 2,
+      "matched": 2
+    }
+  ],
+  "ci": {
+    "passing": false,
+    "sourceTriage": "validation/source-ci-triage.json",
+    "workflowValidation": "validation/ci-workflow-check.json",
+    "remainingBroadAuditFailures": 12,
+    "openIssues": [
+      "Windows checkout failures; long-path setup fix prepared.",
+      "Actual remediation test failures: missing source PDF fixture and an assertion mismatch.",
+      "Separate Workers build failure with unknown cause."
+    ]
+  },
+  "preservedExclusions": {
+    "files": 9418,
+    "retainedLocally": true,
+    "exclusionManifestSha256": "f44c72d2e6c779fed24becf5261581e7d7b0e507d37aee10e846cf72d83e693b",
+    "scope": "Raw browser files, resource/response dumps, temporary snapshots and oversized artifacts."
+  },
+  "limits": [
+    "Live checks cover one network vantage and clean browser boot/reload, not every edge or authenticated workflow.",
+    "The full application audit and CI are not green.",
+    "Existing Gemini Canvas copies and installed desktop packages are not updated by this receipt."
+  ],
+  "remotes": [
+    {
+      "remote": "origin",
+      "ref": "refs/heads/main",
+      "commit": "d1b93de1ecd8fff1023c2b28159f3e16e46afe7a",
+      "observedAt": "2026-10-05T12:44:00.826Z",
+      "method": "fresh git ls-remote"
+    },
+    {
+      "remote": "backup",
+      "ref": "refs/heads/main",
+      "commit": "d88e655911b1ed0947e3216cefa0d0b445e2fca8",
+      "observedAt": "2026-10-05T12:44:01.316Z",
+      "method": "fresh git ls-remote"
+    }
+  ]
+}
