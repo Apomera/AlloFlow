@@ -67,6 +67,18 @@ The sightline instrument uses the observer-frame relation D = 1/[γ(1−βμ′)
 
 ## Verification
 
+### Landmark inspector and scenic viewpoints pass
+
+Discovery’s **Inspect** action now opens a compact inspector beside the scene. It shows the selected landmark’s current distance, offers an approach or camera orbit, and expands into the catalog description, an observation prompt, and three neighboring landmarks. The same inspector is available from a selected destination and the arrival checkpoint. Its fixed header and action row remain available while the details scroll; short landscape layouts give expanded details more room. Nearby choices are ordered by distance from the landmark, so orbiting cannot reorder buttons, while their displayed distances follow the camera.
+
+**Approach** starts from the current position and returns the inspector after the automatic arrival pause. **Orbit view** exposes pause, resume and end controls. Inspecting another landmark pauses and changes gaze without moving the camera or resetting counters. Closing returns focus to the scene and dismisses an earlier arrival card. Escape pauses and closes the inspector. Fullscreen flight controls and hidden overlays temporarily hide it; reset, restored views and scene or mode changes clear it.
+
+The details also connect nine landmarks to **all twelve existing scenic previews**. Each pictured shortcut explicitly replaces journey progress, seeks to its authored flyby viewpoint, ends route playback and returns to the inspector with the scene paused. Camera position, gaze, lens and exposure match the corresponding preview; quality stays at the learner’s setting. This gives direct access to star surfaces, cloud filaments and galaxy views without waiting through a complete flyby. These remain generated teaching scenes, with illustrative object sizes, colors and brightness.
+
+Verification passes **143 tests in six files**, seven inspector browser check groups, seven discovery regression groups and 18 scoped accessibility checks. All twelve scenic selections match their authored poses and preserve paused pixels. Checks cover orbit radius and height, pause/resume, automatic arrival, nearby selection, fullscreen, phone and short landscape layouts, text spacing, system colors and checkpoint inspection. The renderer and its preview assets are unchanged; source and desktop UI copies match.
+
+Review the [compact inspector](inspector/inspector-compact.png), [object details](inspector/inspector-details.png), [phone layout](inspector/inspector-compact-320.png), [landscape details](inspector/inspector-details-568.png), [stellar viewpoint](inspector/inspector-view-stellar-amber.png), [nebula viewpoint](inspector/inspector-view-nebula-filaments.png), and [galaxy panorama](inspector/inspector-view-halo-panorama.png).
+
 ### Free-flight discovery pass
 
 Free exploration now offers **In your view**, a compact card for a generated landmark ahead. A matching ring locates it in the scene; the card shows its model distance and object kind. Next cycles through visible landmarks. Suggestions use the renderer’s projection with the current camera pose, lens and viewport. The current choice stays while visible, with a small edge tolerance, and remains fixed during pointer hover or keyboard focus. If that held choice leaves the view, its heading changes to “Ready to explore.”

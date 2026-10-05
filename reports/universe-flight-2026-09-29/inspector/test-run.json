@@ -1,0 +1,30 @@
+{
+  "completed": true,
+  "exitCode": 0,
+  "error": null,
+  "pins": {
+    "stem_lab/universe_flight_scene.js": "574df0078ca2da78a2c46ed4d7e1f943bb695983ae8a9e6cb106fb3a57543701",
+    "stem_lab/stem_tool_universe.js": "8142cefe7d4d48b960abe49bf5e32a319bc3f583c246e5e7497b94f30d5eb6f7",
+    "tests/universe_flight_inspector.test.js": "afd11ae03a9a485dce15343851eb7190e10383a8f903dad9809ef1524ff27125",
+    "tests/universe_flight_discovery.test.js": "87a780c8691a09d547ddce748c3790531db0f2d62a7f66f30b73d15d19197385",
+    "tests/universe_flight_navigation.test.js": "1f2f07f45451d4b8b2c1e45fb0ae6824d3512749ed7922f1a0b0a3e246446e01",
+    "tests/universe_flight_preview_urls.test.js": "34a4ad55d40bca7618f85ac3b9f8aed20b89d1b41b51c58c46f00dd35e29f3b0",
+    "tests/universe_content_invariants.test.js": "a0610f4e8fed10d9583325bedc900b467e0e80e8b6009a46abbf284f7bcfccdd",
+    "tests/universe_accessibility.test.js": "5e8118a00e6b095e378e3a87e520ad3dcca543081dde460186fdb1075cf45536"
+  },
+  "args": [
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "tests/universe_flight_inspector.test.js",
+    "tests/universe_flight_discovery.test.js",
+    "tests/universe_flight_navigation.test.js",
+    "tests/universe_flight_preview_urls.test.js",
+    "tests/universe_content_invariants.test.js",
+    "tests/universe_accessibility.test.js",
+    "--pool=threads",
+    "--isolate=false",
+    "--maxWorkers=1",
+    "--testTimeout=30000",
+    "--hookTimeout=60000"
+  ]
+}
